@@ -1,0 +1,77 @@
+name: Logical Universes Proof
+on:
+  push:
+    branches: [test/logical-universes-proof]
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install
+        run: python -m pip install -e '.[test]'
+      - name: Prove universe isolation and drift quarantine
+        run: |
+          python - <<'PY'
+          import hashlib, tempfile
+          from pathlib import Path
+          from qcds_fabric.logical_space import LogicalBinding
+          from qcds_fabric.logical_transform import LogicalSpaceResolver, LogicalTransformRule
+          from qcds_fabric.logical_universe import CsvLogicalUniverseStore, LogicalRuleGovernance, LogicalUniverse, LogicalUniverseError
+
+          root = Path(tempfile.mkdtemp(prefix='qcds-universe-proof-'))
+          universes = CsvLogicalUniverseStore(root)
+          universes.ensure_reality()
+          universes.create(LogicalUniverse('swedish-law-demo', 'declared', authority='demo-legislature'))
+
+          reality = universes.space('reality')
+          law = universes.space('swedish-law-demo')
+          people = tuple(LogicalBinding(f'p:{i}', (f'person_{i}', 'human'), 'proof:seed', 1.0) for i in range(1000))
+          reality.append(people)
+          law.append(people)
+          reality_hash_before = hashlib.sha256(reality.path.read_bytes()).hexdigest()
+
+          governance = LogicalRuleGovernance(universes)
+
+          # A broad empirical rule is visible as dangerous and cannot silently enter reality.
+          reality_candidate = governance.propose(
+              'reality', candidate_id='reality-wide',
+              rule=LogicalTransformRule('human-state', ('human',), ('happy',), 'oracle:genesis')
+          )
+          assert reality_candidate.status == 'quarantined'
+          assert reality_candidate.drift_report.changed_bindings == 1000
+          assert reality_candidate.drift_report.changed_fraction == 1.0
+          try:
+              governance.promote(reality_candidate, challenge_passed=True, approval_source='proof')
+          except LogicalUniverseError:
+              pass
+          else:
+              raise AssertionError('wide reality rule must require blast override')
+          assert universes.rules('reality').rules() == ()
+
+          # The same logical population may be governed by declared law instead.
+          law_candidate = governance.propose(
+              'swedish-law-demo', candidate_id='law-1',
+              rule=LogicalTransformRule('legal-status', ('human',), ('legal_person',), 'law:section-1')
+          )
+          assert law_candidate.status == 'quarantined'  # blast remains visible
+          governance.promote(law_candidate, approval_source='demo-legislature', override_blast=True)
+
+          reality_resolver = LogicalSpaceResolver(reality, universes.rules('reality'))
+          law_resolver = LogicalSpaceResolver(law, universes.rules('swedish-law-demo'))
+          assert len(reality_resolver.query('legal_person')) == 0
+          assert len(law_resolver.query('legal_person')) == 1000
+          assert hashlib.sha256(reality.path.read_bytes()).hexdigest() == reality_hash_before
+
+          print('LOGICAL_UNIVERSES_PROOF_OK')
+          print('reality_people=', len(reality.query('human')))
+          print('law_people=', len(law.query('human')))
+          print('reality_legal_person=', len(reality_resolver.query('legal_person')))
+          print('law_legal_person=', len(law_resolver.query('legal_person')))
+          print('reality_candidate_status=', reality_candidate.status)
+          print('reality_changed_fraction=', reality_candidate.drift_report.changed_fraction)
+          print('law_candidate_status_before_override=', law_candidate.status)
+          print('reality_space_hash_unchanged=', hashlib.sha256(reality.path.read_bytes()).hexdigest() == reality_hash_before)
+          PY
