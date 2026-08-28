@@ -172,7 +172,14 @@ def spec(mission_id="logical-space-demo"):
                     "predicate": "capital",
                     "candidate_values": ["paris", "lyon"],
                     "original_text": "What is the capital of France?",
-                }
+                },
+                {
+                    "query_id": "language",
+                    "subject": "france",
+                    "predicate": "language",
+                    "candidate_values": ["french", "german"],
+                    "original_text": "Which represented language candidate applies to France?",
+                },
             ],
             "claims": [],
             "rules": [],
@@ -183,7 +190,7 @@ def spec(mission_id="logical-space-demo"):
                 {
                     "case_id": "selection-reference",
                     "role": "selection",
-                    "expected_assignments": {"capital": "paris"},
+                    "expected_assignments": {"capital": "paris", "language": "french"},
                 }
             ],
         },
