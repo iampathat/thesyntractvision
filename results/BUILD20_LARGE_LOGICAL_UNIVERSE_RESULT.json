@@ -1,0 +1,98 @@
+{
+  "assertions": {
+    "base_hash_unchanged_after_resolution": true,
+    "base_hash_unchanged_after_restart": true,
+    "base_hash_unchanged_after_rules": true,
+    "both_rules_were_quarantined_before_override": true,
+    "control_count_exact": true,
+    "controls_not_affected": true,
+    "human_count_exact": true,
+    "reality_isolated": true,
+    "restart_added_no_duplicate_bindings": true,
+    "restart_counts_identical": true,
+    "restart_reused_both_rules": true,
+    "rule1_global_projection_exact": true,
+    "rule2_chained_projection_exact": true,
+    "seed_count_exact": true
+  },
+  "benchmark": "BUILD 20 Large Logical Universe Overlay",
+  "claim_boundary": {
+    "asi_agi_claim": false,
+    "classical_python_benchmark": true,
+    "instantaneous_scaling_claim": false,
+    "quantum_advantage_claim": false,
+    "semantic_test": true
+  },
+  "environment": {
+    "cpu_model": "AMD EPYC 9V74 80-Core Processor",
+    "logical_cpu_count": 4,
+    "machine": "x86_64",
+    "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+    "python": "3.12.14",
+    "runner_arch": "X64",
+    "runner_os": "Linux"
+  },
+  "git_sha": "bcfa083b42bd7f83057d3c973270657544fc2fa6",
+  "github_actions_run_id": 33207426189,
+  "governance": {
+    "promotion_mode": "declared authority + explicit blast-radius override",
+    "rule1_changed_bindings": 40000,
+    "rule1_changed_fraction": 0.8,
+    "rule1_drift_reasons": [
+      "changed_fraction_exceeds_policy",
+      "changed_bindings_exceed_policy"
+    ],
+    "rule2_changed_bindings": 40000,
+    "rule2_changed_fraction": 0.8,
+    "rule2_drift_reasons": [
+      "changed_fraction_exceeds_policy",
+      "changed_bindings_exceed_policy"
+    ]
+  },
+  "package": "qcds-fabric 1.11.0",
+  "reality_protected_subject_count": 0,
+  "resolved_counts": {
+    "dog": 10000,
+    "dog_with_protected_subject": 0,
+    "human": 40000,
+    "legal_person": 40000,
+    "protected_subject": 40000
+  },
+  "restart_counts": {
+    "dog": 10000,
+    "dog_with_protected_subject": 0,
+    "human": 40000,
+    "legal_person": 40000,
+    "protected_subject": 40000
+  },
+  "status": "PASS",
+  "storage": {
+    "base_logical_space_bytes": 10250115,
+    "derived_logic_materialized_into_base_space": false,
+    "sha256_after_resolve": "43a339e6253170ff4f29d03b02235aa8d92e5ee764947e635bf715ec525fbf36",
+    "sha256_after_restart": "43a339e6253170ff4f29d03b02235aa8d92e5ee764947e635bf715ec525fbf36",
+    "sha256_after_rules": "43a339e6253170ff4f29d03b02235aa8d92e5ee764947e635bf715ec525fbf36",
+    "sha256_after_seed": "43a339e6253170ff4f29d03b02235aa8d92e5ee764947e635bf715ec525fbf36"
+  },
+  "timings_seconds": {
+    "propose_promote_rule1": 3.22274,
+    "propose_promote_rule2": 4.489577,
+    "reality_seed_1000": 0.051175,
+    "resolve_50000_after_restart": 8.215343,
+    "resolve_50000_first_pass": 8.209449,
+    "restart_reingest_dedupe": 2.150804,
+    "seed_50000": 2.570524,
+    "total": 29.102329
+  },
+  "workload": {
+    "active_rules": 2,
+    "base_bindings": 50000,
+    "control_bindings": 10000,
+    "human_bindings": 40000,
+    "reality_isolation_bindings": 1000,
+    "rule_chain": [
+      "human => legal_person",
+      "legal_person => protected_subject"
+    ]
+  }
+}
