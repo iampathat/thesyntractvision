@@ -1,0 +1,115 @@
+name: BUILD 21 Self-Expanding Reality Proof
+
+on:
+  push:
+    branches:
+      - test/build21-reality-proof
+
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install
+        run: python -m pip install -e '.[test]'
+      - name: Run closed-cycle proof
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/qcds-build21-proof /tmp/qcds-build21-high-blast
+          qcds-reality-cycle examples/self_expanding_reality_mvp.json --store /tmp/qcds-build21-proof > /tmp/build21-run1.json
+          qcds-reality-cycle examples/self_expanding_reality_mvp.json --store /tmp/qcds-build21-proof > /tmp/build21-run2.json
+          python - <<'PY'
+          import csv
+          import hashlib
+          import json
+          from copy import deepcopy
+          from pathlib import Path
+          from qcds_fabric.self_expanding_reality import run_reality_cycle_spec
+
+          r1 = json.loads(Path('/tmp/build21-run1.json').read_text())
+          r2 = json.loads(Path('/tmp/build21-run2.json').read_text())
+
+          assert r1['status'] == 'expanded'
+          assert r1['before_probe_count'] == 0
+          assert r1['after_probe_count'] == 2
+          assert r1['knowledge_gain'] == 2
+          assert r1['oracle_gap_count'] == 1
+          assert r1['oracle_promoted_count'] == 1
+          assert r1['oracle_rejected_count'] > 0
+          assert r1['active_reality_rule_count'] == 1
+          assert r1['base_space_unchanged_by_derived_logic'] is True
+          outcome = r1['governed_rule_outcomes'][0]
+          assert outcome['antecedent']['value'] == 'winged'
+          assert outcome['consequent']['value'] == 'flies'
+          assert outcome['status'] == 'promoted_to_reality'
+          assert outcome['changed_bindings'] == 2
+          assert outcome['changed_fraction'] == 0.25
+          assert outcome['blast_override'] is False
+
+          assert r2['added_base_bindings'] == 0
+          assert r2['before_probe_count'] == 2
+          assert r2['after_probe_count'] == 2
+          assert r2['knowledge_gain'] == 0
+          assert r2['active_reality_rule_count'] == 1
+          assert r2['governed_rule_outcomes'][0]['status'] == 'already_active'
+
+          base = Path('/tmp/qcds-build21-proof/logical_space.csv')
+          base_hash = hashlib.sha256(base.read_bytes()).hexdigest()
+          with base.open(encoding='utf-8', newline='') as handle:
+              rows = list(csv.DictReader(handle))
+          assert len(rows) == 8
+          assert all('flies' not in json.loads(row['terms']) for row in rows)
+
+          with Path('examples/self_expanding_reality_mvp.json').open(encoding='utf-8') as handle:
+              high = json.load(handle)
+          high = deepcopy(high)
+          high['mission_id'] = 'build21-high-blast-proof'
+          high['reality_bindings'] = [
+              {
+                  'binding_id': f'winged-{i}',
+                  'terms': [f'creature-winged-{i}', 'winged'],
+                  'source_id': f'proof:winged:{i}',
+              }
+              for i in range(4)
+          ] + [
+              {
+                  'binding_id': f'grounded-{i}',
+                  'terms': [f'creature-grounded-{i}', 'grounded'],
+                  'source_id': f'proof:grounded:{i}',
+              }
+              for i in range(4)
+          ]
+          high_result = run_reality_cycle_spec(high, store_root='/tmp/qcds-build21-high-blast').as_dict()
+          assert high_result['oracle_promoted_count'] == 1
+          assert high_result['status'] == 'quarantined'
+          assert high_result['before_probe_count'] == 0
+          assert high_result['after_probe_count'] == 0
+          assert high_result['active_reality_rule_count'] == 0
+          h = high_result['governed_rule_outcomes'][0]
+          assert h['antecedent']['value'] == 'winged'
+          assert h['consequent']['value'] == 'flies'
+          assert h['status'] == 'quarantined_by_reality_governance'
+          assert h['changed_bindings'] == 4
+          assert h['changed_fraction'] == 0.5
+          assert 'changed_fraction_exceeds_policy' in h['drift_reasons']
+
+          print('BUILD21_SELF_EXPANDING_REALITY_PROOF_OK')
+          print('generated_rule=', outcome['antecedent']['value'], '=>', outcome['consequent']['value'])
+          print('hypotheses_challenged=', r1['oracle_hypothesis_count'])
+          print('hypotheses_rejected=', r1['oracle_rejected_count'])
+          print('oracle_promotions=', r1['oracle_promoted_count'])
+          print('knowledge_before=', r1['before_probe_count'])
+          print('knowledge_after=', r1['after_probe_count'])
+          print('knowledge_gain=', r1['knowledge_gain'])
+          print('restart_added_bindings=', r2['added_base_bindings'])
+          print('base_rows=', len(rows))
+          print('base_sha256=', base_hash)
+          print('derived_logic_materialized=', False)
+          print('high_blast_status=', high_result['status'])
+          print('high_blast_changed_fraction=', h['changed_fraction'])
+          print('high_blast_active_rules=', high_result['active_reality_rule_count'])
+          PY
