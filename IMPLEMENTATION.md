@@ -45,61 +45,60 @@ claim.
 
 ## BUILD 5 — merged
 
-Falsification / benchmark harness:
-
-- matched architecture ablations;
-- explicit external synthetic targets;
-- L1/KL, entropy, agreement, peak and contradiction metrics;
-- execution-slot and oracle-exposure fault injection;
-- dimension-null contradiction localization;
-- oracle leave-one-out analysis;
-- no predeclared winner and no automatic oracle retirement.
+Falsification / benchmark harness with matched architecture ablations, explicit
+external synthetic targets, L1/KL and stability metrics, injected slot/oracle
+bias, contradiction probes and oracle leave-one-out analysis. The full Fabric is
+not declared the winner in advance.
 
 See `BENCHMARKS.md`.
 
 ## BUILD 6 — merged
 
-Substrate separation:
-
-- explicit `InferenceSubstrate` contract;
-- existing classical reference substrate;
-- bounded complex statevector/Grover simulator;
-- fixed Grover iteration depth;
-- simulator state-count guard;
-- same Fabric topology across classical and statevector paths;
-- matched substrate benchmarking;
-- explicit no-QPU / no-quantum-advantage claim boundary.
+Explicit `InferenceSubstrate` separation, existing classical reference path,
+bounded complex statevector/Grover simulator, simulator state guard and matched
+cross-substrate benchmarking with no native-QPU or quantum-advantage claim.
 
 See `SUBSTRATES.md`.
 
-## BUILD 7 — adaptive Grover depth
+## BUILD 7 — merged
 
-Adds bounded, view-local empirical `m/m*` calibration for the statevector/Grover
-reference path:
-
-- `m=0` is now an explicit unamplified statevector control;
-- `GroverDepthConfig` bounds the search;
-- `select_grover_depth(...)` walks depth upward and selects the first internal
-  objective maximum before detected overshoot;
-- the internal objective is expected normalized oracle score;
-- `AdaptiveGroverSubstrate` may choose a different depth for each baseline,
-  null, positional, oracle-exposure, or crossed view;
-- textbook binary-marking `m*` is exposed as a diagnostic when applicable, not
-  as a universal policy;
-- `run_grover_depth_benchmark(...)` compares fixed depths with adaptive depth
-  under an external target that is **not available to the adaptive selector**;
-- every chosen depth, trial count, stop reason and overshoot signal is retained
-  in provenance.
+Bounded view-local empirical `m/m*` calibration for the statevector/Grover path,
+including explicit `m=0`, first-local-maximum selection, overshoot detection,
+per-view depth provenance and fixed-vs-adaptive benchmarking without leaking the
+external target into depth selection.
 
 See `GROVER_DEPTH.md`.
 
+## BUILD 8 — expansion (`1 → N`)
+
+Adds the opposite inference direction without hard-collapsing the bound source:
+
+- one bound Syntract is compiled as a `DistributionOracle` rather than a forced
+  binary state;
+- explicit expansion dimensions are opened as `?` alongside the bound source;
+- proposal/test oracles constrain the expanded Condition space;
+- both baseline and stabilized joint distributions are marginalized onto the
+  new expansion dimensions, yielding explicit compatible branch distributions;
+- contradictions remain visible in the projected expansion result;
+- expansion is substrate-neutral because it runs through the normal
+  `FabricLayer`;
+- a tested expansion can be contracted again through a distribution-oracle
+  prior plus validation oracles and bound into a new Syntract;
+- `run_expansion_cycle(...)` implements the bounded reference path
+  `BIND → EXPAND → TEST → CONTRACT → BIND`;
+- total logical width is explicitly bounded and dimension collisions fail
+  closed;
+- the implementation does **not** hide an unrestricted hypothesis generator or
+  semantic compiler inside the Fabric core.
+
+See `EXPANSION.md`.
+
 ## Not yet implemented
 
-- expansion (`1 → N`);
 - native QPU adapter / hardware execution;
 - production oracle governance and external-validation boundaries;
 - domain-level semantic compiler from unrestricted human problems into
-  Conditions/oracles;
+  Conditions/oracles/expansion dimensions;
 - larger public benchmark corpora and statistically powered experiment runner;
 - noise-aware calibration against real quantum hardware.
 
@@ -112,4 +111,5 @@ implementation against the canonical specification.
 A convergence signal is an internal stability observation, not by itself a
 claim of external truth. A statevector simulation is not evidence of quantum
 advantage. An internally selected Grover depth is not evidence that the selected
-state is externally true.
+state is externally true. Expansion branches are candidate consequences or
+mechanisms under stated Conditions/oracles; they are not automatically facts.

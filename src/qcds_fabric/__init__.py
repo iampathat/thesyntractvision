@@ -34,6 +34,18 @@ from .engine import (
     automatic_contraction_widths,
     compare_truth_distributions,
 )
+from .expansion import (
+    ExpansionCompilation,
+    ExpansionContractionResult,
+    ExpansionCycleResult,
+    ExpansionResult,
+    ExpansionSpec,
+    compile_syntract_expansion,
+    contract_expansion,
+    project_truth_distribution,
+    run_expansion_cycle,
+    run_syntract_expansion,
+)
 from .fabric import FabricLayer, NullBankResult, RotationBankResult, StabilizedRotationSuiteResult
 from .funnel import BoundCondition, FunnelLayerResult, FunnelTrace, funnel_step, recursive_contraction_funnel
 from .grover_depth import (
@@ -86,6 +98,16 @@ __all__ = [
     "ideal_binary_grover_m_star",
     "select_grover_depth",
     "run_grover_depth_benchmark",
+    "ExpansionSpec",
+    "ExpansionCompilation",
+    "ExpansionResult",
+    "ExpansionContractionResult",
+    "ExpansionCycleResult",
+    "compile_syntract_expansion",
+    "project_truth_distribution",
+    "run_syntract_expansion",
+    "contract_expansion",
+    "run_expansion_cycle",
     "DistributionStabilizer",
     "FabricLayer",
     "NullBankResult",

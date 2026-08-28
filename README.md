@@ -5,7 +5,7 @@
 **Author and originator:** Patrik Sundblom  
 **Project:** The Syntract Vision / QCDS / Syntract  
 **Canonical architecture release:** **QCDS Fabric v1.0**  
-**Reference implementation:** **BUILD 7 / package 0.8.0**  
+**Reference implementation:** **BUILD 8 / package 0.9.0**  
 **Theory and specification:** CC BY 4.0  
 **Software:** MIT  
 **Repository:** https://github.com/iampathat/thesyntractvision
@@ -15,8 +15,8 @@
 ## What this repository contains
 
 This repository is both the publication home for **The Syntract Vision / QCDS
-Fabric** and a growing reference implementation of the locked QCDS Fabric v1.0
-architecture.
+Fabric** and a growing tested reference implementation of the locked QCDS
+Fabric v1.0 architecture.
 
 It deliberately separates:
 
@@ -24,8 +24,8 @@ It deliberately separates:
    artifacts in the repository root. Normative architecture changes require a
    new specification version.
 2. **Reference software implementation** — the Python package under
-   `src/qcds_fabric/`, developed in tested BUILD steps without silently changing
-   the canonical specification.
+   `src/qcds_fabric/`, developed in falsifiable BUILD steps without silently
+   changing the canonical specification.
 
 ### Current implementation path
 
@@ -57,25 +57,34 @@ CONVERGENCE DIAGNOSTICS
         ↺
 REPEAT
         ↓
-SYNTRACT
+SYNTRACT BIND
+   ↙             ↘
+CONTRACT N→1    EXPAND 1→N
+   ↘             ↓
+      TEST / ORACLES
+             ↓
+      CONTRACT / BIND
+             ↺
 ```
 
-**BUILD 4 automated the bounded recursive loop. BUILD 5 attacks it. BUILD 6
-separated it from the local substrate. BUILD 7 now calibrates Grover depth
-`m/m*` per execution view and explicitly detects overshoot.**
+**BUILD 4 automated the bounded recursive contraction loop. BUILD 5 attacks it.
+BUILD 6 separated it from the local substrate. BUILD 7 calibrates Grover depth
+`m/m*` per execution view. BUILD 8 adds the opposite `1 → N` expansion path and
+closes a bounded `BIND → EXPAND → TEST → CONTRACT → BIND` cycle.**
 
-The current code can run the same logical Fabric topology through the classical
-reference kernel, a bounded fixed-depth statevector/Grover simulator, or an
-adaptive statevector/Grover simulator. The adaptive selector never receives the
-external benchmark target; external targets are used only for post-hoc
-falsification.
+A bound Syntract is not hard-collapsed before expansion: its complete
+`TruthDistribution` is retained as a `DistributionOracle`. New expansion
+dimensions are opened explicitly, proposal/test oracles constrain the larger
+space, and the result is marginalized back to a probability distribution over
+candidate expansion branches.
+
+Expansion does **not** hide an unrestricted hypothesis generator inside the
+Fabric core. A later semantic compiler may supply domain-specific expansion
+dimensions and oracles.
 
 A statevector simulation remains classical software and is **not** presented as
-evidence of quantum advantage.
-
-Convergence is treated as **internal distribution stability**, not as automatic
-external truth. External validation, evidence, experiment, safety constraints
-and real outcomes remain separate requirements in the canonical architecture.
+evidence of quantum advantage. Convergence, concentration and expansion rank are
+internal inference results, not automatic external truth.
 
 ### Code map
 
@@ -85,23 +94,23 @@ and real outcomes remain separate requirements in the canonical architecture.
 - `src/qcds_fabric/kernel.py` — bounded classical reference inference kernel.
 - `src/qcds_fabric/substrates.py` — substrate contract and fixed-depth
   statevector/Grover simulator.
-- `src/qcds_fabric/grover_depth.py` — BUILD 7 adaptive `m/m*` search,
-  overshoot detection and depth benchmark.
-- `src/qcds_fabric/rotations.py` — positional, oracle-exposure and crossed
-  rotation views.
+- `src/qcds_fabric/grover_depth.py` — adaptive `m/m*` search, overshoot detection
+  and depth benchmark.
+- `src/qcds_fabric/expansion.py` — BUILD 8 Syntract expansion, marginal branch
+  projection and expansion re-contraction.
+- `src/qcds_fabric/rotations.py` — positional, oracle-exposure and crossed views.
 - `src/qcds_fabric/stabilize.py` — null and multi-family stabilization.
 - `src/qcds_fabric/funnel.py` — provenance-preserving serial contraction.
 - `src/qcds_fabric/reentry.py` — higher-order distribution-oracle re-entry.
-- `src/qcds_fabric/engine.py` — recursive execution and convergence trace.
-- `src/qcds_fabric/benchmark.py` — BUILD 5 ablations, fault injection and
-  falsification metrics.
-- `src/qcds_fabric/substrate_benchmark.py` — matched cross-substrate comparison
-  under one Fabric topology.
+- `src/qcds_fabric/engine.py` — bounded recursive execution and convergence trace.
+- `src/qcds_fabric/benchmark.py` — ablations, fault injection and falsification.
+- `src/qcds_fabric/substrate_benchmark.py` — matched cross-substrate comparison.
 - `tests/` — falsification-oriented regression tests for every BUILD.
-- `IMPLEMENTATION.md` — BUILD-by-BUILD implementation status.
+- `IMPLEMENTATION.md` — exact BUILD-by-BUILD implementation boundary.
 - `BENCHMARKS.md` — architecture ablation and fault-injection semantics.
 - `SUBSTRATES.md` — substrate semantics and claim boundaries.
-- `GROVER_DEPTH.md` — BUILD 7 depth-selection policy and benchmark separation.
+- `GROVER_DEPTH.md` — adaptive Grover-depth policy.
+- `EXPANSION.md` — BUILD 8 `1 → N` semantics and claim boundary.
 
 ### Run the implementation tests
 
@@ -121,12 +130,13 @@ requests and `main`.
 |---|---|---|
 | 0 | merged | core models, `0/?/∅`, oracle stack, null bank |
 | 1 | merged | position/oracle/crossed rotations |
-| 2 | merged | family stabilization + serial funnel |
+| 2 | merged | family stabilization + serial contraction funnel |
 | 3 | merged | DistributionOracle recursive re-entry |
 | 4 | merged | automatic bounded recursive Fabric engine |
 | 5 | merged | falsification, ablations, injected bias |
 | 6 | merged | substrate interface + statevector/Grover reference |
-| 7 | current | adaptive view-local Grover depth `m/m*` |
+| 7 | merged | adaptive view-local Grover depth `m/m*` |
+| 8 | current | expansion `1 → N` + test/contract/bind cycle |
 
 See [`IMPLEMENTATION.md`](IMPLEMENTATION.md) for the exact implementation
 boundary.
@@ -148,27 +158,6 @@ require a new specification version.
 
 ---
 
-# The Syntract Vision
-
-The Syntract Vision describes an inference-first architecture in which large
-logical spaces are not reduced to a single opaque score or fluent answer.
-
-Instead, conditions, evidence, constraints, contradictions, uncertainty,
-relations, and higher-order compositions remain active inside an evolving
-inference field.
-
-The central components are:
-
-- **QCDS** — Quantum Condition-Driven Synthesis;
-- **QCDS Fabric** — the scalable execution architecture;
-- **Syntract** — the meaning-bearing structure that remains bound across
-  dimensions, evidence, contradiction, overlap, composition, and repeated
-  inference;
-- **Syntract Binding** — the process that preserves what still coheres after
-  recursive challenge.
-
----
-
 # QCDS core
 
 QCDS is defined by four canonical phases:
@@ -176,11 +165,11 @@ QCDS is defined by four canonical phases:
 1. **Condition Formation** — open the possibility space without preselecting the
    answer.
 2. **Conditional Evolution** — apply evidence, physics, biology, logic,
-   experiment, and other constraints as oracles.
-3. **Recursive Inference** — amplify, rotate, compare, re-enter, and recursively
-   reshape the working truth distribution.
+   experiment and other constraints as oracles.
+3. **Recursive Inference** — amplify, rotate, compare, re-enter, expand and
+   recursively reshape the working truth distribution.
 4. **Truth-Alignment / Syntract Binding** — bind what continues to survive
-   evidence, contradiction, overlap, composition, and repeated inference.
+   evidence, contradiction, overlap, composition and repeated inference.
 
 ```text
 CONDITIONS
@@ -203,7 +192,8 @@ architecture.
 # QCDS Fabric
 
 The local QCDS kernel can remain bounded while a larger mission scales through
-parallel channels, repeated diagnostics, stabilization, and recursive layers.
+parallel channels, repeated diagnostics, stabilization, recursive layers and
+alternating contraction/expansion.
 
 ```text
 QUESTION / CONDITIONS
@@ -224,95 +214,72 @@ HIGHER-ORDER CONDITIONS
         ↓
 SYNTRACT BIND
         ↓
-RE-ENTRY
+RE-ENTRY / EXPANSION
 ```
 
 **Parallelism gives breadth. Recursive funneling gives depth. Syntract Binding
-preserves coherence.**
+preserves coherence. Expansion reopens compatible possibility space around what
+has already been bound.**
 
-Width is a compile choice, not the architecture. A fabric may use 8, 16, 32,
-512, or other widths according to mission and substrate.
+Width is a compile choice, not the architecture. A Fabric may use different
+bounded local widths according to mission and substrate.
 
 ---
 
-## Same oracle regime before every comparable channel
+# Oracle regime and falsifiability
 
 For channels intended to be directly compared, the same active oracle regime is
-applied at the boundary of each channel before local inference.
-
-```text
-ORACLES → CHANNEL 01
-ORACLES → CHANNEL 02
-ORACLES → CHANNEL 03
-...
-ORACLES → CHANNEL N
-```
-
-Oracles may represent evidence, logic, physics, biology, causality, experiment,
-safety, contradiction, or mission-specific constraints.
+applied at the boundary before local inference. Oracles may represent evidence,
+logic, physics, biology, causality, experiment, safety, contradiction or
+mission-specific constraints.
 
 Candidate oracles may themselves be tested, calibrated, challenged,
-down-weighted, or retired between bound cycles with provenance.
+down-weighted or retired between bound cycles with provenance.
+
+The implementation is deliberately falsifiable:
+
+- BUILD 5 adds matched architecture ablations and injected bias;
+- BUILD 6 adds matched classical/statevector substrate comparison;
+- BUILD 7 adds fixed-vs-adaptive Grover-depth comparison and overshoot tests;
+- BUILD 8 keeps source, proposal and validation provenance separate so an
+  expansion can be tested rather than treated as a generated fact.
+
+The full Fabric, statevector path, adaptive Grover policy or expansion path is
+never declared the winner in advance.
 
 ---
 
-# Rotational Dimension Nulling
+# Null semantics and rotations
 
-For a bundle of `B` independent dimensions, QCDS creates `B` comparison
-channels. Each channel removes a **different logical dimension**.
-
-Example with `B = 8`:
-
-```text
-CH01   [ ∅ ][b1][b2][b3][b4][b5][b6][b7]   ← b0 absent
-CH02   [b0][ ∅ ][b2][b3][b4][b5][b6][b7]   ← b1 absent
-CH03   [b0][b1][ ∅ ][b3][b4][b5][b6][b7]   ← b2 absent
-CH04   [b0][b1][b2][ ∅ ][b4][b5][b6][b7]   ← b3 absent
-CH05   [b0][b1][b2][b3][ ∅ ][b5][b6][b7]   ← b4 absent
-CH06   [b0][b1][b2][b3][b4][ ∅ ][b6][b7]   ← b5 absent
-CH07   [b0][b1][b2][b3][b4][b5][ ∅ ][b7]   ← b6 absent
-CH08   [b0][b1][b2][b3][b4][b5][b6][ ∅ ]   ← b7 absent
-```
+For a bundle of `B` independent dimensions, the core dimension-null diagnostic
+creates `B` comparison views, each with a different logical dimension absent.
 
 `∅` is **not** binary `0`.  
 `∅` is **not** wildcard `?`.  
-`∅` means that the logical dimension is absent from that inference view.
+`∅` means the logical dimension is absent from that inference view.
 
----
+Rotation is a family:
 
-# Rotation is a family
+- **Rotational Dimension Nulling** — test dimensional influence and bias.
+- **Positional Rotation** — test slot/order/mapping bias.
+- **Oracle Exposure Rotation** — test oracle sensitivity and dominance.
+- **Physical quantum rotation** — amplitude/phase evolution inside a quantum
+  substrate.
 
-### Rotational Dimension Nulling
-Rotate **which logical dimension is absent**. Purpose: dimensional influence,
-bias detection, redundancy and noise diagnostics.
-
-### Positional Rotation
-Move the same dimensions through different logical or physical slots. Purpose:
-detect ordering, mapping, slot, or hardware-position bias.
-
-### Oracle Exposure Rotation
-Change exposure across oracle members or oracle positions while retaining the
-same active oracle regime. Purpose: test sensitivity, dominance and
-implementation bias.
-
-### Physical quantum rotation
-Amplitude and phase evolution inside a quantum substrate. Purpose:
-interference, probability shaping and local quantum evolution.
-
-Architectural rotations and physical quantum rotation are distinct and may be
-crossed when deeper diagnostics are required.
+Architectural rotations and physical quantum evolution remain distinct.
+Diagnostic views are not automatically counted as new independent dimensions.
 
 ---
 
 # Stabilize first. Funnel second.
 
-Raw diagnostic views are not automatically promoted into independent
-dimensions. A Fabric layer first produces local returns, compares required
-views, measures stability and influence, stabilizes the result, and only then
-passes that result to a higher-order layer.
+Raw diagnostic views are not automatically promoted into higher-order facts. A
+Fabric layer first compares/stabilizes its views, preserves uncertainty and
+provenance, and only then passes the stabilized return into the serial funnel.
 
-Geometries such as `512 → 64 → 8 → 1` or
-`4096 → 512 → 64 → 8 → 1` are compile topologies, not fixed QCDS constants.
+Illustrative geometries such as `512 → 64 → 8 → 1` are compile topologies, not
+fixed constants and not claims that one present QPU must hold the whole logical
+Fabric at once.
 
 ---
 
@@ -324,104 +291,107 @@ For `B` independent binary dimensions in one local channel:
 local basis dimension = 2^B
 ```
 
-A null, positional, oracle, or crossed rotation creates another **inference
-view**. It does not automatically create another independent fact or dimension.
+Execution views, channels and rotations are accounted separately from genuinely
+independent dimensions.
+
+BUILD 8 follows the same rule: if a bound source with `S` binary coordinates is
+expanded by `E` genuinely new binary coordinates, the compiled local candidate
+space is `2^(S+E)`, while the marginalized branch distribution is over `2^E`.
 
 ---
 
 # Substrate independence
 
-QCDS Fabric is an architecture rather than a commitment to one hardware
-generation. A conforming implementation may run on CPU, GPU/HPC, numerical
-simulators, NISQ quantum processors, future fault-tolerant quantum processors,
-FPGA/specialized accelerators, or hybrid combinations.
+A conforming implementation may run on CPU, GPU/HPC, numerical simulators,
+NISQ processors, future fault-tolerant quantum processors, FPGA/specialized
+accelerators or hybrid combinations.
 
-**BUILD 6 makes this boundary explicit in code.**
+BUILD 6 makes the substrate boundary explicit. BUILD 7 adds view-local adaptive
+Grover depth without changing Fabric topology. BUILD 8 uses the same
+`FabricLayer`, so expansion is substrate-neutral as well.
 
-**BUILD 7 adds adaptive statevector/Grover depth without changing the Fabric
-topology.** A baseline view may select one empirical `m*` while a null or rotated
-view selects another. The chosen depth and overshoot evidence remain in
-provenance.
+A classical statevector simulation is not evidence of native quantum advantage.
 
-See [`SUBSTRATES.md`](SUBSTRATES.md) and
-[`GROVER_DEPTH.md`](GROVER_DEPTH.md).
+See [`SUBSTRATES.md`](SUBSTRATES.md) and [`GROVER_DEPTH.md`](GROVER_DEPTH.md).
 
 ---
 
 # Syntract
 
-A **Syntract** is a meaning-bearing binding, not merely a node, edge, label, or
-score. It may preserve dimensions, overlap, composition, relation, evidence,
-contradiction, uncertainty, temporal and causal context, process state, oracle
-provenance, and recursive higher-order structure.
+A **Syntract** is a meaning-bearing binding, not merely a node, label or score.
+It may preserve dimensions, overlap, composition, relation, evidence,
+contradiction, uncertainty, temporal/causal context, oracle provenance and
+recursive higher-order structure.
 
-A stable Syntract can itself become a dimension in a later inference cycle. The
-purpose of Syntract Binding is not to choose the loudest candidate. It is to
+The purpose of Syntract Binding is not to choose the loudest candidate. It is to
 preserve the structure that continues to hold after repeated challenge.
+
+A bound Syntract can become the source of a later re-entry or expansion cycle.
 
 ---
 
 # Direction of inference
 
-QCDS can be used in both contraction and expansion modes.
+QCDS can operate in both directions:
 
 ```text
 N → 1
 ```
 
 Contraction asks which state or structure survives the strongest coherent set
-of conditions.
+of Conditions.
 
 ```text
 1 → N
 ```
 
 Expansion asks what compatible mechanisms, consequences, designs,
-trajectories, or experiments become possible when a bound structure is held
-fixed.
+trajectories or experiments remain possible when one bound structure is held as
+an active condition.
 
-The two directions can alternate:
+BUILD 8 implements the bounded reference expansion path:
+
+```text
+BOUND SYNTRACT
+      ↓
+retain full bound TruthDistribution
+      ↓
+open explicit expansion dimensions
+      ↓
+proposal / test oracles
+      ↓
+joint Fabric inference
+      ↓
+marginal branch distribution
+      ↓
+validation oracles
+      ↓
+CONTRACT → BIND
+```
+
+The directions can alternate:
 
 ```text
 EXPAND → TEST → CONTRACT → BIND → EXPAND
 ```
 
-Expansion remains a future implementation boundary in this reference package.
+See [`EXPANSION.md`](EXPANSION.md).
 
 ---
 
-# Falsifiability
+# What the reference implementation does not claim
 
-QCDS Fabric v1.0 is intended to be experimentally challenged.
+A high peak, stable distribution or leading expansion branch is not external
+truth merely because it is numerically strong.
 
-**BUILD 5** adds architecture ablations, deliberate fault injection,
-contradiction probes and oracle leave-one-out analysis.
+External truth requires appropriate evidence and validation. Likewise:
 
-**BUILD 6** adds matched substrate comparison.
-
-**BUILD 7** adds Grover-depth calibration tests. Fixed values of `m` and the
-adaptive selector can be compared against the same external target. The
-adaptive selector itself does not receive that target.
-
-A benchmark is allowed to show that:
-
-- a simpler ablation beats full diagnostics;
-- the classical reference beats the statevector path;
-- a fixed Grover depth beats adaptive depth;
-- amplification overshoots;
-- amplification provides no useful improvement;
-- an oracle or dimension is damaging rather than helpful.
-
-The implementation does not predeclare a winner.
-
-Useful observables include probability distribution, normalized lift, entropy,
-agreement, Top-K stability/Jaccard, orientation sensitivity, oracle
-sensitivity, cross-rotation agreement, contradiction response, Grover-depth
-response and Syntract stability.
-
-A peak is not “truth” merely because it is high. Truth-Alignment requires
-stability against evidence, contradiction and repeated inference, and external
-truth additionally requires appropriate external validation.
+- convergence is an internal stability observation;
+- statevector simulation is classical computation;
+- adaptive `m*` is an internal search policy;
+- expansion branches are candidates under stated Conditions/oracles;
+- unrestricted natural-language semantic compilation is not yet implemented;
+- native QPU advantage is not claimed.
 
 ---
 
@@ -449,26 +419,21 @@ https://zenodo.org/records/15533909
 **The Syntract Vision, Quantum Condition-Driven Synthesis (QCDS), QCDS Fabric,
 and the Syntract architecture are authored by Patrik Sundblom.**
 
-The QCDS theory, The Syntract Vision, and the canonical QCDS Fabric
-specification are released under **Creative Commons Attribution 4.0
-International — CC BY 4.0**.
+The QCDS theory, The Syntract Vision and the canonical QCDS Fabric specification
+are released under **Creative Commons Attribution 4.0 International — CC BY
+4.0**.
 
-Software implementations may be distributed under their applicable software
-license. The reference implementation in this repository uses the repository
-MIT license.
-
-Implementation, editorial, visualization, or AI assistance may be acknowledged
-separately. Such assistance does not alter conceptual authorship.
+The reference software implementation in this repository uses the repository
+MIT license. Implementation, editorial, visualization or AI assistance may be
+acknowledged separately; such assistance does not alter conceptual authorship.
 
 ---
 
 # Canonical version policy
 
-`QCDS Fabric v1.0` is a locked architecture release. A change to the normative
-semantics of the four QCDS phases, oracle-per-channel topology, null semantics,
-dimension nulling, rotation families, stabilization, recursive funnel
-composition, Syntract Binding, logical-space accounting, or substrate semantics
-requires a new specification version.
+`QCDS Fabric v1.0` is a locked architecture release. A change to normative
+semantics requires a new specification version. The BUILD series implements and
+tests the locked architecture; it does not silently rewrite it.
 
 Recommended tag: `qcds-fabric-v1.0`  
 Recommended GitHub Release title:
@@ -486,6 +451,8 @@ NULL WHAT MUST BE QUESTIONED.
 ROTATE WHAT MUST BE TESTED.
 STABILIZE BEFORE YOU FUNNEL.
 RECURSE.
+EXPAND WHAT THE BINDING MAKES POSSIBLE.
+TEST THE EXPANSION.
 BIND WHAT STILL HOLDS.
 ```
 
