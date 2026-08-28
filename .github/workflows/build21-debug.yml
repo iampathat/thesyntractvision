@@ -1,0 +1,26 @@
+name: BUILD 21 Genesis Debug
+
+on:
+  push:
+    branches:
+      - implementation/build-21
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install
+        run: python -m pip install -e '.[test]'
+      - name: Run example
+        run: |
+          rm -rf /tmp/qcds-build21-debug
+          python -m qcds_fabric.self_expanding_reality examples/self_expanding_reality_mvp.json --store /tmp/qcds-build21-debug
+          echo '--- candidates ---'
+          cat /tmp/qcds-build21-debug/logical_rule_candidates.csv || true
+          echo '--- active rules ---'
+          cat /tmp/qcds-build21-debug/logical_rules.csv || true
