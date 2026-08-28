@@ -1,6 +1,6 @@
 # QCDS Fabric implementation status
 
-This directory tree is a software implementation companion to the locked
+This code tree is a software implementation companion to the locked
 **QCDS Fabric v1.0 canonical specification**. It does not modify the canonical
 specification.
 
@@ -8,34 +8,47 @@ specification.
 **Reference implementation assistance:** OpenAI ChatGPT  
 **Software license:** MIT (repository license)
 
-## BUILD 0 scope
+## BUILD 0 — merged
 
-Implemented:
-
-- `BaseBundle`, `ChannelView`, `TruthDistribution`, `StabilizedReturn`, `Syntract` data structures;
-- strict logical distinction between `0`, wildcard `?`, and absent `∅`;
-- immutable/versioned `OracleStack` identity replicated to every comparable null view;
+- core data structures and provenance;
+- strict `0` / `?` / `∅` separation;
 - exact and mask oracle primitives;
-- bounded classical reference inference kernel with uncertainty-bearing distribution output;
-- explicit contradiction state when all candidates are rejected;
-- full Rotational Dimension Nulling bank (`B` views, one different absent dimension per view);
-- marginalization-based lifting of null views back to canonical coordinates;
-- first transparent distribution stabilizer with no automatic pruning;
-- canonical logical-space accounting (`D = G×B`, `E = G×Vd×Vp×Vo`).
+- versioned oracle stacks replicated per comparable channel;
+- bounded classical TruthDistribution kernel;
+- explicit contradiction state;
+- full Rotational Dimension Nulling bank;
+- transparent null-view stabilization with no automatic pruning;
+- canonical logical-space accounting.
 
-Not yet implemented:
+## BUILD 1 — rotation family and provenance
 
-- positional rotation;
-- oracle-exposure rotation;
-- crossed rotations;
+Adds the remaining architectural rotation surfaces without changing the
+locked v1.0 semantics:
+
+- positional rotation as explicit canonical-dimension → execution-slot maps;
+- inverse-safe canonical state semantics: position changes never rename facts;
+- oracle-exposure rotation as an ordering / exposure map over the same immutable oracle stack;
+- crossed null × position × oracle views;
+- strict fail-closed validation that a view uses the declared oracle-stack version and an exact permutation of that stack's oracle identities;
+- non-applicable oracles are excluded from scoring and agreement normalization when all of their constrained dimensions are absent from the view;
+- rotation-bank diagnostics expose entropy and oracle-agreement spread without claiming that spread is automatically bias;
+- provenance for every transformation axis.
+
+The unbiased classical reference kernel is intentionally invariant under
+pure positional and oracle-order rotations. A later benchmark layer will inject
+controlled slot/oracle bias to test whether these rotations detect it.
+
+## Not yet implemented
+
+- stabilization that jointly consumes positional/oracle/crossed banks;
 - recursive multi-layer funnel / higher-order binding;
 - expansion (`1 → N`);
-- QPU/statevector substrate adapters;
+- statevector/QPU substrate adapters;
 - empirical ablation harness and injected-bias benchmark suite;
-- production oracle governance and external validation boundaries.
+- production oracle governance and external-validation boundaries.
 
 ## Design rule
 
-BUILD 0 deliberately favors explicit provenance and falsifiability over hidden
-heuristics. No derived diagnostic view is counted as an independent dimension,
-and no disagreement is silently collapsed to a hard answer.
+Every BUILD keeps diagnostic views separate from independent logical
+dimensions, preserves uncertainty, and retains enough provenance to falsify the
+implementation against the canonical specification.
