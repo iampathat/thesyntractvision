@@ -1,0 +1,42 @@
+name: Live Logical Space V3
+on:
+  push:
+    branches: [test/logical-space-live-v3]
+jobs:
+  live-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install
+        run: python -m pip install -e '.[test]'
+      - name: Live run and falsification checks
+        run: |
+          rm -rf intelligence_store
+          qcds-logical-robot examples/first_logical_robot_mvp.json --store ./intelligence_store --max-cycles 6 | tee /tmp/run1.json
+          python - <<'PY'
+          import csv, json
+          from pathlib import Path
+          p=Path('intelligence_store/logical_space.csv')
+          rows=list(csv.DictReader(p.open(encoding='utf-8')))
+          triples=[]
+          for r in rows:
+              terms=tuple(json.loads(r['terms']))
+              triples.append((terms, r['excerpt'], r['source_id']))
+          assert any(set(t)=={'france','capital','paris'} and 'capital of france' in e.lower() for t,e,_ in triples), triples
+          assert not any(set(t)=={'france','capital','lyon'} for t,_,_ in triples), triples
+          assert any(set(t)=={'france','language','french'} for t,_,_ in triples), triples
+          assert not any(set(t)=={'france','capital','paris'} and 'magazine' in e.lower() for t,e,_ in triples), triples
+          print('LIVE_ASSERTIONS_OK', len(rows))
+          PY
+          qcds-logical-robot examples/first_logical_robot_mvp.json --store ./intelligence_store --max-cycles 6 | tee /tmp/run2.json
+          python - <<'PY'
+          import csv
+          from pathlib import Path
+          rows=list(csv.DictReader(Path('intelligence_store/logical_space.csv').open(encoding='utf-8')))
+          ids=[r['binding_id'] for r in rows]
+          assert len(ids)==len(set(ids))
+          print('RESTART_DEDUP_OK', len(rows))
+          PY
