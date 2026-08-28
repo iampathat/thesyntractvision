@@ -1,0 +1,57 @@
+{
+  "status": "PASS",
+  "date": "2026-08-28",
+  "package": "qcds-fabric 1.13.0",
+  "proof_run": 33210935010,
+  "proof_wrapper_commit": "b05db2d576ac6331301b24b130c96d5a794166f1",
+  "primary": {
+    "oracle_gaps": 1,
+    "rival_hypotheses": 12,
+    "planned_query": "ability",
+    "current_context": {"trait": "winged"},
+    "contrast_context": {"trait": "grounded"},
+    "current_context_independent_sources": 2,
+    "contrast_context_independent_sources": 1,
+    "robot_observations": 3,
+    "generated_challenge_cases": 3,
+    "selection_cases": 2,
+    "holdout_cases": 1,
+    "selected_rule": "winged => flies",
+    "knowledge_before": 0,
+    "knowledge_after": 2,
+    "knowledge_gain": 2,
+    "active_reality_rules": 1,
+    "manual_challenge_supplied": false,
+    "manual_expected_answer_supplied": false,
+    "robot_received_challenge_role": false,
+    "robot_received_expected_answer": false,
+    "robot_received_hypothesis_ids": false
+  },
+  "restart": {
+    "status": "already_resolved",
+    "evidence_plans": 0,
+    "robot_observations": 0,
+    "active_reality_rules": 1
+  },
+  "high_blast_control": {
+    "status": "quarantined",
+    "selected_rule": "winged => flies",
+    "changed_fraction": 0.5,
+    "active_reality_rules": 0
+  },
+  "conflict_control": {
+    "status": "conflicting_identifying_evidence",
+    "generated_challenge_cases": 0,
+    "active_reality_rules": 0
+  },
+  "missing_contrast_control": {
+    "status": "awaiting_identifying_evidence",
+    "generated_challenge_cases": 0,
+    "active_reality_rules": 0
+  },
+  "regression_suite": {
+    "passed": 303,
+    "failed": 0
+  },
+  "claim_boundary": "Bounded classical Python architectural proof; not automatic scientific truth discovery, AGI/ASI, quantum advantage or scaling proof."
+}
