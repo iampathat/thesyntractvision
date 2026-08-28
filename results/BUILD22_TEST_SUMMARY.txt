@@ -1,0 +1,7 @@
+BUILD 22 final branch verification
+head-before-this-note=4a241e6814bee71cbea42148794a79c5345794fb
+GitHub Actions run=33211137194
+result=SUCCESS
+pytest=303 passed, 0 failed
+separate proof run=33210935010
+proof=BUILD22_EVIDENCE_DISCOVERY_PROOF_OK
