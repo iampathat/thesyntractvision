@@ -19,6 +19,7 @@ from .first_logical_robot import (
     failure_observations_from_spec,
 )
 from .intelligence_store import CsvIntelligenceStore
+from .logical_assertion import find_logical_assertion, normalize_logic_text
 from .logical_robot import LogicalObservation, LogicalRobotRequest, LogicalRobotToolResult
 from .runtime import SuperintelligenceRuntime
 
@@ -28,65 +29,7 @@ class LogicalSpaceError(ValueError):
 
 
 def _normalize(value: str) -> str:
-    value = value.casefold().replace("_", " ").replace("’", "'")
-    value = re.sub(r"[^\w\s'./:-]+", " ", value)
-    return " ".join(value.split()).strip()
-
-
-def _word_tokens(value: str) -> tuple[str, ...]:
-    tokens: list[str] = []
-    for token in _normalize(value).split():
-        cleaned = token.strip("./:-")
-        if cleaned:
-            tokens.append(cleaned)
-    return tuple(tokens)
-
-
-def _phrase_occurrences(tokens: Sequence[str], phrase: str) -> tuple[tuple[int, int], ...]:
-    needle = _word_tokens(phrase)
-    if not needle or len(needle) > len(tokens):
-        return ()
-    width = len(needle)
-    return tuple(
-        (index, index + width - 1)
-        for index in range(len(tokens) - width + 1)
-        if tuple(tokens[index:index + width]) == needle
-    )
-
-
-def _minimum_binding_span_words(text: str, terms: Sequence[str]) -> int | None:
-    """Smallest word span containing every logical term at least once."""
-    tokens = _word_tokens(text)
-    tagged: list[tuple[int, int, int]] = []
-    for term_index, term in enumerate(terms):
-        occurrences = _phrase_occurrences(tokens, term)
-        if not occurrences:
-            return None
-        tagged.extend((start, end, term_index) for start, end in occurrences)
-    tagged.sort(key=lambda item: (item[0], item[1], item[2]))
-
-    needed = len(terms)
-    counts = [0] * needed
-    covered = 0
-    left = 0
-    best: int | None = None
-    for right, (_, _, term_index) in enumerate(tagged):
-        if counts[term_index] == 0:
-            covered += 1
-        counts[term_index] += 1
-        while covered == needed and left <= right:
-            window = tagged[left:right + 1]
-            start = min(item[0] for item in window)
-            end = max(item[1] for item in window)
-            span = end - start + 1
-            if best is None or span < best:
-                best = span
-            left_term = tagged[left][2]
-            counts[left_term] -= 1
-            if counts[left_term] == 0:
-                covered -= 1
-            left += 1
-    return best
+    return normalize_logic_text(value)
 
 
 def _sentences(text: str) -> tuple[str, ...]:
@@ -95,16 +38,6 @@ def _sentences(text: str) -> tuple[str, ...]:
         for chunk in re.split(r"(?<=[.!?])\s+|[\r\n]+", text)
         if chunk.strip()
     )
-
-
-def _logic_excerpt(text: str, terms: Sequence[str], radius: int = 220) -> str:
-    normalized = text.casefold()
-    indexes = [normalized.find(term.casefold()) for term in terms if term and normalized.find(term.casefold()) >= 0]
-    if not indexes:
-        return " ".join(text[: radius * 2].split())
-    start = max(0, min(indexes) - radius)
-    end = min(len(text), max(indexes) + max((len(term) for term in terms), default=0) + radius)
-    return " ".join(text[start:end].split())
 
 
 def _query_logic(request: LogicalRobotRequest) -> dict[str, tuple[str, str, tuple[str, ...]]]:
@@ -118,11 +51,19 @@ def _query_logic(request: LogicalRobotRequest) -> dict[str, tuple[str, str, tupl
 
     result: dict[str, tuple[str, str, tuple[str, ...]]] = {}
     for query_id in request.query_ids:
-        candidates = tuple(_normalize(value) for value in request.candidate_values.get(query_id, ()) if _normalize(value))
+        candidates = tuple(
+            _normalize(value)
+            for value in request.candidate_values.get(query_id, ())
+            if _normalize(value)
+        )
         if not candidates:
             continue
         candidate_set = set(candidates)
-        axes = {(subject, dimension) for subject, dimension, value in dimensions if value in candidate_set}
+        axes = {
+            (subject, dimension)
+            for subject, dimension, value in dimensions
+            if value in candidate_set
+        }
         if len(axes) == 1:
             subject, dimension = next(iter(axes))
             result[query_id] = (subject, dimension, candidates)
@@ -235,7 +176,12 @@ class CsvLogicalSpace:
                 "mission_id": binding.mission_id,
                 "observation_id": binding.observation_id,
                 "excerpt": binding.excerpt,
-                "provenance": json.dumps(dict(binding.provenance), ensure_ascii=False, sort_keys=True, separators=(",", ":")),
+                "provenance": json.dumps(
+                    dict(binding.provenance),
+                    ensure_ascii=False,
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ),
             })
             known.add(binding.binding_id)
             added += 1
@@ -252,7 +198,8 @@ class CsvLogicalSpace:
         if not wanted:
             return self.bindings()
         return tuple(
-            binding for binding in self.bindings()
+            binding
+            for binding in self.bindings()
             if wanted.issubset({_normalize(term) for term in binding.terms})
             and (polarity is None or binding.polarity is polarity)
         )
@@ -260,12 +207,12 @@ class CsvLogicalSpace:
 
 @dataclass(frozen=True)
 class LogicalSpaceExtractor:
-    """MVP logical extractor: bounded local binding, never page-level mention voting."""
+    """MVP logical extractor: explicit bounded assertions, never mention voting."""
 
     min_support_units: int = 1
     max_binding_span_words: int = 32
     max_confidence: float = 0.95
-    extractor_id: str = "logical_space_extractor_v1"
+    extractor_id: str = "logical_space_extractor_v2"
 
     def __post_init__(self) -> None:
         if self.min_support_units <= 0 or self.max_binding_span_words <= 0:
@@ -273,7 +220,11 @@ class LogicalSpaceExtractor:
         if not 0.5 <= self.max_confidence <= 1.0:
             raise ValueError("max_confidence must be in [0.5, 1.0]")
 
-    def extract(self, request: LogicalRobotRequest, documents: Sequence[WebDocument]) -> tuple[LogicalObservation, ...]:
+    def extract(
+        self,
+        request: LogicalRobotRequest,
+        documents: Sequence[WebDocument],
+    ) -> tuple[LogicalObservation, ...]:
         query_logic = _query_logic(request)
         observations: list[LogicalObservation] = []
         for document in documents:
@@ -281,16 +232,28 @@ class LogicalSpaceExtractor:
             for query_id, (subject, dimension, candidates) in query_logic.items():
                 for candidate in candidates:
                     terms = tuple(dict.fromkeys((subject, dimension, candidate)))
-                    supports: list[tuple[str, int]] = []
+                    supports: list[tuple[str, Any]] = []
                     for unit in units:
-                        span = _minimum_binding_span_words(unit, terms)
-                        if span is not None and span <= self.max_binding_span_words:
-                            supports.append((unit, span))
+                        support = find_logical_assertion(
+                            unit,
+                            subject=subject,
+                            dimension=dimension,
+                            candidate=candidate,
+                            max_span_words=self.max_binding_span_words,
+                        )
+                        if support is not None:
+                            supports.append((unit, support))
                     if len(supports) < self.min_support_units:
                         continue
-                    best_unit, best_span = min(supports, key=lambda item: item[1])
-                    compactness = 1.0 - min(1.0, max(0, best_span - len(terms)) / self.max_binding_span_words)
-                    confidence = min(self.max_confidence, 0.78 + 0.12 * compactness + 0.03 * min(len(supports), 2))
+                    best_unit, best = min(supports, key=lambda item: item[1].span_words)
+                    compactness = 1.0 - min(
+                        1.0,
+                        max(0, best.span_words - len(terms)) / self.max_binding_span_words,
+                    )
+                    confidence = min(
+                        self.max_confidence,
+                        0.80 + 0.10 * compactness + 0.03 * min(len(supports), 2),
+                    )
                     digest = hashlib.sha256(
                         f"{request.evidence_action_id}|{query_id}|{document.reference.url}|{'|'.join(terms)}".encode()
                     ).hexdigest()[:16]
@@ -303,15 +266,17 @@ class LogicalSpaceExtractor:
                         confidence=confidence,
                         polarity=True,
                         uri=document.reference.url,
-                        excerpt=_logic_excerpt(best_unit, terms),
+                        excerpt=best_unit[:600],
                         provenance={
                             "extractor": self.extractor_id,
                             "logical_terms": terms,
                             "support_unit_count": len(supports),
-                            "best_binding_span_words": best_span,
+                            "best_binding_span_words": best.span_words,
+                            "assertion_pattern": best.pattern,
                             "max_binding_span_words": self.max_binding_span_words,
-                            "binding_scope": "bounded_local_text",
+                            "binding_scope": "bounded_logical_assertion",
                             "page_level_mention_voting": False,
+                            "mere_cooccurrence_accepted": False,
                             "target_visible_to_extractor": False,
                             "holdout_visible_to_extractor": False,
                             "source_is_external_truth_claim": False,
@@ -323,10 +288,10 @@ class LogicalSpaceExtractor:
 
 @dataclass
 class LogicalSpaceWebRobotTool(PublicWebLogicalRobotTool):
-    """Public web body using logical binding rather than mention-frequency voting."""
+    """Public web body using logical assertions rather than mention-frequency voting."""
 
     extractor: LogicalSpaceExtractor = field(default_factory=LogicalSpaceExtractor)
-    tool_id: str = "public_web_logical_space_robot_v1"
+    tool_id: str = "public_web_logical_space_robot_v2"
 
     def _search(self, request: LogicalRobotRequest):
         refs = self.search_backend.search(_logical_search_query(request), limit=self.search_limit)
