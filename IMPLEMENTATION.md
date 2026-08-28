@@ -127,6 +127,40 @@ preserving every earlier BUILD underneath it:
 
 See `LOGICAL_ROBOT.md`.
 
+## BUILD 15 — persistent superintelligence runtime
+
+Adds the first restartable MVP shell around BUILD 0–14 without moving reasoning
+into the robot body:
+
+- `SuperintelligenceRuntime` exposes a small callable boundary: create/load a
+  mission, `step(...)`, `observe(...)`, inspect state and optionally run one
+  logical-robot observation round;
+- `CsvIntelligenceStore` is the first `IntelligenceStore` implementation and uses
+  one ordinary directory per mission;
+- `current_oracles.csv` is the active evolvable oracle snapshot with flat columns
+  for rule topology, confidence, source and persistent stack identity;
+- `oracle_history.csv` is append-only lineage for initialization, promoted
+  genesis, mutation and retirement events;
+- `mission.csv` reconstructs the BUILD 10 semantic problem frame;
+- `evidence.csv` preserves source-attributed acquired evidence;
+- `checkpoints.csv` preserves BUILD 13 cycle/status history;
+- active oracle state is never persisted with pickle and unsupported evolvable
+  oracle types fail closed rather than being hidden in an opaque Python blob;
+- restart reconstructs normal fixed evidence/logic oracles from the mission frame
+  and re-injects the persisted evolvable rule population;
+- persistent runtime oracle versions extend across successful promotion cycles
+  and do not reset merely because a new Python runtime object is created;
+- a logical robot can call `step(...)`, execute the returned EvidencePlan through
+  BUILD 14 tools, then call `observe(...)` without knowing Fabric/genesis/store
+  internals;
+- `run_logical_robot_once(...)` is only a convenience MVP proving the same
+  boundary end-to-end; it is not a new reasoning core;
+- CSV is explicitly an inspectable MVP backend, not the intended high-performance
+  future representation of oracle logic;
+- canon remains unchanged.
+
+See `PERSISTENT_RUNTIME.md`.
+
 ## Not yet implemented
 
 - unrestricted general natural-language semantic understanding;
@@ -135,6 +169,8 @@ See `LOGICAL_ROBOT.md`.
   hypotheses until supported by appropriate external validation;
 - complete temporal-logic calculus or automatic event extraction;
 - production web/browser/API/database provider adapters for the logical robot;
+- network/service transport around the callable superintelligence runtime;
+- high-performance or hardware-near oracle persistence/execution backend;
 - calibrated autonomous source-trust evolution;
 - physical robot runtime / sensor-actuator body;
 - domain-specific optimal experimental design with real-world cost/risk models;
@@ -149,6 +185,7 @@ See `LOGICAL_ROBOT.md`.
 Every BUILD preserves uncertainty and enough provenance to falsify the
 implementation. Convergence, a high peak, semantic confidence, an expansion
 branch, an ontology mapping, a language-model parse, a discovered oracle gap, a
-promoted oracle, a proposed experiment or a logical-robot observation is not
-automatically external truth. A temporary lack of progress is not automatically
-terminal either. The canonical v1.0 artifacts remain locked.
+promoted oracle, a proposed experiment, a logical-robot observation or a
+persisted oracle row is not automatically external truth. A temporary lack of
+progress is not automatically terminal either. The canonical v1.0 artifacts
+remain locked.

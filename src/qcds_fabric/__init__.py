@@ -38,6 +38,9 @@ from .grover_depth import (
     GroverDepthTrial, expected_normalized_oracle_score, ideal_binary_grover_m_star,
     run_grover_depth_benchmark, select_grover_depth,
 )
+from .intelligence_store import (
+    CsvIntelligenceStore, IntelligenceStore, IntelligenceStoreError, StoredMissionState,
+)
 from .kernel import ClassicalInferenceKernel
 from .logical_robot import (
     LOGICAL_CAPABILITIES, LogicalObservation, LogicalRobotAttempt,
@@ -74,6 +77,7 @@ from .problem import (
 )
 from .reentry import ReentryCompilation, ReentryResult, baseline_reentry_distribution, compile_bound_condition, run_bound_condition_reentry
 from .rotations import circular_oracle_maps, circular_position_maps, crossed_views, oracle_exposure_views, positional_views
+from .runtime import RuntimeRobotResult, RuntimeStepResult, SuperintelligenceRuntime, SuperintelligenceRuntimeError
 from .semantic import (
     CandidateProbability, EvidenceOracle, HumanProblemResult, OneHotOracle,
     SemanticAnalyzer, SemanticClaim, SemanticCompilation, SemanticCompileError,
@@ -131,6 +135,9 @@ __all__ = [
     "LogicalRobotTool", "LogicalRobotAttempt", "LogicalRobotRunResult",
     "LogicalRobotCycleResult", "capability_sequence", "observation_to_evidence",
     "execute_logical_robot_plans", "run_logical_robot_cycle",
+    "IntelligenceStoreError", "IntelligenceStore", "CsvIntelligenceStore",
+    "StoredMissionState", "SuperintelligenceRuntimeError", "RuntimeStepResult",
+    "RuntimeRobotResult", "SuperintelligenceRuntime",
     "DistributionStabilizer", "FabricLayer", "NullBankResult", "RotationBankResult",
     "StabilizedRotationSuiteResult", "BoundCondition", "FunnelLayerResult",
     "FunnelTrace", "funnel_step", "recursive_contraction_funnel",
