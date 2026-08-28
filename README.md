@@ -5,7 +5,7 @@
 **Author and originator:** Patrik Sundblom  
 **Project:** The Syntract Vision / QCDS / Syntract  
 **Canonical architecture release:** **QCDS Fabric v1.0**  
-**Reference implementation:** **BUILD 4 / package 0.5.0**  
+**Reference implementation:** **BUILD 5 / package 0.6.0**  
 **Theory and specification:** CC BY 4.0  
 **Software:** MIT  
 **Repository:** https://github.com/iampathat/thesyntractvision
@@ -49,7 +49,12 @@ REPEAT
 SYNTRACT
 ```
 
-**BUILD 4 now automates that bounded recursive loop.** It can run multiple local bundles, stabilize them, contract them through a funnel, compile the bound distributions back into a higher-order Condition space, run QCDS Fabric again, compare successive TruthDistributions, repeat until a configured stability condition is met or a cycle limit is reached, and return an auditable `Syntract` plus full trace.
+**BUILD 4 automated that bounded recursive loop. BUILD 5 now attacks it.**
+The benchmark layer can run matched ablations, inject known execution-slot and
+oracle-exposure faults, probe contradictions dimension by dimension, and perform
+oracle leave-one-out analysis against an explicit synthetic external reference.
+It is intentionally allowed to report that an ablation beats the full Fabric.
+The purpose is falsification, not a favorable score.
 
 Convergence is treated as **internal distribution stability**, not as automatic external truth. External validation, evidence, experiment, safety constraints and real outcomes remain separate requirements in the canonical architecture.
 
@@ -62,9 +67,11 @@ Convergence is treated as **internal distribution stability**, not as automatic 
 - `src/qcds_fabric/stabilize.py` — null and multi-family stabilization.
 - `src/qcds_fabric/funnel.py` — provenance-preserving serial contraction.
 - `src/qcds_fabric/reentry.py` — higher-order distribution-oracle re-entry.
-- `src/qcds_fabric/engine.py` — BUILD 4 recursive execution and convergence trace.
+- `src/qcds_fabric/engine.py` — recursive execution and convergence trace.
+- `src/qcds_fabric/benchmark.py` — BUILD 5 ablations, fault injection and falsification metrics.
 - `tests/` — falsification-oriented regression tests for each BUILD.
 - `IMPLEMENTATION.md` — concise BUILD-by-BUILD implementation status.
+- `BENCHMARKS.md` — BUILD 5 benchmark semantics and interpretation rules.
 
 ### Run the implementation tests
 
@@ -300,6 +307,8 @@ The architecture is intended for problems in which the difficult part is not mer
 # Falsifiability
 
 QCDS Fabric v1.0 is intended to be experimentally challenged. A serious implementation should compare full QCDS against matched ablations: no rotational diagnostics, no nulling, fixed position, fixed oracle exposure, flat composition, no recursive funnel, alternative stabilization/binding policies, and comparable classical/quantum substrates.
+
+**BUILD 5 begins that program in code.** See [`BENCHMARKS.md`](BENCHMARKS.md). The current harness includes matched local diagnostic ablations, explicit external synthetic targets, known slot/order fault injection, dimension-null contradiction probes and oracle leave-one-out tests. A result is allowed to falsify a proposed benefit; the full Fabric is not declared the winner in advance.
 
 Useful observables include probability distribution, normalized lift, entropy, agreement, Top-K stability/Jaccard, orientation sensitivity, oracle sensitivity, cross-rotation agreement, contradiction response and Syntract stability.
 
