@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
+from .logical_assertion import normalize_logic_text
 from .logical_space import LogicalBinding
 from .logical_transform import LogicalSpaceResolver, LogicalTransformRule
 from .logical_universe import (
@@ -39,6 +40,16 @@ def _tuple_of_strings(value: Any, label: str) -> tuple[str, ...]:
     if not resolved:
         raise LogicalUniverseRunnerError(f"{label} must contain at least one term")
     return resolved
+
+
+def _normalized_terms(values: Sequence[str]) -> tuple[str, ...]:
+    return tuple(
+        dict.fromkeys(
+            normalize_logic_text(value)
+            for value in values
+            if normalize_logic_text(value)
+        )
+    )
 
 
 @dataclass(frozen=True)
@@ -201,8 +212,8 @@ class LogicalUniverseMvpRunner:
         current = self.universes.rules(universe.universe_id).get(rule_id)
         if operation == "install" and current is not None:
             same = (
-                tuple(current.match_terms) == tuple(rule.match_terms)
-                and tuple(current.emit_terms) == tuple(rule.emit_terms)
+                _normalized_terms(current.match_terms) == _normalized_terms(rule.match_terms)
+                and _normalized_terms(current.emit_terms) == _normalized_terms(rule.emit_terms)
                 and current.source_id == rule.source_id
                 and current.status == "active"
             )
