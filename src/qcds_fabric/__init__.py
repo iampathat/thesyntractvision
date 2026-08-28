@@ -5,6 +5,16 @@ software implementation and does not modify the locked QCDS Fabric v1.0 spec.
 """
 
 from .accounting import LogicalSpaceAccounting, logical_space_accounting
+from .engine import (
+    ConvergenceConfig,
+    ConvergenceSnapshot,
+    RecursiveCycleTrace,
+    RecursiveFabricEngine,
+    RecursiveFabricResult,
+    RecursiveFabricTrace,
+    automatic_contraction_widths,
+    compare_truth_distributions,
+)
 from .fabric import FabricLayer, NullBankResult, RotationBankResult, StabilizedRotationSuiteResult
 from .funnel import BoundCondition, FunnelLayerResult, FunnelTrace, funnel_step, recursive_contraction_funnel
 from .kernel import ClassicalInferenceKernel
@@ -40,6 +50,14 @@ __all__ = [
     "compile_bound_condition",
     "run_bound_condition_reentry",
     "baseline_reentry_distribution",
+    "ConvergenceConfig",
+    "ConvergenceSnapshot",
+    "RecursiveCycleTrace",
+    "RecursiveFabricTrace",
+    "RecursiveFabricResult",
+    "RecursiveFabricEngine",
+    "automatic_contraction_widths",
+    "compare_truth_distributions",
     "LogicalSpaceAccounting",
     "logical_space_accounting",
     "circular_position_maps",
