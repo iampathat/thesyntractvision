@@ -1,115 +1,83 @@
 # QCDS Fabric implementation status
 
-This code tree is a software implementation companion to the locked
-**QCDS Fabric v1.0 canonical specification**. It does not modify the canonical
+This code tree is a software implementation companion to the locked **QCDS
+Fabric v1.0 canonical specification**. It does not modify the canonical
 specification.
 
 **Architecture / theory:** Patrik Sundblom  
 **Reference implementation assistance:** OpenAI ChatGPT  
-**Software license:** MIT (repository license)
+**Software license:** MIT
 
-## BUILD 0 — merged
+## BUILD 0–4 — core and recursive machine
 
-Core data structures, strict `0` / `?` / `∅` separation, exact/mask oracles,
-versioned oracle stacks, bounded classical TruthDistribution inference,
-explicit contradiction state, full dimension-null bank, transparent null
-stabilization, and canonical logical-space accounting.
+- BUILD 0: core models, strict `0/?/∅`, oracle stack, null bank and distribution output.
+- BUILD 1: positional, oracle-exposure and crossed rotations with provenance.
+- BUILD 2: family-aware stabilization and provenance-preserving serial contraction.
+- BUILD 3: DistributionOracle re-entry without hard collapse.
+- BUILD 4: bounded recursive orchestration, convergence trace and Syntract binding.
 
-## BUILD 1 — merged
+## BUILD 5 — falsification
 
-Positional rotation, oracle-exposure rotation, crossed rotations, canonical
-position mapping, fail-closed oracle-stack validation, absence-aware oracle
-normalization, rotation diagnostics, and full transformation provenance.
+Matched ablations, explicit external targets, injected slot/oracle bias,
+contradiction probes and oracle leave-one-out. The full Fabric is not declared
+the winner in advance. See `BENCHMARKS.md`.
 
-## BUILD 2 — merged
+## BUILD 6 — substrate separation
 
-Family-aware stabilization across null/position/oracle/crossed views with
-explicit equal-family weighting, plus a provenance-preserving serial contraction
-funnel that binds stabilized returns without hard collapse.
+Explicit `InferenceSubstrate`, classical reference path, bounded complex
+statevector/Grover simulator and matched cross-substrate benchmarking. See
+`SUBSTRATES.md`.
 
-## BUILD 3 — merged
+## BUILD 7 — adaptive Grover depth
 
-Bounded recursive re-entry. `DistributionOracle` carries a full
-uncertainty-bearing TruthDistribution into a later Condition space, logical
-`∅` is handled by marginalization, bound leaves are namespaced, and the normal
-Fabric path can execute again without inventing a binary label for the prior
-result.
-
-## BUILD 4 — merged
-
-Automated bounded orchestration of local Fabric passes, stabilization,
-contraction funnel, distribution-oracle re-entry, vector convergence
-diagnostics, repeated cycles, full trace and final Syntract binding.
-Convergence remains an internal stability observation, not an external truth
-claim.
-
-## BUILD 5 — merged
-
-Falsification / benchmark harness with matched architecture ablations, explicit
-external synthetic targets, L1/KL and stability metrics, injected slot/oracle
-bias, contradiction probes and oracle leave-one-out analysis. The full Fabric is
-not declared the winner in advance.
-
-See `BENCHMARKS.md`.
-
-## BUILD 6 — merged
-
-Explicit `InferenceSubstrate` separation, existing classical reference path,
-bounded complex statevector/Grover simulator, simulator state guard and matched
-cross-substrate benchmarking with no native-QPU or quantum-advantage claim.
-
-See `SUBSTRATES.md`.
-
-## BUILD 7 — merged
-
-Bounded view-local empirical `m/m*` calibration for the statevector/Grover path,
-including explicit `m=0`, first-local-maximum selection, overshoot detection,
-per-view depth provenance and fixed-vs-adaptive benchmarking without leaking the
-external target into depth selection.
-
-See `GROVER_DEPTH.md`.
+View-local empirical `m/m*`, explicit `m=0`, first-local-maximum selection,
+overshoot detection and fixed-vs-adaptive falsification without leaking the
+external target into depth selection. See `GROVER_DEPTH.md`.
 
 ## BUILD 8 — expansion (`1 → N`)
 
-Adds the opposite inference direction without hard-collapsing the bound source:
+A bound Syntract remains a full DistributionOracle while explicit new dimensions
+open a larger Condition space. Proposal/test oracles rank compatible branches;
+validation can contract them into a new bound Syntract. Implements the bounded
+`BIND → EXPAND → TEST → CONTRACT → BIND` cycle. See `EXPANSION.md`.
 
-- one bound Syntract is compiled as a `DistributionOracle` rather than a forced
-  binary state;
-- explicit expansion dimensions are opened as `?` alongside the bound source;
-- proposal/test oracles constrain the expanded Condition space;
-- both baseline and stabilized joint distributions are marginalized onto the
-  new expansion dimensions, yielding explicit compatible branch distributions;
-- contradictions remain visible in the projected expansion result;
-- expansion is substrate-neutral because it runs through the normal
-  `FabricLayer`;
-- a tested expansion can be contracted again through a distribution-oracle
-  prior plus validation oracles and bound into a new Syntract;
-- `run_expansion_cycle(...)` implements the bounded reference path
-  `BIND → EXPAND → TEST → CONTRACT → BIND`;
-- total logical width is explicitly bounded and dimension collisions fail
-  closed;
-- the implementation does **not** hide an unrestricted hypothesis generator or
-  semantic compiler inside the Fabric core.
+## BUILD 9 — semantic ingress / human-to-logic
 
-See `EXPANSION.md`.
+Adds the model-independent bridge from human semantics to the existing Fabric:
+
+- `SemanticFrame` is the frontend-neutral contract for a bounded query, claims,
+  candidates, source confidence, polarity, unresolved text and analyzer provenance;
+- `ControlledEnglishAnalyzer` proves raw-text ingress with a deliberately small
+  deterministic grammar;
+- unknown language is retained as `unresolved` and missing logic fails closed;
+- categorical alternatives become explicit binary dimensions with a one-hot
+  logic oracle when appropriate;
+- source claims become soft `EvidenceOracle` constraints rather than hidden
+  hard labels;
+- conflicting positive source claims create explicit semantic disagreement markers;
+- both baseline and stabilized candidate projections remain available so a
+  diagnostic-induced ranking change cannot be hidden;
+- results bind into a normal uncertainty-bearing Syntract with full semantic and
+  unresolved provenance;
+- the resulting Syntract can feed BUILD 8 expansion directly;
+- an external LLM or other parser may later emit SemanticFrame objects without
+  becoming part of the QCDS inference kernel.
+
+See `SEMANTIC_INGRESS.md`.
 
 ## Not yet implemented
 
-- native QPU adapter / hardware execution;
+- unrestricted general natural-language semantic understanding;
+- broad ontology/entity/relation induction across arbitrary domains;
+- autonomous external evidence acquisition and calibrated source trust;
 - production oracle governance and external-validation boundaries;
-- domain-level semantic compiler from unrestricted human problems into
-  Conditions/oracles/expansion dimensions;
+- native QPU adapter / hardware execution;
 - larger public benchmark corpora and statistically powered experiment runner;
 - noise-aware calibration against real quantum hardware.
 
 ## Design rule
 
-Every BUILD keeps diagnostic views separate from independent logical
-dimensions, preserves uncertainty, and retains enough provenance to falsify the
-implementation against the canonical specification.
-
-A convergence signal is an internal stability observation, not by itself a
-claim of external truth. A statevector simulation is not evidence of quantum
-advantage. An internally selected Grover depth is not evidence that the selected
-state is externally true. Expansion branches are candidate consequences or
-mechanisms under stated Conditions/oracles; they are not automatically facts.
+Every BUILD preserves uncertainty and enough provenance to falsify the
+implementation. Convergence, a high peak, semantic confidence, an expansion
+branch, or a language-model parse is not automatically external truth. The
+canonical v1.0 artifacts remain locked.
