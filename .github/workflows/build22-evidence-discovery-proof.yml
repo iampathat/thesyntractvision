@@ -1,0 +1,121 @@
+name: BUILD 22 Evidence Discovery Proof
+
+on:
+  push:
+    branches:
+      - test/build22-evidence-discovery-proof
+
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install
+        run: python -m pip install -e '.[test]'
+      - name: Run evidence-driven closed-loop proof
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/qcds-build22-proof /tmp/qcds-build22-high-blast /tmp/qcds-build22-conflict /tmp/qcds-build22-missing
+          qcds-reality-discovery examples/evidence_driven_reality_mvp.json --store /tmp/qcds-build22-proof > /tmp/build22-run1.json
+          qcds-reality-discovery examples/evidence_driven_reality_mvp.json --store /tmp/qcds-build22-proof > /tmp/build22-run2.json
+          python - <<'PY'
+          import csv
+          import json
+          from copy import deepcopy
+          from pathlib import Path
+          from qcds_fabric.evidence_driven_reality import run_evidence_driven_reality_spec
+
+          r1 = json.loads(Path('/tmp/build22-run1.json').read_text())
+          r2 = json.loads(Path('/tmp/build22-run2.json').read_text())
+          spec = json.loads(Path('examples/evidence_driven_reality_mvp.json').read_text())
+
+          assert r1['status'] == 'expanded'
+          assert r1['oracle_gap_count'] == 1
+          assert r1['rival_hypothesis_count'] == 12
+          assert r1['evidence_plan_count'] == 2
+          assert r1['planned_query_ids'] == ['ability']
+          assert r1['planned_contexts'][0]['context_assignments'] == {'trait': 'winged'}
+          assert r1['planned_contexts'][0]['purpose'] == 'selection'
+          assert r1['planned_contexts'][1]['context_assignments'] == {'trait': 'grounded'}
+          assert r1['planned_contexts'][1]['purpose'] == 'holdout'
+          assert r1['robot_observation_count'] == 3
+          assert r1['challenge_case_count'] == 3
+          assert r1['selection_case_count'] == 2
+          assert r1['holdout_case_count'] == 1
+          reality = r1['reality_result']
+          assert reality['status'] == 'expanded'
+          assert reality['before_probe_count'] == 0
+          assert reality['after_probe_count'] == 2
+          assert reality['knowledge_gain'] == 2
+          assert reality['oracle_promoted_count'] == 1
+          outcome = reality['governed_rule_outcomes'][0]
+          assert outcome['antecedent']['value'] == 'winged'
+          assert outcome['consequent']['value'] == 'flies'
+          assert outcome['status'] == 'promoted_to_reality'
+          assert outcome['blast_override'] is False
+
+          assert r2['status'] == 'already_resolved'
+          assert r2['evidence_plan_count'] == 0
+          assert r2['robot_status'] == 'not_run'
+          assert r2['robot_observation_count'] == 0
+          assert r2['active_reality_rule_count'] == 1
+
+          high = deepcopy(spec)
+          high['mission_id'] = 'build22-high-blast-proof'
+          high['reality_bindings'] = [
+              {'binding_id': f'winged-{i}', 'terms': [f'creature-winged-{i}', 'winged'], 'source_id': f'proof:winged:{i}'}
+              for i in range(4)
+          ] + [
+              {'binding_id': f'grounded-{i}', 'terms': [f'creature-grounded-{i}', 'grounded'], 'source_id': f'proof:grounded:{i}'}
+              for i in range(4)
+          ]
+          high_result = run_evidence_driven_reality_spec(high, store_root='/tmp/qcds-build22-high-blast').as_dict()
+          assert high_result['status'] == 'quarantined'
+          assert high_result['reality_result']['oracle_promoted_count'] == 1
+          assert high_result['active_reality_rule_count'] == 0
+          high_outcome = high_result['reality_result']['governed_rule_outcomes'][0]
+          assert high_outcome['antecedent']['value'] == 'winged'
+          assert high_outcome['consequent']['value'] == 'flies'
+          assert high_outcome['changed_fraction'] == 0.5
+
+          conflict = deepcopy(spec)
+          conflict['mission_id'] = 'build22-conflict-proof'
+          conflict['observation_pool'][1]['observed_value'] = 'walks'
+          conflict_result = run_evidence_driven_reality_spec(conflict, store_root='/tmp/qcds-build22-conflict').as_dict()
+          assert conflict_result['status'] == 'conflicting_identifying_evidence'
+          assert conflict_result['challenge_case_count'] == 0
+          assert conflict_result['reality_result'] is None
+          assert conflict_result['active_reality_rule_count'] == 0
+
+          missing = deepcopy(spec)
+          missing['mission_id'] = 'build22-missing-proof'
+          missing['observation_pool'] = missing['observation_pool'][:2]
+          missing_result = run_evidence_driven_reality_spec(missing, store_root='/tmp/qcds-build22-missing').as_dict()
+          assert missing_result['status'] == 'awaiting_identifying_evidence'
+          assert missing_result['challenge_case_count'] == 0
+          assert missing_result['active_reality_rule_count'] == 0
+
+          with Path('/tmp/qcds-build22-proof/logical_rules.csv').open(encoding='utf-8', newline='') as handle:
+              rules = list(csv.DictReader(handle))
+          assert len(rules) == 1
+          assert json.loads(rules[0]['match_terms']) == ['winged']
+          assert json.loads(rules[0]['emit_terms']) == ['flies']
+
+          print('BUILD22_EVIDENCE_DISCOVERY_PROOF_OK')
+          print('rival_hypotheses=', r1['rival_hypothesis_count'])
+          print('planned_current_context=', r1['planned_contexts'][0]['context_assignments'])
+          print('planned_contrast_context=', r1['planned_contexts'][1]['context_assignments'])
+          print('robot_observations=', r1['robot_observation_count'])
+          print('generated_challenge_cases=', r1['challenge_case_count'])
+          print('generated_rule=', outcome['antecedent']['value'], '=>', outcome['consequent']['value'])
+          print('knowledge_before=', reality['before_probe_count'])
+          print('knowledge_after=', reality['after_probe_count'])
+          print('restart_status=', r2['status'])
+          print('high_blast_status=', high_result['status'])
+          print('conflict_status=', conflict_result['status'])
+          print('missing_evidence_status=', missing_result['status'])
+          PY
