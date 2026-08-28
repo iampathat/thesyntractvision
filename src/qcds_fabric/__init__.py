@@ -42,6 +42,14 @@ from .oracles import DistributionOracle, ExactOracle, MaskOracle, OracleStack
 from .reentry import ReentryCompilation, ReentryResult, baseline_reentry_distribution, compile_bound_condition, run_bound_condition_reentry
 from .rotations import circular_oracle_maps, circular_position_maps, crossed_views, oracle_exposure_views, positional_views
 from .stabilize import DistributionStabilizer
+from .substrate_benchmark import (
+    DEFAULT_SUBSTRATES,
+    SubstrateBenchmarkReport,
+    SubstrateBenchmarkResult,
+    SubstrateVariant,
+    run_substrate_benchmark,
+)
+from .substrates import InferenceSubstrate, StatevectorGroverSubstrate
 
 __all__ = [
     "BaseBundle",
@@ -53,7 +61,9 @@ __all__ = [
     "MaskOracle",
     "DistributionOracle",
     "OracleStack",
+    "InferenceSubstrate",
     "ClassicalInferenceKernel",
+    "StatevectorGroverSubstrate",
     "DistributionStabilizer",
     "FabricLayer",
     "NullBankResult",
@@ -94,6 +104,11 @@ __all__ = [
     "probe_contradictions",
     "rank_dimension_influence",
     "run_oracle_leave_one_out",
+    "SubstrateVariant",
+    "SubstrateBenchmarkResult",
+    "SubstrateBenchmarkReport",
+    "DEFAULT_SUBSTRATES",
+    "run_substrate_benchmark",
     "LogicalSpaceAccounting",
     "logical_space_accounting",
     "circular_position_maps",

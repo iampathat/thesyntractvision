@@ -43,10 +43,9 @@ vector convergence diagnostics, repeated cycles, full trace and final Syntract
 binding. Convergence remains an internal stability observation, not an external
 truth claim.
 
-## BUILD 5 — falsification / benchmark harness
+## BUILD 5 — merged
 
-Adds matched ablations and deliberate fault injection around the reference
-implementation:
+Falsification / benchmark harness:
 
 - matched `no_diagnostics`, `null_only`, `null_plus_position`,
   `null_plus_oracle`, and `full_diagnostics` variants;
@@ -61,17 +60,42 @@ implementation:
 
 See `BENCHMARKS.md`.
 
+## BUILD 6 — substrate interface + statevector/Grover reference
+
+Separates the local QCDS pass from the surrounding Fabric topology through an
+explicit `InferenceSubstrate` contract.
+
+Adds:
+
+- `ClassicalInferenceKernel` as the existing `classical` substrate;
+- bounded `StatevectorGroverSubstrate` with complex amplitudes, score-derived
+  phase marking and inversion-about-the-mean diffusion;
+- explicit fixed Grover iteration count and `max_states` simulator guard;
+- statevector contradiction behavior compatible with the existing
+  `TruthDistribution` contract;
+- Fabric-level substrate targeting so the same diagnostic bank can be executed
+  against different local substrates without changing logical identities;
+- matched substrate benchmarking under the same Conditions, oracle regime,
+  rotation topology, stabilizer and external target;
+- pairwise baseline/stabilized distribution divergence between substrates;
+- explicit provenance that the statevector implementation is a simulator and
+  makes no native-QPU or quantum-advantage claim.
+
+See `SUBSTRATES.md`.
+
 ## Not yet implemented
 
 - expansion (`1 → N`);
-- explicit statevector/Grover substrate adapter;
+- native QPU adapter / hardware execution;
 - production oracle governance and external-validation boundaries;
 - domain-level semantic compiler from unrestricted human problems into Conditions/oracles;
-- larger public benchmark corpora and statistically powered experiment runner.
+- larger public benchmark corpora and statistically powered experiment runner;
+- adaptive / empirically calibrated Grover-depth policy across heterogeneous views.
 
 ## Design rule
 
 Every BUILD keeps diagnostic views separate from independent logical
 dimensions, preserves uncertainty, and retains enough provenance to falsify the
 implementation against the canonical specification. A convergence signal is an
-internal stability observation, not by itself a claim of external truth.
+internal stability observation, not by itself a claim of external truth. A
+statevector simulation is not evidence of quantum advantage.

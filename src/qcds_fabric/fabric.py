@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Mapping, Sequence
 
 from .kernel import ClassicalInferenceKernel
@@ -8,6 +8,7 @@ from .models import BaseBundle, ChannelView, StabilizedReturn, TruthDistribution
 from .oracles import OracleStack
 from .rotations import crossed_views, oracle_exposure_views, positional_views
 from .stabilize import DistributionStabilizer
+from .substrates import InferenceSubstrate
 
 
 @dataclass(frozen=True)
@@ -37,8 +38,25 @@ class StabilizedRotationSuiteResult:
 
 @dataclass(frozen=True)
 class FabricLayer:
-    kernel: ClassicalInferenceKernel = ClassicalInferenceKernel()
+    kernel: InferenceSubstrate = ClassicalInferenceKernel()
     stabilizer: DistributionStabilizer = DistributionStabilizer()
+
+    @property
+    def substrate_id(self) -> str:
+        return self.kernel.substrate_id
+
+    def _view_for_substrate(self, view: ChannelView) -> ChannelView:
+        """Attach execution-target provenance without changing logical identity."""
+        if view.substrate_target == self.substrate_id:
+            return view
+        return replace(
+            view,
+            substrate_target=self.substrate_id,
+            transformation_provenance={
+                **dict(view.transformation_provenance),
+                "substrate_target": self.substrate_id,
+            },
+        )
 
     @staticmethod
     def _diagnostics(distributions: Sequence[TruthDistribution]) -> Mapping[str, float]:
@@ -59,7 +77,7 @@ class FabricLayer:
         views: Sequence[ChannelView],
         oracle_stack: OracleStack,
     ) -> RotationBankResult:
-        resolved = tuple(views)
+        resolved = tuple(self._view_for_substrate(view) for view in views)
         if not resolved:
             raise ValueError("rotation bank cannot be empty")
         distributions = tuple(self.kernel.run(view, oracle_stack) for view in resolved)
@@ -71,18 +89,22 @@ class FabricLayer:
         )
 
     def run_null_bank(self, bundle: BaseBundle, oracle_stack: OracleStack) -> NullBankResult:
-        baseline_view = ChannelView.baseline(
-            bundle,
-            oracle_stack_version=oracle_stack.identity,
-            oracle_ids=oracle_stack.oracle_ids,
+        baseline_view = self._view_for_substrate(
+            ChannelView.baseline(
+                bundle,
+                oracle_stack_version=oracle_stack.identity,
+                oracle_ids=oracle_stack.oracle_ids,
+            )
         )
         baseline_distribution = self.kernel.run(baseline_view, oracle_stack)
         null_views = tuple(
-            ChannelView.null_dimension(
-                bundle,
-                index,
-                oracle_stack_version=oracle_stack.identity,
-                oracle_ids=oracle_stack.oracle_ids,
+            self._view_for_substrate(
+                ChannelView.null_dimension(
+                    bundle,
+                    index,
+                    oracle_stack_version=oracle_stack.identity,
+                    oracle_ids=oracle_stack.oracle_ids,
+                )
             )
             for index in range(bundle.width)
         )
