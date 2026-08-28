@@ -34,7 +34,12 @@ def _normalize(value: str) -> str:
 
 
 def _word_tokens(value: str) -> tuple[str, ...]:
-    return tuple(_normalize(value).split())
+    tokens: list[str] = []
+    for token in _normalize(value).split():
+        cleaned = token.strip("./:-")
+        if cleaned:
+            tokens.append(cleaned)
+    return tuple(tokens)
 
 
 def _phrase_occurrences(tokens: Sequence[str], phrase: str) -> tuple[tuple[int, int], ...]:
@@ -52,26 +57,35 @@ def _phrase_occurrences(tokens: Sequence[str], phrase: str) -> tuple[tuple[int, 
 def _minimum_binding_span_words(text: str, terms: Sequence[str]) -> int | None:
     """Smallest word span containing every logical term at least once."""
     tokens = _word_tokens(text)
-    occurrences = tuple(_phrase_occurrences(tokens, term) for term in terms)
-    if not occurrences or any(not values for values in occurrences):
-        return None
-    best: int | None = None
+    tagged: list[tuple[int, int, int]] = []
+    for term_index, term in enumerate(terms):
+        occurrences = _phrase_occurrences(tokens, term)
+        if not occurrences:
+            return None
+        tagged.extend((start, end, term_index) for start, end in occurrences)
+    tagged.sort(key=lambda item: (item[0], item[1], item[2]))
 
-    def visit(index: int, chosen: list[tuple[int, int]]) -> None:
-        nonlocal best
-        if index == len(occurrences):
-            start = min(item[0] for item in chosen)
-            end = max(item[1] for item in chosen)
+    needed = len(terms)
+    counts = [0] * needed
+    covered = 0
+    left = 0
+    best: int | None = None
+    for right, (_, _, term_index) in enumerate(tagged):
+        if counts[term_index] == 0:
+            covered += 1
+        counts[term_index] += 1
+        while covered == needed and left <= right:
+            window = tagged[left:right + 1]
+            start = min(item[0] for item in window)
+            end = max(item[1] for item in window)
             span = end - start + 1
             if best is None or span < best:
                 best = span
-            return
-        for occurrence in occurrences[index]:
-            chosen.append(occurrence)
-            visit(index + 1, chosen)
-            chosen.pop()
-
-    visit(0, [])
+            left_term = tagged[left][2]
+            counts[left_term] -= 1
+            if counts[left_term] == 0:
+                covered -= 1
+            left += 1
     return best
 
 
