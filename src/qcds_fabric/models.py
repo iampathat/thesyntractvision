@@ -17,8 +17,8 @@ def _validate_condition(value: ConditionValue) -> None:
 class BaseBundle:
     """Bounded set of independent binary dimensions.
 
-    ``values`` represents present Conditions.  ``?`` is a present but
-    unconstrained dimension.  Logical absence (∅) is represented only by a
+    ``values`` represents present Conditions. ``?`` is a present but
+    unconstrained dimension. Logical absence (∅) is represented only by a
     ChannelView presence mask and is therefore structurally distinct.
     """
 
@@ -47,6 +47,13 @@ class BaseBundle:
 
 @dataclass(frozen=True)
 class ChannelView:
+    """One execution view of a canonical BaseBundle.
+
+    ``position_map[canonical_index]`` gives the execution slot occupied by that
+    canonical dimension. Candidate states remain in canonical coordinates so a
+    positional rotation can never silently rename a fact.
+    """
+
     base_bundle: BaseBundle
     present: tuple[bool, ...]
     null_dimension_id: str | None
@@ -63,7 +70,10 @@ class ChannelView:
         if len(self.position_map) != b:
             raise ValueError("position map width must match base bundle width")
         if sorted(self.position_map) != list(range(b)):
-            raise ValueError("position_map must be a permutation of canonical indices")
+            raise ValueError("position_map must be a permutation of execution slots")
+        if len(set(self.oracle_map)) != len(self.oracle_map):
+            raise ValueError("oracle_map cannot contain duplicate oracle identities")
+
         absent = [i for i, flag in enumerate(self.present) if not flag]
         if self.null_dimension_id is None:
             if absent:
@@ -76,15 +86,67 @@ class ChannelView:
                 raise ValueError("null_dimension_id must identify the absent dimension")
 
     @classmethod
-    def baseline(cls, bundle: BaseBundle, *, oracle_stack_version: str, oracle_ids: Sequence[str]) -> "ChannelView":
+    def transformed(
+        cls,
+        bundle: BaseBundle,
+        *,
+        oracle_stack_version: str,
+        oracle_ids: Sequence[str],
+        null_index: int | None = None,
+        position_map: Sequence[int] | None = None,
+        oracle_map: Sequence[str] | None = None,
+        substrate_target: str = "classical",
+        transformation_provenance: Mapping[str, Any] | None = None,
+    ) -> "ChannelView":
+        if null_index is not None and not 0 <= null_index < bundle.width:
+            raise IndexError(null_index)
+
+        present = [True] * bundle.width
+        null_dimension_id = None
+        if null_index is not None:
+            present[null_index] = False
+            null_dimension_id = bundle.dimension_ids[null_index]
+
+        canonical_positions = tuple(range(bundle.width))
+        resolved_position_map = tuple(position_map) if position_map is not None else canonical_positions
+        canonical_oracles = tuple(oracle_ids)
+        resolved_oracle_map = tuple(oracle_map) if oracle_map is not None else canonical_oracles
+
+        if transformation_provenance is None:
+            axes: list[str] = []
+            if null_index is not None:
+                axes.append("dimension_null")
+            if resolved_position_map != canonical_positions:
+                axes.append("position")
+            if resolved_oracle_map != canonical_oracles:
+                axes.append("oracle_exposure")
+            rotation = "none" if not axes else axes[0] if len(axes) == 1 else "crossed"
+            transformation_provenance = {
+                "rotation": rotation,
+                "axes": tuple(axes),
+                "null_index": null_index,
+                "position_map": resolved_position_map,
+                "oracle_map": resolved_oracle_map,
+            }
+
         return cls(
             base_bundle=bundle,
-            present=(True,) * bundle.width,
-            null_dimension_id=None,
-            position_map=tuple(range(bundle.width)),
-            oracle_map=tuple(oracle_ids),
+            present=tuple(present),
+            null_dimension_id=null_dimension_id,
+            position_map=resolved_position_map,
+            oracle_map=resolved_oracle_map,
             active_oracle_stack_version=oracle_stack_version,
-            transformation_provenance={"rotation": "none"},
+            substrate_target=substrate_target,
+            transformation_provenance=transformation_provenance,
+        )
+
+    @classmethod
+    def baseline(cls, bundle: BaseBundle, *, oracle_stack_version: str, oracle_ids: Sequence[str]) -> "ChannelView":
+        return cls.transformed(
+            bundle,
+            oracle_stack_version=oracle_stack_version,
+            oracle_ids=oracle_ids,
+            transformation_provenance={"rotation": "none", "axes": ()},
         )
 
     @classmethod
@@ -96,28 +158,40 @@ class ChannelView:
         oracle_stack_version: str,
         oracle_ids: Sequence[str],
     ) -> "ChannelView":
-        if not 0 <= index < bundle.width:
-            raise IndexError(index)
-        present = [True] * bundle.width
-        present[index] = False
-        return cls(
-            base_bundle=bundle,
-            present=tuple(present),
-            null_dimension_id=bundle.dimension_ids[index],
-            position_map=tuple(range(bundle.width)),
-            oracle_map=tuple(oracle_ids),
-            active_oracle_stack_version=oracle_stack_version,
-            transformation_provenance={"rotation": "dimension_null", "null_index": index},
+        return cls.transformed(
+            bundle,
+            oracle_stack_version=oracle_stack_version,
+            oracle_ids=oracle_ids,
+            null_index=index,
+            transformation_provenance={
+                "rotation": "dimension_null",
+                "axes": ("dimension_null",),
+                "null_index": index,
+                "position_map": tuple(range(bundle.width)),
+                "oracle_map": tuple(oracle_ids),
+            },
         )
 
     def active_dimension_ids(self) -> tuple[str, ...]:
         return tuple(d for d, flag in zip(self.base_bundle.dimension_ids, self.present) if flag)
 
+    def execution_slot_for_dimension(self, canonical_index: int) -> int:
+        if not 0 <= canonical_index < self.base_bundle.width:
+            raise IndexError(canonical_index)
+        return self.position_map[canonical_index]
+
+    def canonical_index_at_slot(self, execution_slot: int) -> int:
+        if not 0 <= execution_slot < self.base_bundle.width:
+            raise IndexError(execution_slot)
+        return self.position_map.index(execution_slot)
+
     def candidate_states(self) -> tuple[State, ...]:
         """Enumerate bounded classical states in canonical coordinates.
 
-        An absent dimension is encoded as -1 internally.  It is never exposed
-        as logical 0 or wildcard '?'.
+        An absent dimension is encoded as -1 internally. It is never exposed as
+        logical 0 or wildcard '?'. Positional rotation does not move this
+        sentinel because absence belongs to a canonical logical dimension, not
+        to a physical slot.
         """
         candidates: list[list[int]] = [[]]
         for value, is_present in zip(self.base_bundle.values, self.present):
