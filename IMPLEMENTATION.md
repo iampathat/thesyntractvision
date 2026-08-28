@@ -27,33 +27,59 @@ Family-aware stabilization across null/position/oracle/crossed views with
 explicit equal-family weighting, plus a provenance-preserving serial contraction
 funnel that binds stabilized returns without hard collapse.
 
-## BUILD 3 — recursive QCDS re-entry
+## BUILD 3 — merged
 
-Adds a bounded reference mechanism for feeding bound results back into a new
-Condition space:
+A bounded recursive re-entry bridge. `DistributionOracle` carries a full
+uncertainty-bearing TruthDistribution into a later Condition space, logical
+`∅` is handled by marginalization, bound leaves are namespaced, and the normal
+QCDS Fabric diagnostic/stabilization path can execute again without inventing a
+binary label for the prior result.
 
-- every `StabilizedReturn` now records its canonical dimension identities;
-- `DistributionOracle` represents an uncertainty-bearing truth distribution as a soft oracle/factor;
-- when one of that factor's dimensions is `∅`, the factor **marginalizes** over the absent binary dimension instead of interpreting absence as `0` or `?`;
-- a `BoundCondition` can be compiled into a new namespaced BaseBundle whose values reopen as `?` while its prior bound distributions become replicated per-channel DistributionOracles;
-- multiple bound leaf returns compose multiplicatively in the new bounded local space;
-- the compiled higher-order bundle can execute the normal QCDS Fabric null/stabilization path again;
-- a configurable `max_width` prevents accidental classical state-space explosion.
+## BUILD 4 — recursive execution engine
 
-This is the first actual re-entry bridge from a bound funnel structure back to
-an oracle-constrained local QCDS pass. It preserves previous uncertainty rather
-than replacing it with a guessed binary label.
+Adds automated bounded orchestration of the implemented Fabric topology:
+
+```text
+ingress bundles
+    ↓
+local QCDS Fabric passes
+    ↓
+stabilized returns
+    ↓
+serial contraction funnel
+    ↓
+bound higher-order condition
+    ↓
+distribution-oracle re-entry
+    ↓
+convergence diagnostics
+    ↺ repeat until stable or cycle limit
+    ↓
+Syntract
+```
+
+BUILD 4 includes:
+
+- automatic balanced funnel schedules, e.g. `8 → 4 → 2 → 1`;
+- repeated `infer → stabilize → funnel → re-enter` execution;
+- explicit maximum cycle and maximum re-entry width guards;
+- vector convergence diagnostics: L1 distribution distance, entropy delta,
+  Top-K Jaccard and peak-probability delta;
+- configurable minimum cycles and consecutive-stability patience;
+- full per-cycle `ReentryResult`, `BoundCondition`, provenance and contradiction trace;
+- final `Syntract` binding without treating numerical convergence as external truth.
 
 ## Not yet implemented
 
-- repeated automatic multi-layer `infer → stabilize → funnel → re-enter` orchestration;
 - expansion (`1 → N`);
 - explicit statevector/Grover substrate adapter;
 - injected-bias and ablation benchmark suite;
-- production oracle governance and external-validation boundaries.
+- production oracle governance and external-validation boundaries;
+- domain-level semantic compiler from unrestricted human problems into Conditions/oracles.
 
 ## Design rule
 
 Every BUILD keeps diagnostic views separate from independent logical
 dimensions, preserves uncertainty, and retains enough provenance to falsify the
-implementation against the canonical specification.
+implementation against the canonical specification. A convergence signal is an
+internal stability observation, not by itself a claim of external truth.
