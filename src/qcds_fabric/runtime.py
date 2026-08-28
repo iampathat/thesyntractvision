@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Sequence
+from typing import Sequence
 
 from .evidence_planning import (
     ContinuationPolicy,
@@ -12,7 +12,7 @@ from .evidence_planning import (
     run_evidence_planning_cycle,
 )
 from .fabric import FabricLayer
-from .intelligence_store import CsvIntelligenceStore, IntelligenceStoreError, StoredMissionState
+from .intelligence_store import CsvIntelligenceStore, StoredMissionState
 from .logical_robot import (
     LogicalRobotPolicy,
     LogicalRobotRunResult,
@@ -26,6 +26,7 @@ from .oracle_genesis import (
     OracleGenesisGenerator,
     PairwiseSemanticRuleGenesisGenerator,
 )
+from .oracles import OracleStack
 from .problem import ProblemCompilation, SemanticProblemFrame, compile_problem_frame
 
 
@@ -86,6 +87,22 @@ class SuperintelligenceRuntime:
     def state(self, mission_id: str) -> StoredMissionState:
         return self.store.state(mission_id)
 
+    @staticmethod
+    def _persistent_population(
+        previous: OracleStack,
+        cycle: EvidencePlanningCycleResult,
+        *,
+        cycle_index: int,
+    ) -> OracleStack:
+        evolution = cycle.genesis.evolution
+        if evolution is None or evolution.promotion_count == 0:
+            return previous
+        return OracleStack(
+            stack_id=previous.stack_id,
+            version=f"{previous.version}+c{cycle_index}.{evolution.promotion_count}",
+            oracles=tuple(evolution.final_stack.oracles),
+        )
+
     def step(
         self,
         mission_id: str,
@@ -100,6 +117,7 @@ class SuperintelligenceRuntime:
         explicit_terminal: bool = False,
     ) -> RuntimeStepResult:
         compilation = self.compilation(mission_id)
+        previous_population = self.store.load_oracle_population(mission_id)
         cycle_index = self.store.next_cycle_index(mission_id)
         cycle = run_evidence_planning_cycle(
             compilation,
@@ -114,9 +132,9 @@ class SuperintelligenceRuntime:
             cycle_index=cycle_index,
             explicit_terminal=explicit_terminal,
         )
-        evolution = cycle.genesis.evolution
-        population = evolution.final_stack if evolution is not None else cycle.genesis.initial_population
+        population = self._persistent_population(previous_population, cycle, cycle_index=cycle_index)
         self.store.save_oracle_population(mission_id, population, generation=cycle_index)
+        evolution = cycle.genesis.evolution
         if evolution is not None:
             self.store.append_lineage(mission_id, evolution.lineage, cycle_index=cycle_index)
         self.store.append_checkpoint(mission_id, cycle.checkpoint)
