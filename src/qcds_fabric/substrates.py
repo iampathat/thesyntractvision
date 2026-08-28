@@ -33,9 +33,12 @@ class StatevectorGroverSubstrate:
     inversion-about-the-mean diffusion. It is a simulator and makes no claim of
     native quantum speedup or query advantage.
 
+    ``iterations=0`` is the explicit unamplified statevector control. Positive
+    iteration counts perform that many mark+diffuse steps.
+
     ``phase_scale`` defaults to pi. Per-state phase is
     ``phase_scale * (oracle_score / max_oracle_score)`` within the current view.
-    That weighted phase policy is a BUILD 6 reference choice, not a new
+    That weighted phase policy is a reference implementation choice, not a new
     canonical QCDS Fabric rule.
     """
 
@@ -49,8 +52,8 @@ class StatevectorGroverSubstrate:
         return "statevector_grover_simulator"
 
     def __post_init__(self) -> None:
-        if self.iterations <= 0:
-            raise ValueError("iterations must be positive")
+        if self.iterations < 0:
+            raise ValueError("iterations must be non-negative")
         if self.top_k <= 0:
             raise ValueError("top_k must be positive")
         if self.phase_scale <= 0:
@@ -100,7 +103,11 @@ class StatevectorGroverSubstrate:
             if norm <= 0.0:
                 raise RuntimeError("statevector norm collapsed to zero")
             probabilities = tuple(value / norm for value in unnormalized)
-            normalization = "statevector_grover_probability"
+            normalization = (
+                "statevector_unamplified_control"
+                if self.iterations == 0
+                else "statevector_grover_probability"
+            )
 
         ordering = sorted(range(state_count), key=lambda i: probabilities[i], reverse=True)
         k = min(self.top_k, state_count)
