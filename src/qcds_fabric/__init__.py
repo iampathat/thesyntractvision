@@ -37,13 +37,12 @@ from .oracles import DistributionOracle, ExactOracle, MaskOracle, OracleStack
 from .reentry import ReentryCompilation, ReentryResult, baseline_reentry_distribution, compile_bound_condition, run_bound_condition_reentry
 from .rotations import circular_oracle_maps, circular_position_maps, crossed_views, oracle_exposure_views, positional_views
 from .semantic import (
-    CandidateProbability, ControlledEnglishAnalyzer, EvidenceOracle,
-    HumanProblemResult, OneHotOracle, SemanticAnalyzer, SemanticClaim,
-    SemanticCompilation, SemanticCompileError, SemanticFrame,
-    SemanticInferenceResult, SemanticQuery, bind_semantic_result,
-    compile_semantic_frame, human_to_logic, run_human_problem,
-    run_semantic_compilation,
+    CandidateProbability, EvidenceOracle, HumanProblemResult, OneHotOracle,
+    SemanticAnalyzer, SemanticClaim, SemanticCompilation, SemanticCompileError,
+    SemanticFrame, SemanticInferenceResult, SemanticQuery, bind_semantic_result,
+    compile_semantic_frame, run_semantic_compilation,
 )
+from .semantic_ingress import ControlledEnglishAnalyzer, human_to_logic, run_human_problem
 from .stabilize import DistributionStabilizer
 from .substrate_benchmark import (
     DEFAULT_SUBSTRATES, SubstrateBenchmarkReport, SubstrateBenchmarkResult,

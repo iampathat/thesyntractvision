@@ -53,6 +53,16 @@ def test_equal_witnesses_remain_tied_instead_of_fake_resolution():
     assert result.syntract.composition_provenance["hard_collapse"] is False
 
 
+def test_source_confidence_syntax_is_parsed_before_fabric_execution():
+    analyzer = ControlledEnglishAnalyzer()
+    frame = analyzer.analyze(
+        "Witness A [0.90] says the car was red. Witness B [0.60] says the car was blue. What color was the car?",
+        mission_id="confidence-parse",
+    )
+    assert [claim.source_id for claim in frame.claims] == ["Witness A", "Witness B"]
+    assert [claim.confidence for claim in frame.claims] == [0.90, 0.60]
+
+
 def test_source_confidence_changes_baseline_evidence_without_becoming_truth():
     text = (
         "Witness A [0.90] says the car was red. "
@@ -136,7 +146,8 @@ def test_semantic_oracle_regime_is_replicated_into_null_views():
     result = run_human_problem(WITNESS_CASE, mission_id="oracle-replication")
     expected = result.compilation.oracle_stack.identity
     assert result.inference.suite.baseline_view.active_oracle_stack_version == expected
-    assert all(view.active_oracle_stack_version == expected for view in result.inference.suite.null_bank.views)
+    null_views = result.inference.suite.families["dimension_null"].views
+    assert all(view.active_oracle_stack_version == expected for view in null_views)
 
 
 def test_structured_semantic_frame_is_model_independent_contract():
