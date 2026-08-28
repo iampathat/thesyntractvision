@@ -1,0 +1,23 @@
+BUILD22_EVIDENCE_DISCOVERY_PROOF_OK
+proof_run=33210935010
+package=qcds-fabric 1.13.0
+rival_hypotheses=12
+planned_current_context={'trait': 'winged'}
+planned_contrast_context={'trait': 'grounded'}
+robot_observations=3
+generated_challenge_cases=3
+selection_cases=2
+holdout_cases=1
+generated_rule=winged => flies
+knowledge_before=0
+knowledge_after=2
+restart_status=already_resolved
+high_blast_status=quarantined
+conflict_status=conflicting_identifying_evidence
+missing_evidence_status=awaiting_identifying_evidence
+manual_challenge_supplied=false
+manual_expected_answer_supplied=false
+robot_received_challenge_role=false
+robot_received_expected_answer=false
+robot_received_hypothesis_ids=false
+canonical_spec_modified=false
