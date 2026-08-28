@@ -39,6 +39,13 @@ from .grover_depth import (
     run_grover_depth_benchmark, select_grover_depth,
 )
 from .kernel import ClassicalInferenceKernel
+from .logical_robot import (
+    LOGICAL_CAPABILITIES, LogicalObservation, LogicalRobotAttempt,
+    LogicalRobotCycleResult, LogicalRobotError, LogicalRobotPolicy,
+    LogicalRobotRequest, LogicalRobotRunResult, LogicalRobotTool,
+    LogicalRobotToolResult, capability_sequence, execute_logical_robot_plans,
+    observation_to_evidence, run_logical_robot_cycle,
+)
 from .models import BaseBundle, ChannelView, StabilizedReturn, Syntract, TruthDistribution
 from .oracle_evolution import (
     OracleCaseEvaluation, OracleChallengeCase, OracleChallengeSuite,
@@ -119,6 +126,11 @@ __all__ = [
     "DisagreementEvidencePlanner", "ContinuationPolicy", "IntelligenceCheckpoint",
     "EvidenceAcquisitionResult", "EvidencePlanningCycleResult", "apply_evidence_results",
     "run_evidence_planning_cycle", "resume_evidence_planning_cycle",
+    "LOGICAL_CAPABILITIES", "LogicalRobotError", "LogicalRobotPolicy",
+    "LogicalRobotRequest", "LogicalObservation", "LogicalRobotToolResult",
+    "LogicalRobotTool", "LogicalRobotAttempt", "LogicalRobotRunResult",
+    "LogicalRobotCycleResult", "capability_sequence", "observation_to_evidence",
+    "execute_logical_robot_plans", "run_logical_robot_cycle",
     "DistributionStabilizer", "FabricLayer", "NullBankResult", "RotationBankResult",
     "StabilizedRotationSuiteResult", "BoundCondition", "FunnelLayerResult",
     "FunnelTrace", "funnel_step", "recursive_contraction_funnel",
