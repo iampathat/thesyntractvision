@@ -121,15 +121,45 @@ Adds a bounded self-evolution layer for oracle populations:
 
 See `ORACLE_EVOLUTION.md`.
 
+## BUILD 12 — oracle genesis / autonomous gap discovery
+
+Adds a target-blind discovery layer before BUILD 11:
+
+- `OracleFailureObservation` represents externally observed prediction or
+  expansion failure without carrying expected answers or target distributions;
+- `discover_oracle_gaps(...)` can combine those failures with internal
+  dimension-null contradiction resolution and null-influence diagnostics;
+- signals are grouped into auditable `OracleGap` objects containing affected
+  dimensions, bounded context dimensions, severity and source provenance;
+- `PairwiseSemanticRuleGenesisGenerator` generates a bounded rival field of new
+  cross-group `SemanticRuleOracle` hypotheses using explicit `implies`,
+  `excludes` and `equivalent` transforms;
+- the built-in genesis generator emits logical hypotheses rather than claiming
+  discovered causal truth, skips within-group rules and avoids exact semantic
+  duplicates already in the active population;
+- `DiscoveredGapProposalGenerator` bridges each target-blind gap into the BUILD
+  11 proposal/challenge interface without exposing holdout or external answers;
+- `run_oracle_genesis_cycle(...)` performs gap discovery → genesis → BUILD 11
+  challenge → promotion/rejection → population re-injection → normal Fabric
+  inference → Syntract binding;
+- if no gap exists the cycle stops; if no candidate survives challenge the
+  population is not changed merely to force evolution;
+- the same cycle can run on the classical or statevector/Grover substrate path;
+- canon remains outside the discovery/evolution boundary.
+
+See `ORACLE_GENESIS.md`.
+
 ## Not yet implemented
 
 - unrestricted general natural-language semantic understanding;
 - autonomous ontology discovery/induction across arbitrary domains;
-- autonomous causal discovery from raw observations (BUILD 11 can mutate and
-  challenge explicit rule hypotheses, but it does not prove causal truth from raw data);
+- broad causal discovery from raw observations: BUILD 12 can discover a missing
+  constraint location and generate explicit logical candidates, but challenge
+  survival is not proof of causality;
 - complete temporal-logic calculus or automatic event extraction;
 - autonomous external evidence acquisition and calibrated source trust;
 - production oracle governance, signed validation sources and deployment approval;
+- automatic experiment design/execution for acquiring new challenge evidence;
 - cross-domain large-scale oracle populations with statistically powered challenge corpora;
 - native QPU adapter / hardware execution;
 - larger public benchmark corpora and statistically powered experiment runner;
@@ -139,5 +169,6 @@ See `ORACLE_EVOLUTION.md`.
 
 Every BUILD preserves uncertainty and enough provenance to falsify the
 implementation. Convergence, a high peak, semantic confidence, an expansion
-branch, an ontology mapping, a language-model parse or a promoted oracle is not
-automatically external truth. The canonical v1.0 artifacts remain locked.
+branch, an ontology mapping, a language-model parse, a discovered oracle gap or
+a promoted oracle is not automatically external truth. The canonical v1.0
+artifacts remain locked.
