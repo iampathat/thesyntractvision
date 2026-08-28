@@ -36,6 +36,18 @@ from .engine import (
 )
 from .fabric import FabricLayer, NullBankResult, RotationBankResult, StabilizedRotationSuiteResult
 from .funnel import BoundCondition, FunnelLayerResult, FunnelTrace, funnel_step, recursive_contraction_funnel
+from .grover_depth import (
+    AdaptiveGroverSubstrate,
+    FixedGroverDepthBenchmarkResult,
+    GroverDepthBenchmarkReport,
+    GroverDepthConfig,
+    GroverDepthSelection,
+    GroverDepthTrial,
+    expected_normalized_oracle_score,
+    ideal_binary_grover_m_star,
+    run_grover_depth_benchmark,
+    select_grover_depth,
+)
 from .kernel import ClassicalInferenceKernel
 from .models import BaseBundle, ChannelView, StabilizedReturn, Syntract, TruthDistribution
 from .oracles import DistributionOracle, ExactOracle, MaskOracle, OracleStack
@@ -64,6 +76,16 @@ __all__ = [
     "InferenceSubstrate",
     "ClassicalInferenceKernel",
     "StatevectorGroverSubstrate",
+    "AdaptiveGroverSubstrate",
+    "GroverDepthConfig",
+    "GroverDepthTrial",
+    "GroverDepthSelection",
+    "FixedGroverDepthBenchmarkResult",
+    "GroverDepthBenchmarkReport",
+    "expected_normalized_oracle_score",
+    "ideal_binary_grover_m_star",
+    "select_grover_depth",
+    "run_grover_depth_benchmark",
     "DistributionStabilizer",
     "FabricLayer",
     "NullBankResult",
