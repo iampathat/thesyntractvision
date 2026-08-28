@@ -4,13 +4,13 @@
 
 **The Syntract Vision** is an experimental architecture for inference-driven intelligence built around **QCDS — Quantum Condition-Driven Synthesis** and **Syntract**.
 
-Instead of treating intelligence as a trained model that produces one answer, QCDS works over an explicit logical space, applies logical and evidential constraints as **oracles**, preserves uncertainty, tests competing views, and recursively binds what remains coherent.
+Instead of treating intelligence as a trained model that produces one answer, QCDS works over explicit logical space, applies logical and evidential constraints as **oracles**, preserves uncertainty, tests competing views, and recursively binds what remains coherent.
 
-The repository contains the locked QCDS Fabric v1.0 specification and a tested Python reference implementation. The current implementation includes a persistent intelligence runtime, a shared inspectable **Logical Space**, global non-materialized logical transforms, and a runnable **Logical Robot** that can seek external evidence and return it to the same QCDS reasoning loop.
+The repository contains the locked QCDS Fabric v1.0 specification and a tested Python reference implementation. The current implementation includes a persistent intelligence runtime, inspectable **Logical Space**, non-materialized global logic, isolated **Logical Universes** with rule-drift governance, and a runnable **Logical Robot** that can seek external evidence and return it to the same QCDS reasoning loop.
 
 **Author and originator:** Patrik Sundblom  
 **Canonical architecture:** QCDS Fabric v1.0 — locked  
-**Reference software:** Python package `qcds-fabric` 1.9.0  
+**Reference software:** Python package `qcds-fabric` 1.10.0  
 **Theory/specification:** CC BY 4.0  
 **Software:** MIT
 
@@ -26,13 +26,14 @@ flowchart LR
     Q -->|what is missing?| R
     Q --> O[Oracle Genesis & Evolution]
     O --> Q
-    O --> T[Global Logical Rules]
-    T --> L
+    O --> T[Governed Logical Rules]
+    T --> U[Logical Universe]
+    U --> Q
     Q --> S[Syntract / Bound Result]
     S -->|new dimensions / questions| Q
 ```
 
-The Logical Robot is not a second intelligence. It is a **body** used to observe an external world. The Logical Space is not a database of final truths; it is an inspectable, growing field of source-attributed logic that QCDS can reuse and challenge.
+The Logical Robot is not a second intelligence. It is a **body** used to observe an external world. Logical Space is not a database of final truths; it is an inspectable, growing field of source-attributed logic that QCDS can reuse and challenge.
 
 A physical robot follows the same pattern: the Logical Robot remains, while physical sensors and actuators are added as further ways to observe and act.
 
@@ -116,20 +117,14 @@ See [`LOGICAL_SPACE.md`](LOGICAL_SPACE.md).
 
 ## Global logic without rewriting every object
 
-A reusable logical rule can be applied over the represented space without materializing the derived term into every matching base row.
-
-For example, suppose the base Logical Space contains many bindings ending in `human`:
+A reusable logical rule can be applied over represented space without materializing the derived term into every matching base row.
 
 ```text
 (alice, human)
 (bob, human)
 (carol, human)
 ...
-```
 
-One rule can resolve all of them through:
-
-```text
 human => sour
 ```
 
@@ -141,7 +136,7 @@ human => happy
 
 then the next resolved query sees every represented human through `happy` and no longer through `sour`. The individual rows in `logical_space.csv` remain unchanged.
 
-Rules can also compose:
+Rules can compose:
 
 ```text
 human => happy
@@ -152,6 +147,50 @@ positive => approachable
 The current Python implementation proves this **logical semantic property**, not a billion-scale or quantum-speed claim: it still scans stored bindings and rules when resolving a query. The rule/store boundary is separate so a later accelerator-, FPGA- or quantum-near substrate can execute the same logical semantics differently.
 
 See [`GLOBAL_LOGIC.md`](GLOBAL_LOGIC.md).
+
+---
+
+## Logical Universes and rule drift
+
+The same QCDS machinery can operate inside multiple isolated logical universes without confusing their rules.
+
+```text
+reality             observed/source-attributed logic
+swedish-law-2026    declared legal logic
+proposal-x          hypothetical logic
+simulation-y        simulated logic
+```
+
+The existing shared Logical Space remains the `reality` universe. A declared universe such as a lawbook can define its own constitutive rules without those rules leaking into reality.
+
+The same represented person can therefore resolve differently depending on the active universe:
+
+```text
+REALITY
+alice = human
+
+LAWBOOK
+alice = human
+human => legal_person
+```
+
+A generated rule is not activated merely because it exists. Before promotion, the MVP compares the currently resolved universe with a hypothetical universe containing the candidate rule and measures its **logical blast radius**: changed bindings, changed fraction, added/removed derived terms and maximum per-binding change.
+
+```mermaid
+flowchart LR
+    G[Oracle genesis] --> C[Candidate rule]
+    C --> B[Blast-radius analysis]
+    B -->|bounded| P[Promotable]
+    B -->|wide / zero effect| X[Quarantine]
+    P --> H[Challenge / approval]
+    X --> H2[Explicit override + required challenge/authority]
+    H --> A[Active universe logic]
+    H2 --> A
+```
+
+Observed universes require challenge before rule promotion. Declared universes instead require their declared authority; even there, high-impact changes remain visible and versioned rather than silently reshaping the space.
+
+See [`LOGICAL_UNIVERSES.md`](LOGICAL_UNIVERSES.md).
 
 ---
 
@@ -195,9 +234,17 @@ The current MVP deliberately uses ordinary CSV files so the evolving state can b
 
 ```text
 intelligence_store/
-├── logical_space.csv
-├── logical_rules.csv
+├── logical_space.csv                  # reality
+├── logical_rules.csv                  # active reality rules
 ├── logical_rule_history.csv
+├── logical_rule_candidates.csv
+├── logical_universes.csv
+├── universes/
+│   └── <universe_id>/
+│       ├── logical_space.csv
+│       ├── logical_rules.csv
+│       ├── logical_rule_history.csv
+│       └── logical_rule_candidates.csv
 └── <mission_id>/
     ├── mission.csv
     ├── current_oracles.csv
@@ -206,9 +253,7 @@ intelligence_store/
     └── checkpoints.csv
 ```
 
-`logical_space.csv` shows source-attributed bindings accumulated across missions.
-
-`logical_rules.csv` shows the current reusable global logical rules. `logical_rule_history.csv` records rule genesis, replacement and retirement without rewriting the base Logical Space.
+`logical_space.csv` shows source-attributed bindings. `logical_rules.csv` shows active reusable logical rules, while candidate/history files expose rule genesis, blast-radius decisions, replacement and retirement.
 
 `current_oracles.csv` shows the active evolvable oracle population. `oracle_history.csv` shows how that population changed through genesis, promotion, mutation and retirement.
 
@@ -223,9 +268,11 @@ Logical Robot / other caller
           ↓
 SuperintelligenceRuntime
           ↕
+Logical Universe
+          ↕
 Persistent Logical Space
           ↕
-Global Logical Rules
+Governed Logical Rules
           ↓
 QCDS Fabric
           ↓
@@ -249,7 +296,8 @@ The robot does not need to know how QCDS internals work. It receives an informat
 | `src/qcds_fabric/logical_space.py` | Shared Logical Space and current Logical Robot CLI |
 | `src/qcds_fabric/logical_assertion.py` | Bounded assertion check for MVP web observations |
 | `src/qcds_fabric/logical_transform.py` | Non-materialized global logical rule projection |
-| `src/qcds_fabric/first_logical_robot.py` | Original runnable Logical Robot body/runtime bridge |
+| `src/qcds_fabric/logical_universe.py` | Isolated Logical Universes and rule-drift governance |
+| `src/qcds_fabric/first_logical_robot.py` | Runnable Logical Robot body/runtime bridge |
 | `src/qcds_fabric/intelligence_store.py` | Human-readable mission persistence |
 | `src/qcds_fabric/oracle_genesis.py` | Oracle-gap discovery and genesis |
 | `src/qcds_fabric/oracle_evolution.py` | Challenged oracle evolution and lineage |
@@ -258,7 +306,7 @@ The robot does not need to know how QCDS internals work. It receives an informat
 | `examples/` | Runnable examples |
 | `IMPLEMENTATION.md` | Detailed implementation history and boundaries |
 
-Focused documentation: [`LOGICAL_SPACE.md`](LOGICAL_SPACE.md), [`GLOBAL_LOGIC.md`](GLOBAL_LOGIC.md), [`PROBLEM_TO_SYNTRACT.md`](PROBLEM_TO_SYNTRACT.md), [`ORACLE_EVOLUTION.md`](ORACLE_EVOLUTION.md), [`ORACLE_GENESIS.md`](ORACLE_GENESIS.md), [`EVIDENCE_PLANNING.md`](EVIDENCE_PLANNING.md), [`LOGICAL_ROBOT.md`](LOGICAL_ROBOT.md), [`PERSISTENT_RUNTIME.md`](PERSISTENT_RUNTIME.md), [`FIRST_LOGICAL_ROBOT.md`](FIRST_LOGICAL_ROBOT.md).
+Focused documentation: [`LOGICAL_SPACE.md`](LOGICAL_SPACE.md), [`GLOBAL_LOGIC.md`](GLOBAL_LOGIC.md), [`LOGICAL_UNIVERSES.md`](LOGICAL_UNIVERSES.md), [`PROBLEM_TO_SYNTRACT.md`](PROBLEM_TO_SYNTRACT.md), [`ORACLE_EVOLUTION.md`](ORACLE_EVOLUTION.md), [`ORACLE_GENESIS.md`](ORACLE_GENESIS.md), [`EVIDENCE_PLANNING.md`](EVIDENCE_PLANNING.md), [`LOGICAL_ROBOT.md`](LOGICAL_ROBOT.md), [`PERSISTENT_RUNTIME.md`](PERSISTENT_RUNTIME.md), [`FIRST_LOGICAL_ROBOT.md`](FIRST_LOGICAL_ROBOT.md).
 
 ---
 
@@ -275,7 +323,7 @@ GitHub Actions runs the same regression/falsification suite on implementation ch
 
 ## Canonical specification
 
-The QCDS Fabric v1.0 canonical artifacts are version-locked and are not rewritten by oracle evolution, the Logical Robot, Logical Space, global logical rules or the runtime:
+The QCDS Fabric v1.0 canonical artifacts are version-locked and are not rewritten by oracle evolution, the Logical Robot, Logical Space, Logical Universes, global logical rules or the runtime:
 
 - [Canonical specification — Markdown](QCDS_FABRIC_SPEC_v1.0_CANONICAL.md)
 - [Canonical specification — PDF](QCDS_FABRIC_SPEC_v1.0_CANONICAL.pdf)
@@ -287,9 +335,9 @@ The QCDS Fabric v1.0 canonical artifacts are version-locked and are not rewritte
 
 ## Research status and claim boundary
 
-This repository is an experimental, falsifiable reference implementation. A coherent distribution, a generated or promoted oracle, a Syntract, a logical binding, a global logical rule, or an observation found on the web is **not automatically external truth**.
+This repository is an experimental, falsifiable reference implementation. A coherent distribution, a generated or promoted oracle, a Syntract, a logical binding, a global logical rule, a declared-universe rule, or an observation found on the web is **not automatically external truth**.
 
-The current software does not by itself establish AGI/ASI, unrestricted natural-language understanding, complete world knowledge, unrestricted self-modification, production browser security, native quantum advantage or correctness on arbitrary real-world problems. Those require empirical validation beyond architectural implementation.
+The current software does not by itself establish AGI/ASI, unrestricted natural-language understanding, complete world knowledge, unrestricted self-modification, production browser security, native quantum advantage, legal correctness or correctness on arbitrary real-world problems. Those require empirical validation beyond architectural implementation.
 
 ---
 
