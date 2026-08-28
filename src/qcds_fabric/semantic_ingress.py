@@ -24,6 +24,38 @@ def _normalize_phrase(value: str) -> str:
     return value.strip(" .?!")
 
 
+def _split_sentences(text: str) -> tuple[str, ...]:
+    """Split on sentence punctuation while preserving punctuation inside brackets.
+
+    BUILD 9 permits source metadata such as ``Witness A [0.90]``. A normal
+    punctuation regex would treat the decimal point as a sentence boundary and
+    corrupt both source identity and confidence. This scanner keeps bracketed
+    metadata intact and remains deliberately small/auditable.
+    """
+
+    sentences: list[str] = []
+    buffer: list[str] = []
+    bracket_depth = 0
+
+    for character in text:
+        if character == "[":
+            bracket_depth += 1
+        elif character == "]" and bracket_depth > 0:
+            bracket_depth -= 1
+
+        buffer.append(character)
+        if character in ".?!" and bracket_depth == 0:
+            sentence = "".join(buffer).strip()
+            if sentence:
+                sentences.append(sentence)
+            buffer = []
+
+    tail = "".join(buffer).strip()
+    if tail:
+        sentences.append(tail)
+    return tuple(sentences)
+
+
 @dataclass(frozen=True)
 class ControlledEnglishAnalyzer:
     """Corrected bounded raw-text analyzer for the public BUILD 9 ingress API.
@@ -62,11 +94,7 @@ class ControlledEnglishAnalyzer:
 
     def analyze(self, text: str, *, mission_id: str) -> SemanticFrame:
         raw = text.strip()
-        sentences = tuple(
-            piece.strip()
-            for piece in re.findall(r"[^.!?]+[.!?]?", raw)
-            if piece.strip()
-        )
+        sentences = _split_sentences(raw)
 
         query_index: int | None = None
         query_subject: str | None = None
@@ -162,6 +190,7 @@ class ControlledEnglishAnalyzer:
                 "unresolved_sentence_count": len(unresolved),
                 "grammar_is_bounded": True,
                 "source_confidence_syntax": "[0.50..1.00]",
+                "bracket_aware_sentence_split": True,
                 "semantic_invention": False,
             },
         )
