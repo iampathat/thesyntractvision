@@ -43,123 +43,75 @@ validation can contract them into a new bound Syntract. Implements the bounded
 
 ## BUILD 9 — semantic ingress / human-to-logic
 
-Adds the model-independent bridge from one bounded human semantic question to
-the existing Fabric:
-
-- `SemanticFrame` carries query, claims, candidates, source confidence, polarity,
-  unresolved text and analyzer provenance;
-- `ControlledEnglishAnalyzer` proves raw-text ingress with a deliberately small
-  deterministic grammar and bracket-aware confidence parsing;
-- unknown language is retained as `unresolved` and missing logic fails closed;
-- categorical alternatives become explicit binary dimensions with one-hot logic;
-- source claims become soft `EvidenceOracle` constraints;
-- competing source claims create explicit semantic disagreement markers;
-- baseline and stabilized candidate projections remain separately visible;
-- results bind into an uncertainty-bearing Syntract and can feed BUILD 8 expansion;
-- an external LLM/parser may emit `SemanticFrame` objects without becoming the
-  QCDS inference kernel.
-
-See `SEMANTIC_INGRESS.md`.
+Adds a model-independent bounded human-to-logic boundary. Unknown material stays
+`unresolved`, categorical alternatives become explicit dimensions, source claims
+become evidence oracles, disagreement remains visible, and the result binds into
+a normal uncertainty-bearing Syntract. See `SEMANTIC_INGRESS.md`.
 
 ## BUILD 10 — problem-to-Syntract
 
-Extends BUILD 9 from one bounded query to a joint multi-query semantic problem:
-
-- `SemanticProblemFrame` carries multiple queries, entities, claims, relations,
-  explicit rules, ontology mapping, unresolved material and adapter provenance;
-- independent query groups are compiled into one shared binary Condition space,
-  so explicit rules can couple them before inference rather than after separate
-  answer generation;
-- `SemanticEntity` provides an auditable entity registry;
-- `SemanticRelation` compiles source-attributed relations into normal evidence
-  propositions and preserves relational/causal/temporal class plus temporal context;
-- `SemanticRule` supports exact auditable `implies`, `excludes` and `equivalent`
-  transforms, separately tagged as logical, causal or temporal;
-- `OntologyMap` canonicalizes subject/predicate/value aliases and records every
-  applied mapping; declared entity registries make invalid subject targets fail closed;
-- partially answerable problems retain blocked queries instead of inventing candidates;
-- semantic disagreement and polarity conflict remain explicit;
-- `SemanticProblemAdapter` allows a future LLM, scientific parser, sensor compiler
-  or domain frontend to emit structured problems without becoming the QCDS core;
-- all executable queries are projected from the same baseline and stabilized
-  joint TruthDistribution;
-- the final problem Syntract preserves entities, relations, rules, ontology,
-  blocked queries, unresolved content, contradictions and final dimensions;
-- problem Syntracts re-enter or expand through the existing BUILD 3/8 paths
-  without semantic retranslation.
-
+Adds joint multi-query problem compilation with entities, relations, ontology,
+explicit logical/causal/temporal rule provenance, partial executability and one
+shared Condition space. External semantic adapters remain separate from QCDS.
 See `PROBLEM_TO_SYNTRACT.md`.
 
 ## BUILD 11 — challenged oracle evolution
 
-Adds a bounded self-evolution layer for oracle populations:
-
-- `OracleProposalGenerator` cleanly separates hypothesis generation from target
-  evaluation; challenge targets are not arguments to the generator interface;
-- `SemanticRuleMutationGenerator` creates competing BUILD 10 rule transforms and
-  optional explicit confidence variants without mutating source evidence trust by default;
-- `OracleRetirementGenerator` turns removal into an explicit challenged hypothesis,
-  generalizing BUILD 5 leave-one-out instead of hiding pruning;
-- `OracleChallengeSuite` separates selection from holdout cases and keeps
-  case-specific evidence/context outside the evolving population;
-- BUILD 5 external target metrics are reused to score candidate populations;
-- promotion can require selection improvement, holdout non-regression, bounded
-  worst-case regression, no contradiction increase and an observable effect;
-- every promotion creates a versioned stack plus lineage recording generator,
-  mutation, replaced/new oracle ids and challenge suite;
-- `extract_problem_rule_population(...)` isolates BUILD 10 rule oracles from
-  evidence/one-hot context;
-- `challenge_case_from_problem(...)` converts externally validated query
-  assignments into explicit joint target distributions while keeping problem
-  evidence as fixed challenge context;
-- `apply_evolved_oracle_population(...)` re-injects the challenged population
-  into a fresh `ProblemCompilation` without touching fixed evidence/logic;
-- the resulting compilation runs through the ordinary QCDS Fabric again,
-  closing a bounded `problem → infer → challenge → evolve oracles → infer` loop;
-- canon/self-modification remains outside the evolution boundary and is never
-  automatically rewritten.
-
-See `ORACLE_EVOLUTION.md`.
+Adds versioned oracle-population mutation/retirement, explicit selection +
+holdout challenge, promotion gates, lineage and re-injection. Proposal generation
+never receives challenge targets. See `ORACLE_EVOLUTION.md`.
 
 ## BUILD 12 — oracle genesis / autonomous gap discovery
 
-Adds a target-blind discovery layer before BUILD 11:
+Adds target-blind `OracleFailureObservation`, contradiction/null-influence gap
+signals, `OracleGap`, bounded rival rule genesis and a bridge back through the
+unchanged BUILD 11 challenge engine. A gap can create new oracle hypotheses;
+survival is still not proof of causal truth. See `ORACLE_GENESIS.md`.
 
-- `OracleFailureObservation` represents externally observed prediction or
-  expansion failure without carrying expected answers or target distributions;
-- `discover_oracle_gaps(...)` can combine those failures with internal
-  dimension-null contradiction resolution and null-influence diagnostics;
-- signals are grouped into auditable `OracleGap` objects containing affected
-  dimensions, bounded context dimensions, severity and source provenance;
-- `PairwiseSemanticRuleGenesisGenerator` generates a bounded rival field of new
-  cross-group `SemanticRuleOracle` hypotheses using explicit `implies`,
-  `excludes` and `equivalent` transforms;
-- the built-in genesis generator emits logical hypotheses rather than claiming
-  discovered causal truth, skips within-group rules and avoids exact semantic
-  duplicates already in the active population;
-- `DiscoveredGapProposalGenerator` bridges each target-blind gap into the BUILD
-  11 proposal/challenge interface without exposing holdout or external answers;
-- `run_oracle_genesis_cycle(...)` performs gap discovery → genesis → BUILD 11
-  challenge → promotion/rejection → population re-injection → normal Fabric
-  inference → Syntract binding;
-- if no gap exists the cycle stops; if no candidate survives challenge the
-  population is not changed merely to force evolution;
-- the same cycle can run on the classical or statevector/Grover substrate path;
-- canon remains outside the discovery/evolution boundary.
+## BUILD 13 — autonomous experiment / evidence acquisition planning
 
-See `ORACLE_GENESIS.md`.
+Adds the first explicit information-seeking layer after BUILD 12:
+
+- `DisagreementEvidencePlanner` compares the current oracle population with
+  target-blind genesis hypotheses under the same present evidence;
+- it measures where predicted query distributions disagree and ranks the most
+  discriminating evidence need without receiving selection/holdout targets;
+- `EvidenceNeed`, `EvidenceAction` and `EvidencePlan` preserve gap, hypothesis,
+  query, dimension and discrimination provenance;
+- bounded action types include independent observation, replicated measurement,
+  validation experiment, dimension probe and targeted query;
+- BUILD 13 plans actions but does not itself execute external physical or account
+  actions; authorization remains an explicit external boundary;
+- `EvidenceAcquisitionResult` + `apply_evidence_results(...)` ingest externally
+  obtained results as source-attributed `SemanticClaim` evidence and recompile;
+- ingestion accepts only already represented candidate values; new semantics must
+  go through semantic/expansion handling instead of being silently invented;
+- `IntelligenceCheckpoint` distinguishes `active`, `awaiting_evidence`,
+  `quiescent` and explicit `terminal` states;
+- `no_oracle_gaps` and `no_promotable_hypotheses` are therefore resumable
+  checkpoints, not permanent dead ends;
+- default resume triggers include new evidence, new failure observations, new
+  expansion results, oracle-population changes and manual resume;
+- unchanged state does not auto-spin forever: resume requires a new trigger or an
+  explicit `force_replan=True`;
+- only an explicit caller request creates a non-resumable terminal checkpoint;
+- the planning/resume path is substrate-independent and runs on the classical or
+  statevector/Grover reference path;
+- canon remains outside the discovery/evolution/planning mutation boundary.
+
+See `EVIDENCE_PLANNING.md`.
 
 ## Not yet implemented
 
 - unrestricted general natural-language semantic understanding;
 - autonomous ontology discovery/induction across arbitrary domains;
-- broad causal discovery from raw observations: BUILD 12 can discover a missing
-  constraint location and generate explicit logical candidates, but challenge
-  survival is not proof of causality;
+- broad causal discovery from raw observations; surviving hypotheses remain
+  hypotheses until supported by appropriate external validation;
 - complete temporal-logic calculus or automatic event extraction;
-- autonomous external evidence acquisition and calibrated source trust;
+- autonomous access to external sensors, laboratories, accounts or web services;
+- domain-specific optimal experimental design with real-world cost/risk models;
+- calibrated autonomous source-trust evolution;
 - production oracle governance, signed validation sources and deployment approval;
-- automatic experiment design/execution for acquiring new challenge evidence;
 - cross-domain large-scale oracle populations with statistically powered challenge corpora;
 - native QPU adapter / hardware execution;
 - larger public benchmark corpora and statistically powered experiment runner;
@@ -169,6 +121,7 @@ See `ORACLE_GENESIS.md`.
 
 Every BUILD preserves uncertainty and enough provenance to falsify the
 implementation. Convergence, a high peak, semantic confidence, an expansion
-branch, an ontology mapping, a language-model parse, a discovered oracle gap or
-a promoted oracle is not automatically external truth. The canonical v1.0
-artifacts remain locked.
+branch, an ontology mapping, a language-model parse, a discovered oracle gap, a
+promoted oracle or a proposed experiment is not automatically external truth.
+A temporary lack of progress is not automatically terminal either. The canonical
+v1.0 artifacts remain locked.
