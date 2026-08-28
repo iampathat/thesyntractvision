@@ -5,7 +5,7 @@
 **Author and originator:** Patrik Sundblom  
 **Project:** The Syntract Vision / QCDS / Syntract  
 **Canonical architecture:** **QCDS Fabric v1.0 — locked**  
-**Reference implementation:** **BUILD 9 / package 1.0.0**  
+**Reference implementation:** **BUILD 10 / package 1.1.0**  
 **Theory/specification:** CC BY 4.0  
 **Software:** MIT
 
@@ -23,86 +23,130 @@ The repository intentionally separates:
    architecture changes require a new specification version.
 2. **Implementation** — `src/qcds_fabric/`, built in falsifiable BUILD steps.
 
-BUILD 9 does not change the canon. It adds the first audited human-to-logic
-frontend to the existing machine.
+BUILD 10 does not change the canon. It extends the BUILD 9 semantic boundary
+from one bounded question to a joint **problem-to-Syntract** compiler.
 
 ## Current executable path
 
 ```text
-HUMAN QUESTION / EXTERNAL SEMANTIC PARSER
-                ↓
-        SEMANTIC FRAME
- claims · candidates · sources · confidence · unresolved
-                ↓
-        LOGIC COMPILER
-                ↓
- CONDITIONS + EVIDENCE/LOGIC ORACLES
-                ↓
-          QCDS FABRIC
-                ↓
-     SUBSTRATE INTERFACE
-      ↙                 ↘
- CLASSICAL        STATEVECTOR / GROVER
-                  fixed m / adaptive m*
-      ↘                 ↙
+HUMAN PROBLEM / EXTERNAL SEMANTIC ADAPTER
+                    ↓
+           SEMANTIC PROBLEM FRAME
+ entities · queries · claims · relations · rules
+ ontology · source confidence · unresolved · provenance
+                    ↓
+             ONTOLOGY MAPPING
+                    ↓
+            JOINT LOGIC COMPILER
+                    ↓
+   CONDITIONS + EVIDENCE / RULE ORACLES
+                    ↓
+               QCDS FABRIC
+                    ↓
+          SUBSTRATE INTERFACE
+       ↙                         ↘
+  CLASSICAL                STATEVECTOR / GROVER
+  REFERENCE            fixed m or adaptive view-local m*
+       ↘                         ↙
  NULL / POSITION / ORACLE / CROSSED ROTATIONS
-                ↓
-       TRUTH DISTRIBUTIONS
-                ↓
-       FAMILY STABILIZATION
-                ↓
-     SERIAL CONTRACTION FUNNEL
-                ↓
-        RE-ENTRY / RECURSE
-                ↓
-          SYNTRACT BIND
-          ↙           ↘
-      CONTRACT       EXPAND 1→N
-          ↘           ↓
-             TEST / ORACLES
-                  ↓
-             CONTRACT / BIND
-                  ↺
+                    ↓
+           JOINT TRUTH DISTRIBUTION
+          ↙          ↓           ↘
+      QUERY A     QUERY B      QUERY C ...
+          ↘          ↓           ↙
+             SYNTRACT BIND
+              ↙          ↘
+        CONTRACT N→1    EXPAND 1→N
+              ↘          ↓
+                TEST / ORACLES
+                     ↓
+                CONTRACT / BIND
+                     ↺
 ```
 
 The semantic frontend and QCDS inference core remain separable. The canonical
 spec explicitly permits external trained models to supply semantic parsing,
-proposed Conditions, or candidate oracles; the core inference loop does not
+proposed Conditions or candidate oracles; the core inference loop does not
 require training/backprop/persistent learned weights.
 
 ## BUILD 9: human-to-logic
 
-The new `src/qcds_fabric/semantic.py` adds:
+BUILD 9 established the first model-independent semantic boundary:
 
-- `SemanticQuery`, `SemanticClaim`, and `SemanticFrame` as a model-independent
-  semantic ingress contract;
-- `ControlledEnglishAnalyzer` as a bounded deterministic raw-text demonstrator;
-- explicit `unresolved` retention instead of guessing unknown language;
-- categorical candidate dimensions and `OneHotOracle` logic;
-- source-attributed soft `EvidenceOracle` constraints;
-- semantic disagreement markers for competing source claims;
-- baseline **and** stabilized candidate projections;
-- semantic result → normal Syntract binding;
-- direct compatibility with BUILD 8 expansion.
-
-Example:
-
-```text
-Witness A says the car was red.
-Witness B says the car was blue.
-What color was the car?
-```
-
-becomes two candidate dimensions, two source-evidence oracles, one categorical
-logic constraint, an explicit disagreement marker, and an uncertainty-bearing
-Fabric result. Equal evidence stays tied instead of being turned into a fake
-answer.
-
-A stronger future LLM can replace the controlled parser by emitting a
-`SemanticFrame`. That LLM would be a semantic supplier, not the QCDS inference
-kernel.
+- `SemanticQuery`, `SemanticClaim` and `SemanticFrame` define a bounded semantic
+  ingress contract;
+- `ControlledEnglishAnalyzer` in `semantic_ingress.py` proves deterministic
+  raw-text ingress and preserves `[0.90]`-style source confidence correctly;
+- unknown language remains explicit as `unresolved`;
+- categorical candidates become binary dimensions with `OneHotOracle` logic;
+- claims become soft, source-attributed `EvidenceOracle` constraints;
+- competing claims remain explicit disagreement rather than a fabricated answer;
+- semantic results bind into a normal uncertainty-bearing Syntract.
 
 See [`SEMANTIC_INGRESS.md`](SEMANTIC_INGRESS.md).
+
+## BUILD 10: problem-to-Syntract
+
+BUILD 10 adds `src/qcds_fabric/problem.py` and moves from one query to a joint
+semantic problem.
+
+A `SemanticProblemFrame` can now contain:
+
+- multiple `ProblemQuery` objects;
+- an explicit `SemanticEntity` registry;
+- source-attributed claims;
+- `SemanticRelation` structures;
+- cross-query `SemanticRule` constraints;
+- explicit `OntologyMap` aliases;
+- unresolved semantic material and adapter provenance.
+
+Multiple query groups are compiled into the **same local binary space**. That
+means an explicit rule can couple them before inference. For example:
+
+```text
+car::color      = red | blue
+driver::identity = alice | bob
+
+IF car::color::red
+THEN driver::identity::alice
+kind = implies
+relation_class = causal
+```
+
+The causal label is provenance. The exact executed transform is still the
+explicit `implies` rule. BUILD 10 therefore does not smuggle an opaque causal
+world model into the kernel.
+
+Rules support the bounded transforms:
+
+- `implies`
+- `excludes`
+- `equivalent`
+
+and may separately be tagged `logical`, `causal` or `temporal`.
+
+Ontology mapping is also explicit. Aliases such as:
+
+```text
+automobile → car
+colour     → color
+scarlet    → red
+```
+
+are canonicalized before logic compilation and every applied mapping is retained
+in provenance. If a declared entity registry is used, invalid ontology subject
+targets fail closed.
+
+A problem may be only partly executable. Queries with no explicit, observed or
+rule-referenced candidates remain in `blocked_queries`; other valid queries may
+still run. Nothing is invented merely to make a blocked query answerable.
+
+`SemanticProblemAdapter` is the replaceable external boundary. A future LLM,
+scientific parser, sensor translator or domain-specific compiler may emit a
+`SemanticProblemFrame`, but that adapter is not QCDS and its proposed structure
+is not automatically external truth.
+
+See [`PROBLEM_TO_SYNTRACT.md`](PROBLEM_TO_SYNTRACT.md).
 
 ## BUILD status
 
@@ -117,7 +161,8 @@ See [`SEMANTIC_INGRESS.md`](SEMANTIC_INGRESS.md).
 | 6 | merged | substrate interface + statevector/Grover simulator |
 | 7 | merged | adaptive view-local Grover `m/m*` |
 | 8 | merged | expansion `1→N` + test/contract/bind |
-| 9 | current | semantic ingress / human-to-logic / Syntract handoff |
+| 9 | merged | semantic ingress / human-to-logic / Syntract handoff |
+| 10 | current | joint multi-query problem-to-Syntract compiler |
 
 See [`IMPLEMENTATION.md`](IMPLEMENTATION.md) for the exact implementation
 boundary.
@@ -127,8 +172,12 @@ boundary.
 - `src/qcds_fabric/models.py` — BaseBundle, ChannelView, TruthDistribution,
   StabilizedReturn and Syntract.
 - `src/qcds_fabric/oracles.py` — exact, mask and DistributionOracle semantics.
-- `src/qcds_fabric/semantic.py` — BUILD 9 semantic frame, controlled parser,
-  evidence/logic oracles and human-to-Fabric bridge.
+- `src/qcds_fabric/semantic.py` — BUILD 9 semantic data model, evidence/logic
+  oracles and one-query semantic compiler.
+- `src/qcds_fabric/semantic_ingress.py` — bounded Controlled-English raw-text
+  adapter and public `human_to_logic(...)` helpers.
+- `src/qcds_fabric/problem.py` — BUILD 10 entities, relations, ontology mapping,
+  multi-query joint compiler, cross-query rules and problem Syntract binding.
 - `src/qcds_fabric/kernel.py` — bounded classical reference inference kernel.
 - `src/qcds_fabric/substrates.py` — substrate contract + statevector/Grover simulator.
 - `src/qcds_fabric/grover_depth.py` — adaptive `m/m*` and overshoot diagnostics.
@@ -188,7 +237,7 @@ The four phases remain:
 
 ## Contraction and expansion
 
-The reference package now executes both directions:
+The reference package executes both directions:
 
 ```text
 N → 1   contraction / binding
@@ -201,24 +250,29 @@ BUILD 8 closes the bounded cycle:
 BIND → EXPAND → TEST → CONTRACT → BIND
 ```
 
-BUILD 9 now lets a semantic Syntract enter that cycle directly.
+BUILD 9 lets a semantic Syntract enter that cycle. BUILD 10 lets a **joint
+problem Syntract** enter the same cycle without flattening its multi-query,
+relation, rule or ontology provenance.
 
 ## Falsifiability and claim boundary
 
-The implementation intentionally keeps several possible failure points visible:
+The implementation intentionally keeps possible failure points visible:
 
-- semantic analyzer may misunderstand or leave language unresolved;
+- semantic adapter may misunderstand or leave language unresolved;
+- ontology mapping may be wrong or incomplete;
 - source confidence may be poorly calibrated;
+- an explicit causal/temporal rule may itself be false;
+- a blocked query may remain unanswerable;
 - a simpler architecture ablation may outperform full diagnostics;
 - classical inference may outperform the statevector reference on a benchmark;
 - adaptive Grover depth may overshoot or lose to fixed depth;
 - expansion may produce branches that later fail validation;
 - a stable distribution may still be externally wrong.
 
-Therefore BUILD 9 does **not** claim unrestricted natural-language understanding,
-AGI/ASI, native quantum advantage, or automatic external truth. It establishes a
-tested and replaceable semantic-to-logic boundary that can now be attacked and
-improved empirically.
+Therefore BUILD 10 does **not** claim unrestricted natural-language
+understanding, autonomous causal discovery, complete temporal logic, AGI/ASI,
+native quantum advantage, or automatic external truth. It establishes a tested
+problem-to-logic boundary that can be attacked and improved empirically.
 
 ## Canonical publications
 
