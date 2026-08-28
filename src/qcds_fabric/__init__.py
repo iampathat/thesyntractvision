@@ -33,6 +33,16 @@ from .grover_depth import (
 )
 from .kernel import ClassicalInferenceKernel
 from .models import BaseBundle, ChannelView, StabilizedReturn, Syntract, TruthDistribution
+from .oracle_evolution import (
+    OracleCaseEvaluation, OracleChallengeCase, OracleChallengeSuite,
+    OracleEvolutionConfig, OracleEvolutionError, OracleEvolutionGeneration,
+    OracleEvolutionResult, OracleHypothesis, OracleHypothesisEvaluation,
+    OracleLineageRecord, OraclePopulationSnapshot, OracleProposalGenerator,
+    OracleRetirementGenerator, SemanticRuleMutationGenerator,
+    apply_evolved_oracle_population, challenge_case_from_problem,
+    evaluate_oracle_hypothesis, evolve_oracle_population,
+    extract_problem_rule_population, target_distribution_for_problem_assignments,
+)
 from .oracles import DistributionOracle, ExactOracle, MaskOracle, OracleStack
 from .problem import (
     OntologyMap, ProblemCompilation, ProblemInferenceResult, ProblemQuery,
@@ -78,7 +88,15 @@ __all__ = [
     "SemanticProblemAdapter", "SemanticRuleOracle", "ProblemCompilation",
     "ProblemInferenceResult", "ProblemResult", "canonicalize_problem_frame",
     "compile_problem_frame", "run_problem_compilation", "bind_problem_result",
-    "problem_to_syntract", "run_problem_text", "DistributionStabilizer",
+    "problem_to_syntract", "run_problem_text", "OracleEvolutionError",
+    "OracleChallengeCase", "OracleChallengeSuite", "OracleHypothesis",
+    "OracleProposalGenerator", "SemanticRuleMutationGenerator",
+    "OracleRetirementGenerator", "OracleEvolutionConfig", "OracleCaseEvaluation",
+    "OracleHypothesisEvaluation", "OracleLineageRecord", "OracleEvolutionGeneration",
+    "OracleEvolutionResult", "OraclePopulationSnapshot", "evaluate_oracle_hypothesis",
+    "evolve_oracle_population", "extract_problem_rule_population",
+    "apply_evolved_oracle_population", "target_distribution_for_problem_assignments",
+    "challenge_case_from_problem", "DistributionStabilizer",
     "FabricLayer", "NullBankResult", "RotationBankResult",
     "StabilizedRotationSuiteResult", "BoundCondition", "FunnelLayerResult",
     "FunnelTrace", "funnel_step", "recursive_contraction_funnel",
