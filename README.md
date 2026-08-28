@@ -5,7 +5,7 @@
 **Author and originator:** Patrik Sundblom  
 **Project:** The Syntract Vision / QCDS / Syntract  
 **Canonical architecture:** **QCDS Fabric v1.0 — locked**  
-**Reference implementation:** **BUILD 12 / package 1.3.0**  
+**Reference implementation:** **BUILD 13 / package 1.4.0**  
 **Theory/specification:** CC BY 4.0  
 **Software:** MIT
 
@@ -23,8 +23,9 @@ The repository intentionally separates:
    architecture changes require a new specification version.
 2. **Implementation** — `src/qcds_fabric/`, built in falsifiable BUILD steps.
 
-BUILD 12 does not change the canon. It adds **oracle gap discovery + oracle
-genesis** ahead of BUILD 11's challenged oracle-population evolution.
+BUILD 13 does not change the canon. It adds **autonomous information-need and
+evidence/experiment planning plus resumable checkpoints** around BUILD 12 oracle
+genesis and BUILD 11 challenged evolution.
 
 ## Current executable path
 
@@ -63,126 +64,119 @@ HUMAN PROBLEM / EXTERNAL SEMANTIC ADAPTER
           ORACLE CHALLENGE LAYER
         selection + holdout cases
                     ↓
-    PROPOSE → TEST → PROMOTE / REJECT
-                    ↓
-       VERSIONED ORACLE POPULATION
-                    ↓
-            RE-INJECT / INFER
-                    ↺
-                    ↓
-             SYNTRACT BIND
-              ↙          ↘
-        CONTRACT N→1    EXPAND 1→N
-              ↘          ↓
-                TEST / ORACLES
-                     ↓
-                CONTRACT / BIND
-                     ↺
+        PROMOTE? ── yes ──→ VERSION + RE-INJECT → INFER ↺
+            │
+            no
+            ↓
+     HYPOTHESIS DISAGREEMENT
+            ↓
+       INFORMATION NEED
+            ↓
+ EVIDENCE / EXPERIMENT PLAN
+            ↓
+ AWAITING EVIDENCE CHECKPOINT
+            ↓
+ NEW OBSERVATION / EXPERIMENT RESULT
+            ↓
+ SOURCE-ATTRIBUTED EVIDENCE INGESTION
+            ↓
+        RECOMPILE → INFER ↺
+            ↓
+         SYNTRACT BIND
+       ↙                ↘
+ CONTRACT N→1        EXPAND 1→N
+       ↘                ↓
+          TEST / ORACLES
+               ↓
+          CONTRACT / BIND
+               ↺
 ```
 
-The semantic frontend, oracle discovery/proposal systems and QCDS inference core
-remain separable. External trained models may supply semantic parsing or oracle
-hypotheses, but they do not become the QCDS kernel and their proposals are not
-automatically treated as truth.
+The semantic frontend, oracle discovery/proposal systems, evidence planner and
+QCDS inference core remain separable. External trained models may supply semantic
+parsing or oracle hypotheses, but they do not become the QCDS kernel and their
+proposals are not automatically treated as truth.
 
 ## BUILD 9: human-to-logic
 
-BUILD 9 established the first model-independent semantic boundary:
-
-- `SemanticQuery`, `SemanticClaim` and `SemanticFrame` define a bounded semantic
-  ingress contract;
-- `ControlledEnglishAnalyzer` in `semantic_ingress.py` proves deterministic
-  raw-text ingress and preserves `[0.90]`-style source confidence correctly;
-- unknown language remains explicit as `unresolved`;
-- categorical candidates become binary dimensions with `OneHotOracle` logic;
-- claims become soft, source-attributed `EvidenceOracle` constraints;
-- competing claims remain explicit disagreement rather than a fabricated answer;
-- semantic results bind into a normal uncertainty-bearing Syntract.
-
-See [`SEMANTIC_INGRESS.md`](SEMANTIC_INGRESS.md).
+BUILD 9 established the first model-independent semantic boundary. Unknown
+language remains explicit as `unresolved`; categorical candidates become binary
+dimensions; source claims become soft `EvidenceOracle` constraints; competing
+claims remain disagreement instead of a fabricated answer. See
+[`SEMANTIC_INGRESS.md`](SEMANTIC_INGRESS.md).
 
 ## BUILD 10: problem-to-Syntract
 
-BUILD 10 adds `src/qcds_fabric/problem.py` and moves from one query to a joint
-semantic problem.
-
-A `SemanticProblemFrame` can contain multiple queries, entities, claims,
-relations, cross-query rules, ontology mappings, unresolved material and adapter
-provenance. Multiple query groups are compiled into the **same local binary
-space**, so explicit rules can couple them before inference.
-
-Rules support bounded `implies`, `excludes` and `equivalent` transforms,
-separately tagged as `logical`, `causal` or `temporal` provenance. Ontology
-mappings are explicit and auditable. Partly answerable problems retain
-`blocked_queries`; candidates are not invented merely to make a query executable.
-
-See [`PROBLEM_TO_SYNTRACT.md`](PROBLEM_TO_SYNTRACT.md).
+BUILD 10 adds joint multi-query compilation with entities, relations, ontology,
+explicit logical/causal/temporal rule provenance and partial executability. All
+executable query groups share one Condition space, so explicit rules can couple
+them before inference. See [`PROBLEM_TO_SYNTRACT.md`](PROBLEM_TO_SYNTRACT.md).
 
 ## BUILD 11: challenged oracle evolution
 
-BUILD 11 adds `src/qcds_fabric/oracle_evolution.py` and closes a bounded feedback
-loop around BUILD 10.
-
-`OracleProposalGenerator` does not receive challenge targets. Hypotheses are
-generated first and only then evaluated against explicit selection/holdout cases.
-The built-in mutation generator can challenge existing BUILD 10 rule transforms;
-retirement is an explicit leave-one-out hypothesis rather than silent pruning.
-
-Promotion can require selection improvement, holdout non-regression, bounded
-worst-case regression, no contradiction increase and an observable distribution
-effect. Every promotion records versioned lineage and can be re-injected into a
-fresh `ProblemCompilation` for ordinary Fabric inference.
-
-See [`ORACLE_EVOLUTION.md`](ORACLE_EVOLUTION.md).
+BUILD 11 adds versioned oracle-population mutation/retirement, selection +
+holdout challenge, explicit promotion gates, lineage and re-injection. Proposal
+generation never receives challenge targets. See
+[`ORACLE_EVOLUTION.md`](ORACLE_EVOLUTION.md).
 
 ## BUILD 12: oracle genesis
 
-BUILD 12 adds `src/qcds_fabric/oracle_genesis.py` and moves one step earlier:
-**the system can now identify where an oracle appears to be missing before it
-starts proposing replacements or additions.**
+BUILD 12 moves one step earlier: the machine can identify where an oracle appears
+to be missing before proposing replacements or additions.
 
-Gap discovery can combine:
+Gap discovery combines target-blind prediction/expansion failures with internal
+contradiction/null-influence diagnostics. `OracleGap` then drives a bounded rival
+field of explicit `implies`, `excludes` and `equivalent` hypotheses, which must
+still pass the unchanged BUILD 11 challenge path. See
+[`ORACLE_GENESIS.md`](ORACLE_GENESIS.md).
 
-- a baseline contradiction that clears under dimension nulling;
-- material null-influence on agreement or entropy;
-- externally observed `prediction_failure` signals;
-- externally observed `expansion_failure` signals.
+## BUILD 13: autonomous evidence / experiment planning
 
-External failure observations are deliberately **target-blind**. They identify
-the affected query/dimensions and severity but contain no expected answer or
-target distribution. Correct outcomes remain inside BUILD 11 challenge cases.
+BUILD 13 adds `src/qcds_fabric/evidence_planning.py` and asks the next question:
+**if several oracle hypotheses remain unresolved, what new information would
+most help distinguish them?**
 
-Signals are aggregated into `OracleGap` objects with affected dimensions,
-bounded context, severity and provenance. The built-in
-`PairwiseSemanticRuleGenesisGenerator` then emits a bounded rival field of new
-cross-group `SemanticRuleOracle` hypotheses using explicit `implies`, `excludes`
-and `equivalent` transforms. It labels those candidates `logical`; surviving a
-challenge is not treated as proof of causality.
+The default `DisagreementEvidencePlanner` receives no challenge targets or
+holdout answers. It runs the current population and target-blind candidate
+populations under the same present evidence, projects their query distributions,
+and ranks where their predictions disagree most.
 
-`run_oracle_genesis_cycle(...)` closes the tested loop:
+That becomes an explicit `EvidenceNeed` and one or more `EvidenceAction` plans:
 
-```text
-INFER
-  ↓
-DISCOVER GAP
-  ↓
-GENERATE RIVAL ORACLES
-  ↓
-BUILD 11 SELECTION + HOLDOUT CHALLENGE
-  ↓
-PROMOTE / REJECT
-  ↓
-RE-INJECT EVOLVED POPULATION
-  ↓
-INFER / BIND
-  ↺
-```
+- `independent_observation`
+- `replicate_measurement`
+- `validation_experiment`
+- `dimension_probe`
+- `targeted_query`
 
-If no gap is detected, evolution stops. If a gap is detected but no hypothesis
-survives challenge, the population remains unchanged instead of mutating for its
-own sake.
+A plan contains **what to measure or observe, not what the answer should be**.
+BUILD 13 does not itself execute external physical/account actions; execution and
+real-world safety/authorization remain an external boundary.
 
-See [`ORACLE_GENESIS.md`](ORACLE_GENESIS.md).
+Externally obtained results can return as `EvidenceAcquisitionResult` and are
+re-ingested as normal source-attributed `SemanticClaim` evidence. Only already
+represented candidate values are accepted by this bounded ingestion path; new
+semantics require semantic/expansion handling rather than silent invention.
+
+### Stalling is not terminal
+
+BUILD 13 also changes the implementation-level control model around a stalled
+cycle. `IntelligenceCheckpoint` explicitly distinguishes:
+
+- `active` — the oracle population changed;
+- `awaiting_evidence` — a discriminating evidence plan exists;
+- `quiescent` — no useful next action is available right now;
+- `terminal` — only when explicitly requested by the caller.
+
+So `no_oracle_gaps` and `no_promotable_hypotheses` are **not permanent lock
+states**. Non-terminal checkpoints remain resumable on new evidence, a new
+failure observation, a new expansion result, oracle-population change or manual
+resume.
+
+At the same time, the default policy does not busy-loop on an unchanged state.
+Resume requires a real new trigger or an explicit `force_replan=True`.
+
+See [`EVIDENCE_PLANNING.md`](EVIDENCE_PLANNING.md).
 
 ## BUILD status
 
@@ -200,7 +194,8 @@ See [`ORACLE_GENESIS.md`](ORACLE_GENESIS.md).
 | 9 | merged | semantic ingress / human-to-logic / Syntract handoff |
 | 10 | merged | joint multi-query problem-to-Syntract compiler |
 | 11 | merged | challenged, versioned oracle-population evolution |
-| 12 | current | target-blind oracle gap discovery + oracle genesis |
+| 12 | merged | target-blind oracle gap discovery + oracle genesis |
+| 13 | current | resumable autonomous evidence / experiment planning |
 
 See [`IMPLEMENTATION.md`](IMPLEMENTATION.md) for the exact implementation
 boundary.
@@ -210,16 +205,13 @@ boundary.
 - `src/qcds_fabric/models.py` — BaseBundle, ChannelView, TruthDistribution,
   StabilizedReturn and Syntract.
 - `src/qcds_fabric/oracles.py` — exact, mask and DistributionOracle semantics.
-- `src/qcds_fabric/semantic.py` — BUILD 9 semantic data model, evidence/logic
-  oracles and one-query semantic compiler.
-- `src/qcds_fabric/semantic_ingress.py` — bounded Controlled-English raw-text
-  adapter and public `human_to_logic(...)` helpers.
-- `src/qcds_fabric/problem.py` — BUILD 10 entities, relations, ontology mapping,
-  multi-query joint compiler, cross-query rules and problem Syntract binding.
-- `src/qcds_fabric/oracle_evolution.py` — BUILD 11 hypothesis mutation,
-  selection/holdout challenge, promotion/retirement, lineage and re-injection.
-- `src/qcds_fabric/oracle_genesis.py` — BUILD 12 target-blind gap discovery,
-  genesis hypotheses and BUILD 11 challenge bridge.
+- `src/qcds_fabric/semantic.py` — BUILD 9 semantic data model and evidence/logic oracles.
+- `src/qcds_fabric/semantic_ingress.py` — bounded Controlled-English raw-text adapter.
+- `src/qcds_fabric/problem.py` — BUILD 10 joint problem compiler and Syntract binding.
+- `src/qcds_fabric/oracle_evolution.py` — BUILD 11 challenge, evolution, lineage and re-injection.
+- `src/qcds_fabric/oracle_genesis.py` — BUILD 12 target-blind gap discovery and genesis.
+- `src/qcds_fabric/evidence_planning.py` — BUILD 13 information need, action planning,
+  evidence ingestion and resumable checkpoints.
 - `src/qcds_fabric/kernel.py` — bounded classical reference inference kernel.
 - `src/qcds_fabric/substrates.py` — substrate contract + statevector/Grover simulator.
 - `src/qcds_fabric/grover_depth.py` — adaptive `m/m*` and overshoot diagnostics.
@@ -278,8 +270,9 @@ The four phases remain:
 - External truth requires appropriate external validation.
 - Oracle evolution/genesis may change challenged implementation populations,
   **not** the locked canonical specification.
+- A stalled implementation cycle is not automatically a terminal truth state.
 
-## Contraction, expansion and oracle evolution
+## Contraction, expansion, evolution and information seeking
 
 The reference package executes both inference directions:
 
@@ -294,16 +287,26 @@ BUILD 8 closes:
 BIND → EXPAND → TEST → CONTRACT → BIND
 ```
 
-BUILD 11 adds:
-
-```text
-INFER → PROPOSE ORACLES → CHALLENGE → PROMOTE/REJECT → RE-INFER
-```
-
-BUILD 12 extends that loop to:
+BUILD 11–12 add:
 
 ```text
 INFER → DISCOVER GAP → GENESIS → CHALLENGE → PROMOTE/REJECT → RE-INFER
+```
+
+BUILD 13 extends the unresolved branch:
+
+```text
+NO PROMOTION
+    ↓
+COMPARE HYPOTHESES
+    ↓
+PLAN DISCRIMINATING EVIDENCE
+    ↓
+CHECKPOINT / WAIT
+    ↓
+NEW EVIDENCE
+    ↓
+RECOMPILE → INFER → DISCOVER → CHALLENGE
 ```
 
 These loops can interact while retaining separate provenance.
@@ -317,6 +320,8 @@ The implementation intentionally keeps possible failure points visible:
 - source confidence may be poorly calibrated;
 - a discovered oracle gap may be spurious;
 - generated candidates may miss the actual missing mechanism;
+- an evidence plan may be low-value, costly, impossible or poorly chosen;
+- acquired evidence may itself be wrong or unrepresentative;
 - a causal/temporal rule or evolved oracle may be false;
 - challenge targets may themselves be wrong, leaked or unrepresentative;
 - a candidate may overfit selection and fail holdout;
@@ -327,12 +332,12 @@ The implementation intentionally keeps possible failure points visible:
 - expansion may produce branches that later fail validation;
 - a stable distribution or promoted oracle may still be externally wrong.
 
-Therefore BUILD 12 does **not** claim unrestricted natural-language
-understanding, universal autonomous causal discovery, unrestricted
-self-modification, AGI/ASI, native quantum advantage, or automatic external
-truth. It establishes a tested, reversible and falsifiable path from a detected
-constraint gap to newly generated oracle hypotheses and challenged population
-updates.
+Therefore BUILD 13 does **not** claim unrestricted natural-language
+understanding, universal autonomous causal discovery, unrestricted autonomous
+real-world experimentation, unrestricted self-modification, AGI/ASI, native
+quantum advantage, or automatic external truth. It establishes a tested,
+resumable and falsifiable path from uncertainty to a new information request and
+back into QCDS inference.
 
 ## Canonical publications
 
@@ -365,6 +370,9 @@ TEST THE EXPANSION.
 DISCOVER WHAT IS MISSING.
 GENERATE RIVAL ORACLES.
 CHALLENGE THE ORACLES.
+ASK WHAT EVIDENCE WOULD DISTINGUISH THEM.
+ACQUIRE NEW EVIDENCE.
+RESUME.
 EVOLVE WHAT SURVIVES.
 BIND WHAT STILL HOLDS.
 ```
