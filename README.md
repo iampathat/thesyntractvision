@@ -6,11 +6,11 @@
 
 Instead of treating intelligence as a trained model that produces one answer, QCDS works over an explicit logical space, applies logical and evidential constraints as **oracles**, preserves uncertainty, tests competing views, and recursively binds what remains coherent.
 
-The repository contains the locked QCDS Fabric v1.0 specification and a tested Python reference implementation. The current implementation includes a persistent intelligence runtime, a shared inspectable **Logical Space**, and a runnable **Logical Robot** that can seek external evidence and return it to the same QCDS reasoning loop.
+The repository contains the locked QCDS Fabric v1.0 specification and a tested Python reference implementation. The current implementation includes a persistent intelligence runtime, a shared inspectable **Logical Space**, global non-materialized logical transforms, and a runnable **Logical Robot** that can seek external evidence and return it to the same QCDS reasoning loop.
 
 **Author and originator:** Patrik Sundblom  
 **Canonical architecture:** QCDS Fabric v1.0 — locked  
-**Reference software:** Python package `qcds-fabric` 1.8.0  
+**Reference software:** Python package `qcds-fabric` 1.9.0  
 **Theory/specification:** CC BY 4.0  
 **Software:** MIT
 
@@ -26,6 +26,8 @@ flowchart LR
     Q -->|what is missing?| R
     Q --> O[Oracle Genesis & Evolution]
     O --> Q
+    O --> T[Global Logical Rules]
+    T --> L
     Q --> S[Syntract / Bound Result]
     S -->|new dimensions / questions| Q
 ```
@@ -112,6 +114,47 @@ See [`LOGICAL_SPACE.md`](LOGICAL_SPACE.md).
 
 ---
 
+## Global logic without rewriting every object
+
+A reusable logical rule can be applied over the represented space without materializing the derived term into every matching base row.
+
+For example, suppose the base Logical Space contains many bindings ending in `human`:
+
+```text
+(alice, human)
+(bob, human)
+(carol, human)
+...
+```
+
+One rule can resolve all of them through:
+
+```text
+human => sour
+```
+
+If challenged logic later replaces that single rule with:
+
+```text
+human => happy
+```
+
+then the next resolved query sees every represented human through `happy` and no longer through `sour`. The individual rows in `logical_space.csv` remain unchanged.
+
+Rules can also compose:
+
+```text
+human => happy
+happy => positive
+positive => approachable
+```
+
+The current Python implementation proves this **logical semantic property**, not a billion-scale or quantum-speed claim: it still scans stored bindings and rules when resolving a query. The rule/store boundary is separate so a later accelerator-, FPGA- or quantum-near substrate can execute the same logical semantics differently.
+
+See [`GLOBAL_LOGIC.md`](GLOBAL_LOGIC.md).
+
+---
+
 ## The Logical Robot
 
 The runnable Logical Robot MVP follows a deliberately small loop:
@@ -133,7 +176,7 @@ QCDS reasons again
 
 The robot does **not** decide what is true by itself. If two sources explicitly support competing logic, both observations can be returned to QCDS.
 
-The public-web body currently includes a key-free Wikipedia search backend and bounded read-only HTTP retrieval. The first live run exposed a flaw in page-level word-frequency extraction, so the MVP now requires the represented logical terms to be bound in the same sentence-sized observation unit. A page about Lyon therefore does not become evidence for `France / capital / Lyon` just because the word `Lyon` occurs many times.
+The public-web body currently includes a key-free Wikipedia search backend and bounded read-only HTTP retrieval. Live falsification replaced page-level mention voting with candidate-neutral search plus a bounded assertion check: represented terms must actually be bound in the observed text. A page about Lyon therefore does not become evidence for `France / capital / Lyon` merely because `Lyon` occurs many times, and a page about a magazine named *Capital* does not become evidence that Paris is the capital of France merely because the words appear nearby.
 
 ### Run the MVP
 
@@ -153,6 +196,8 @@ The current MVP deliberately uses ordinary CSV files so the evolving state can b
 ```text
 intelligence_store/
 ├── logical_space.csv
+├── logical_rules.csv
+├── logical_rule_history.csv
 └── <mission_id>/
     ├── mission.csv
     ├── current_oracles.csv
@@ -162,6 +207,8 @@ intelligence_store/
 ```
 
 `logical_space.csv` shows source-attributed bindings accumulated across missions.
+
+`logical_rules.csv` shows the current reusable global logical rules. `logical_rule_history.csv` records rule genesis, replacement and retirement without rewriting the base Logical Space.
 
 `current_oracles.csv` shows the active evolvable oracle population. `oracle_history.csv` shows how that population changed through genesis, promotion, mutation and retirement.
 
@@ -177,6 +224,8 @@ Logical Robot / other caller
 SuperintelligenceRuntime
           ↕
 Persistent Logical Space
+          ↕
+Global Logical Rules
           ↓
 QCDS Fabric
           ↓
@@ -198,6 +247,8 @@ The robot does not need to know how QCDS internals work. It receives an informat
 | `src/qcds_fabric/` | Reference implementation |
 | `src/qcds_fabric/runtime.py` | Persistent callable intelligence runtime |
 | `src/qcds_fabric/logical_space.py` | Shared Logical Space and current Logical Robot CLI |
+| `src/qcds_fabric/logical_assertion.py` | Bounded assertion check for MVP web observations |
+| `src/qcds_fabric/logical_transform.py` | Non-materialized global logical rule projection |
 | `src/qcds_fabric/first_logical_robot.py` | Original runnable Logical Robot body/runtime bridge |
 | `src/qcds_fabric/intelligence_store.py` | Human-readable mission persistence |
 | `src/qcds_fabric/oracle_genesis.py` | Oracle-gap discovery and genesis |
@@ -207,7 +258,7 @@ The robot does not need to know how QCDS internals work. It receives an informat
 | `examples/` | Runnable examples |
 | `IMPLEMENTATION.md` | Detailed implementation history and boundaries |
 
-Focused documentation: [`LOGICAL_SPACE.md`](LOGICAL_SPACE.md), [`PROBLEM_TO_SYNTRACT.md`](PROBLEM_TO_SYNTRACT.md), [`ORACLE_EVOLUTION.md`](ORACLE_EVOLUTION.md), [`ORACLE_GENESIS.md`](ORACLE_GENESIS.md), [`EVIDENCE_PLANNING.md`](EVIDENCE_PLANNING.md), [`LOGICAL_ROBOT.md`](LOGICAL_ROBOT.md), [`PERSISTENT_RUNTIME.md`](PERSISTENT_RUNTIME.md), [`FIRST_LOGICAL_ROBOT.md`](FIRST_LOGICAL_ROBOT.md).
+Focused documentation: [`LOGICAL_SPACE.md`](LOGICAL_SPACE.md), [`GLOBAL_LOGIC.md`](GLOBAL_LOGIC.md), [`PROBLEM_TO_SYNTRACT.md`](PROBLEM_TO_SYNTRACT.md), [`ORACLE_EVOLUTION.md`](ORACLE_EVOLUTION.md), [`ORACLE_GENESIS.md`](ORACLE_GENESIS.md), [`EVIDENCE_PLANNING.md`](EVIDENCE_PLANNING.md), [`LOGICAL_ROBOT.md`](LOGICAL_ROBOT.md), [`PERSISTENT_RUNTIME.md`](PERSISTENT_RUNTIME.md), [`FIRST_LOGICAL_ROBOT.md`](FIRST_LOGICAL_ROBOT.md).
 
 ---
 
@@ -224,7 +275,7 @@ GitHub Actions runs the same regression/falsification suite on implementation ch
 
 ## Canonical specification
 
-The QCDS Fabric v1.0 canonical artifacts are version-locked and are not rewritten by oracle evolution, the Logical Robot, Logical Space or the runtime:
+The QCDS Fabric v1.0 canonical artifacts are version-locked and are not rewritten by oracle evolution, the Logical Robot, Logical Space, global logical rules or the runtime:
 
 - [Canonical specification — Markdown](QCDS_FABRIC_SPEC_v1.0_CANONICAL.md)
 - [Canonical specification — PDF](QCDS_FABRIC_SPEC_v1.0_CANONICAL.pdf)
@@ -236,7 +287,7 @@ The QCDS Fabric v1.0 canonical artifacts are version-locked and are not rewritte
 
 ## Research status and claim boundary
 
-This repository is an experimental, falsifiable reference implementation. A coherent distribution, a generated or promoted oracle, a Syntract, a logical binding, or an observation found on the web is **not automatically external truth**.
+This repository is an experimental, falsifiable reference implementation. A coherent distribution, a generated or promoted oracle, a Syntract, a logical binding, a global logical rule, or an observation found on the web is **not automatically external truth**.
 
 The current software does not by itself establish AGI/ASI, unrestricted natural-language understanding, complete world knowledge, unrestricted self-modification, production browser security, native quantum advantage or correctness on arbitrary real-world problems. Those require empirical validation beyond architectural implementation.
 
