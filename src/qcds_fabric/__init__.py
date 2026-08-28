@@ -9,7 +9,8 @@ from .fabric import FabricLayer, NullBankResult, RotationBankResult, StabilizedR
 from .funnel import BoundCondition, FunnelLayerResult, FunnelTrace, funnel_step, recursive_contraction_funnel
 from .kernel import ClassicalInferenceKernel
 from .models import BaseBundle, ChannelView, StabilizedReturn, Syntract, TruthDistribution
-from .oracles import ExactOracle, MaskOracle, OracleStack
+from .oracles import DistributionOracle, ExactOracle, MaskOracle, OracleStack
+from .reentry import ReentryCompilation, ReentryResult, baseline_reentry_distribution, compile_bound_condition, run_bound_condition_reentry
 from .rotations import circular_oracle_maps, circular_position_maps, crossed_views, oracle_exposure_views, positional_views
 from .stabilize import DistributionStabilizer
 
@@ -21,6 +22,7 @@ __all__ = [
     "Syntract",
     "ExactOracle",
     "MaskOracle",
+    "DistributionOracle",
     "OracleStack",
     "ClassicalInferenceKernel",
     "DistributionStabilizer",
@@ -33,6 +35,11 @@ __all__ = [
     "FunnelTrace",
     "funnel_step",
     "recursive_contraction_funnel",
+    "ReentryCompilation",
+    "ReentryResult",
+    "compile_bound_condition",
+    "run_bound_condition_reentry",
+    "baseline_reentry_distribution",
     "LogicalSpaceAccounting",
     "logical_space_accounting",
     "circular_position_maps",

@@ -66,6 +66,63 @@ class MaskOracle:
 
 
 @dataclass(frozen=True)
+class DistributionOracle:
+    """Soft oracle carrying a prior TruthDistribution into a later QCDS pass.
+
+    The oracle stores probabilities in its own canonical coordinate order. If a
+    target dimension is absent from the current ChannelView, scoring marginalizes
+    over that source coordinate. Therefore logical `∅` never becomes binary 0 or
+    wildcard `?` during re-entry.
+    """
+
+    oracle_id: str
+    dimension_ids: tuple[str, ...]
+    probabilities: Mapping[State, float]
+    power: float = 1.0
+
+    def __post_init__(self) -> None:
+        if not self.oracle_id:
+            raise ValueError("oracle_id must be non-empty")
+        if not self.dimension_ids:
+            raise ValueError("DistributionOracle requires at least one dimension")
+        if len(set(self.dimension_ids)) != len(self.dimension_ids):
+            raise ValueError("DistributionOracle dimension identities must be unique")
+        if self.power <= 0:
+            raise ValueError("power must be positive")
+        if not self.probabilities:
+            raise ValueError("DistributionOracle requires non-empty support")
+        for state, probability in self.probabilities.items():
+            if len(state) != len(self.dimension_ids):
+                raise ValueError("DistributionOracle state width mismatch")
+            if any(value not in (0, 1) for value in state):
+                raise ValueError("DistributionOracle source states must be binary")
+            if probability < 0:
+                raise ValueError("DistributionOracle probabilities cannot be negative")
+        if abs(sum(self.probabilities.values()) - 1.0) > 1e-9:
+            raise ValueError("DistributionOracle probabilities must sum to 1")
+
+    def is_applicable(self, view: ChannelView) -> bool:
+        active = set(view.active_dimension_ids())
+        return any(dimension_id in active for dimension_id in self.dimension_ids)
+
+    def score(self, view: ChannelView, state: State) -> float:
+        active = view.state_as_mapping(state)
+        constrained = tuple(
+            (index, dimension_id)
+            for index, dimension_id in enumerate(self.dimension_ids)
+            if dimension_id in active
+        )
+        if not constrained:
+            return 1.0
+
+        marginal = 0.0
+        for source_state, probability in self.probabilities.items():
+            if all(source_state[index] == active[dimension_id] for index, dimension_id in constrained):
+                marginal += probability
+        return marginal ** self.power
+
+
+@dataclass(frozen=True)
 class OracleStack:
     stack_id: str
     version: str
