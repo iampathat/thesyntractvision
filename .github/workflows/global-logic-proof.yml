@@ -1,0 +1,67 @@
+name: Global Logical Transformation Proof
+on:
+  push:
+    branches: [test/global-logic-proof]
+jobs:
+  proof:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install
+        run: python -m pip install -e '.[test]'
+      - name: Prove one-rule global logical change
+        run: |
+          python - <<'PY'
+          import csv, hashlib, tempfile
+          from pathlib import Path
+          from qcds_fabric.logical_space import CsvLogicalSpace, LogicalBinding
+          from qcds_fabric.logical_transform import CsvLogicalTransformStore, LogicalSpaceResolver, LogicalTransformRule
+
+          root = Path(tempfile.mkdtemp(prefix='qcds-global-proof-'))
+          space = CsvLogicalSpace(root)
+          n = 10000
+          bindings = [LogicalBinding(f'person:{i}', (f'person_{i}', 'human'), 'proof:seed', 1.0) for i in range(n)]
+          bindings.append(LogicalBinding('dog:1', ('dog_1', 'dog'), 'proof:seed', 1.0))
+          assert space.append(bindings) == n + 1
+          base_before = hashlib.sha256(space.path.read_bytes()).hexdigest()
+
+          rules = CsvLogicalTransformStore(root)
+          rules.install(LogicalTransformRule('human-state', ('human',), ('sour',), 'oracle:genesis', provenance={'external_truth_claim': False, 'challenge_required': True}))
+          resolver = LogicalSpaceResolver(space, rules)
+          assert len(resolver.query('sour')) == n
+          assert len(resolver.query('happy')) == 0
+
+          rules.replace('human-state', emit_terms=('happy',), source_id='oracle:evolution', provenance={'replacement_reason': 'challenged replacement'})
+          assert len(resolver.query('sour')) == 0
+          assert len(resolver.query('happy')) == n
+          assert not resolver.query('dog', 'happy')
+          base_after = hashlib.sha256(space.path.read_bytes()).hexdigest()
+          assert base_before == base_after
+
+          current = list(csv.DictReader(rules.current_path.open(encoding='utf-8')))
+          history = list(csv.DictReader(rules.history_path.open(encoding='utf-8')))
+          assert len(current) == 1
+          assert current[0]['rule_id'] == 'human-state'
+          assert current[0]['version'] == '2'
+          assert len(history) == 2
+
+          # Fresh objects simulate restart from the same files.
+          restarted_space = CsvLogicalSpace(root)
+          restarted_rules = CsvLogicalTransformStore(root)
+          restarted = LogicalSpaceResolver(restarted_space, restarted_rules)
+          assert len(restarted.query('happy')) == n
+          assert len(restarted.query('sour')) == 0
+          assert hashlib.sha256(restarted_space.path.read_bytes()).hexdigest() == base_before
+
+          print('GLOBAL_LOGIC_PROOF_OK')
+          print('base_bindings=', n + 1)
+          print('active_rule_rows=', len(current))
+          print('rule_history_rows=', len(history))
+          print('sour_after_replacement=', len(restarted.query('sour')))
+          print('happy_after_replacement=', len(restarted.query('happy')))
+          print('base_logical_space_hash_unchanged=', base_before == base_after)
+          print('active_rule_version=', current[0]['version'])
+          PY
