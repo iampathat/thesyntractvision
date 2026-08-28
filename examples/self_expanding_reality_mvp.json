@@ -18,7 +18,7 @@
       "analyzer_id": "build21-example",
       "queries": [
         {"query_id": "trait", "subject": "creature", "predicate": "trait", "candidate_values": ["winged", "grounded"]},
-        {"query_id": "ability", "subject": "creature", "predicate": "ability", "candidate_values": ["flies", "walks"]}
+        {"query_id": "ability", "subject": "creature", "predicate": "ability", "candidate_values": ["flies", "walks", "swims"]}
       ],
       "claims": [
         {"subject": "creature", "predicate": "trait", "value": "winged", "source_id": "observation:live", "confidence": 1.0}
@@ -46,7 +46,7 @@
             "analyzer_id": "build21-challenge",
             "queries": [
               {"query_id": "trait", "subject": "creature", "predicate": "trait", "candidate_values": ["winged", "grounded"]},
-              {"query_id": "ability", "subject": "creature", "predicate": "ability", "candidate_values": ["flies", "walks"]}
+              {"query_id": "ability", "subject": "creature", "predicate": "ability", "candidate_values": ["flies", "walks", "swims"]}
             ],
             "claims": [
               {"subject": "creature", "predicate": "trait", "value": "winged", "source_id": "selection:evidence", "confidence": 1.0}
@@ -64,7 +64,7 @@
             "analyzer_id": "build21-challenge",
             "queries": [
               {"query_id": "trait", "subject": "creature", "predicate": "trait", "candidate_values": ["winged", "grounded"]},
-              {"query_id": "ability", "subject": "creature", "predicate": "ability", "candidate_values": ["flies", "walks"]}
+              {"query_id": "ability", "subject": "creature", "predicate": "ability", "candidate_values": ["flies", "walks", "swims"]}
             ],
             "claims": [
               {"subject": "creature", "predicate": "trait", "value": "grounded", "source_id": "holdout:evidence", "confidence": 1.0}
