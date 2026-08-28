@@ -1,0 +1,84 @@
+{
+  "mission_id": "build21-winged-creature-demo",
+  "probe_terms": ["flies"],
+  "reality_bindings": [
+    {"binding_id": "creature-001", "terms": ["creature-001", "winged"], "source_id": "observation:001"},
+    {"binding_id": "creature-002", "terms": ["creature-002", "winged"], "source_id": "observation:002"},
+    {"binding_id": "creature-003", "terms": ["creature-003", "grounded"], "source_id": "observation:003"},
+    {"binding_id": "creature-004", "terms": ["creature-004", "grounded"], "source_id": "observation:004"},
+    {"binding_id": "creature-005", "terms": ["creature-005", "grounded"], "source_id": "observation:005"},
+    {"binding_id": "creature-006", "terms": ["creature-006", "grounded"], "source_id": "observation:006"},
+    {"binding_id": "creature-007", "terms": ["creature-007", "grounded"], "source_id": "observation:007"},
+    {"binding_id": "creature-008", "terms": ["creature-008", "grounded"], "source_id": "observation:008"}
+  ],
+  "genesis": {
+    "problem": {
+      "mission_id": "winged-live",
+      "raw_text": "An observed creature is winged; its represented movement ability remains unresolved.",
+      "analyzer_id": "build21-example",
+      "queries": [
+        {"query_id": "trait", "subject": "creature", "predicate": "trait", "candidate_values": ["winged", "grounded"]},
+        {"query_id": "ability", "subject": "creature", "predicate": "ability", "candidate_values": ["flies", "walks"]}
+      ],
+      "claims": [
+        {"subject": "creature", "predicate": "trait", "value": "winged", "source_id": "observation:live", "confidence": 1.0}
+      ],
+      "rules": []
+    },
+    "failure_observations": [
+      {
+        "observation_id": "ability-unresolved",
+        "kind": "prediction_failure",
+        "query_ids": ["ability"],
+        "severity": 1.0,
+        "description": "The ability query remains unresolved and needs a candidate logical constraint."
+      }
+    ],
+    "challenge": {
+      "suite_id": "winged-ability-challenge",
+      "cases": [
+        {
+          "case_id": "selection-winged",
+          "role": "selection",
+          "frame": {
+            "mission_id": "selection-winged",
+            "raw_text": "Independent observation: winged case.",
+            "analyzer_id": "build21-challenge",
+            "queries": [
+              {"query_id": "trait", "subject": "creature", "predicate": "trait", "candidate_values": ["winged", "grounded"]},
+              {"query_id": "ability", "subject": "creature", "predicate": "ability", "candidate_values": ["flies", "walks"]}
+            ],
+            "claims": [
+              {"subject": "creature", "predicate": "trait", "value": "winged", "source_id": "selection:evidence", "confidence": 1.0}
+            ],
+            "rules": []
+          },
+          "expected_assignments": {"trait": "winged", "ability": "flies"}
+        },
+        {
+          "case_id": "holdout-grounded",
+          "role": "holdout",
+          "frame": {
+            "mission_id": "holdout-grounded",
+            "raw_text": "Independent holdout observation: grounded case.",
+            "analyzer_id": "build21-challenge",
+            "queries": [
+              {"query_id": "trait", "subject": "creature", "predicate": "trait", "candidate_values": ["winged", "grounded"]},
+              {"query_id": "ability", "subject": "creature", "predicate": "ability", "candidate_values": ["flies", "walks"]}
+            ],
+            "claims": [
+              {"subject": "creature", "predicate": "trait", "value": "grounded", "source_id": "holdout:evidence", "confidence": 1.0}
+            ],
+            "rules": []
+          },
+          "expected_assignments": {"trait": "grounded", "ability": "walks"}
+        }
+      ]
+    },
+    "evaluation_mode": "baseline",
+    "max_generations": 1,
+    "max_promotions_per_generation": 1,
+    "min_selection_cases": 1,
+    "min_holdout_cases": 1
+  }
+}
