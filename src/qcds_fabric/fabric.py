@@ -28,9 +28,30 @@ class RotationBankResult:
 
 
 @dataclass(frozen=True)
+class StabilizedRotationSuiteResult:
+    baseline_view: ChannelView
+    baseline_distribution: TruthDistribution
+    families: Mapping[str, RotationBankResult]
+    stabilized_return: StabilizedReturn
+
+
+@dataclass(frozen=True)
 class FabricLayer:
     kernel: ClassicalInferenceKernel = ClassicalInferenceKernel()
     stabilizer: DistributionStabilizer = DistributionStabilizer()
+
+    @staticmethod
+    def _diagnostics(distributions: Sequence[TruthDistribution]) -> Mapping[str, float]:
+        resolved = tuple(distributions)
+        if not resolved:
+            raise ValueError("diagnostic bank cannot be empty")
+        entropies = [distribution.entropy for distribution in resolved]
+        agreements = [distribution.oracle_agreement for distribution in resolved]
+        return {
+            "view_count": float(len(resolved)),
+            "entropy_spread": max(entropies) - min(entropies),
+            "oracle_agreement_spread": max(agreements) - min(agreements),
+        }
 
     def _run_rotation_views(
         self,
@@ -42,17 +63,11 @@ class FabricLayer:
         if not resolved:
             raise ValueError("rotation bank cannot be empty")
         distributions = tuple(self.kernel.run(view, oracle_stack) for view in resolved)
-        entropies = [distribution.entropy for distribution in distributions]
-        agreements = [distribution.oracle_agreement for distribution in distributions]
         return RotationBankResult(
             family=family,
             views=resolved,
             distributions=distributions,
-            diagnostics={
-                "view_count": float(len(resolved)),
-                "entropy_spread": max(entropies) - min(entropies),
-                "oracle_agreement_spread": max(agreements) - min(agreements),
-            },
+            diagnostics=self._diagnostics(distributions),
         )
 
     def run_null_bank(self, bundle: BaseBundle, oracle_stack: OracleStack) -> NullBankResult:
@@ -131,4 +146,45 @@ class FabricLayer:
                 oracle_maps=oracle_maps,
             ),
             oracle_stack,
+        )
+
+    def run_stabilized_rotation_suite(
+        self,
+        bundle: BaseBundle,
+        oracle_stack: OracleStack,
+        *,
+        include_positional: bool = True,
+        include_oracle_exposure: bool = True,
+        include_crossed: bool = False,
+    ) -> StabilizedRotationSuiteResult:
+        null_result = self.run_null_bank(bundle, oracle_stack)
+        families: dict[str, RotationBankResult] = {
+            "dimension_null": RotationBankResult(
+                family="dimension_null",
+                views=null_result.null_views,
+                distributions=null_result.null_distributions,
+                diagnostics=self._diagnostics(null_result.null_distributions),
+            )
+        }
+        if include_positional:
+            families["position"] = self.run_positional_bank(bundle, oracle_stack)
+        if include_oracle_exposure:
+            families["oracle_exposure"] = self.run_oracle_exposure_bank(bundle, oracle_stack)
+        if include_crossed:
+            families["crossed"] = self.run_crossed_bank(bundle, oracle_stack)
+
+        stabilized = self.stabilizer.stabilize_families(
+            bundle,
+            null_result.baseline_distribution,
+            {
+                name: tuple(zip(bank.views, bank.distributions))
+                for name, bank in families.items()
+            },
+            oracle_stack_identity=oracle_stack.identity,
+        )
+        return StabilizedRotationSuiteResult(
+            baseline_view=null_result.baseline_view,
+            baseline_distribution=null_result.baseline_distribution,
+            families=families,
+            stabilized_return=stabilized,
         )
