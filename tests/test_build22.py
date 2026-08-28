@@ -215,7 +215,7 @@ def test_build22_duplicate_source_does_not_fake_selection_independence(tmp_path)
     assert result.active_reality_rule_count == 0
 
 
-def test_build22_conflicting_selection_evidence_does_not_become_reality_rule(tmp_path):
+def test_build22_conflicting_selection_evidence_blocks_challenge_and_logic(tmp_path):
     spec = build22_spec(observations=[
         _observation("winged-a", "flies", "source:winged:a", {"trait": "winged"}),
         _observation("winged-b", "walks", "source:winged:b", {"trait": "winged"}),
@@ -223,10 +223,12 @@ def test_build22_conflicting_selection_evidence_does_not_become_reality_rule(tmp
     ])
     result = run_evidence_driven_reality_spec(spec, store_root=tmp_path)
 
-    assert result.challenge_case_count == 3
-    assert result.reality_result is not None
-    assert result.reality_result.oracle_promoted_count == 0
-    assert result.status == "no_challenged_oracle_survived"
+    assert result.status == "conflicting_identifying_evidence"
+    assert result.robot_observation_count == 3
+    assert result.challenge_case_count == 0
+    assert result.selection_case_count == 0
+    assert result.holdout_case_count == 0
+    assert result.reality_result is None
     assert result.active_reality_rule_count == 0
     assert not (tmp_path / "logical_rules.csv").exists()
 
@@ -295,6 +297,7 @@ def test_build22_audit_retains_context_plans_sources_and_boundaries(tmp_path):
     assert provenance["robot_received_expected_answers"] is False
     assert provenance["robot_received_hypothesis_ids"] is False
     assert provenance["challenge_built_only_after_observation"] is True
+    assert provenance["conflicting_evidence_blocks_challenge"] is True
     assert provenance["reality_promotion_delegated_to_build21"] is True
     assert result.audit_path == str(audit)
 
