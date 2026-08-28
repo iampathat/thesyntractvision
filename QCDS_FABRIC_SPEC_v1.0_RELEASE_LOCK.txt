@@ -1,0 +1,14 @@
+QCDS FABRIC v1.0 — CANONICAL RELEASE LOCK
+Date: 2026-08-28
+Author / Originator: Patrik Sundblom
+Status: CANONICAL
+
+This file records SHA-256 hashes for the canonical v1.0 release artifacts.
+A byte-for-byte identical artifact will reproduce the same hash.
+
+172a73735a071ee05393ed09dd51c2525ba039105bc6f85081a2c7dc614c24b5  QCDS_FABRIC_SPEC_v1.0_CANONICAL.md  (33681 bytes)
+ace5ba221f0ae0532dbc954af958d0d52c596d6c3a9d26415f2d84380c02b769  QCDS_FABRIC_SPEC_v1.0_CANONICAL.docx  (498319 bytes)
+96650e1a111aa7704843e778134dac39a133f512c3c4df1639b430bb1fe59d44  QCDS_FABRIC_SPEC_v1.0_CANONICAL.pdf  (1115646 bytes)
+
+Canonical architecture short lock:
+Four-phase QCDS core → same oracle regime per comparison channel → rotational dimension nulling (different null dimension per core view) → optional positional/oracle/cross rotations → distribution-preserving stabilization → recursive serial funnel → Syntract Bind; independent logical dimensions MUST be counted separately from derived diagnostic views.

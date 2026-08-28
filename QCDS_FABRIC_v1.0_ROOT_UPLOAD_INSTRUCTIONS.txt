@@ -1,0 +1,74 @@
+THE SYNTRACT VISION — QCDS FABRIC v1.0 ROOT DROP-IN
+====================================================
+
+TARGET REPOSITORY
+-----------------
+https://github.com/iampathat/thesyntractvision
+
+THIS PACKAGE IS FOR THE REPOSITORY ROOT.
+
+INTENDED OVERWRITE
+------------------
+README.md
+
+The included README.md is specifically written for:
+iampathat/thesyntractvision
+
+DO NOT OVERWRITE
+----------------
+No other existing repository file should be overwritten.
+
+The QCDS_FABRIC_* files are intended to be NEW files in the root.
+
+FILES
+-----
+README.md
+QCDS_FABRIC_SPEC_v1.0_CANONICAL.md
+QCDS_FABRIC_SPEC_v1.0_CANONICAL.pdf
+QCDS_FABRIC_SPEC_v1.0_CANONICAL.docx
+QCDS_FABRIC_SPEC_v1.0_RELEASE_LOCK.txt
+QCDS_FABRIC_SPEC_v1.0_CANONICAL_RELEASE.zip
+QCDS_FABRIC_v1.0_RELEASE_NOTES.md
+QCDS_FABRIC_v1.0_GITHUB_RELEASE_BODY.md
+QCDS_FABRIC_v1.0_ROOT_PACKAGE_SHA256SUMS.txt
+
+LICENSE
+-------
+This package does NOT contain LICENSE and will not replace an existing LICENSE file.
+
+Theory/specification attribution in the included README:
+Patrik Sundblom — The Syntract Vision / QCDS
+CC BY 4.0
+
+Software implementations remain subject to their applicable software license.
+
+RECOMMENDED COMMIT
+------------------
+docs: publish QCDS Fabric v1.0 in The Syntract Vision
+
+RECOMMENDED TAG
+---------------
+qcds-fabric-v1.0
+
+RECOMMENDED RELEASE TITLE
+-------------------------
+QCDS Fabric v1.0 — Canonical Technical Specification
+
+RELEASE DESCRIPTION
+-------------------
+Paste:
+QCDS_FABRIC_v1.0_GITHUB_RELEASE_BODY.md
+
+RELEASE ASSET
+-------------
+QCDS_FABRIC_SPEC_v1.0_CANONICAL_RELEASE.zip
+
+SAFETY CHECK
+------------
+Before committing:
+git status
+
+Expected:
+- README.md modified
+- QCDS_FABRIC_* files newly added
+- no unrelated existing file modified
