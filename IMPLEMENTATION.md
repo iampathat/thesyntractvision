@@ -21,28 +21,34 @@ Positional rotation, oracle-exposure rotation, crossed rotations, canonical
 position mapping, fail-closed oracle-stack validation, absence-aware oracle
 normalization, rotation diagnostics, and full transformation provenance.
 
-## BUILD 2 — stabilization across families + contraction funnel
+## BUILD 2 — merged
 
-Adds:
+Family-aware stabilization across null/position/oracle/crossed views with
+explicit equal-family weighting, plus a provenance-preserving serial contraction
+funnel that binds stabilized returns without hard collapse.
 
-- canonicalization of null and non-null diagnostic views into one comparable coordinate space;
-- stabilization across dimension-null, positional, oracle-exposure, and crossed families;
-- **equal-family weighting** so a diagnostic family does not dominate merely because it contains more generated views;
-- family-level entropy/agreement spread and retained-mass diagnostics;
-- no hidden hard collapse and no automatic pruning;
-- an auditable contraction funnel that groups `StabilizedReturn` objects into higher-order `BoundCondition` structures;
-- recursive grouping schedules such as `8 → 4 → 2 → 1` while retaining every leaf distribution and its provenance.
+## BUILD 3 — recursive QCDS re-entry
 
-The BUILD 2 funnel is intentionally a **binding/grouping layer**, not yet a
-claim that higher-order conditions have re-entered a new local QCDS pass. Full
-oracle-constrained QCDS re-entry over higher-order bound conditions is the next
-implementation boundary.
+Adds a bounded reference mechanism for feeding bound results back into a new
+Condition space:
+
+- every `StabilizedReturn` now records its canonical dimension identities;
+- `DistributionOracle` represents an uncertainty-bearing truth distribution as a soft oracle/factor;
+- when one of that factor's dimensions is `∅`, the factor **marginalizes** over the absent binary dimension instead of interpreting absence as `0` or `?`;
+- a `BoundCondition` can be compiled into a new namespaced BaseBundle whose values reopen as `?` while its prior bound distributions become replicated per-channel DistributionOracles;
+- multiple bound leaf returns compose multiplicatively in the new bounded local space;
+- the compiled higher-order bundle can execute the normal QCDS Fabric null/stabilization path again;
+- a configurable `max_width` prevents accidental classical state-space explosion.
+
+This is the first actual re-entry bridge from a bound funnel structure back to
+an oracle-constrained local QCDS pass. It preserves previous uncertainty rather
+than replacing it with a guessed binary label.
 
 ## Not yet implemented
 
-- higher-order QCDS re-entry and recursive local inference over bound conditions;
+- repeated automatic multi-layer `infer → stabilize → funnel → re-enter` orchestration;
 - expansion (`1 → N`);
-- statevector/QPU substrate adapters;
+- explicit statevector/Grover substrate adapter;
 - injected-bias and ablation benchmark suite;
 - production oracle governance and external-validation boundaries.
 

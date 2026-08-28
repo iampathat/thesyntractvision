@@ -42,6 +42,15 @@ def _normalize_over_support(probabilities: Mapping[State, float], support: Seque
     return tuple(value / retained_mass for value in raw), retained_mass
 
 
+def _bundle_provenance(bundle: BaseBundle) -> dict[str, object]:
+    return {
+        "bundle_id": bundle.bundle_id,
+        "dimension_ids": bundle.dimension_ids,
+        "base_values": bundle.values,
+        "semantic_domain": dict(bundle.semantic_domain),
+    }
+
+
 @dataclass(frozen=True)
 class DistributionStabilizer:
     top_k: int = 8
@@ -85,6 +94,7 @@ class DistributionStabilizer:
         ordering = sorted(range(len(canonical_states)), key=lambda i: probs[i], reverse=True)
         top = tuple(canonical_states[i] for i in ordering[: min(self.top_k, len(canonical_states))])
         entropy = TruthDistribution.shannon_entropy(probs)
+        bundle_meta = _bundle_provenance(bundle)
 
         stabilized = TruthDistribution(
             support=canonical_states,
@@ -96,7 +106,7 @@ class DistributionStabilizer:
             contradiction_markers=tuple(marker for _, d in nulls for marker in d.contradiction_markers),
             normalization="mean_of_marginalized_null_views",
             provenance={
-                "bundle_id": bundle.bundle_id,
+                **bundle_meta,
                 "oracle_stack": oracle_stack_identity,
                 "stabilizer": "distribution_mean_v0",
                 "views": bundle.width,
@@ -116,7 +126,7 @@ class DistributionStabilizer:
             },
             pruning_actions=(),
             provenance={
-                "bundle_id": bundle.bundle_id,
+                **bundle_meta,
                 "oracle_stack": oracle_stack_identity,
                 "full_dimension_null_coverage": True,
                 "automatic_pruning": False,
@@ -131,12 +141,7 @@ class DistributionStabilizer:
         *,
         oracle_stack_identity: str,
     ) -> StabilizedReturn:
-        """Stabilize multiple diagnostic families with explicit equal-family weight.
-
-        Each family is averaged internally first. The family means are then
-        averaged equally. This prevents a crossed bank from receiving hidden
-        extra weight merely because it generated more execution perspectives.
-        """
+        """Stabilize multiple diagnostic families with explicit equal-family weight."""
         resolved = {name: tuple(items) for name, items in families.items() if items}
         if not resolved:
             raise ValueError("at least one non-empty diagnostic family is required")
@@ -201,6 +206,7 @@ class DistributionStabilizer:
         mean_agreement = sum(family_agreements.values()) / family_count
         comparison_metrics["stabilized_entropy"] = entropy
         comparison_metrics["diagnostic_family_count"] = float(family_count)
+        bundle_meta = _bundle_provenance(bundle)
 
         stabilized = TruthDistribution(
             support=canonical_states,
@@ -212,7 +218,7 @@ class DistributionStabilizer:
             contradiction_markers=tuple(all_markers),
             normalization="equal_family_mean_of_canonicalized_views",
             provenance={
-                "bundle_id": bundle.bundle_id,
+                **bundle_meta,
                 "oracle_stack": oracle_stack_identity,
                 "stabilizer": "equal_family_mean_v1",
                 "families": tuple(resolved),
@@ -228,7 +234,7 @@ class DistributionStabilizer:
             comparison_metrics=comparison_metrics,
             pruning_actions=(),
             provenance={
-                "bundle_id": bundle.bundle_id,
+                **bundle_meta,
                 "oracle_stack": oracle_stack_identity,
                 "families": tuple(resolved),
                 "family_weighting": "equal_family",
