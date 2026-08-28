@@ -194,6 +194,83 @@ See [`LOGICAL_UNIVERSES.md`](LOGICAL_UNIVERSES.md).
 
 ---
 
+## From Logical Universes toward superintelligence
+
+The long-range architecture is not based on building a fixed ontology and then filling it with more facts. The intended growth mechanism is a progressively richer **logical space** in which observations, Conditions, oracles and challenged global rules make more of the represented world mutually constraining.
+
+The largest accumulation is expected to occur in the observed `reality` universe. As evidence arrives, oracle genesis can propose new logic, governance can measure its blast radius, challenge can reject or refine it, and surviving logic can change how large parts of the already represented space resolve. Intelligence therefore grows not only by adding observations, but by making the logical space itself more coherent and reusable.
+
+A mature logical space is not required to preserve the shallow labels used during early ingestion. For example, a word such as `red` or `röd` may initially appear as an explicit term. At greater depth, the relevant logic may instead be distributed across language, reflected light, spectra, surfaces, perception, observers, context and other dimensions. **No permanent hierarchy such as `color → red → wavelength` is required.** A hierarchy may emerge as a useful result, but it is not the substrate of QCDS reasoning.
+
+### Syntractfilter
+
+A **Syntractfilter** is the dynamic inference filter that allows relevant coherent structure to emerge from a much larger logical space.
+
+```text
+large / open-ended logical space
+            ↓
+      Conditions + oracles
+            ↓
+rotation / nulling / comparison
+            ↓
+ amplification / recursive inference
+            ↓
+       SYNTRACTFILTER
+            ↓
+relevant coherent dimensions emerge
+            ↓
+          SYNTRACT
+```
+
+The filter does not need a pre-authored taxonomy telling it where to look. Different questions may expose different coherent structures from the same underlying logical space. Language logic, physical measurements, legal rules, geometry, perception and other dimensions can participate when the active oracle regime makes them relevant.
+
+### Many smaller universes first
+
+`reality` is expected to be the deepest long-running logical universe, but it is not the only path to increasingly capable intelligence. Smaller universes are deliberately useful early targets because their boundaries and falsifiers can be made explicit:
+
+```text
+declared lawbook
+game / rule system
+engineering specification
+bounded scientific domain
+hypothetical world
+simulation
+```
+
+A declared lawbook, for example, does not claim that its constitutive rules are laws of nature. It defines a separate logical universe in which QCDS can infer rigorously. These smaller spaces provide practical places to test oracle genesis, drift governance, contradiction handling, Syntractfilter behavior and cross-universe binding before attempting much larger reality-scale experiments.
+
+Use [`LOGICAL_UNIVERSE_TEMPLATE.md`](LOGICAL_UNIVERSE_TEMPLATE.md) to define a new universe without pre-filling its logic.
+
+### Quantum execution target
+
+QCDS is substrate-independent, but its architecture is designed to map naturally onto quantum execution. With `D` independent binary logical dimensions, the represented candidate space has an upper bound of `2^D`. A quantum implementation can encode candidate conditions in superposition and let oracle operations, phase evolution, rotations/nulling and amplitude amplification act on the represented distribution without materializing every candidate as a classical database row.
+
+This is the architectural reason quantum execution matters to QCDS: a rule or oracle can act on the **represented logical space**, rather than requiring a classical rewrite of every affected object.
+
+That does **not** mean a quantum computer can freely read out billions of individual facts in one instant. Measurement remains constrained, and Grover-style search provides a quadratic rather than unrestricted speedup. The current Python implementation proves semantic behavior only; quantum advantage, scaling and physical-QPU performance remain empirical questions.
+
+The intended progression is therefore:
+
+```text
+small falsifiable Logical Universes
+            ↓
+stronger oracle regimes
+            ↓
+deeper reusable logic
+            ↓
+larger reality Logical Space
+            ↓
+Syntractfilter over increasingly rich dimensions
+            ↓
+substrate-specific acceleration, including quantum
+            ↓
+increasingly general / superintelligent capability
+```
+
+This is an architectural research direction, not a claim that the present MVP has already achieved AGI or ASI.
+
+---
+
 ## The Logical Robot
 
 The runnable Logical Robot MVP follows a deliberately small loop:
@@ -297,6 +374,7 @@ The robot does not need to know how QCDS internals work. It receives an informat
 | `src/qcds_fabric/logical_assertion.py` | Bounded assertion check for MVP web observations |
 | `src/qcds_fabric/logical_transform.py` | Non-materialized global logical rule projection |
 | `src/qcds_fabric/logical_universe.py` | Isolated Logical Universes and rule-drift governance |
+| `LOGICAL_UNIVERSE_TEMPLATE.md` | Empty, explanatory template for defining and falsifying a new Logical Universe |
 | `src/qcds_fabric/first_logical_robot.py` | Runnable Logical Robot body/runtime bridge |
 | `src/qcds_fabric/intelligence_store.py` | Human-readable mission persistence |
 | `src/qcds_fabric/oracle_genesis.py` | Oracle-gap discovery and genesis |
@@ -306,7 +384,7 @@ The robot does not need to know how QCDS internals work. It receives an informat
 | `examples/` | Runnable examples |
 | `IMPLEMENTATION.md` | Detailed implementation history and boundaries |
 
-Focused documentation: [`LOGICAL_SPACE.md`](LOGICAL_SPACE.md), [`GLOBAL_LOGIC.md`](GLOBAL_LOGIC.md), [`LOGICAL_UNIVERSES.md`](LOGICAL_UNIVERSES.md), [`PROBLEM_TO_SYNTRACT.md`](PROBLEM_TO_SYNTRACT.md), [`ORACLE_EVOLUTION.md`](ORACLE_EVOLUTION.md), [`ORACLE_GENESIS.md`](ORACLE_GENESIS.md), [`EVIDENCE_PLANNING.md`](EVIDENCE_PLANNING.md), [`LOGICAL_ROBOT.md`](LOGICAL_ROBOT.md), [`PERSISTENT_RUNTIME.md`](PERSISTENT_RUNTIME.md), [`FIRST_LOGICAL_ROBOT.md`](FIRST_LOGICAL_ROBOT.md).
+Focused documentation: [`LOGICAL_SPACE.md`](LOGICAL_SPACE.md), [`GLOBAL_LOGIC.md`](GLOBAL_LOGIC.md), [`LOGICAL_UNIVERSES.md`](LOGICAL_UNIVERSES.md), [`LOGICAL_UNIVERSE_TEMPLATE.md`](LOGICAL_UNIVERSE_TEMPLATE.md), [`PROBLEM_TO_SYNTRACT.md`](PROBLEM_TO_SYNTRACT.md), [`ORACLE_EVOLUTION.md`](ORACLE_EVOLUTION.md), [`ORACLE_GENESIS.md`](ORACLE_GENESIS.md), [`EVIDENCE_PLANNING.md`](EVIDENCE_PLANNING.md), [`LOGICAL_ROBOT.md`](LOGICAL_ROBOT.md), [`PERSISTENT_RUNTIME.md`](PERSISTENT_RUNTIME.md), [`FIRST_LOGICAL_ROBOT.md`](FIRST_LOGICAL_ROBOT.md).
 
 ---
 
