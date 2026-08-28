@@ -1,7 +1,6 @@
 import csv
 import json
 from copy import deepcopy
-from pathlib import Path
 
 import pytest
 
@@ -40,7 +39,7 @@ def build21_spec(*, winged_bindings=2, grounded_bindings=6):
             "query_id": "ability",
             "subject": "creature",
             "predicate": "ability",
-            "candidate_values": ["flies", "walks"],
+            "candidate_values": ["flies", "walks", "swims"],
         },
     ]
 
