@@ -1,0 +1,61 @@
+{
+  "universe": {
+    "universe_id": "swedish-lawbook-mvp",
+    "mode": "declared",
+    "description": "Small declared legal universe used only to demonstrate bounded QCDS Logical Universe execution.",
+    "authority": "demo-legislature",
+    "provenance": {
+      "external_truth_claim": false,
+      "purpose": "build20-mvp"
+    }
+  },
+  "seed_bindings": [
+    {
+      "binding_id": "lawbook:alice:human",
+      "terms": ["alice", "human"],
+      "source_id": "demo:population",
+      "confidence": 1.0
+    },
+    {
+      "binding_id": "lawbook:bob:human",
+      "terms": ["bob", "human"],
+      "source_id": "demo:population",
+      "confidence": 1.0
+    },
+    {
+      "binding_id": "lawbook:fido:dog",
+      "terms": ["fido", "dog"],
+      "source_id": "demo:population",
+      "confidence": 1.0
+    }
+  ],
+  "rules": [
+    {
+      "candidate_id": "lawbook:legal-person:v1",
+      "rule_id": "legal-person",
+      "match_terms": ["human"],
+      "emit_terms": ["legal_person"],
+      "source_id": "law:demo-section-1",
+      "promote": true,
+      "approval_source": "demo-legislature",
+      "override_blast": true,
+      "provenance": {
+        "constitutive_rule": true
+      }
+    }
+  ],
+  "queries": [
+    {
+      "query_id": "humans",
+      "terms": ["human"]
+    },
+    {
+      "query_id": "legal-persons",
+      "terms": ["legal_person"]
+    },
+    {
+      "query_id": "dogs",
+      "terms": ["dog"]
+    }
+  ]
+}
