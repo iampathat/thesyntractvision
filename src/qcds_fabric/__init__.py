@@ -34,6 +34,13 @@ from .grover_depth import (
 from .kernel import ClassicalInferenceKernel
 from .models import BaseBundle, ChannelView, StabilizedReturn, Syntract, TruthDistribution
 from .oracles import DistributionOracle, ExactOracle, MaskOracle, OracleStack
+from .problem import (
+    OntologyMap, ProblemCompilation, ProblemInferenceResult, ProblemQuery,
+    ProblemResult, SemanticAtom, SemanticEntity, SemanticProblemAdapter,
+    SemanticProblemFrame, SemanticRelation, SemanticRule, SemanticRuleOracle,
+    bind_problem_result, canonicalize_problem_frame, compile_problem_frame,
+    problem_to_syntract, run_problem_compilation, run_problem_text,
+)
 from .reentry import ReentryCompilation, ReentryResult, baseline_reentry_distribution, compile_bound_condition, run_bound_condition_reentry
 from .rotations import circular_oracle_maps, circular_position_maps, crossed_views, oracle_exposure_views, positional_views
 from .semantic import (
@@ -66,9 +73,15 @@ __all__ = [
     "SemanticCompilation", "CandidateProbability", "SemanticInferenceResult",
     "HumanProblemResult", "SemanticCompileError", "compile_semantic_frame",
     "human_to_logic", "run_semantic_compilation", "bind_semantic_result",
-    "run_human_problem", "DistributionStabilizer", "FabricLayer", "NullBankResult",
-    "RotationBankResult", "StabilizedRotationSuiteResult", "BoundCondition",
-    "FunnelLayerResult", "FunnelTrace", "funnel_step", "recursive_contraction_funnel",
+    "run_human_problem", "SemanticEntity", "ProblemQuery", "SemanticRelation",
+    "SemanticAtom", "SemanticRule", "OntologyMap", "SemanticProblemFrame",
+    "SemanticProblemAdapter", "SemanticRuleOracle", "ProblemCompilation",
+    "ProblemInferenceResult", "ProblemResult", "canonicalize_problem_frame",
+    "compile_problem_frame", "run_problem_compilation", "bind_problem_result",
+    "problem_to_syntract", "run_problem_text", "DistributionStabilizer",
+    "FabricLayer", "NullBankResult", "RotationBankResult",
+    "StabilizedRotationSuiteResult", "BoundCondition", "FunnelLayerResult",
+    "FunnelTrace", "funnel_step", "recursive_contraction_funnel",
     "ReentryCompilation", "ReentryResult", "compile_bound_condition",
     "run_bound_condition_reentry", "baseline_reentry_distribution",
     "ConvergenceConfig", "ConvergenceSnapshot", "RecursiveCycleTrace",
