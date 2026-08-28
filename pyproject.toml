@@ -4,14 +4,14 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "qcds-fabric"
-version = "1.7.0"
+version = "1.8.0"
 description = "Reference implementation scaffold for QCDS Fabric v1.0"
 requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [{name = "Patrik Sundblom"}]
 
 [project.scripts]
-qcds-logical-robot = "qcds_fabric.first_logical_robot:main"
+qcds-logical-robot = "qcds_fabric.logical_space:main"
 
 [project.optional-dependencies]
 test = ["pytest>=8"]
