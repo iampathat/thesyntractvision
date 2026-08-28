@@ -1,0 +1,59 @@
+{
+  "benchmark": "BUILD 21 Self-Expanding Reality Logic",
+  "status": "PASS",
+  "date": "2026-08-28",
+  "package": "qcds-fabric 1.12.0",
+  "implementation_commit": "5edf05756142ba81ea1e6dead57c3351e4c1f088",
+  "proof_wrapper_commit": "795043d353d7af5f413bb8f09f3bdf919f02c3df",
+  "github_actions_run": 33209232611,
+  "closed_cycle": {
+    "solution_rule_supplied_to_genesis": false,
+    "oracle_gap_count": 1,
+    "hypotheses_challenged": 12,
+    "hypotheses_rejected": 9,
+    "oracle_promotions": 1,
+    "generated_rule": "winged => flies",
+    "knowledge_before": 0,
+    "knowledge_after": 2,
+    "knowledge_gain": 2,
+    "changed_bindings": 2,
+    "changed_fraction": 0.25,
+    "blast_override": false,
+    "active_reality_rules": 1
+  },
+  "persistence": {
+    "restart_added_bindings": 0,
+    "base_rows": 8,
+    "base_sha256": "0cd03cdb87e743d0c07b872497096213ac4bd312a945de4eeffb19b52dc55ca9",
+    "derived_logic_materialized": false
+  },
+  "high_blast_control": {
+    "generated_rule": "winged => flies",
+    "changed_bindings": 4,
+    "changed_fraction": 0.5,
+    "status": "quarantined",
+    "active_reality_rules": 0,
+    "automatic_blast_override": false
+  },
+  "falsification_history": {
+    "initial_two_by_two_test_passed": false,
+    "failure_reason": "binary one-hot complement symmetry made direct and reverse/complement implication hypotheses underidentified",
+    "initial_selected_oracle": "walks => grounded",
+    "initial_global_effect": 0,
+    "initial_governance_disposition": "quarantine: zero_effect",
+    "strengthening": "ability candidate space expanded from flies/walks to flies/walks/swims",
+    "strengthened_test_result": "direct winged => flies hypothesis selected and governed successfully"
+  },
+  "test_suite": {
+    "tests_passed": 291,
+    "tests_failed": 0
+  },
+  "claim_boundary": {
+    "classical_python_semantic_proof": true,
+    "agi_claim": false,
+    "asi_claim": false,
+    "quantum_advantage_claim": false,
+    "autonomous_external_holdout_acquisition_claim": false,
+    "unrestricted_self_evolution_claim": false
+  }
+}
