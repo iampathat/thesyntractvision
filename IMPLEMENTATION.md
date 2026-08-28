@@ -10,41 +10,40 @@ specification.
 
 ## BUILD 0 — merged
 
-- core data structures and provenance;
-- strict `0` / `?` / `∅` separation;
-- exact and mask oracle primitives;
-- versioned oracle stacks replicated per comparable channel;
-- bounded classical TruthDistribution kernel;
-- explicit contradiction state;
-- full Rotational Dimension Nulling bank;
-- transparent null-view stabilization with no automatic pruning;
-- canonical logical-space accounting.
+Core data structures, strict `0` / `?` / `∅` separation, exact/mask oracles,
+versioned oracle stacks, bounded classical TruthDistribution inference,
+explicit contradiction state, full dimension-null bank, transparent null
+stabilization, and canonical logical-space accounting.
 
-## BUILD 1 — rotation family and provenance
+## BUILD 1 — merged
 
-Adds the remaining architectural rotation surfaces without changing the
-locked v1.0 semantics:
+Positional rotation, oracle-exposure rotation, crossed rotations, canonical
+position mapping, fail-closed oracle-stack validation, absence-aware oracle
+normalization, rotation diagnostics, and full transformation provenance.
 
-- positional rotation as explicit canonical-dimension → execution-slot maps;
-- inverse-safe canonical state semantics: position changes never rename facts;
-- oracle-exposure rotation as an ordering / exposure map over the same immutable oracle stack;
-- crossed null × position × oracle views;
-- strict fail-closed validation that a view uses the declared oracle-stack version and an exact permutation of that stack's oracle identities;
-- non-applicable oracles are excluded from scoring and agreement normalization when all of their constrained dimensions are absent from the view;
-- rotation-bank diagnostics expose entropy and oracle-agreement spread without claiming that spread is automatically bias;
-- provenance for every transformation axis.
+## BUILD 2 — stabilization across families + contraction funnel
 
-The unbiased classical reference kernel is intentionally invariant under
-pure positional and oracle-order rotations. A later benchmark layer will inject
-controlled slot/oracle bias to test whether these rotations detect it.
+Adds:
+
+- canonicalization of null and non-null diagnostic views into one comparable coordinate space;
+- stabilization across dimension-null, positional, oracle-exposure, and crossed families;
+- **equal-family weighting** so a diagnostic family does not dominate merely because it contains more generated views;
+- family-level entropy/agreement spread and retained-mass diagnostics;
+- no hidden hard collapse and no automatic pruning;
+- an auditable contraction funnel that groups `StabilizedReturn` objects into higher-order `BoundCondition` structures;
+- recursive grouping schedules such as `8 → 4 → 2 → 1` while retaining every leaf distribution and its provenance.
+
+The BUILD 2 funnel is intentionally a **binding/grouping layer**, not yet a
+claim that higher-order conditions have re-entered a new local QCDS pass. Full
+oracle-constrained QCDS re-entry over higher-order bound conditions is the next
+implementation boundary.
 
 ## Not yet implemented
 
-- stabilization that jointly consumes positional/oracle/crossed banks;
-- recursive multi-layer funnel / higher-order binding;
+- higher-order QCDS re-entry and recursive local inference over bound conditions;
 - expansion (`1 → N`);
 - statevector/QPU substrate adapters;
-- empirical ablation harness and injected-bias benchmark suite;
+- injected-bias and ablation benchmark suite;
 - production oracle governance and external-validation boundaries.
 
 ## Design rule
