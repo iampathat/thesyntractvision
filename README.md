@@ -5,7 +5,7 @@
 **Author and originator:** Patrik Sundblom  
 **Project:** The Syntract Vision / QCDS / Syntract  
 **Canonical architecture:** **QCDS Fabric v1.0 — locked**  
-**Reference implementation:** **BUILD 15 / package 1.6.0**  
+**Reference implementation:** **BUILD 16 / package 1.7.0**  
 **Theory/specification:** CC BY 4.0  
 **Software:** MIT
 
@@ -23,70 +23,70 @@ The repository intentionally separates:
    architecture changes require a new specification version.
 2. **Implementation** — `src/qcds_fabric/`, built in falsifiable BUILD steps.
 
-BUILD 15 does not replace earlier BUILDs. It adds a small **persistent
-superintelligence runtime** and human-readable intelligence store above the
-complete BUILD 0–14 machine. The logical robot remains a body/caller rather than
-becoming the reasoning core.
+BUILD 16 does not replace any earlier BUILD. It adds the first **concrete,
+runnable logical robot** above BUILD 15's persistent runtime. The robot is a body
+that calls the intelligence; it is not a second reasoning core.
+
+A future physical robot is expected to keep this logical-robot layer and add
+physical sensors/actuators on top of it.
 
 ## Current executable path
 
 ```text
-LOGICAL ROBOT / OTHER CALLER
-            ↓
-  SUPERINTELLIGENCE RUNTIME
-     step · observe · state
-            ↓
-HUMAN PROBLEM / EXTERNAL SEMANTIC ADAPTER
-            ↓
-   SEMANTIC PROBLEM FRAME
-            ↓
-     JOINT LOGIC COMPILER
-            ↓
- CONDITIONS + EVIDENCE / RULE ORACLES
-            ↓
-        QCDS FABRIC
-            ↓
- CLASSICAL / STATEVECTOR-GROVER SUBSTRATE
-            ↓
- NULL / POSITION / ORACLE / CROSSED ROTATIONS
-            ↓
-    JOINT TRUTH DISTRIBUTION
-            ↓
-    ORACLE GAP DISCOVERY
-            ↓
-        ORACLE GENESIS
-            ↓
-    ORACLE CHALLENGE LAYER
-     selection + holdout
-            ↓
- PROMOTE? ─ yes → VERSION + RE-INJECT → INFER ↺
-     │
-     no
-     ↓
- HYPOTHESIS DISAGREEMENT
-     ↓
- INFORMATION NEED
-     ↓
- EVIDENCE / EXPERIMENT PLAN
-     ↓
- LOGICAL ROBOT
- SEARCH · READ · FOLLOW · QUERY · COMPARE · COMPUTE
-     ↓
- SOURCE-ATTRIBUTED OBSERVATION
-     ↓
- runtime.observe(...)
-     ↓
- PERSIST EVIDENCE + ACTIVE ORACLES + CHECKPOINT
-     ↓
- runtime.step(...)
-     ↓
- RECOMPILE → QCDS ↺
-     ↓
- SYNTRACT BIND / CONTRACT / EXPAND / TEST
+                    QCDS / SYNTRACT INTELLIGENCE
+                              ↑     ↓
+                    SuperintelligenceRuntime
+                       step · observe · state
+                              ↑     ↓
+                      FIRST LOGICAL ROBOT
+                              ↑     ↓
+                 SEARCH · READ · QUERY · COMPARE
+                              ↑     ↓
+                      INFORMATION WORLD
+
+Inside each runtime step:
+
+SEMANTIC PROBLEM FRAME
+        ↓
+JOINT LOGIC COMPILER
+        ↓
+CONDITIONS + EVIDENCE / RULE ORACLES
+        ↓
+QCDS FABRIC
+        ↓
+CLASSICAL / STATEVECTOR-GROVER SUBSTRATE
+        ↓
+NULL / POSITION / ORACLE / CROSSED ROTATIONS
+        ↓
+JOINT TRUTH DISTRIBUTION
+        ↓
+ORACLE GAP DISCOVERY
+        ↓
+ORACLE GENESIS
+        ↓
+ORACLE CHALLENGE
+ selection + holdout
+        ↓
+PROMOTE / REJECT / RETIRE
+        ↓
+PERSIST ACTIVE ORACLES + LINEAGE
+        ↓
+if unresolved: BUILD 13 EVIDENCE PLAN
+        ↓
+logical robot observes externally
+        ↓
+source-attributed evidence
+        ↓
+runtime.observe(...)
+        ↓
+PERSIST EVIDENCE + WAKE CHECKPOINT
+        ↓
+runtime.step(...)
+        ↺
 ```
 
-The logical robot, persistence backend, semantic parser, QCDS inference,
-oracle genesis/evolution and evidence planning remain separate boundaries.
+The logical robot, persistence backend, semantic parser, QCDS inference, oracle
+genesis/evolution and evidence planning remain separate auditable boundaries.
 
 ## BUILD 9: human-to-logic
 
@@ -112,10 +112,10 @@ generation never receives challenge targets. See
 
 ## BUILD 12: oracle genesis
 
-BUILD 12 moves one step earlier: the machine can identify where an oracle appears
-to be missing before proposing replacements or additions. Gap discovery combines
-target-blind prediction/expansion failures with internal contradiction/null
-influence diagnostics. See [`ORACLE_GENESIS.md`](ORACLE_GENESIS.md).
+BUILD 12 can identify where an oracle appears to be missing before proposing
+replacements or additions. Gap discovery combines target-blind prediction /
+expansion failures with internal contradiction and null-influence diagnostics.
+See [`ORACLE_GENESIS.md`](ORACLE_GENESIS.md).
 
 ## BUILD 13: autonomous evidence / experiment planning
 
@@ -125,44 +125,18 @@ would best distinguish them?** It turns disagreement into explicit
 cycles resumable rather than permanently terminal. See
 [`EVIDENCE_PLANNING.md`](EVIDENCE_PLANNING.md).
 
-## BUILD 14: logical robot
+## BUILD 14: logical robot contract
 
-BUILD 14 adds `src/qcds_fabric/logical_robot.py`: the first executable logical
-body for the existing intelligence loop. The reference capability vocabulary is
-`search`, `read`, `follow`, `query`, `compare` and `compute`.
-
-A future web browser, scientific index, API, database, file corpus or bounded
-simulation backend can implement `LogicalRobotTool`. `LogicalRobotRequest` never
-contains BUILD 11 challenge targets or expected truth values. Accepted
-observations return as source-attributed BUILD 13 evidence. If no evidence is
-found, the robot returns `awaiting_sources` rather than forcing an identical QCDS
-rerun or terminal state. See [`LOGICAL_ROBOT.md`](LOGICAL_ROBOT.md).
+BUILD 14 defines the provider-independent logical body contract. The capability
+vocabulary is `search`, `read`, `follow`, `query`, `compare` and `compute`.
+`LogicalRobotRequest` never contains BUILD 11 challenge targets or expected truth
+values. Accepted observations return as source-attributed BUILD 13 evidence. See
+[`LOGICAL_ROBOT.md`](LOGICAL_ROBOT.md).
 
 ## BUILD 15: persistent superintelligence runtime
 
-BUILD 15 adds `src/qcds_fabric/runtime.py` and
-`src/qcds_fabric/intelligence_store.py`.
-
-The main callable boundary is intentionally small:
-
-```python
-store = CsvIntelligenceStore("./intelligence_store")
-runtime = SuperintelligenceRuntime(store)
-
-runtime.create_mission(frame)
-step = runtime.step("mission-1", challenge_suite)
-
-# logical robot acquires evidence from step.cycle.plans
-runtime.observe("mission-1", evidence_results)
-step2 = runtime.step("mission-1", challenge_suite)
-```
-
-The logical robot therefore does not need to know how Fabric, rotations,
-stabilization, oracle genesis, challenge or persistence work internally.
-
-### Human-readable intelligence
-
-The first backend is deliberately ordinary CSV:
+BUILD 15 adds `SuperintelligenceRuntime` and the first inspectable persistence
+backend:
 
 ```text
 intelligence_store/
@@ -174,31 +148,74 @@ intelligence_store/
     └── checkpoints.csv
 ```
 
-`current_oracles.csv` is the live evolvable oracle population. Its active rule
-rows expose oracle id, antecedent, consequent, logical transform, relation class,
-confidence, source and persistent stack version directly as columns. It does not
-pickle Python objects or hide the active rule in an opaque parameter blob.
+`current_oracles.csv` exposes active evolvable oracle topology, confidence,
+source and persistent stack identity directly. `oracle_history.csv` records how
+that population changed. CSV is deliberately an MVP storage backend, not a
+future performance claim. See [`PERSISTENT_RUNTIME.md`](PERSISTENT_RUNTIME.md).
 
-`oracle_history.csv` is append-oriented and records initialization,
-`GENESIS_PROMOTED`, `MUTATED` and `RETIRED` lineage events. This makes the current
-logic and the path by which it evolved inspectable with an ordinary text editor,
-Numbers or Excel.
+## BUILD 16: first logical robot MVP
 
-`mission.csv` reconstructs the structured problem frame; `evidence.csv` preserves
-source-attributed observations; `checkpoints.csv` preserves runtime cycle/status
-history.
+BUILD 16 adds `src/qcds_fabric/first_logical_robot.py` and finally gives the
+runtime a concrete logical body.
 
-The backend is explicitly an MVP. CSV is not presented as the future
-high-performance representation of oracle logic. The persistence boundary is
-separate so later implementations can move oracle execution/state toward FPGA,
-QPU, accelerator or distributed substrates without changing the logical-robot
-runtime call shape.
+The core loop is intentionally tiny:
 
-BUILD 15 also includes `run_logical_robot_once(...)` as a convenience proof that
-BUILD 13 → BUILD 14 → evidence → runtime → QCDS can execute end-to-end. Real
-logical robots can instead call `step()` and `observe()` independently.
+```python
+step = runtime.step(mission_id, challenge_suite)
+# QCDS decides what information is missing.
 
-See [`PERSISTENT_RUNTIME.md`](PERSISTENT_RUNTIME.md).
+# logical robot executes step.cycle.plans
+runtime.observe(mission_id, acquired_evidence)
+
+step2 = runtime.step(mission_id, challenge_suite)
+```
+
+`FirstLogicalRobot` automates that call loop but does not bypass it. If QCDS
+changes its oracle population, that state transition can trigger another runtime
+step. If no genuinely new evidence appears, the robot stops as resumable rather
+than repeatedly inserting the same observation.
+
+### First concrete public-web body
+
+`PublicWebLogicalRobotTool` uses replaceable `WebSearchBackend` and
+`WebReadBackend` contracts. The initial defaults are deliberately modest:
+
+- `WikipediaSearchBackend` — key-free public search;
+- `HttpWebReadBackend` — bounded read-only retrieval with an explicit domain
+  allow-list;
+- `CandidateMentionExtractor` — deterministic extraction over **already
+  represented candidates only**.
+
+The logical robot does not decide external truth. If separate sources support
+conflicting candidates, they return as separate evidence and QCDS receives the
+contradiction.
+
+The default reader rejects local/private literal IPs, limits response size,
+strips non-visible script/style content and performs no write/account operation.
+This is a first observer, not a production browser-security claim.
+
+### Run it
+
+Package 1.7.0 installs:
+
+```bash
+python -m pip install -e '.[test]'
+qcds-logical-robot examples/first_logical_robot_mvp.json --store ./intelligence_store
+```
+
+The example supplies an explicit semantic problem, BUILD 11 challenge case and a
+target-blind failure signal. The first invocation creates the mission; later
+invocations reuse the same BUILD 15 mission directory.
+
+After a run, the important files remain ordinary readable files. In particular:
+
+```text
+intelligence_store/first-logical-robot-demo/current_oracles.csv
+intelligence_store/first-logical-robot-demo/oracle_history.csv
+intelligence_store/first-logical-robot-demo/evidence.csv
+```
+
+See [`FIRST_LOGICAL_ROBOT.md`](FIRST_LOGICAL_ROBOT.md).
 
 ## BUILD status
 
@@ -218,8 +235,9 @@ See [`PERSISTENT_RUNTIME.md`](PERSISTENT_RUNTIME.md).
 | 11 | merged | challenged, versioned oracle-population evolution |
 | 12 | merged | target-blind oracle gap discovery + oracle genesis |
 | 13 | merged | resumable autonomous evidence / experiment planning |
-| 14 | merged | logical robot observation runtime + QCDS resume bridge |
-| 15 | current | persistent runtime + human-readable intelligence store |
+| 14 | merged | provider-independent logical robot contract |
+| 15 | merged | persistent runtime + human-readable intelligence store |
+| 16 | current | first runnable logical robot + public-web observer MVP |
 
 See [`IMPLEMENTATION.md`](IMPLEMENTATION.md) for the exact implementation boundary.
 
@@ -231,10 +249,11 @@ See [`IMPLEMENTATION.md`](IMPLEMENTATION.md) for the exact implementation bounda
 - `src/qcds_fabric/problem.py` — BUILD 10 joint problem compiler.
 - `src/qcds_fabric/oracle_evolution.py` — BUILD 11 challenged evolution.
 - `src/qcds_fabric/oracle_genesis.py` — BUILD 12 target-blind gap discovery/genesis.
-- `src/qcds_fabric/evidence_planning.py` — BUILD 13 information needs, evidence plans and resumable checkpoints.
-- `src/qcds_fabric/logical_robot.py` — BUILD 14 logical body/runtime and observation-to-evidence bridge.
+- `src/qcds_fabric/evidence_planning.py` — BUILD 13 information needs and resumable checkpoints.
+- `src/qcds_fabric/logical_robot.py` — BUILD 14 logical-body contract and observation bridge.
 - `src/qcds_fabric/intelligence_store.py` — BUILD 15 CSV intelligence persistence.
 - `src/qcds_fabric/runtime.py` — BUILD 15 callable persistent superintelligence runtime.
+- `src/qcds_fabric/first_logical_robot.py` — BUILD 16 first concrete logical robot and web observer.
 - `src/qcds_fabric/kernel.py` — bounded classical reference inference kernel.
 - `src/qcds_fabric/substrates.py` — substrate contract + statevector/Grover simulator.
 - `src/qcds_fabric/grover_depth.py` — adaptive `m/m*` and overshoot diagnostics.
@@ -290,6 +309,7 @@ The four phases remain:
 - A stalled implementation cycle is not automatically a terminal truth state.
 - A logical-robot observation is evidence with provenance, not automatic truth.
 - A persisted oracle row is implementation state, not automatic external truth.
+- A web page is an observation source, not an oracle merely because the robot found it.
 
 ## Contraction, expansion, evolution, information seeking and persistent observation
 
@@ -308,18 +328,18 @@ These loops interact while retaining separate provenance.
 The implementation intentionally keeps failure points visible: semantic parsing
 may be wrong; ontology may be incomplete; source confidence may be poorly
 calibrated; an oracle gap may be spurious; generated hypotheses may miss the
-mechanism; a plan may be low-value; a logical source may be wrong or stale; a
-tool adapter may extract the wrong observation; persisted CSV state may be
-insufficient for a future oracle type; challenge targets may be unrepresentative;
-a simpler ablation may outperform the full Fabric; adaptive Grover depth may
-overshoot; and a stable distribution or promoted oracle may still be externally
-wrong.
+mechanism; a plan may be low-value; a logical source may be wrong or stale; the
+first textual candidate extractor may be too weak; a tool adapter may extract the
+wrong observation; persisted CSV state may be insufficient for a future oracle
+type; challenge targets may be unrepresentative; a simpler ablation may
+outperform the full Fabric; adaptive Grover depth may overshoot; and a stable
+distribution or promoted oracle may still be externally wrong.
 
-Therefore BUILD 15 does **not** claim unrestricted web understanding, universal
+Therefore BUILD 16 does **not** claim unrestricted web understanding, universal
 autonomous causal discovery, unrestricted autonomous external action,
 unrestricted self-modification, AGI/ASI, native quantum advantage or automatic
-external truth. It establishes an inspectable restartable MVP runtime around the
-already tested QCDS information-seeking loop.
+external truth. It establishes the first runnable logical-robot MVP around the
+already tested persistent QCDS information-seeking loop.
 
 ## Canonical publications
 
@@ -353,7 +373,8 @@ DISCOVER WHAT IS MISSING.
 GENERATE RIVAL ORACLES.
 CHALLENGE THE ORACLES.
 ASK WHAT EVIDENCE WOULD DISTINGUISH THEM.
-LET THE LOGICAL ROBOT OBSERVE.
+LET THE LOGICAL ROBOT SEEK.
+OBSERVE WITHOUT CALLING OBSERVATION TRUTH.
 RETURN EVIDENCE WITH PROVENANCE.
 PERSIST WHAT EVOLVED.
 RESUME.

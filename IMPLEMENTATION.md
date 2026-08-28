@@ -93,8 +93,8 @@ See `EVIDENCE_PLANNING.md`.
 
 ## BUILD 14 — logical robot runtime
 
-Adds the first logical body that can execute BUILD 13 information needs while
-preserving every earlier BUILD underneath it:
+Adds the first logical body contract that can execute BUILD 13 information needs
+while preserving every earlier BUILD underneath it:
 
 - `LogicalRobotTool` is a provider-independent observation contract for logical
   environments such as web/search systems, scientific indexes, APIs, databases,
@@ -104,25 +104,14 @@ preserving every earlier BUILD underneath it:
 - `LogicalRobotRequest` contains the observation objective, relevant queries,
   dimensions and represented candidates, but never challenge targets, holdout
   answers or an expected truth value;
-- BUILD 13 action intent is mapped to bounded capability sequences, allowing the
-  robot to change strategy when one observation path fails;
-- tool adapters return `LogicalObservation` objects with source identity,
-  capability, confidence and optional URI/excerpt provenance;
+- BUILD 13 action intent maps to bounded capability sequences;
+- observations preserve source identity, capability, confidence and URI/excerpt
+  provenance;
 - observations are validated against the represented candidate space before they
-  can become `EvidenceAcquisitionResult` objects;
-- a new unseen semantic value fails closed and must go through semantic/expansion
-  handling rather than silently changing the Condition space;
-- independent-source requirements are enforced across accepted observations;
-- execution is bounded by step, attempt and observation budgets;
-- exhaustion produces `awaiting_sources`, never implicit terminality, with wake
-  triggers for new sources, logical-environment changes, new evidence plans,
-  oracle changes or manual resume;
-- if no new evidence is acquired, QCDS is not re-run on an identical state;
-- if evidence is acquired, `run_logical_robot_cycle(...)` feeds it back through
-  the BUILD 13 resume path, which recompiles and re-enters the existing QCDS,
-  genesis, evolution, binding and expansion machinery;
-- BUILD 14 authorizes information observation only. It does not authorize
-  arbitrary account mutations, external side effects or physical actuation;
+  become `EvidenceAcquisitionResult` objects;
+- exhaustion produces `awaiting_sources`, never implicit terminality;
+- information observation is authorized, arbitrary side effects and physical
+  actuation are not;
 - canon remains outside the robot/discovery/evolution boundary.
 
 See `LOGICAL_ROBOT.md`.
@@ -132,34 +121,61 @@ See `LOGICAL_ROBOT.md`.
 Adds the first restartable MVP shell around BUILD 0–14 without moving reasoning
 into the robot body:
 
-- `SuperintelligenceRuntime` exposes a small callable boundary: create/load a
-  mission, `step(...)`, `observe(...)`, inspect state and optionally run one
-  logical-robot observation round;
-- `CsvIntelligenceStore` is the first `IntelligenceStore` implementation and uses
-  one ordinary directory per mission;
-- `current_oracles.csv` is the active evolvable oracle snapshot with flat columns
-  for rule topology, confidence, source and persistent stack identity;
+- `SuperintelligenceRuntime` exposes create/load mission, `step(...)`,
+  `observe(...)` and state inspection;
+- `CsvIntelligenceStore` uses one ordinary directory per mission;
+- `current_oracles.csv` is the active evolvable oracle snapshot with readable
+  rule topology, confidence, source and persistent stack identity;
 - `oracle_history.csv` is append-only lineage for initialization, promoted
   genesis, mutation and retirement events;
-- `mission.csv` reconstructs the BUILD 10 semantic problem frame;
-- `evidence.csv` preserves source-attributed acquired evidence;
-- `checkpoints.csv` preserves BUILD 13 cycle/status history;
-- active oracle state is never persisted with pickle and unsupported evolvable
-  oracle types fail closed rather than being hidden in an opaque Python blob;
-- restart reconstructs normal fixed evidence/logic oracles from the mission frame
-  and re-injects the persisted evolvable rule population;
+- `mission.csv`, `evidence.csv` and `checkpoints.csv` preserve problem,
+  observations and resumable control state;
+- active oracle state is never persisted with pickle;
+- restart reconstructs normal fixed oracles and re-injects the persisted
+  evolvable oracle population;
 - persistent runtime oracle versions extend across successful promotion cycles
-  and do not reset merely because a new Python runtime object is created;
-- a logical robot can call `step(...)`, execute the returned EvidencePlan through
-  BUILD 14 tools, then call `observe(...)` without knowing Fabric/genesis/store
-  internals;
-- `run_logical_robot_once(...)` is only a convenience MVP proving the same
-  boundary end-to-end; it is not a new reasoning core;
-- CSV is explicitly an inspectable MVP backend, not the intended high-performance
-  future representation of oracle logic;
+  rather than resetting on process restart;
+- the logical robot can call `step(...)`, execute a BUILD 13 plan and call
+  `observe(...)` without knowing Fabric/genesis/store internals;
+- CSV is an inspectable MVP backend, not a future high-performance storage claim;
 - canon remains unchanged.
 
 See `PERSISTENT_RUNTIME.md`.
+
+## BUILD 16 — first runnable logical robot
+
+Adds the first concrete logical robot that actually uses the BUILD 15 runtime as
+its intelligence boundary:
+
+- `FirstLogicalRobot` calls `runtime.step(...)`, executes returned BUILD 13 plans
+  through BUILD 14 tools, returns new evidence with `runtime.observe(...)`, then
+  calls the same persistent runtime again;
+- it never calls Fabric, oracle genesis, oracle evolution or CSV internals as a
+  reasoning shortcut;
+- a changed oracle population is a legitimate reason to continue to another
+  runtime cycle, while an identical state is not busy-looped;
+- already persisted web evidence ids are filtered before re-ingestion, allowing
+  the robot to stop/resume cleanly across process restarts;
+- `PublicWebLogicalRobotTool` is the first concrete information body;
+- `WikipediaSearchBackend` provides key-free public search for the MVP;
+- `HttpWebReadBackend` performs bounded read-only HTTP retrieval through an
+  explicit domain allow-list and rejects local/private literal IPs;
+- `CandidateMentionExtractor` is intentionally conservative: it only observes
+  already represented candidates and requires a unique textual lead;
+- conflicting sources remain separate evidence rather than being collapsed by
+  the logical robot;
+- source URL, excerpt, candidate counts and target-blind provenance survive the
+  observation bridge;
+- package 1.7.0 installs the `qcds-logical-robot` command;
+- `examples/first_logical_robot_mvp.json` supplies a runnable mission/challenge
+  example;
+- the logical robot remains the general body form; a future physical robot is
+  expected to extend it with sensor/actuator capabilities rather than replacing
+  the intelligence core;
+- no external write/account/physical actuation permission is added;
+- canon remains unchanged.
+
+See `FIRST_LOGICAL_ROBOT.md`.
 
 ## Not yet implemented
 
@@ -168,11 +184,11 @@ See `PERSISTENT_RUNTIME.md`.
 - broad causal discovery from raw observations; surviving hypotheses remain
   hypotheses until supported by appropriate external validation;
 - complete temporal-logic calculus or automatic event extraction;
-- production web/browser/API/database provider adapters for the logical robot;
+- production-grade unrestricted browser/search provider set;
 - network/service transport around the callable superintelligence runtime;
 - high-performance or hardware-near oracle persistence/execution backend;
 - calibrated autonomous source-trust evolution;
-- physical robot runtime / sensor-actuator body;
+- physical sensor/actuator robot body;
 - domain-specific optimal experimental design with real-world cost/risk models;
 - production oracle governance, signed validation sources and deployment approval;
 - cross-domain large-scale oracle populations with statistically powered challenge corpora;
@@ -185,7 +201,7 @@ See `PERSISTENT_RUNTIME.md`.
 Every BUILD preserves uncertainty and enough provenance to falsify the
 implementation. Convergence, a high peak, semantic confidence, an expansion
 branch, an ontology mapping, a language-model parse, a discovered oracle gap, a
-promoted oracle, a proposed experiment, a logical-robot observation or a
-persisted oracle row is not automatically external truth. A temporary lack of
-progress is not automatically terminal either. The canonical v1.0 artifacts
+promoted oracle, a proposed experiment, a logical-robot observation, a web page
+or a persisted oracle row is not automatically external truth. A temporary lack
+of progress is not automatically terminal either. The canonical v1.0 artifacts
 remain locked.

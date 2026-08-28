@@ -1,0 +1,47 @@
+{
+  "problem": {
+    "mission_id": "first-logical-robot-demo",
+    "raw_text": "Find externally supported information about France without treating the web source as automatic truth.",
+    "analyzer_id": "build16-example",
+    "queries": [
+      {
+        "query_id": "capital",
+        "subject": "france",
+        "predicate": "capital",
+        "candidate_values": ["paris", "lyon"],
+        "original_text": "What is the capital of France?"
+      },
+      {
+        "query_id": "language",
+        "subject": "france",
+        "predicate": "language",
+        "candidate_values": ["french", "german"],
+        "original_text": "Which represented language candidate applies to France?"
+      }
+    ],
+    "claims": [],
+    "rules": []
+  },
+  "challenge": {
+    "suite_id": "first-logical-robot-demo-selection",
+    "cases": [
+      {
+        "case_id": "selection-reference",
+        "role": "selection",
+        "expected_assignments": {
+          "capital": "paris",
+          "language": "french"
+        }
+      }
+    ]
+  },
+  "failure_observations": [
+    {
+      "observation_id": "demo-prediction-gap",
+      "kind": "prediction_failure",
+      "query_ids": ["capital"],
+      "severity": 1.0,
+      "description": "Target-blind demo signal: the capital query requires independent observation."
+    }
+  ]
+}

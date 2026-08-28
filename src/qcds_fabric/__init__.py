@@ -31,6 +31,13 @@ from .expansion import (
     run_syntract_expansion,
 )
 from .fabric import FabricLayer, NullBankResult, RotationBankResult, StabilizedRotationSuiteResult
+from .first_logical_robot import (
+    CandidateMentionExtractor, FirstLogicalRobot, FirstLogicalRobotConfig,
+    FirstLogicalRobotError, FirstLogicalRobotRun, HttpWebReadBackend,
+    PublicWebLogicalRobotTool, WebDocument, WebReadBackend, WebReference,
+    WebSearchBackend, WikipediaSearchBackend, challenge_suite_from_spec,
+    failure_observations_from_spec, html_to_text, run_robot_spec,
+)
 from .funnel import BoundCondition, FunnelLayerResult, FunnelTrace, funnel_step, recursive_contraction_funnel
 from .grover_depth import (
     AdaptiveGroverSubstrate, FixedGroverDepthBenchmarkResult,
@@ -135,6 +142,11 @@ __all__ = [
     "LogicalRobotTool", "LogicalRobotAttempt", "LogicalRobotRunResult",
     "LogicalRobotCycleResult", "capability_sequence", "observation_to_evidence",
     "execute_logical_robot_plans", "run_logical_robot_cycle",
+    "FirstLogicalRobotError", "WebReference", "WebDocument", "WebSearchBackend",
+    "WebReadBackend", "WikipediaSearchBackend", "HttpWebReadBackend",
+    "CandidateMentionExtractor", "PublicWebLogicalRobotTool", "FirstLogicalRobotConfig",
+    "FirstLogicalRobotRun", "FirstLogicalRobot", "html_to_text",
+    "challenge_suite_from_spec", "failure_observations_from_spec", "run_robot_spec",
     "IntelligenceStoreError", "IntelligenceStore", "CsvIntelligenceStore",
     "StoredMissionState", "SuperintelligenceRuntimeError", "RuntimeStepResult",
     "RuntimeRobotResult", "SuperintelligenceRuntime",
