@@ -5,7 +5,7 @@
 **Author and originator:** Patrik Sundblom  
 **Project:** The Syntract Vision / QCDS / Syntract  
 **Canonical architecture:** **QCDS Fabric v1.0 — locked**  
-**Reference implementation:** **BUILD 13 / package 1.4.0**  
+**Reference implementation:** **BUILD 14 / package 1.5.0**  
 **Theory/specification:** CC BY 4.0  
 **Software:** MIT
 
@@ -23,9 +23,9 @@ The repository intentionally separates:
    architecture changes require a new specification version.
 2. **Implementation** — `src/qcds_fabric/`, built in falsifiable BUILD steps.
 
-BUILD 13 does not change the canon. It adds **autonomous information-need and
-evidence/experiment planning plus resumable checkpoints** around BUILD 12 oracle
-genesis and BUILD 11 challenged evolution.
+BUILD 14 does not replace earlier BUILDs. It adds the first **logical robot
+runtime** around BUILD 13 evidence planning while keeping the complete BUILD
+0–13 intelligence path active underneath it.
 
 ## Current executable path
 
@@ -52,8 +52,6 @@ HUMAN PROBLEM / EXTERNAL SEMANTIC ADAPTER
  NULL / POSITION / ORACLE / CROSSED ROTATIONS
                     ↓
            JOINT TRUTH DISTRIBUTION
-          ↙          ↓           ↘
-      QUERY A     QUERY B      QUERY C ...
                     ↓
        ORACLE GAP DISCOVERY
  contradiction · null influence · failed prediction/expansion
@@ -74,11 +72,14 @@ HUMAN PROBLEM / EXTERNAL SEMANTIC ADAPTER
             ↓
  EVIDENCE / EXPERIMENT PLAN
             ↓
- AWAITING EVIDENCE CHECKPOINT
+         LOGICAL ROBOT
+ SEARCH · READ · FOLLOW · QUERY · COMPARE · COMPUTE
             ↓
- NEW OBSERVATION / EXPERIMENT RESULT
+ WEB / PAPERS / API / DB / FILE / SIMULATION ADAPTER
             ↓
- SOURCE-ATTRIBUTED EVIDENCE INGESTION
+     SOURCE-ATTRIBUTED OBSERVATION
+            ↓
+     EVIDENCE INGESTION / CHECKPOINT WAKE
             ↓
         RECOMPILE → INFER ↺
             ↓
@@ -92,10 +93,9 @@ HUMAN PROBLEM / EXTERNAL SEMANTIC ADAPTER
                ↺
 ```
 
-The semantic frontend, oracle discovery/proposal systems, evidence planner and
-QCDS inference core remain separable. External trained models may supply semantic
-parsing or oracle hypotheses, but they do not become the QCDS kernel and their
-proposals are not automatically treated as truth.
+The logical robot is a body/runtime layer, not a replacement reasoning engine.
+Semantic parsing, QCDS inference, oracle genesis/evolution, evidence planning and
+logical observation remain separable and auditable.
 
 ## BUILD 9: human-to-logic
 
@@ -125,58 +125,90 @@ BUILD 12 moves one step earlier: the machine can identify where an oracle appear
 to be missing before proposing replacements or additions.
 
 Gap discovery combines target-blind prediction/expansion failures with internal
-contradiction/null-influence diagnostics. `OracleGap` then drives a bounded rival
-field of explicit `implies`, `excludes` and `equivalent` hypotheses, which must
-still pass the unchanged BUILD 11 challenge path. See
+contradiction/null-influence diagnostics. `OracleGap` drives a bounded rival
+field of explicit hypotheses, which still must pass BUILD 11 challenge. See
 [`ORACLE_GENESIS.md`](ORACLE_GENESIS.md).
 
 ## BUILD 13: autonomous evidence / experiment planning
 
-BUILD 13 adds `src/qcds_fabric/evidence_planning.py` and asks the next question:
-**if several oracle hypotheses remain unresolved, what new information would
-most help distinguish them?**
+BUILD 13 adds `src/qcds_fabric/evidence_planning.py` and asks: **if oracle
+hypotheses remain unresolved, what new information would best distinguish them?**
 
-The default `DisagreementEvidencePlanner` receives no challenge targets or
-holdout answers. It runs the current population and target-blind candidate
-populations under the same present evidence, projects their query distributions,
-and ranks where their predictions disagree most.
+The default planner receives no challenge targets or holdout answers. It compares
+current and candidate oracle populations under the same present evidence and
+turns disagreement into explicit `EvidenceNeed`, `EvidenceAction` and
+`EvidencePlan` structures.
 
-That becomes an explicit `EvidenceNeed` and one or more `EvidenceAction` plans:
-
-- `independent_observation`
-- `replicate_measurement`
-- `validation_experiment`
-- `dimension_probe`
-- `targeted_query`
-
-A plan contains **what to measure or observe, not what the answer should be**.
-BUILD 13 does not itself execute external physical/account actions; execution and
-real-world safety/authorization remain an external boundary.
-
-Externally obtained results can return as `EvidenceAcquisitionResult` and are
-re-ingested as normal source-attributed `SemanticClaim` evidence. Only already
-represented candidate values are accepted by this bounded ingestion path; new
-semantics require semantic/expansion handling rather than silent invention.
-
-### Stalling is not terminal
-
-BUILD 13 also changes the implementation-level control model around a stalled
-cycle. `IntelligenceCheckpoint` explicitly distinguishes:
-
-- `active` — the oracle population changed;
-- `awaiting_evidence` — a discriminating evidence plan exists;
-- `quiescent` — no useful next action is available right now;
-- `terminal` — only when explicitly requested by the caller.
-
-So `no_oracle_gaps` and `no_promotable_hypotheses` are **not permanent lock
-states**. Non-terminal checkpoints remain resumable on new evidence, a new
-failure observation, a new expansion result, oracle-population change or manual
-resume.
-
-At the same time, the default policy does not busy-loop on an unchanged state.
-Resume requires a real new trigger or an explicit `force_replan=True`.
+`IntelligenceCheckpoint` separates `active`, `awaiting_evidence`, `quiescent` and
+explicit `terminal` states. `no_oracle_gaps` and `no_promotable_hypotheses` are
+therefore resumable states rather than permanent lock states, while unchanged
+state does not automatically busy-loop.
 
 See [`EVIDENCE_PLANNING.md`](EVIDENCE_PLANNING.md).
+
+## BUILD 14: logical robot
+
+BUILD 14 adds `src/qcds_fabric/logical_robot.py`: the first executable logical
+body for the existing intelligence loop.
+
+The runtime consumes BUILD 13 evidence plans and routes them through explicit
+provider adapters. The reference capability vocabulary is:
+
+- `search`
+- `read`
+- `follow`
+- `query`
+- `compare`
+- `compute`
+
+A future web browser, scientific index, API, database, file corpus or bounded
+simulation backend can implement `LogicalRobotTool`. The QCDS package itself does
+not need to become a browser or hard-code any particular information provider.
+
+### Strategy without target leakage
+
+`LogicalRobotRequest` contains the evidence objective, relevant query ids,
+dimensions and represented candidates, but **not** the BUILD 11 challenge target,
+holdout answer or expected truth value.
+
+A BUILD 13 `independent_observation` can for example map to:
+
+```text
+SEARCH → READ → FOLLOW → COMPARE
+```
+
+If search yields only a reference, a provider may request a `read` retry. The
+runtime is bounded by step, attempt and observation budgets, so strategy changes
+do not become an unbounded crawl.
+
+### Observation returns to the same QCDS machine
+
+A successful logical observation preserves source id, confidence, capability and
+optional URI/excerpt provenance. It is validated against the represented
+candidate space and converted into BUILD 13 `EvidenceAcquisitionResult`.
+
+Then:
+
+```text
+LOGICAL ROBOT OBSERVATION
+        ↓
+SOURCE-ATTRIBUTED EVIDENCE
+        ↓
+BUILD 13 RESUME
+        ↓
+RECOMPILE
+        ↓
+QCDS + GENESIS + EVOLUTION + SYNTRACT + EXPANSION
+```
+
+If no evidence is found, QCDS is not re-run on the identical state. The logical
+robot returns `awaiting_sources` and remains resumable on a new source, changed
+logical environment, new evidence plan, oracle change or manual resume.
+
+BUILD 14 authorizes information observation only. It does not grant arbitrary
+external side effects or physical actuation.
+
+See [`LOGICAL_ROBOT.md`](LOGICAL_ROBOT.md).
 
 ## BUILD status
 
@@ -195,23 +227,21 @@ See [`EVIDENCE_PLANNING.md`](EVIDENCE_PLANNING.md).
 | 10 | merged | joint multi-query problem-to-Syntract compiler |
 | 11 | merged | challenged, versioned oracle-population evolution |
 | 12 | merged | target-blind oracle gap discovery + oracle genesis |
-| 13 | current | resumable autonomous evidence / experiment planning |
+| 13 | merged | resumable autonomous evidence / experiment planning |
+| 14 | current | logical robot observation runtime + QCDS resume bridge |
 
-See [`IMPLEMENTATION.md`](IMPLEMENTATION.md) for the exact implementation
-boundary.
+See [`IMPLEMENTATION.md`](IMPLEMENTATION.md) for the exact implementation boundary.
 
 ## Code map
 
-- `src/qcds_fabric/models.py` — BaseBundle, ChannelView, TruthDistribution,
-  StabilizedReturn and Syntract.
+- `src/qcds_fabric/models.py` — core distributions, bundles and Syntract.
 - `src/qcds_fabric/oracles.py` — exact, mask and DistributionOracle semantics.
-- `src/qcds_fabric/semantic.py` — BUILD 9 semantic data model and evidence/logic oracles.
-- `src/qcds_fabric/semantic_ingress.py` — bounded Controlled-English raw-text adapter.
-- `src/qcds_fabric/problem.py` — BUILD 10 joint problem compiler and Syntract binding.
-- `src/qcds_fabric/oracle_evolution.py` — BUILD 11 challenge, evolution, lineage and re-injection.
-- `src/qcds_fabric/oracle_genesis.py` — BUILD 12 target-blind gap discovery and genesis.
-- `src/qcds_fabric/evidence_planning.py` — BUILD 13 information need, action planning,
-  evidence ingestion and resumable checkpoints.
+- `src/qcds_fabric/semantic.py` / `semantic_ingress.py` — BUILD 9 semantic ingress.
+- `src/qcds_fabric/problem.py` — BUILD 10 joint problem compiler.
+- `src/qcds_fabric/oracle_evolution.py` — BUILD 11 challenged evolution.
+- `src/qcds_fabric/oracle_genesis.py` — BUILD 12 target-blind gap discovery/genesis.
+- `src/qcds_fabric/evidence_planning.py` — BUILD 13 information needs, evidence plans and resumable checkpoints.
+- `src/qcds_fabric/logical_robot.py` — BUILD 14 logical body/runtime and observation-to-evidence bridge.
 - `src/qcds_fabric/kernel.py` — bounded classical reference inference kernel.
 - `src/qcds_fabric/substrates.py` — substrate contract + statevector/Grover simulator.
 - `src/qcds_fabric/grover_depth.py` — adaptive `m/m*` and overshoot diagnostics.
@@ -232,8 +262,7 @@ python -m pip install -e '.[test]'
 pytest -q
 ```
 
-GitHub Actions runs the same suite for implementation branches, pull requests
-and `main`.
+GitHub Actions runs the same suite for implementation branches, pull requests and `main`.
 
 ---
 
@@ -249,14 +278,10 @@ Start with the locked artifacts:
 
 The four phases remain:
 
-1. **Condition Formation** — open represented possibility space without
-   preselecting the answer.
-2. **Conditional Evolution** — apply evidence, logic, physics, biology,
-   experiment, safety and other constraints as oracles.
-3. **Recursive Inference** — amplify, rotate, compare, re-enter, expand and
-   recursively reshape the working TruthDistribution.
-4. **Truth-Alignment / Syntract Binding** — bind what remains coherent through
-   evidence, contradiction, composition and repeated inference.
+1. **Condition Formation** — open represented possibility space without preselecting the answer.
+2. **Conditional Evolution** — apply evidence, logic, physics, biology, experiment, safety and other constraints as oracles.
+3. **Recursive Inference** — amplify, rotate, compare, re-enter, expand and recursively reshape the working TruthDistribution.
+4. **Truth-Alignment / Syntract Binding** — bind what remains coherent through evidence, contradiction, composition and repeated inference.
 
 ### Core invariants retained by the implementation
 
@@ -268,76 +293,38 @@ The four phases remain:
 - TruthDistribution is preserved instead of silently hard-collapsing early.
 - Fabric logic remains separable from CPU/simulator/QPU substrate.
 - External truth requires appropriate external validation.
-- Oracle evolution/genesis may change challenged implementation populations,
-  **not** the locked canonical specification.
+- Oracle evolution/genesis may change challenged implementation populations, **not** the locked canonical specification.
 - A stalled implementation cycle is not automatically a terminal truth state.
+- A logical-robot observation is evidence with provenance, not automatic truth.
 
-## Contraction, expansion, evolution and information seeking
-
-The reference package executes both inference directions:
-
-```text
-N → 1   contraction / binding
-1 → N   expansion of compatible branches
-```
-
-BUILD 8 closes:
+## Contraction, expansion, evolution, information seeking and logical observation
 
 ```text
 BIND → EXPAND → TEST → CONTRACT → BIND
-```
 
-BUILD 11–12 add:
-
-```text
 INFER → DISCOVER GAP → GENESIS → CHALLENGE → PROMOTE/REJECT → RE-INFER
+
+NO PROMOTION → PLAN DISCRIMINATING EVIDENCE → LOGICAL ROBOT → NEW EVIDENCE → RECOMPILE → RE-INFER
 ```
 
-BUILD 13 extends the unresolved branch:
-
-```text
-NO PROMOTION
-    ↓
-COMPARE HYPOTHESES
-    ↓
-PLAN DISCRIMINATING EVIDENCE
-    ↓
-CHECKPOINT / WAIT
-    ↓
-NEW EVIDENCE
-    ↓
-RECOMPILE → INFER → DISCOVER → CHALLENGE
-```
-
-These loops can interact while retaining separate provenance.
+These loops interact while retaining separate provenance.
 
 ## Falsifiability and claim boundary
 
-The implementation intentionally keeps possible failure points visible:
+The implementation intentionally keeps failure points visible: semantic parsing
+may be wrong; ontology may be incomplete; source confidence may be poorly
+calibrated; an oracle gap may be spurious; generated hypotheses may miss the
+mechanism; a plan may be low-value; a logical source may be wrong or stale; a
+tool adapter may extract the wrong observation; challenge targets may be
+unrepresentative; a simpler ablation may outperform the full Fabric; adaptive
+Grover depth may overshoot; and a stable distribution or promoted oracle may
+still be externally wrong.
 
-- semantic adapter may misunderstand or leave language unresolved;
-- ontology mapping may be wrong or incomplete;
-- source confidence may be poorly calibrated;
-- a discovered oracle gap may be spurious;
-- generated candidates may miss the actual missing mechanism;
-- an evidence plan may be low-value, costly, impossible or poorly chosen;
-- acquired evidence may itself be wrong or unrepresentative;
-- a causal/temporal rule or evolved oracle may be false;
-- challenge targets may themselves be wrong, leaked or unrepresentative;
-- a candidate may overfit selection and fail holdout;
-- a blocked query may remain unanswerable;
-- a simpler architecture ablation may outperform full diagnostics;
-- classical inference may outperform the statevector reference on a benchmark;
-- adaptive Grover depth may overshoot or lose to fixed depth;
-- expansion may produce branches that later fail validation;
-- a stable distribution or promoted oracle may still be externally wrong.
-
-Therefore BUILD 13 does **not** claim unrestricted natural-language
-understanding, universal autonomous causal discovery, unrestricted autonomous
-real-world experimentation, unrestricted self-modification, AGI/ASI, native
-quantum advantage, or automatic external truth. It establishes a tested,
-resumable and falsifiable path from uncertainty to a new information request and
-back into QCDS inference.
+Therefore BUILD 14 does **not** claim unrestricted web understanding, universal
+autonomous causal discovery, unrestricted autonomous external action,
+unrestricted self-modification, AGI/ASI, native quantum advantage or automatic
+external truth. It establishes an auditable logical-robot body connected to the
+already tested QCDS information-seeking loop.
 
 ## Canonical publications
 
@@ -371,7 +358,8 @@ DISCOVER WHAT IS MISSING.
 GENERATE RIVAL ORACLES.
 CHALLENGE THE ORACLES.
 ASK WHAT EVIDENCE WOULD DISTINGUISH THEM.
-ACQUIRE NEW EVIDENCE.
+LET THE LOGICAL ROBOT OBSERVE.
+RETURN EVIDENCE WITH PROVENANCE.
 RESUME.
 EVOLVE WHAT SURVIVES.
 BIND WHAT STILL HOLDS.
