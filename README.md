@@ -5,7 +5,7 @@
 **Author and originator:** Patrik Sundblom  
 **Project:** The Syntract Vision / QCDS / Syntract  
 **Canonical architecture release:** **QCDS Fabric v1.0**  
-**Reference implementation:** **BUILD 5 / package 0.6.0**  
+**Reference implementation:** **BUILD 6 / package 0.7.0**  
 **Theory and specification:** CC BY 4.0  
 **Software:** MIT  
 **Repository:** https://github.com/iampathat/thesyntractvision
@@ -30,6 +30,11 @@ ORACLES PER COMPARABLE CHANNEL
         ↓
 LOCAL QCDS FABRIC
         ↓
+SUBSTRATE INTERFACE
+  ↙                    ↘
+CLASSICAL          STATEVECTOR / GROVER
+REFERENCE              SIMULATOR
+  ↘                    ↙
 NULL / POSITION / ORACLE / CROSSED ROTATIONS
         ↓
 TRUTH DISTRIBUTIONS
@@ -49,12 +54,9 @@ REPEAT
 SYNTRACT
 ```
 
-**BUILD 4 automated that bounded recursive loop. BUILD 5 now attacks it.**
-The benchmark layer can run matched ablations, inject known execution-slot and
-oracle-exposure faults, probe contradictions dimension by dimension, and perform
-oracle leave-one-out analysis against an explicit synthetic external reference.
-It is intentionally allowed to report that an ablation beats the full Fabric.
-The purpose is falsification, not a favorable score.
+**BUILD 4 automated the bounded recursive loop. BUILD 5 attacks it. BUILD 6 separates it from the local substrate.**
+
+The current code can run the same logical Fabric topology through the existing classical reference kernel or through a bounded statevector/Grover simulator, then compare both under the same Conditions, oracle regime, rotations, stabilizer and external benchmark target. A statevector simulation remains classical software and is **not** presented as evidence of quantum advantage.
 
 Convergence is treated as **internal distribution stability**, not as automatic external truth. External validation, evidence, experiment, safety constraints and real outcomes remain separate requirements in the canonical architecture.
 
@@ -63,15 +65,18 @@ Convergence is treated as **internal distribution stability**, not as automatic 
 - `src/qcds_fabric/models.py` — BaseBundle, ChannelView, TruthDistribution, StabilizedReturn, Syntract.
 - `src/qcds_fabric/oracles.py` — exact, mask and DistributionOracle semantics.
 - `src/qcds_fabric/kernel.py` — bounded classical reference inference kernel.
+- `src/qcds_fabric/substrates.py` — BUILD 6 `InferenceSubstrate` contract and statevector/Grover simulator.
 - `src/qcds_fabric/rotations.py` — positional, oracle-exposure and crossed rotation views.
 - `src/qcds_fabric/stabilize.py` — null and multi-family stabilization.
 - `src/qcds_fabric/funnel.py` — provenance-preserving serial contraction.
 - `src/qcds_fabric/reentry.py` — higher-order distribution-oracle re-entry.
 - `src/qcds_fabric/engine.py` — recursive execution and convergence trace.
 - `src/qcds_fabric/benchmark.py` — BUILD 5 ablations, fault injection and falsification metrics.
+- `src/qcds_fabric/substrate_benchmark.py` — matched cross-substrate comparison under one Fabric topology.
 - `tests/` — falsification-oriented regression tests for each BUILD.
 - `IMPLEMENTATION.md` — concise BUILD-by-BUILD implementation status.
 - `BENCHMARKS.md` — BUILD 5 benchmark semantics and interpretation rules.
+- `SUBSTRATES.md` — BUILD 6 substrate semantics, Grover reference policy and claim boundaries.
 
 ### Run the implementation tests
 
@@ -262,7 +267,9 @@ A null, positional, or oracle rotation creates another **inference view**. It do
 
 QCDS is an architectural specification rather than a commitment to one hardware generation. A conforming implementation may run on CPU, GPU/HPC, numerical simulators, NISQ quantum processors, future fault-tolerant quantum processors, FPGA/specialized accelerators, or hybrid combinations.
 
-Classical emulation may reproduce the control and inference semantics without inheriting native quantum query advantage.
+**BUILD 6 makes this separation explicit in code.** `FabricLayer` now accepts an `InferenceSubstrate`, with the existing classical kernel and a bounded statevector/Grover simulator as the first two implementations. The statevector path performs complex-amplitude phase marking and diffusion in software; it is not a QPU and does not inherit native quantum query advantage.
+
+See [`SUBSTRATES.md`](SUBSTRATES.md).
 
 ---
 
@@ -308,7 +315,9 @@ The architecture is intended for problems in which the difficult part is not mer
 
 QCDS Fabric v1.0 is intended to be experimentally challenged. A serious implementation should compare full QCDS against matched ablations: no rotational diagnostics, no nulling, fixed position, fixed oracle exposure, flat composition, no recursive funnel, alternative stabilization/binding policies, and comparable classical/quantum substrates.
 
-**BUILD 5 begins that program in code.** See [`BENCHMARKS.md`](BENCHMARKS.md). The current harness includes matched local diagnostic ablations, explicit external synthetic targets, known slot/order fault injection, dimension-null contradiction probes and oracle leave-one-out tests. A result is allowed to falsify a proposed benefit; the full Fabric is not declared the winner in advance.
+**BUILD 5 begins the architecture-ablation program in code.** See [`BENCHMARKS.md`](BENCHMARKS.md). The harness includes matched local diagnostic ablations, explicit external synthetic targets, known slot/order fault injection, dimension-null contradiction probes and oracle leave-one-out tests. A result is allowed to falsify a proposed benefit; the full Fabric is not declared the winner in advance.
+
+**BUILD 6 adds matched substrate comparison.** The same Conditions, oracle stack, rotation-family selection and stabilizer can now be run across the classical reference path and statevector/Grover simulation. The benchmark records baseline and stabilized divergence and may report either substrate as closer to the external test target. It makes no quantum-advantage claim.
 
 Useful observables include probability distribution, normalized lift, entropy, agreement, Top-K stability/Jaccard, orientation sensitivity, oracle sensitivity, cross-rotation agreement, contradiction response and Syntract stability.
 

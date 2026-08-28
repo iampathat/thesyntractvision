@@ -17,6 +17,10 @@ class ClassicalInferenceKernel:
     amplification_power: float = 1.0
     top_k: int = 8
 
+    @property
+    def substrate_id(self) -> str:
+        return "classical"
+
     def __post_init__(self) -> None:
         if self.amplification_power <= 0:
             raise ValueError("amplification_power must be positive")
