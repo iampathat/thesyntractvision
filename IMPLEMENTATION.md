@@ -80,26 +80,52 @@ Adds the first explicit information-seeking layer after BUILD 12:
   query, dimension and discrimination provenance;
 - bounded action types include independent observation, replicated measurement,
   validation experiment, dimension probe and targeted query;
-- BUILD 13 plans actions but does not itself execute external physical or account
-  actions; authorization remains an explicit external boundary;
 - `EvidenceAcquisitionResult` + `apply_evidence_results(...)` ingest externally
-  obtained results as source-attributed `SemanticClaim` evidence and recompile;
-- ingestion accepts only already represented candidate values; new semantics must
-  go through semantic/expansion handling instead of being silently invented;
+  obtained results as source-attributed evidence and recompile;
 - `IntelligenceCheckpoint` distinguishes `active`, `awaiting_evidence`,
   `quiescent` and explicit `terminal` states;
-- `no_oracle_gaps` and `no_promotable_hypotheses` are therefore resumable
-  checkpoints, not permanent dead ends;
-- default resume triggers include new evidence, new failure observations, new
-  expansion results, oracle-population changes and manual resume;
-- unchanged state does not auto-spin forever: resume requires a new trigger or an
-  explicit `force_replan=True`;
-- only an explicit caller request creates a non-resumable terminal checkpoint;
-- the planning/resume path is substrate-independent and runs on the classical or
-  statevector/Grover reference path;
-- canon remains outside the discovery/evolution/planning mutation boundary.
+- `no_oracle_gaps` and `no_promotable_hypotheses` are resumable checkpoints,
+  not permanent dead ends;
+- unchanged state does not auto-spin forever; only an explicit caller request
+  creates a non-resumable terminal checkpoint.
 
 See `EVIDENCE_PLANNING.md`.
+
+## BUILD 14 — logical robot runtime
+
+Adds the first logical body that can execute BUILD 13 information needs while
+preserving every earlier BUILD underneath it:
+
+- `LogicalRobotTool` is a provider-independent observation contract for logical
+  environments such as web/search systems, scientific indexes, APIs, databases,
+  files and bounded simulations;
+- reference capabilities are `search`, `read`, `follow`, `query`, `compare` and
+  `compute`;
+- `LogicalRobotRequest` contains the observation objective, relevant queries,
+  dimensions and represented candidates, but never challenge targets, holdout
+  answers or an expected truth value;
+- BUILD 13 action intent is mapped to bounded capability sequences, allowing the
+  robot to change strategy when one observation path fails;
+- tool adapters return `LogicalObservation` objects with source identity,
+  capability, confidence and optional URI/excerpt provenance;
+- observations are validated against the represented candidate space before they
+  can become `EvidenceAcquisitionResult` objects;
+- a new unseen semantic value fails closed and must go through semantic/expansion
+  handling rather than silently changing the Condition space;
+- independent-source requirements are enforced across accepted observations;
+- execution is bounded by step, attempt and observation budgets;
+- exhaustion produces `awaiting_sources`, never implicit terminality, with wake
+  triggers for new sources, logical-environment changes, new evidence plans,
+  oracle changes or manual resume;
+- if no new evidence is acquired, QCDS is not re-run on an identical state;
+- if evidence is acquired, `run_logical_robot_cycle(...)` feeds it back through
+  the BUILD 13 resume path, which recompiles and re-enters the existing QCDS,
+  genesis, evolution, binding and expansion machinery;
+- BUILD 14 authorizes information observation only. It does not authorize
+  arbitrary account mutations, external side effects or physical actuation;
+- canon remains outside the robot/discovery/evolution boundary.
+
+See `LOGICAL_ROBOT.md`.
 
 ## Not yet implemented
 
@@ -108,9 +134,10 @@ See `EVIDENCE_PLANNING.md`.
 - broad causal discovery from raw observations; surviving hypotheses remain
   hypotheses until supported by appropriate external validation;
 - complete temporal-logic calculus or automatic event extraction;
-- autonomous access to external sensors, laboratories, accounts or web services;
-- domain-specific optimal experimental design with real-world cost/risk models;
+- production web/browser/API/database provider adapters for the logical robot;
 - calibrated autonomous source-trust evolution;
+- physical robot runtime / sensor-actuator body;
+- domain-specific optimal experimental design with real-world cost/risk models;
 - production oracle governance, signed validation sources and deployment approval;
 - cross-domain large-scale oracle populations with statistically powered challenge corpora;
 - native QPU adapter / hardware execution;
@@ -122,6 +149,6 @@ See `EVIDENCE_PLANNING.md`.
 Every BUILD preserves uncertainty and enough provenance to falsify the
 implementation. Convergence, a high peak, semantic confidence, an expansion
 branch, an ontology mapping, a language-model parse, a discovered oracle gap, a
-promoted oracle or a proposed experiment is not automatically external truth.
-A temporary lack of progress is not automatically terminal either. The canonical
-v1.0 artifacts remain locked.
+promoted oracle, a proposed experiment or a logical-robot observation is not
+automatically external truth. A temporary lack of progress is not automatically
+terminal either. The canonical v1.0 artifacts remain locked.
