@@ -300,7 +300,6 @@ def _query_by_id(compilation: ProblemCompilation) -> dict[str, ProblemQuery]:
 
 
 def _current_context(compilation: ProblemCompilation, target_query_id: str) -> dict[str, str]:
-    queries = _query_by_id(compilation)
     target_group = compilation.query_groups[target_query_id]
     by_group: dict[str, list[SemanticClaim]] = {}
     for claim in compilation.canonical_frame.claims:
@@ -489,7 +488,7 @@ def _execute_contextual_requests(
                 capability=capability,
                 objective=(
                     f"Acquire independent observation for represented query {contextual.target_query_id!r} "
-                    "under the supplied logical context because rival oracle hypotheses diverge there."
+                    "under the supplied logical context because competing logical possibilities diverge there."
                 ),
                 query_ids=(contextual.target_query_id,),
                 dimension_ids=_request_dimensions(compilation, contextual.target_query_id),
@@ -500,10 +499,7 @@ def _execute_contextual_requests(
                     "build22_context_assignments": dict(contextual.context_assignments),
                     "build22_context_request_id": contextual.request_id,
                     "challenge_target_visible": False,
-                    "holdout_visible": False,
                     "expected_answer_visible": False,
-                    "challenge_role_visible": False,
-                    "hypothesis_ids_visible": False,
                     "external_side_effects_authorized": False,
                     "canonical_spec_modified": False,
                 },
@@ -536,6 +532,18 @@ def _execute_contextual_requests(
     if complete:
         return "evidence_acquired", tuple(observations)
     return "partially_observed", tuple(observations)
+
+
+def _has_context_conflict(
+    requests: Sequence[ContextualEvidenceRequest],
+    observations: Sequence[LogicalObservation],
+) -> bool:
+    values: dict[str, set[str]] = {request.request_id: set() for request in requests}
+    for observation in observations:
+        request_id = str(observation.provenance.get("build22_context_request_id", ""))
+        if request_id in values and observation.polarity:
+            values[request_id].add(_norm(observation.observed_value))
+    return any(len(observed_values) > 1 for observed_values in values.values())
 
 
 def _copy_challenge_frame_for_context(
@@ -724,6 +732,7 @@ class EvidenceDrivenRealityRunner:
                 "robot_received_expected_answers": False,
                 "robot_received_hypothesis_ids": False,
                 "challenge_built_only_after_observation": challenge_case_count > 0,
+                "conflicting_evidence_blocks_challenge": True,
                 "reality_promotion_delegated_to_build21": reality_result is not None,
                 "insufficient_evidence_fails_closed": True,
             },
@@ -753,7 +762,6 @@ class EvidenceDrivenRealityRunner:
         compilation = compile_problem_frame(frame)
         generation_spec = _require_mapping(spec.get("generation", {}), "generation")
 
-        # Persist source-attributed Reality observations before attempting derived logic.
         space = self.universes.space("reality")
         base_bindings = tuple(
             _binding_from_spec(_require_mapping(item, "reality_bindings[]"))
@@ -811,6 +819,17 @@ class EvidenceDrivenRealityRunner:
             resolved_tools,
             max_steps=int(generation_spec.get("robot_max_steps", 10)),
         )
+        if _has_context_conflict(requests, observations):
+            return self._result(
+                mission_id=mission_id,
+                status="conflicting_identifying_evidence",
+                gap_count=len(discovery.gaps),
+                hypothesis_count=len(hypotheses),
+                requests=requests,
+                robot_status=robot_status,
+                observations=observations,
+            )
+
         challenge = _challenge_from_context_observations(
             mission_id,
             problem_spec,
