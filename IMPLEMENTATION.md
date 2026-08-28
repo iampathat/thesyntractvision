@@ -35,47 +35,39 @@ uncertainty-bearing TruthDistribution into a later Condition space, logical
 QCDS Fabric diagnostic/stabilization path can execute again without inventing a
 binary label for the prior result.
 
-## BUILD 4 — recursive execution engine
+## BUILD 4 — merged
 
-Adds automated bounded orchestration of the implemented Fabric topology:
+Automated bounded orchestration of the implemented Fabric topology: local
+Fabric passes, stabilization, contraction funnel, distribution-oracle re-entry,
+vector convergence diagnostics, repeated cycles, full trace and final Syntract
+binding. Convergence remains an internal stability observation, not an external
+truth claim.
 
-```text
-ingress bundles
-    ↓
-local QCDS Fabric passes
-    ↓
-stabilized returns
-    ↓
-serial contraction funnel
-    ↓
-bound higher-order condition
-    ↓
-distribution-oracle re-entry
-    ↓
-convergence diagnostics
-    ↺ repeat until stable or cycle limit
-    ↓
-Syntract
-```
+## BUILD 5 — falsification / benchmark harness
 
-BUILD 4 includes:
+Adds matched ablations and deliberate fault injection around the reference
+implementation:
 
-- automatic balanced funnel schedules, e.g. `8 → 4 → 2 → 1`;
-- repeated `infer → stabilize → funnel → re-enter` execution;
-- explicit maximum cycle and maximum re-entry width guards;
-- vector convergence diagnostics: L1 distribution distance, entropy delta,
-  Top-K Jaccard and peak-probability delta;
-- configurable minimum cycles and consecutive-stability patience;
-- full per-cycle `ReentryResult`, `BoundCondition`, provenance and contradiction trace;
-- final `Syntract` binding without treating numerical convergence as external truth.
+- matched `no_diagnostics`, `null_only`, `null_plus_position`,
+  `null_plus_oracle`, and `full_diagnostics` variants;
+- L1 and KL distance to an explicit external synthetic target, entropy,
+  agreement, peak/target-mode and contradiction metrics;
+- pairwise distribution-spread diagnostics for rotation banks;
+- synthetic execution-slot and oracle-exposure/order bias injection;
+- dimension-null contradiction localization;
+- oracle leave-one-out analysis for deliberately bad oracles;
+- explicit provenance that no variant is assumed superior and no oracle is
+  automatically retired.
+
+See `BENCHMARKS.md`.
 
 ## Not yet implemented
 
 - expansion (`1 → N`);
 - explicit statevector/Grover substrate adapter;
-- injected-bias and ablation benchmark suite;
 - production oracle governance and external-validation boundaries;
-- domain-level semantic compiler from unrestricted human problems into Conditions/oracles.
+- domain-level semantic compiler from unrestricted human problems into Conditions/oracles;
+- larger public benchmark corpora and statistically powered experiment runner.
 
 ## Design rule
 
