@@ -43,32 +43,60 @@ validation can contract them into a new bound Syntract. Implements the bounded
 
 ## BUILD 9 — semantic ingress / human-to-logic
 
-Adds the model-independent bridge from human semantics to the existing Fabric:
+Adds the model-independent bridge from one bounded human semantic question to
+the existing Fabric:
 
-- `SemanticFrame` is the frontend-neutral contract for a bounded query, claims,
-  candidates, source confidence, polarity, unresolved text and analyzer provenance;
+- `SemanticFrame` carries query, claims, candidates, source confidence, polarity,
+  unresolved text and analyzer provenance;
 - `ControlledEnglishAnalyzer` proves raw-text ingress with a deliberately small
-  deterministic grammar;
+  deterministic grammar and bracket-aware confidence parsing;
 - unknown language is retained as `unresolved` and missing logic fails closed;
-- categorical alternatives become explicit binary dimensions with a one-hot
-  logic oracle when appropriate;
-- source claims become soft `EvidenceOracle` constraints rather than hidden
-  hard labels;
-- conflicting positive source claims create explicit semantic disagreement markers;
-- both baseline and stabilized candidate projections remain available so a
-  diagnostic-induced ranking change cannot be hidden;
-- results bind into a normal uncertainty-bearing Syntract with full semantic and
-  unresolved provenance;
-- the resulting Syntract can feed BUILD 8 expansion directly;
-- an external LLM or other parser may later emit SemanticFrame objects without
-  becoming part of the QCDS inference kernel.
+- categorical alternatives become explicit binary dimensions with one-hot logic;
+- source claims become soft `EvidenceOracle` constraints;
+- competing source claims create explicit semantic disagreement markers;
+- baseline and stabilized candidate projections remain separately visible;
+- results bind into an uncertainty-bearing Syntract and can feed BUILD 8 expansion;
+- an external LLM/parser may emit `SemanticFrame` objects without becoming the
+  QCDS inference kernel.
 
 See `SEMANTIC_INGRESS.md`.
+
+## BUILD 10 — problem-to-Syntract
+
+Extends BUILD 9 from one bounded query to a joint multi-query semantic problem:
+
+- `SemanticProblemFrame` carries multiple queries, entities, claims, relations,
+  explicit rules, ontology mapping, unresolved material and adapter provenance;
+- independent query groups are compiled into one shared binary Condition space,
+  so explicit rules can couple them before inference rather than after separate
+  answer generation;
+- `SemanticEntity` provides an auditable entity registry;
+- `SemanticRelation` compiles source-attributed relations into normal evidence
+  propositions and preserves relational/causal/temporal class plus temporal context;
+- `SemanticRule` supports exact auditable `implies`, `excludes` and `equivalent`
+  transforms, separately tagged as logical, causal or temporal;
+- `OntologyMap` canonicalizes subject/predicate/value aliases and records every
+  applied mapping; declared entity registries make invalid subject targets fail closed;
+- partially answerable problems retain blocked queries instead of inventing candidates;
+- semantic disagreement and polarity conflict remain explicit;
+- `SemanticProblemAdapter` allows a future LLM, scientific parser, sensor compiler
+  or domain frontend to emit structured problems without becoming the QCDS core;
+- all executable queries are projected from the same baseline and stabilized
+  joint TruthDistribution;
+- the final problem Syntract preserves entities, relations, rules, ontology,
+  blocked queries, unresolved content, contradictions and final dimensions;
+- problem Syntracts re-enter or expand through the existing BUILD 3/8 paths
+  without semantic retranslation.
+
+See `PROBLEM_TO_SYNTRACT.md`.
 
 ## Not yet implemented
 
 - unrestricted general natural-language semantic understanding;
-- broad ontology/entity/relation induction across arbitrary domains;
+- autonomous ontology discovery/induction across arbitrary domains;
+- causal discovery from raw observations (BUILD 10 executes explicit causal rules;
+  it does not invent them);
+- complete temporal-logic calculus or automatic event extraction;
 - autonomous external evidence acquisition and calibrated source trust;
 - production oracle governance and external-validation boundaries;
 - native QPU adapter / hardware execution;
@@ -79,5 +107,5 @@ See `SEMANTIC_INGRESS.md`.
 
 Every BUILD preserves uncertainty and enough provenance to falsify the
 implementation. Convergence, a high peak, semantic confidence, an expansion
-branch, or a language-model parse is not automatically external truth. The
-canonical v1.0 artifacts remain locked.
+branch, an ontology mapping or a language-model parse is not automatically
+external truth. The canonical v1.0 artifacts remain locked.
