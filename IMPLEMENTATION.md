@@ -90,15 +90,47 @@ Extends BUILD 9 from one bounded query to a joint multi-query semantic problem:
 
 See `PROBLEM_TO_SYNTRACT.md`.
 
+## BUILD 11 — challenged oracle evolution
+
+Adds a bounded self-evolution layer for oracle populations:
+
+- `OracleProposalGenerator` cleanly separates hypothesis generation from target
+  evaluation; challenge targets are not arguments to the generator interface;
+- `SemanticRuleMutationGenerator` creates competing BUILD 10 rule transforms and
+  optional explicit confidence variants without mutating source evidence trust by default;
+- `OracleRetirementGenerator` turns removal into an explicit challenged hypothesis,
+  generalizing BUILD 5 leave-one-out instead of hiding pruning;
+- `OracleChallengeSuite` separates selection from holdout cases and keeps
+  case-specific evidence/context outside the evolving population;
+- BUILD 5 external target metrics are reused to score candidate populations;
+- promotion can require selection improvement, holdout non-regression, bounded
+  worst-case regression, no contradiction increase and an observable effect;
+- every promotion creates a versioned stack plus lineage recording generator,
+  mutation, replaced/new oracle ids and challenge suite;
+- `extract_problem_rule_population(...)` isolates BUILD 10 rule oracles from
+  evidence/one-hot context;
+- `challenge_case_from_problem(...)` converts externally validated query
+  assignments into explicit joint target distributions while keeping problem
+  evidence as fixed challenge context;
+- `apply_evolved_oracle_population(...)` re-injects the challenged population
+  into a fresh `ProblemCompilation` without touching fixed evidence/logic;
+- the resulting compilation runs through the ordinary QCDS Fabric again,
+  closing a bounded `problem → infer → challenge → evolve oracles → infer` loop;
+- canon/self-modification remains outside the evolution boundary and is never
+  automatically rewritten.
+
+See `ORACLE_EVOLUTION.md`.
+
 ## Not yet implemented
 
 - unrestricted general natural-language semantic understanding;
 - autonomous ontology discovery/induction across arbitrary domains;
-- causal discovery from raw observations (BUILD 10 executes explicit causal rules;
-  it does not invent them);
+- autonomous causal discovery from raw observations (BUILD 11 can mutate and
+  challenge explicit rule hypotheses, but it does not prove causal truth from raw data);
 - complete temporal-logic calculus or automatic event extraction;
 - autonomous external evidence acquisition and calibrated source trust;
-- production oracle governance and external-validation boundaries;
+- production oracle governance, signed validation sources and deployment approval;
+- cross-domain large-scale oracle populations with statistically powered challenge corpora;
 - native QPU adapter / hardware execution;
 - larger public benchmark corpora and statistically powered experiment runner;
 - noise-aware calibration against real quantum hardware.
@@ -107,5 +139,5 @@ See `PROBLEM_TO_SYNTRACT.md`.
 
 Every BUILD preserves uncertainty and enough provenance to falsify the
 implementation. Convergence, a high peak, semantic confidence, an expansion
-branch, an ontology mapping or a language-model parse is not automatically
-external truth. The canonical v1.0 artifacts remain locked.
+branch, an ontology mapping, a language-model parse or a promoted oracle is not
+automatically external truth. The canonical v1.0 artifacts remain locked.
