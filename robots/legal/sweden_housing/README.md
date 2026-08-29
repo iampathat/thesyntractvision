@@ -2,9 +2,9 @@
 
 This directory is the domain home for the first substantial real-world **specialized Logical Robot** in The Syntract Vision.
 
-It is a growing, source-attributed Swedish housing-law Logical Universe built to test QCDS where law contains both **hard logic** and **judgment**.
+It is a growing, source-attributed Swedish housing-law Logical Universe built to test QCDS where law contains both **hard logic**, **uncertain evidence** and **judgment**.
 
-The robot currently represents material from:
+The represented snapshot currently includes material from:
 
 - **12 kap. jordabalken** — the general Swedish tenancy regime;
 - **Privatuthyrningslag (2026:772)** — in force from 1 July 2026;
@@ -13,13 +13,11 @@ The robot currently represents material from:
 - selected identified **Svea hovrätt** housing-law guidance;
 - official preparatory material around the 2026 reform as interpretive background.
 
-The legal snapshot is currently **2026-08-29**.
+Legal snapshot: **2026-08-29**.
 
-## The important point: the Legal Syntract is produced by QCDS
+## The important point: QCDS produces the Legal Syntract
 
-The Legal Logical Robot does not solve the case conventionally and then ask QCDS to approve the answer.
-
-The current public execution path is:
+The Legal Logical Robot does not solve a case conventionally and then ask QCDS to approve the answer.
 
 ```text
 FULL REPRESENTED LEGAL UNIVERSE
@@ -31,73 +29,136 @@ Jordabalk + private-letting law + transition + praxis
                          ▼
                  CONDITION FORMATION
                          │
-        relevant source-attributed legal structure
+ hard structural facts + relevant statutory dimensions
+ + source-attributed rule constraints
+ + probabilistic evidence terms
                          │
                          ▼
-               ACTIVE IN-MEMORY CSV TABLE
+               ACTIVE CSV TABLE IN RAM
                          │
-              fixed case facts = 1
-              legal candidates = ?
-                         │
-                         ▼
                      BaseBundle
-                         │
-                         ▼
-                     OracleStack
-             hard statutory constraints
-                         │
-                         ▼
-               EXACT CLASSICAL 2^N SPACE
-                         │
-        null + position + oracle-exposure rotations
-                         │
-                         ▼
-              stabilized TruthDistribution
-                         │
-                         ▼
-                 STATUTORY SYNTRACT
-                         │
-                    QCDS re-entry
-                 DistributionOracle
                          +
-                  active praxis
+                     OracleStack
                          │
-                         ▼
-               EXPANDED QCDS SPACE
+                SAME QCDS PROBLEM
                          │
-                         ▼
-                  FINAL SYNTRACT
+         ┌───────────────┴───────────────┐
+         ▼                               ▼
+  CLASSICAL EXACT                 GROVER EMULATED
+  exact active 2^N                software statevector
+  candidate support               phase marking
+  rotations                       adaptive m*
+  stabilization                   mark + diffuse
+         │                               │
+         ▼                               ▼
+ TruthDistribution                TruthDistribution
+         │                               │
+         ▼                               ▼
+ reference Syntract              sibling Grover Syntract
 ```
 
-That distinction is fundamental.
+The deterministic legal machinery is therefore **Condition Formation and provenance**, not the final truth producer.
 
-A hard statutory consequence is represented as a live QCDS dimension before the run. The source-attributed legal rule is an oracle constraint over candidate states. The consequence is **not pre-written into the final Syntract** by the deterministic legal resolver.
+A statutory consequence remains a live `?` dimension before QCDS. The relevant law becomes an oracle constraint over candidate states.
 
-The preliminary resolver remains useful for **Condition Formation** and provenance: it identifies which statutory rule paths are reachable and worth activating for the case. QCDS then evaluates the active state space.
+See [`QCDS_EXECUTION.md`](QCDS_EXECUTION.md) for the complete execution model.
 
-See [`QCDS_EXECUTION.md`](QCDS_EXECUTION.md) for the full execution model.
+## Same logical contract, different substrates
+
+The public robot now exposes two execution profiles over the same active `BaseBundle` and `OracleStack`:
+
+### Classical Exact
+
+The reference emulator enumerates the active binary support exactly:
+
+```text
+N live dimensions → 2^N candidate states
+```
+
+It applies the legal/evidence oracle stack and the QCDS rotation/stabilization machinery over that support.
+
+### Grover Emulated
+
+The sibling quantum-emulated path uses the existing shared QCDS statevector/Grover substrate:
+
+```text
+equal superposition
+      ↓
+weighted phase marking from the same OracleStack
+      ↓
+inversion about the mean
+      ↓
+adaptive Grover depth / overshoot detection
+      ↓
+QCDS rotations
+      ↓
+stabilized distribution
+      ↓
+Grover-emulated Syntract
+```
+
+This is software quantum-statevector emulation. It is **not** a native-QPU or quantum-advantage claim.
+
+The purpose of running both is not to force identical numeric probabilities. It is to make substrate behavior falsifiable while holding the logical problem constant.
+
+## Probabilistic evidence is part of the room
+
+Legal problems frequently contain propositions that are neither definitely true nor definitely false.
+
+A case can therefore carry explicit `qcds_evidence`:
+
+```json
+{
+  "term": "sublet:independent_without_consent",
+  "confidence": 0.74,
+  "polarity": true,
+  "source_id": "evidence:occupancy-pattern"
+}
+```
+
+That evidence may make the corresponding statutory rule relevant during Condition Formation, but the proposition remains a live QCDS dimension.
+
+```text
+uncertain proposition @ 0.74
+        ↓
+relevant legal constraint becomes active
+        ↓
+proposition remains ?
+        ↓
+EvidenceOracle supplies probabilistic pressure
+        ↓
+QCDS distribution
+```
+
+Hard law remains hard. Soft evidence remains soft.
+
+A result can therefore be very broad, such as 0.55 / 0.35 / 0.10, or concentrate close to 100% when hard rules, strong evidence and the represented interpretive structure all align.
+
+Those percentages are probability mass / coherence in the represented QCDS universe. They are not automatically calibrated probabilities of how a court will rule.
 
 ## The four QCDS phases in the legal robot
 
 ```text
 1 · CONDITION FORMATION
-case → relevant legal dimensions / constraints
+case → active legal dimensions, evidence and constraints
 
 2 · CONDITIONAL EVOLUTION
-source-attributed law → OracleStack
-praxis → separate evidence oracles
+law → hard OracleStack constraints
+evidence → probabilistic EvidenceOracle pressure
+praxis → separate interpretive evidence
 
 3 · RECURSIVE INFERENCE
-exact active 2^N classical state space
-+ dimension-null / position / oracle-exposure rotations
+Classical Exact 2^N
+or Grover-emulated statevector amplification
++ QCDS rotations / recursion
 
 4 · TRUTH-ALIGNMENT VERIFICATION
 stabilized TruthDistribution → Syntract
 ```
 
-The present implementation is an **exact bounded classical reference execution**. It is not a claim of quantum speedup. The QCDS architecture remains substrate-independent.
+The QCDS core remains substrate-independent. The Legal Logical Robot is a domain body above it.
 
-## CSV is storage, not the intelligence
+## CSV is storage, not intelligence
 
 The active legal table is serialized and reloaded entirely in memory:
 
@@ -106,48 +167,20 @@ represented legal corpus
         ↓
 Condition Formation
         ↓
-CSV table in RAM
+CSV projection in RAM
         ↓
 BaseBundle + OracleStack
         ↓
 QCDS Fabric
 ```
 
-CSV only makes the projected legal room cheap to store and inspect. It does not perform inference.
+The CSV makes a large represented corpus cheap to store and inspect. It does not perform inference.
 
-The runtime records the CSV SHA-256 digest in Syntract provenance so the exact active projection can be identified.
+The active CSV SHA-256 digest is retained in Syntract provenance.
 
-## Exact classical space
-
-If one case has `N` live binary legal dimensions, the current reference kernel really enumerates:
-
-```text
-2^N candidate states
-```
-
-Known facts do not branch. `?` dimensions do.
-
-The output exposes, among other things:
-
-- logical width;
-- unknown dimension count;
-- candidate space as `2^N`;
-- actual candidate-state count;
-- oracle count;
-- baseline and stabilized marginals;
-- entropy / retained uncertainty;
-- rotation sensitivity;
-- top coherent legal states;
-- statutory Syntract ID;
-- final Legal Syntract ID.
-
-The exact classical runner currently refuses a single integrated room above its configured bound rather than silently pruning semantics. The current default is 18 live binary dimensions, i.e. up to `2^18 = 262,144` candidate states before considering the additional rotation runs.
-
-## Praxis re-enters QCDS
+## Statutory Syntract re-entry and praxis
 
 Praxis is not pasted beside a finished statutory answer.
-
-The first statutory Syntract is re-entered into QCDS through the core `DistributionOracle`. Active precedent dimensions are then added to the legal room together with similarity and counter-evidence:
 
 ```text
 STATUTORY SYNTRACT
@@ -157,29 +190,68 @@ DistributionOracle
 active precedent dimensions
         +
 similarity / counter-evidence
+        +
+case evidence where relevant
         ↓
-QCDS again
+expanded QCDS room
         ↓
 FINAL LEGAL SYNTRACT
 ```
 
-Only precedents sharing an explicit represented factor with the case become active. The full praxis corpus can therefore grow without placing every decision in every classical QCDS run.
+Only precedent with an explicit represented similarity or counter-factor enters the active case room. The whole praxis corpus can continue to grow without every decision entering every run.
 
-The source hierarchy is never flattened:
+The source hierarchy remains explicit:
 
 ```text
-statute ≠ preparatory work ≠ HD precedent ≠ Svea guidance ≠ case fact
+statute ≠ preparatory work ≠ HD precedent ≠ Svea guidance ≠ case evidence
 
 authority ≠ similarity
 similarity ≠ outcome
 precedent ≠ automatic rule installation
 ```
 
-The separate precedent-relevance projection remains available as a **diagnostic explanation** of why judgments activated. It is not the final Legal Syntract.
+A separate precedent-relevance `problem_to_syntract` projection remains available to explain why decisions activated. It is diagnostic only; it is not the final Legal Syntract.
+
+## Scaling without fake partitioning
+
+Classical exact enumeration and software statevector emulation have explicit resource bounds. The robot does not solve that by silently deleting dimensions.
+
+The scaling planner examines which live dimensions are coupled by the OracleStack.
+
+If the active room separates into oracle-disconnected components conditioned on fixed structure, those components can be executed as bounded parallel Grover rooms:
+
+```text
+component A 2^8 ─┐
+component B 2^8 ─┼─► parallel Grover-emulated QCDS
+component C 2^8 ─┤
+component D 2^8 ─┘
+```
+
+If an oversized component remains logically coupled, arbitrary chunks are **not** claimed to be equivalent to one global Grover operation. The runtime reports that a larger substrate or an explicit logically justified decomposition is required.
+
+Parallel, sequential and hybrid QCDS remain architectural execution forms. The current implementation executes separable parallel components and preserves explicit boundaries for sequential Syntract re-entry / hybrid composition rather than inventing equivalence for a coupled global room.
+
+## Exact vs Grover benchmark
+
+The domain contains benchmark utilities for the two sibling substrate executions.
+
+They report, among other things:
+
+- state-support size;
+- entropy;
+- oracle agreement;
+- retained uncertainty;
+- selected Grover depth by view;
+- total-variation distance;
+- maximum state-probability delta;
+- whether the top state agrees;
+- conflict markers.
+
+The benchmark is not constructed so QCDS has to win. Grover-emulated execution is allowed to diverge or perform worse. The shared requirement is the same logical problem and source-attributed oracle contract.
 
 ## The legal universe grows in modules
 
-The domain is not one giant JSON pile. The runtime assembles bounded legal layers:
+The domain is not one giant rules file:
 
 ```text
 base housing-law corpus
@@ -199,32 +271,34 @@ base housing-law corpus
 represented legal universe for the snapshot
 ```
 
-Future legal areas can be added as separate modules without changing canonical QCDS semantics.
+Future legal areas can be added as bounded modules without rewriting QCDS core semantics.
 
 ## What is hard and what is evaluative?
 
-Some legal conditions are strict enough to become hard source-attributed constraints:
+Some represented conditions can be hard:
 
-- contract dates and transition gates;
+- contract date and transition gates;
 - explicit consent requirements;
-- represented statutory deadlines;
-- required warnings/notices;
+- statutory deadlines;
+- required notices/warnings;
 - explicit exclusions;
-- specified cure/recovery paths.
+- specified cure and recovery paths.
 
-Other questions remain live assessment dimensions:
+Other propositions are evidence-sensitive or evaluative:
 
+- did another person actually have **independent use**?
+- was there a **valid excuse**?
 - is a breach of **minor significance**?
 - are disturbances more than neighbours **reasonably should tolerate**?
 - are they **specially serious**?
 - is outsider use beyond what the landlord **reasonably must accept**?
 - are reasons for second-hand letting or exchange sufficient?
-- can a landlord **reasonably accept** a transfer?
+- can the landlord **reasonably accept** a transfer?
 - is a defect **material**?
-- is non-extension **reasonable** after major renovation?
+- is non-extension **reasonable** after renovation?
 - how strong are competing landlord and tenant interests?
 
-Missing facts are not permission to guess. Open-textured standards are not converted into hard truth merely because they appear in a statute.
+Missing facts are not permission to guess. An open legal standard is not converted into hard truth merely because it appears in a statute.
 
 ## Current Chapter 12 coverage
 
@@ -246,23 +320,29 @@ Open:
 
 **https://iampathat.github.io/thesyntractvision/**
 
-Choose **Swedish Law** under **Pick a world**.
+Choose **Swedish Law**.
 
 The public browser calls the packaged Python domain robot through Pyodide/WebAssembly. There is no duplicate JavaScript legal inference engine.
 
-The stable Python path is:
+The current result view exposes:
+
+- legal facts and activated statutory path;
+- active QCDS `2^N` room;
+- live marginals / uncertainty;
+- statutory Syntract → final re-entry chain;
+- **Classical Exact** and **Grover Emulated** side by side;
+- adaptive Grover depth;
+- exact-vs-Grover distribution comparison;
+- probabilistic evidence;
+- scaling/decomposition status.
+
+Stable Python path:
 
 ```text
 qcds_fabric.robots.legal.sweden_housing.robot
 ```
 
-The direct legal QCDS adapter is:
-
-```text
-qcds_fabric.robots.legal.sweden_housing.qcds_space
-```
-
-The public CLI is:
+CLI:
 
 ```bash
 qcds-legal-robot robots/legal/sweden_housing/cases/jb_unauthorized_sublet_forfeiture_2026.json
@@ -270,7 +350,7 @@ qcds-legal-robot robots/legal/sweden_housing/cases/jb_unauthorized_sublet_forfei
 
 ## Case library
 
-The `cases/` directory currently contains **15 executable probes**:
+The `cases/` directory currently contains **16 executable probes**.
 
 | Case | Main logical problem |
 |---|---|
@@ -278,7 +358,8 @@ The `cases/` directory currently contains **15 executable probes**:
 | `legacy_private_let_2026.json` | temporal transition / preserved old law |
 | `jordabalk_12_fallback_2026.json` | fallback to Chapter 12 |
 | `material_defect_praxis_2026.json` | material defect + competing precedent |
-| `jb_unauthorized_sublet_forfeiture_2026.json` | consent + forfeiture + safeguards |
+| `jb_unauthorized_sublet_forfeiture_2026.json` | hard represented consent/subletting facts + forfeiture safeguards |
+| `jb_probabilistic_sublet_evidence_2026.json` | disputed independent use and excuse represented as 0.74 / 0.85 evidence |
 | `jb_late_rent_recovery_2026.json` | forfeiture ground + statutory recovery together |
 | `jb_extension_renovation_balance_2026.json` | security of tenure + renovation balance |
 | `jb_excess_second_hand_rent_2026.json` | rent ceiling + repayment + praxis |
@@ -292,30 +373,49 @@ The `cases/` directory currently contains **15 executable probes**:
 
 The fixtures are probes into the legal universe, not the domain model itself.
 
-## Architecture boundary
+## Implementation map
 
-The Swedish Housing Law Logical Robot is a specialized body, not a second intelligence core.
+```text
+src/qcds_fabric/robots/legal/sweden_housing/
+├── robot.py            stable public facade
+├── full_robot.py       public specialized body
+├── qcds_space.py       legal BaseBundle / OracleStack / Syntract construction
+├── execution.py        exact + Grover execution profiles
+├── evidence.py         probabilistic evidence
+├── full_qcds.py        dual-substrate integrated execution
+├── cached_full_qcds.py safe identical-run reuse
+├── scaling.py          dependency-aware bounded scaling
+├── comparison.py       substrate distribution comparison
+└── benchmark.py        benchmark metrics
+```
+
+The shared QCDS core remains outside the specialized robot. The legal robot imports and calls it; it does not copy inference semantics into its domain or UI.
+
+## Architecture boundary
 
 ```text
 Swedish Housing Legal Robot
         │
         ├── source corpus
-        ├── case projection
+        ├── case / evidence projection
         ├── Condition Formation
         └── praxis activation
                  │
                  ▼
-             BaseBundle
-             OracleStack
+        BaseBundle + OracleStack
                  │
                  ▼
-              QCDS Fabric
-                 │
+             QCDS Fabric
+        ┌────────┴────────┐
+        ▼                 ▼
+Classical Exact     Grover Emulated
+        │                 │
+        └────────┬────────┘
                  ▼
-               Syntract
+        inspectable Syntracts
 ```
 
-The shared QCDS classes remain in the core. The legal robot imports and calls them; it does not copy their semantics into the domain or browser.
+**Logical Robot does not contain QCDS. Logical Robot talks to QCDS.**
 
 ## Swarm role
 
@@ -333,18 +433,7 @@ Specialized expertise does not become authoritative over peer Reality merely bec
 
 ## How this grows
 
-Natural next layers include:
-
-- broader Chapter 12 coverage and more exception/safeguard variants;
-- more HD precedent and identified guiding Svea hovrätt decisions;
-- Hyresnämnd material where it adds a distinct evidential/interpretive role;
-- propositions, SOU and later treatment of case law;
-- richer contracts and documentary evidence;
-- disputed facts and evidence strength;
-- competing party arguments;
-- temporal snapshots;
-- adversarial benchmark cases with withheld/discriminating facts;
-- parallel/sequential/hybrid partitioning for active rooms larger than exact classical single-space execution.
+Natural next layers include broader Chapter 12 coverage, richer evidentiary records, more precedent and preparatory works, competing party arguments, temporal legal snapshots, empirical court-outcome calibration datasets, native-QPU substrate adapters and larger explicitly decomposed QCDS rooms.
 
 The target is not to make law look simple. The target is to represent **where it is hard, where it is conditional, where it is uncertain, and then let QCDS operate on that structure**.
 
