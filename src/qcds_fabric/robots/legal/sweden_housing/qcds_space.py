@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import copy
 import csv
 import hashlib
 import io
+import json
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import Any, Mapping, Sequence
 
 from qcds_fabric.fabric import FabricLayer, StabilizedRotationSuiteResult
@@ -40,6 +43,11 @@ def _mapping(value: Any, label: str) -> Mapping[str, Any]:
     return value
 
 
+def _is_live_legal_term(term: str) -> bool:
+    canonical = _canon(term)
+    return canonical.startswith(("primary regime:", "conclusion:", "question:", "precedent:"))
+
+
 @dataclass(frozen=True)
 class LegalSpaceRow:
     dimension_id: str
@@ -59,11 +67,11 @@ class LegalSpaceRow:
 
 @dataclass(frozen=True)
 class LegalRuleConstraintOracle:
-    """Evaluate one source-attributed multi-antecedent legal rule inside QCDS.
+    """Score one source-attributed statutory implication inside QCDS.
 
-    A consequence is never derived before QCDS by this oracle. Candidate states
-    survive or lose coherence according to whether they satisfy the represented
-    implication. Logical absence in a rotated view is never reinterpreted as 0.
+    The rule never derives a consequence before QCDS. Its consequent remains a
+    candidate dimension. If a participating dimension is absent in a rotated
+    view the oracle is neutral; logical absence is never converted to false.
     """
 
     oracle_id: str
@@ -127,7 +135,7 @@ def _row_kind(term: str) -> str:
         return "assessment"
     if canonical.startswith("precedent:"):
         return "precedent"
-    if canonical.startswith("law:") or canonical.startswith("exclusion:") or canonical.startswith("transition:"):
+    if canonical.startswith(("law:", "exclusion:", "transition:")):
         return "legal_state"
     return "condition"
 
@@ -153,13 +161,8 @@ def _csv_roundtrip(rows: Sequence[LegalSpaceRow]) -> tuple[tuple[LegalSpaceRow, 
     for raw in csv.DictReader(io.StringIO(text)):
         value: int | str = "?" if raw["initial_value"] == "?" else int(raw["initial_value"])
         loaded.append(LegalSpaceRow(
-            raw["dimension_id"],
-            raw["kind"],
-            raw["term"],
-            value,
-            raw.get("source_id", ""),
-            raw.get("section_id", ""),
-            raw.get("note", ""),
+            raw["dimension_id"], raw["kind"], raw["term"], value,
+            raw.get("source_id", ""), raw.get("section_id", ""), raw.get("note", ""),
         ))
     return tuple(loaded), text
 
@@ -207,17 +210,10 @@ def _top_states(runtime: LegalQCDSRuntime, limit: int = 8) -> list[dict[str, Any
 
 
 def _bind_syntract(
-    *,
-    case_id: str,
-    stage: str,
-    bundle: BaseBundle,
-    stack: OracleStack,
-    suite: StabilizedRotationSuiteResult,
-    rows: Sequence[LegalSpaceRow],
-    active_rule_ids: Sequence[str],
-    active_precedents: Sequence[Mapping[str, Any]],
-    csv_text: str,
-    prior_syntract_id: str | None = None,
+    *, case_id: str, stage: str, bundle: BaseBundle, stack: OracleStack,
+    suite: StabilizedRotationSuiteResult, rows: Sequence[LegalSpaceRow],
+    active_rule_ids: Sequence[str], active_precedents: Sequence[Mapping[str, Any]],
+    csv_text: str, prior_syntract_id: str | None = None,
 ) -> Syntract:
     distribution = suite.stabilized_return.stabilized_distribution
     return Syntract(
@@ -230,12 +226,8 @@ def _bind_syntract(
             "active_rule_ids": tuple(active_rule_ids),
             "active_precedent_ids": tuple(str(row.get("precedent_id", "")) for row in active_precedents),
             "dimension_rows": tuple({
-                "dimension_id": row.dimension_id,
-                "kind": row.kind,
-                "term": row.term,
-                "initial_value": row.initial_value,
-                "source_id": row.source_id,
-                "section_id": row.section_id,
+                "dimension_id": row.dimension_id, "kind": row.kind, "term": row.term,
+                "initial_value": row.initial_value, "source_id": row.source_id, "section_id": row.section_id,
             } for row in rows),
             "csv_in_memory": True,
             "csv_sha256": hashlib.sha256(csv_text.encode("utf-8")).hexdigest(),
@@ -258,30 +250,40 @@ def _bind_syntract(
 
 
 def _active_statutory_rows(
-    *,
-    case_terms: Sequence[str],
-    unresolved_questions: Sequence[str],
-    corpus: Mapping[str, Any],
-    applied_rule_ids: Sequence[str],
+    *, case_terms: Sequence[str], resolved_terms: Sequence[str], unresolved_questions: Sequence[str],
+    corpus: Mapping[str, Any], applied_rule_ids: Sequence[str],
 ) -> tuple[tuple[Mapping[str, Any], ...], list[LegalSpaceRow], dict[str, str]]:
     rule_index = {str(row["rule_id"]): _mapping(row, "rules[]") for row in corpus["rules"]}
     active_rules = tuple(rule_index[rule_id] for rule_id in applied_rule_ids if rule_id in rule_index)
-    all_known = {_canon(term): str(term) for term in case_terms}
+
     referenced_match_terms = {
         _canon(str(term))
         for row in active_rules
         for term in row.get("match_terms", ())
     }
-    # Condition Formation keeps only fixed facts that can affect an active rule.
-    known_terms = {key: value for key, value in all_known.items() if key in referenced_match_terms}
+    case_known = {_canon(term): str(term) for term in case_terms}
+    resolved_structural = {
+        _canon(term): str(term)
+        for term in resolved_terms
+        if not _is_live_legal_term(str(term))
+    }
+    all_structural = {**resolved_structural, **case_known}
+    # Condition Formation may deterministically fix structural/scope facts. It
+    # must not fix regimes, conclusions, questions or precedent dimensions.
+    known_terms = {
+        key: value for key, value in all_structural.items()
+        if key in referenced_match_terms
+    }
 
     term_meta: dict[str, dict[str, str]] = {}
     active_terms: dict[str, str] = dict(known_terms)
+    active_rule_terms: set[str] = set()
     for row in active_rules:
         source_id = str(row.get("source_id", ""))
         section_id = str(row.get("section_id", ""))
         for term in (*row.get("match_terms", ()), *row.get("emit_terms", ())):
             canonical = _canon(str(term))
+            active_rule_terms.add(canonical)
             active_terms.setdefault(canonical, str(term))
             term_meta.setdefault(canonical, {"source_id": source_id, "section_id": section_id})
 
@@ -289,11 +291,16 @@ def _active_statutory_rows(
     for term in regime_terms:
         active_terms.setdefault(_canon(term), term)
 
+    # Only unresolved questions that are part of an activated rule path become
+    # branching QCDS dimensions. Other missing input questions remain visible in
+    # the legal output but do not inflate an unrelated active state space.
     for question in unresolved_questions:
         term = str(question)
         if not _canon(term).startswith("question:"):
             term = f"question:{term}"
-        active_terms.setdefault(_canon(term), term)
+        canonical = _canon(term)
+        if canonical in active_rule_terms:
+            active_terms.setdefault(canonical, term)
 
     rows: list[LegalSpaceRow] = []
     term_dimensions: dict[str, str] = {}
@@ -303,28 +310,22 @@ def _active_statutory_rows(
         term_dimensions[canonical] = dimension_id
         meta = term_meta.get(canonical, {})
         rows.append(LegalSpaceRow(
-            dimension_id=dimension_id,
-            kind=kind,
-            term=display,
-            initial_value=1 if canonical in known_terms else "?",
-            source_id=meta.get("source_id", ""),
-            section_id=meta.get("section_id", ""),
-            note="active case condition" if canonical in known_terms else "QCDS candidate dimension",
+            dimension_id, kind, display,
+            1 if canonical in known_terms else "?",
+            meta.get("source_id", ""), meta.get("section_id", ""),
+            "fixed structural condition" if canonical in known_terms else "QCDS candidate dimension",
         ))
     return active_rules, rows, term_dimensions
 
 
 def _build_statutory_runtime(
-    *,
-    case_id: str,
-    case_terms: Sequence[str],
-    unresolved_questions: Sequence[str],
-    corpus: Mapping[str, Any],
-    applied_rule_ids: Sequence[str],
-    max_unknown_dimensions: int,
+    *, case_id: str, case_terms: Sequence[str], resolved_terms: Sequence[str],
+    unresolved_questions: Sequence[str], corpus: Mapping[str, Any],
+    applied_rule_ids: Sequence[str], max_unknown_dimensions: int,
 ) -> LegalQCDSRuntime:
     active_rules, rows, term_dimensions = _active_statutory_rows(
         case_terms=case_terms,
+        resolved_terms=resolved_terms,
         unresolved_questions=unresolved_questions,
         corpus=corpus,
         applied_rule_ids=applied_rule_ids,
@@ -345,7 +346,8 @@ def _build_statutory_runtime(
             "legal_corpus_id": corpus["corpus_id"],
             "active_rule_ids": tuple(str(row["rule_id"]) for row in active_rules),
             "csv_in_memory": True,
-            "condition_formation_dropped_irrelevant_fixed_terms": True,
+            "condition_formation_fixed_structural_terms": True,
+            "final_legal_terms_precomputed": False,
             "unknown_dimension_count": unknown_count,
             "candidate_binary_space": f"2^{unknown_count}",
             "canonical_spec_modified": False,
@@ -363,41 +365,22 @@ def _build_statutory_runtime(
             oracle_id=f"legal:rule:{_slug(str(row['rule_id']))}",
             antecedent_dimensions=tuple(term_dimensions[_canon(str(term))] for term in row.get("match_terms", ())),
             consequent_dimensions=tuple(term_dimensions[_canon(str(term))] for term in row.get("emit_terms", ())),
-            source_id=str(row.get("source_id", "")),
-            section_id=str(row.get("section_id", "")),
-            rule_id=str(row["rule_id"]),
-            confidence=1.0,
+            source_id=str(row.get("source_id", "")), section_id=str(row.get("section_id", "")),
+            rule_id=str(row["rule_id"]), confidence=1.0,
         ))
 
     stack = OracleStack(f"legal-qcds:{_slug(case_id)}:statutory", "1", tuple(oracles))
     suite = FabricLayer().run_stabilized_rotation_suite(
-        bundle,
-        stack,
-        include_positional=True,
-        include_oracle_exposure=True,
-        include_crossed=False,
+        bundle, stack, include_positional=True, include_oracle_exposure=True, include_crossed=False,
     )
     syntract = _bind_syntract(
-        case_id=case_id,
-        stage="statutory",
-        bundle=bundle,
-        stack=stack,
-        suite=suite,
-        rows=loaded_rows,
-        active_rule_ids=tuple(str(row["rule_id"]) for row in active_rules),
-        active_precedents=(),
-        csv_text=csv_text,
+        case_id=case_id, stage="statutory", bundle=bundle, stack=stack, suite=suite,
+        rows=loaded_rows, active_rule_ids=tuple(str(row["rule_id"]) for row in active_rules),
+        active_precedents=(), csv_text=csv_text,
     )
     return LegalQCDSRuntime(
-        bundle,
-        stack,
-        suite,
-        syntract,
-        loaded_rows,
-        term_dimensions,
-        tuple(str(row["rule_id"]) for row in active_rules),
-        (),
-        csv_text,
+        bundle, stack, suite, syntract, loaded_rows, term_dimensions,
+        tuple(str(row["rule_id"]) for row in active_rules), (), csv_text,
     )
 
 
@@ -420,12 +403,8 @@ def _active_precedents(praxis: Mapping[str, Any], represented_terms: Sequence[st
 
 
 def _expand_with_praxis(
-    *,
-    case_id: str,
-    statutory: LegalQCDSRuntime,
-    praxis: Mapping[str, Any],
-    represented_terms: Sequence[str],
-    max_unknown_dimensions: int,
+    *, case_id: str, statutory: LegalQCDSRuntime, praxis: Mapping[str, Any],
+    represented_terms: Sequence[str], max_unknown_dimensions: int,
 ) -> LegalQCDSRuntime:
     precedents = _active_precedents(praxis, represented_terms)
     if not precedents:
@@ -434,9 +413,7 @@ def _expand_with_praxis(
     extra_rows = [
         LegalSpaceRow(
             _dimension_id("precedent", f"precedent:{row['precedent_id']}"),
-            "precedent",
-            f"precedent:{row['precedent_id']}",
-            "?",
+            "precedent", f"precedent:{row['precedent_id']}", "?",
             str(row.get("precedent_id", "")),
             "|".join(str(value) for value in row.get("statutory_links", ())),
             "active precedent relevance",
@@ -466,13 +443,12 @@ def _expand_with_praxis(
     )
 
     prior = statutory.suite.stabilized_return.stabilized_distribution
-    prior_probabilities = dict(zip(prior.support, prior.probabilities))
     oracles: list[Any] = [
         *statutory.oracle_stack.oracles,
         DistributionOracle(
             "legal:statutory-syntract-reentry",
             statutory.bundle.dimension_ids,
-            prior_probabilities,
+            dict(zip(prior.support, prior.probabilities)),
             1.0,
         ),
     ]
@@ -483,54 +459,28 @@ def _expand_with_praxis(
         for index, factor in enumerate(precedent.get("matched_similarity_factors", ())):
             oracles.append(EvidenceOracle(
                 f"legal:praxis:{_slug(precedent_id)}:similarity:{index}",
-                dimension_id,
-                1,
-                0.75,
-                precedent_id,
-                f"represented similarity factor: {factor}",
+                dimension_id, 1, 0.75, precedent_id, f"represented similarity factor: {factor}",
             ))
         for index, factor in enumerate(precedent.get("matched_counter_factors", ())):
             oracles.append(EvidenceOracle(
                 f"legal:praxis:{_slug(precedent_id)}:counter:{index}",
-                dimension_id,
-                0,
-                0.75,
-                precedent_id,
-                f"represented counter-factor: {factor}",
+                dimension_id, 0, 0.75, precedent_id, f"represented counter-factor: {factor}",
             ))
 
     stack = OracleStack(f"legal-qcds:{_slug(case_id)}:integrated", "2", tuple(oracles))
     suite = FabricLayer().run_stabilized_rotation_suite(
-        bundle,
-        stack,
-        include_positional=True,
-        include_oracle_exposure=True,
-        include_crossed=False,
+        bundle, stack, include_positional=True, include_oracle_exposure=True, include_crossed=False,
     )
     syntract = _bind_syntract(
-        case_id=case_id,
-        stage="final",
-        bundle=bundle,
-        stack=stack,
-        suite=suite,
-        rows=loaded_rows,
-        active_rule_ids=statutory.active_rule_ids,
-        active_precedents=precedents,
-        csv_text=csv_text,
-        prior_syntract_id=statutory.syntract.syntract_id,
+        case_id=case_id, stage="final", bundle=bundle, stack=stack, suite=suite,
+        rows=loaded_rows, active_rule_ids=statutory.active_rule_ids, active_precedents=precedents,
+        csv_text=csv_text, prior_syntract_id=statutory.syntract.syntract_id,
     )
     term_dimensions = dict(statutory.term_dimensions)
     term_dimensions.update({_canon(row.term): row.dimension_id for row in extra_rows})
     return LegalQCDSRuntime(
-        bundle,
-        stack,
-        suite,
-        syntract,
-        loaded_rows,
-        term_dimensions,
-        statutory.active_rule_ids,
-        precedents,
-        csv_text,
+        bundle, stack, suite, syntract, loaded_rows, term_dimensions,
+        statutory.active_rule_ids, precedents, csv_text,
     )
 
 
@@ -585,8 +535,8 @@ def _runtime_payload(runtime: LegalQCDSRuntime, corpus: Mapping[str, Any]) -> di
         "csv_row_count": len(runtime.rows),
         "csv_sha256": hashlib.sha256(runtime.csv_text.encode("utf-8")).hexdigest(),
         "phases": {
-            "1_condition_formation": "case facts are projected to only the source-attributed statutory dimensions that can affect the active case; conclusions and live assessments remain '?'",
-            "2_conditional_evolution": "source-attributed legal rule constraints and, after re-entry, praxis evidence oracles score candidate states",
+            "1_condition_formation": "hard structural/scope facts are fixed; legal regimes, consequences, active assessments and praxis remain live dimensions",
+            "2_conditional_evolution": "source-attributed legal constraints and praxis evidence oracles score candidate states",
             "3_recursive_inference": "exact classical enumeration of the active 2^N legal state space across dimension-null, position and oracle-exposure rotation banks",
             "4_truth_alignment_verification": "the stabilized TruthDistribution is bound directly as the Legal Syntract",
         },
@@ -594,47 +544,28 @@ def _runtime_payload(runtime: LegalQCDSRuntime, corpus: Mapping[str, Any]) -> di
     }
 
 
-def run_integrated_legal_qcds(
-    *,
-    case_id: str,
-    case_terms: Sequence[str],
-    resolved_terms: Sequence[str],
-    unresolved_questions: Sequence[str],
-    corpus: Mapping[str, Any],
-    applied_rule_ids: Sequence[str],
-    praxis: Mapping[str, Any] | None = None,
-    max_unknown_dimensions: int = 18,
-) -> Mapping[str, Any]:
-    """Run the active Swedish legal space through the actual QCDS Fabric.
-
-    The ordinary legal resolver is used only as a Condition Formation gate: it
-    identifies which source-attributed statutory constraints are active. Their
-    consequences are *not* fixed in the QCDS BaseBundle. They remain binary '?'
-    dimensions in an exact 2^N state space.
-
-    If praxis activates, the statutory Syntract re-enters QCDS through a
-    DistributionOracle. Active precedent dimensions expand the same legal room,
-    new evidence oracles are added, all rotations run again, and the stabilized
-    distribution is bound as the final Legal Syntract.
-    """
+def _run_uncached(payload: Mapping[str, Any]) -> Mapping[str, Any]:
     statutory = _build_statutory_runtime(
-        case_id=case_id,
-        case_terms=case_terms,
-        unresolved_questions=unresolved_questions,
-        corpus=corpus,
-        applied_rule_ids=applied_rule_ids,
-        max_unknown_dimensions=max_unknown_dimensions,
+        case_id=str(payload["case_id"]),
+        case_terms=tuple(str(value) for value in payload["case_terms"]),
+        resolved_terms=tuple(str(value) for value in payload["resolved_terms"]),
+        unresolved_questions=tuple(str(value) for value in payload["unresolved_questions"]),
+        corpus=_mapping(payload["corpus"], "corpus"),
+        applied_rule_ids=tuple(str(value) for value in payload["applied_rule_ids"]),
+        max_unknown_dimensions=int(payload["max_unknown_dimensions"]),
     )
+    corpus = _mapping(payload["corpus"], "corpus")
     statutory_payload = _runtime_payload(statutory, corpus)
 
     final_runtime = statutory
-    if praxis is not None:
+    praxis_raw = payload.get("praxis")
+    if praxis_raw is not None:
         final_runtime = _expand_with_praxis(
-            case_id=case_id,
+            case_id=str(payload["case_id"]),
             statutory=statutory,
-            praxis=praxis,
-            represented_terms=resolved_terms,
-            max_unknown_dimensions=max_unknown_dimensions,
+            praxis=_mapping(praxis_raw, "praxis"),
+            represented_terms=tuple(str(value) for value in payload["resolved_terms"]),
+            max_unknown_dimensions=int(payload["max_unknown_dimensions"]),
         )
     final_payload = _runtime_payload(final_runtime, corpus)
     final_payload["statutory_syntract_id"] = statutory.syntract.syntract_id
@@ -649,6 +580,42 @@ def run_integrated_legal_qcds(
         "retained_uncertainty": statutory_payload["retained_uncertainty"],
     }
     return final_payload
+
+
+@lru_cache(maxsize=128)
+def _cached_run(serialized_payload: str) -> Mapping[str, Any]:
+    return _run_uncached(_mapping(json.loads(serialized_payload), "cached legal QCDS payload"))
+
+
+def run_integrated_legal_qcds(
+    *, case_id: str, case_terms: Sequence[str], resolved_terms: Sequence[str],
+    unresolved_questions: Sequence[str], corpus: Mapping[str, Any], applied_rule_ids: Sequence[str],
+    praxis: Mapping[str, Any] | None = None, max_unknown_dimensions: int = 18,
+) -> Mapping[str, Any]:
+    """Run the active Swedish legal room through the actual shared QCDS Fabric.
+
+    Deterministic legal processing is restricted to Condition Formation. It may
+    fix hard structural/scope facts and identify source-attributed constraints,
+    but primary regime, legal consequences, active assessment states and praxis
+    are not installed as final truth. They remain QCDS dimensions.
+
+    The active table is round-tripped through in-memory CSV, the exact 2^N room
+    is executed by FabricLayer, and the stabilized TruthDistribution is bound as
+    Syntract. When praxis activates, that statutory Syntract re-enters QCDS via
+    DistributionOracle and the room expands before final binding.
+    """
+    payload = {
+        "case_id": case_id,
+        "case_terms": list(case_terms),
+        "resolved_terms": list(resolved_terms),
+        "unresolved_questions": list(unresolved_questions),
+        "corpus": dict(corpus),
+        "applied_rule_ids": list(applied_rule_ids),
+        "praxis": dict(praxis) if praxis is not None else None,
+        "max_unknown_dimensions": int(max_unknown_dimensions),
+    }
+    serialized = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return copy.deepcopy(_cached_run(serialized))
 
 
 __all__ = [
