@@ -1,0 +1,44 @@
+{
+  "mission_id": "public-web-france-capital",
+  "probe_terms": ["paris"],
+  "reality_bindings": [
+    {"binding_id": "country-france-1", "terms": ["country-france-1", "france"], "source_id": "seed:france:1"},
+    {"binding_id": "country-france-2", "terms": ["country-france-2", "france"], "source_id": "seed:france:2"},
+    {"binding_id": "country-germany-1", "terms": ["country-germany-1", "germany"], "source_id": "seed:germany:1"},
+    {"binding_id": "country-germany-2", "terms": ["country-germany-2", "germany"], "source_id": "seed:germany:2"},
+    {"binding_id": "country-germany-3", "terms": ["country-germany-3", "germany"], "source_id": "seed:germany:3"},
+    {"binding_id": "country-germany-4", "terms": ["country-germany-4", "germany"], "source_id": "seed:germany:4"},
+    {"binding_id": "country-germany-5", "terms": ["country-germany-5", "germany"], "source_id": "seed:germany:5"},
+    {"binding_id": "country-germany-6", "terms": ["country-germany-6", "germany"], "source_id": "seed:germany:6"}
+  ],
+  "problem": {
+    "mission_id": "public-web-capital-problem",
+    "raw_text": "The represented country is France; its capital remains unresolved and should be tested against a contrast country using public observations.",
+    "analyzer_id": "build24-public-web-example",
+    "queries": [
+      {"query_id": "country", "subject": "place", "predicate": "country", "candidate_values": ["france", "germany"]},
+      {"query_id": "capital", "subject": "place", "predicate": "capital", "candidate_values": ["paris", "berlin", "lyon"]}
+    ],
+    "claims": [
+      {"subject": "place", "predicate": "country", "value": "france", "source_id": "seed:current-country", "confidence": 1.0}
+    ],
+    "rules": []
+  },
+  "failure_observations": [
+    {
+      "observation_id": "capital-unresolved",
+      "kind": "prediction_failure",
+      "query_ids": ["capital"],
+      "severity": 1.0,
+      "description": "The capital is unresolved; acquire public observations that discriminate rival logical hypotheses."
+    }
+  ],
+  "generation": {
+    "evaluation_mode": "baseline",
+    "max_generations": 1,
+    "max_promotions_per_generation": 1,
+    "selection_independent_sources": 2,
+    "holdout_independent_sources": 1,
+    "robot_max_steps": 10
+  }
+}
