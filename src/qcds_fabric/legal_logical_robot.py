@@ -54,11 +54,41 @@ def _slug(value: str) -> str:
     return "".join(chars).strip("-") or "case"
 
 
+def _merge_rows(base: list[Any], extra: Sequence[Any], *, id_key: str, label: str) -> list[Any]:
+    out = list(base)
+    seen = {str(_mapping(row, label).get(id_key, "")) for row in out}
+    for raw in extra:
+        row = _mapping(raw, label)
+        row_id = str(row.get(id_key, ""))
+        if not row_id:
+            raise LegalLogicalRobotError(f"{label} missing {id_key}")
+        if row_id in seen:
+            continue
+        out.append(dict(row))
+        seen.add(row_id)
+    return out
+
+
+def _merge_default_expansion(corpus: Mapping[str, Any]) -> Mapping[str, Any]:
+    resource = files("qcds_fabric").joinpath("legal_data").joinpath("sweden_housing_expansion_2026.json")
+    if not resource.is_file():
+        return corpus
+    with resource.open("r", encoding="utf-8") as handle:
+        expansion = _mapping(json.load(handle), "legal expansion")
+    merged = dict(corpus)
+    merged["sources"] = _merge_rows(list(corpus["sources"]), expansion.get("sources", ()), id_key="source_id", label="sources[]")
+    merged["sections"] = _merge_rows(list(corpus["sections"]), expansion.get("sections", ()), id_key="section_id", label="sections[]")
+    merged["rules"] = _merge_rows(list(corpus["rules"]), expansion.get("rules", ()), id_key="rule_id", label="rules[]")
+    merged["expansion_ids"] = [str(expansion.get("expansion_id", "swedish-housing-expansion"))]
+    return merged
+
+
 def load_legal_corpus(path: str | Path | None = None) -> Mapping[str, Any]:
     if path is None:
         resource = files("qcds_fabric").joinpath("legal_data").joinpath("sweden_housing_2026.json")
         with resource.open("r", encoding="utf-8") as handle:
             payload = json.load(handle)
+        payload = _merge_default_expansion(_mapping(payload, "legal corpus"))
     else:
         with Path(path).open("r", encoding="utf-8") as handle:
             payload = json.load(handle)
@@ -113,7 +143,20 @@ def _case_terms(case: Mapping[str, Any], snapshot: date) -> tuple[tuple[str, ...
         else:
             questions.append(question)
 
-    flag("residential_use", "use:residential", "use:not_residential", "question:residential_use")
+    def optional_flag(key: str, yes: str, no: str) -> bool | None:
+        if key not in facts or facts[key] is None:
+            return None
+        value = _bool(facts, key)
+        terms.append(yes if value else no)
+        return value
+
+    residential = _bool(facts, "residential_use")
+    if residential is True:
+        terms += ["use:residential", "tenancy:residential"]
+    elif residential is False:
+        terms += ["use:not_residential", "tenancy:non_residential"]
+    else:
+        questions.append("question:residential_use")
     flag("holiday_purpose", "purpose:holiday", "purpose:not_holiday", "question:holiday_purpose")
     flag("landlord_holds_unit_as_tenant", "landlord:holds_tenancy", "landlord:not_holds_tenancy", "question:landlord_holds_unit_as_tenant")
 
@@ -153,6 +196,10 @@ def _case_terms(case: Mapping[str, Any], snapshot: date) -> tuple[tuple[str, ...
         terms.append("contract:adverse_tenant_clause")
     if facts.get("issue_rent_review") is True:
         terms.append("issue:rent_review")
+    if facts.get("issue_forfeiture") is True:
+        terms.append("issue:forfeiture")
+    if facts.get("issue_extension") is True:
+        terms.append("issue:extension")
 
     if facts.get("rent_delay_days") is not None:
         try:
@@ -161,6 +208,7 @@ def _case_terms(case: Mapping[str, Any], snapshot: date) -> tuple[tuple[str, ...
             raise LegalLogicalRobotError("facts.rent_delay_days must be an integer") from exc
         if delay < 0:
             raise LegalLogicalRobotError("facts.rent_delay_days cannot be negative")
+        terms.append("rent:delay_over_7_days" if delay > 7 else "rent:delay_not_over_7_days")
         if delay > 14:
             terms.append("rent:delay_over_14_days")
             cured = _bool(facts, "rent_cured_before_termination")
@@ -173,8 +221,12 @@ def _case_terms(case: Mapping[str, Any], snapshot: date) -> tuple[tuple[str, ...
         else:
             terms.append("rent:delay_not_over_14_days")
 
-    if _bool(facts, "independent_sublet_without_consent") is True:
-        terms.append("sublet:independent_without_consent")
+    optional_flag("landlord_terminated_for_rent_delay", "rent:landlord_terminated_for_delay", "rent:landlord_not_terminated_for_delay")
+    optional_flag("rent_recovered_within_three_weeks_after_notice", "rent:recovered_within_three_weeks_after_notice", "rent:not_recovered_within_three_weeks_after_notice")
+
+    independent = _bool(facts, "independent_sublet_without_consent")
+    if independent is True:
+        terms += ["sublet:independent_without_consent", "sublet:second_hand", "sublet:no_landlord_consent"]
         excuse = _bool(facts, "valid_excuse_for_sublet")
         if excuse is True:
             terms.append("sublet:valid_excuse")
@@ -182,6 +234,37 @@ def _case_terms(case: Mapping[str, Any], snapshot: date) -> tuple[tuple[str, ...
             terms.append("sublet:no_valid_excuse")
         else:
             questions.append("question:valid_excuse_for_sublet")
+    elif independent is False:
+        terms.append("sublet:not_independent_without_consent")
+
+    if optional_flag("second_hand_let", "sublet:second_hand", "sublet:not_second_hand") is True:
+        pass
+    landlord_consent = optional_flag("sublet_permission_from_landlord", "sublet:landlord_consent", "sublet:no_landlord_consent")
+    tribunal_permission = optional_flag("sublet_permission_from_hyresnamnd", "sublet:tribunal_permission", "sublet:no_tribunal_permission")
+    if landlord_consent is False and tribunal_permission is False:
+        terms.append("sublet:no_permission")
+    if facts.get("sublet_permission_requested") is True:
+        terms.append("sublet:permission_requested")
+        if facts.get("sublet_considerable_reasons") is None:
+            questions.append("question:sublet_considerable_reasons")
+        if facts.get("landlord_justified_refusal") is None:
+            questions.append("question:landlord_justified_refusal")
+        if residential is True and facts.get("sublet_rent_reasonable") is None:
+            questions.append("question:sublet_rent_reasonable")
+    optional_flag("sublet_considerable_reasons", "sublet:considerable_reason", "sublet:no_considerable_reason")
+    refusal = optional_flag("landlord_justified_refusal", "sublet:landlord_justified_refusal", "sublet:landlord_no_justified_refusal")
+    optional_flag("sublet_rent_reasonable", "sublet:rent_reasonable", "sublet:rent_not_reasonable")
+    optional_flag("second_hand_rent_above_allowed_ceiling", "rent:above_second_hand_ceiling", "rent:not_above_second_hand_ceiling")
+    if facts.get("second_hand_rent_above_allowed_ceiling") is not None:
+        terms.append("sublet:second_hand")
+    if refusal is True:
+        terms.append("interpretive_pressure:landlord_refusal")
+
+    outsider_questionable = optional_flag("outsider_use_questionable", "outsiders:extent_questionable", "outsiders:extent_not_questionable")
+    outsider_unreasonable = optional_flag("outsider_use_unreasonable_extent", "outsiders:extent_unreasonable", "outsiders:extent_acceptable")
+    optional_flag("rectified_before_termination", "breach:rectified_before_termination", "breach:not_rectified_before_termination")
+    if outsider_questionable is True and outsider_unreasonable is None:
+        questions.append("question:outsider_use_unreasonable_extent")
 
     if _bool(facts, "material_defect") is True:
         terms.append("defect:material")
@@ -192,6 +275,15 @@ def _case_terms(case: Mapping[str, Any], snapshot: date) -> tuple[tuple[str, ...
             terms.append("defect:landlord_not_promptly_remedied_after_notice")
         else:
             questions.append("question:landlord_promptly_remedied_after_notice")
+    optional_flag("damage_arose_during_tenancy", "evidence:damage_arose_during_tenancy", "evidence:damage_preexisted_tenancy")
+    optional_flag("damage_typically_requires_negligence", "evidence:damage_typically_requires_negligence", "evidence:damage_not_typically_negligence")
+
+    optional_flag("tenant_obligations_seriously_breached", "extension:tenant_obligations_seriously_breached", "extension:tenant_obligations_not_seriously_breached")
+    optional_flag("major_renovation_planned", "extension:major_renovation", "extension:no_major_renovation")
+    optional_flag("one_or_two_family_nonbusiness", "extension:one_or_two_family_nonbusiness", "extension:not_one_or_two_family_nonbusiness")
+    optional_flag("landlord_personal_disposal_interest", "extension:landlord_personal_disposal_interest", "extension:no_landlord_personal_disposal_interest")
+    optional_flag("tenant_hardship_strong", "extension:tenant_hardship_strong", "extension:tenant_hardship_not_strong")
+    optional_flag("extension_dispute_pending_after_term", "extension:dispute_pending_after_term", "extension:dispute_not_pending_after_term")
 
     return tuple(dict.fromkeys(terms)), tuple(dict.fromkeys(questions))
 
@@ -206,14 +298,20 @@ def _section_bindings(corpus: Mapping[str, Any]) -> list[dict[str, Any]]:
     for index, raw in enumerate(corpus["sections"], 1):
         row = _mapping(raw, "sections[]")
         source_id = str(row["source_id"])
+        source = sources[source_id]
         out.append({
             "binding_id": f"legal-section:{index:03d}:{_slug(str(row['section_id']))}",
-            "terms": ["statute-section", f"section:{row['section_id']}", f"topic:{row['topic']}", f"source:{source_id}"],
+            "terms": ["legal-source-section", f"section:{row['section_id']}", f"topic:{row['topic']}", f"source:{source_id}"],
             "source_id": source_id,
-            "source_uri": str(sources[source_id].get("uri", "")),
+            "source_uri": str(source.get("uri", "")),
             "confidence": 1.0,
             "excerpt": str(row.get("summary", "")),
-            "provenance": {"declared_legal_source": True, "verbatim_statute_text": False, "snapshot_date": corpus["snapshot_date"]},
+            "provenance": {
+                "declared_legal_source": True,
+                "source_class": source.get("source_class", "statute"),
+                "verbatim_statute_text": False,
+                "snapshot_date": corpus["snapshot_date"],
+            },
         })
     return out
 
@@ -351,11 +449,13 @@ class SwedishHousingLegalRobot:
             if (source_id, section_id) in seen:
                 continue
             seen.add((source_id, section_id))
+            source = self.sources[source_id]
             source_rows.append({
                 "source_id": source_id,
+                "source_class": source.get("source_class", "statute"),
                 "section_id": section_id,
-                "title": self.sources[source_id].get("title"),
-                "uri": self.sources[source_id].get("uri"),
+                "title": source.get("title"),
+                "uri": source.get("uri"),
                 "rule_id": rule_id,
                 "explanation": row.get("explanation", ""),
             })
@@ -384,6 +484,13 @@ class SwedishHousingLegalRobot:
             "universe_id": universe_id,
             "snapshot_date": self.corpus["snapshot_date"],
             "as_of_date": as_of.isoformat(),
+            "input_facts": dict(_mapping(case.get("facts", {}), "facts")),
+            "corpus_stats": {
+                "source_count": len(self.corpus["sources"]),
+                "section_count": len(self.corpus["sections"]),
+                "rule_count": len(self.corpus["rules"]),
+                "expansion_ids": list(self.corpus.get("expansion_ids", ())),
+            },
             "base_binding_count": universe.base_binding_count,
             "active_rule_count": universe.active_rule_count,
             "case_terms": list(case_terms),
@@ -407,6 +514,7 @@ class SwedishHousingLegalRobot:
                 "source_attributed_declared_universe": True,
                 "not_legal_advice": True,
                 "case_facts_are_user_supplied": True,
+                "open_textured_standards_remain_assessment_questions": True,
                 "snapshot_must_be_checked_for_later_dates": True,
             },
         })
