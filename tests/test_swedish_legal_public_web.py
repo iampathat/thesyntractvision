@@ -27,7 +27,7 @@ def test_public_web_adds_real_legal_world_without_removing_existing_lab() -> Non
     assert "legal_run" in html
 
 
-def test_legal_web_explains_the_inference_chain_and_new_real_cases() -> None:
+def test_legal_web_explains_the_inference_chain_and_exposes_all_fifteen_cases() -> None:
     html = living_robot_legal_html(static_mode=True)
 
     for phrase in (
@@ -46,15 +46,36 @@ def test_legal_web_explains_the_inference_chain_and_new_real_cases() -> None:
     ):
         assert phrase in html
 
-    for fixture in (
+    fixtures = (
+        "new_private_let_2026.json",
+        "legacy_private_let_2026.json",
+        "jordabalk_12_fallback_2026.json",
+        "material_defect_praxis_2026.json",
         "jb_unauthorized_sublet_forfeiture_2026.json",
         "jb_late_rent_recovery_2026.json",
         "jb_extension_renovation_balance_2026.json",
         "jb_excess_second_hand_rent_2026.json",
         "jb_outsider_reasonableness_2026.json",
         "jb_second_hand_permission_2026.json",
+        "jb_disturbance_after_warning_2026.json",
+        "jb_access_refusal_rectified_2026.json",
+        "jb_transfer_unreasonable_refusal_2026.json",
+        "jb_apartment_exchange_2026.json",
+        "jb_damage_evidence_2026.json",
+    )
+    assert len(fixtures) == 15
+    for fixture in fixtures:
+        assert f"runLegalCase('{fixture}')" in html
+        assert f"'{fixture}':" in html
+
+    for title in (
+        "Disturbance after warning",
+        "Refused access, then rectified",
+        "Unreasonable refusal to transfer",
+        "Apartment exchange",
+        "Damage without invented negligence",
     ):
-        assert fixture in html
+        assert title in html
 
 
 def test_browser_worker_routes_legal_run_to_packaged_python_robot() -> None:
@@ -79,12 +100,15 @@ def test_praxis_has_grown_with_recent_hd_and_svea_material() -> None:
     praxis = load_legal_praxis()
     ids = {row["precedent_id"] for row in praxis["precedents"]}
 
-    assert len(ids) >= 13
+    assert len(ids) >= 16
     assert "NJA-2024-657" in ids
     assert "NJA-2025-515" in ids
     assert "SVEA-OH-9160-21" in ids
     assert "SVEA-H-14449-22" in ids
     assert "SVEA-OH-4781-18" in ids
+    assert "SVEA-OH-11710-21" in ids
+    assert "SVEA-OH-9885-20" in ids
+    assert "SVEA-OH-10365-19" in ids
 
 
 def test_material_defect_fixture_runs_full_statute_plus_active_praxis_path() -> None:
@@ -116,5 +140,5 @@ def test_json_bridge_returns_same_specialized_robot_shape() -> None:
     assert "praxis_assessment" in result
     assert result["legal_boundary"]["not_legal_advice"] is True
     assert result["legal_boundary"]["open_textured_standards_remain_assessment_questions"] is True
-    assert result["corpus_stats"]["section_count"] >= 35
-    assert result["corpus_stats"]["rule_count"] >= 30
+    assert result["corpus_stats"]["section_count"] >= 44
+    assert result["corpus_stats"]["rule_count"] >= 45
