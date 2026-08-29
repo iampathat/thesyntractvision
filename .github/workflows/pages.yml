@@ -12,12 +12,14 @@ on:
       - "src/qcds_fabric/living_robot_builder.py"
       - "src/qcds_fabric/living_robot_session.py"
       - "src/qcds_fabric/living_robot_invite.py"
+      - "src/qcds_fabric/living_robot_invite38.py"
       - "src/qcds_fabric/domain_lab.py"
       - "src/qcds_fabric/domain_lab_builder.py"
       - "src/qcds_fabric/session_sandbox_core.py"
       - "src/qcds_fabric/logical_robot_live34.py"
       - "src/qcds_fabric/logical_robot_live35.py"
       - "src/qcds_fabric/logical_robot_live37.py"
+      - "src/qcds_fabric/logical_robot_live38.py"
       - "src/qcds_fabric/learning_moment.py"
       - "web/session_core_worker.js"
       - ".github/workflows/pages.yml"
@@ -50,7 +52,7 @@ jobs:
       - name: Export the static Logical Robot invitation + advanced sandbox
         run: |
           mkdir -p _site
-          python -m qcds_fabric.living_robot_invite --export _site/index.html
+          python -m qcds_fabric.living_robot_invite38 --export _site/index.html
           cp web/session_core_worker.js _site/session_core_worker.js
           python - <<'PY'
           from pathlib import Path
