@@ -10,7 +10,7 @@ You do **not** need to understand the whole architecture before trying it or bui
 
 **Author and originator:** Patrik Sundblom  
 **Canonical architecture:** QCDS Fabric v1.0 — locked  
-**Reference software:** `qcds-fabric` 1.27.0  
+**Reference software:** `qcds-fabric` 1.30.0  
 **Theory/specification:** CC BY 4.0  
 **Software:** MIT
 
@@ -202,7 +202,11 @@ flowchart TD
     Q --> LR[Logical Robot]
     LR --> WEB[Web / APIs / files / simulations]
     LR --> UI[Living web manifestation + I/O]
+    LR --> SR[Specialized Logical Robots]
     LR --> PR[Physical Robot Body — optional]
+    SR --> LEGAL[Legal]
+    SR --> SCIENCE[Science]
+    SR --> MED[Medicine]
     PR --> WORLD[Physical world / sensors / motors]
     WEB --> LR
     WORLD --> PR
@@ -210,9 +214,47 @@ flowchart TD
     LR --> L
 ```
 
-A browser page, terminal, API or future physical robot body is a manifestation/observation surface around the **same Logical Robot architecture**. Replacing a body does not redefine the intelligence.
+A browser page, terminal, API, specialized domain robot or future physical robot body is a manifestation/capability surface around the **same Logical Robot architecture**. Replacing or adding a body does not redefine the intelligence.
 
-The BUILD 35/37 browser sandbox makes this boundary especially visible: WebAssembly is an execution substrate for the packaged Python core, not a client-side rewrite of QCDS.
+WebAssembly is an execution substrate for the packaged Python core, not a client-side rewrite of QCDS.
+
+---
+
+## Specialized Logical Robots
+
+Large real-world domains should not be mixed into one implementation pile.
+
+Substantial domain robots live under [`robots/`](robots/):
+
+```text
+robots/
+├── legal/
+│   ├── sweden_housing/
+│   └── future_us_.../
+├── medicine/
+├── science/
+└── ...
+```
+
+A specialized Logical Robot can own its domain corpus, case fixtures, source mappings, domain-specific interpretation layers and benchmarks while still calling the **same QCDS / Syntract core**.
+
+The first substantial domain robot is [`robots/legal/sweden_housing/`](robots/legal/sweden_housing/). It models Swedish housing law as a mixed Logical Universe containing statutory rules, transition rules, explicit exceptions, open-textured legal concepts and a separate praxis/precedent assessment layer.
+
+```text
+Swedish Housing Legal Robot
+        ↓
+statutory Logical Universe
++ facts / missing facts
++ praxis / analogy / counter-factors
+        ↓
+QCDS / Syntract core
+        ↓
+competing coherent legal states
+        ↓
+Syntract
+```
+
+A Legal Logical Robot can also participate as one capability inside a Living Swarm Logical Robot system. Its output remains non-authoritative until challenged/bound through the shared architecture.
 
 ---
 
@@ -292,9 +334,9 @@ simulation-y        simulated logic
 
 A declared lawbook can define constitutive rules without those rules leaking into observed Reality.
 
-Before a generated rule becomes active, the MVP can compare the current universe with a hypothetical version containing the rule and calculate its **logical blast radius**. Wide or zero-effect changes can be quarantined instead of silently reshaping the universe.
+Before a generated rule becomes active, the implementation can compare the current universe with a hypothetical version containing the rule and calculate its **logical blast radius**. Wide or zero-effect changes can be quarantined instead of silently reshaping the universe.
 
-BUILD 33–37 also expose **Domain Labs** and user-created isolated Logical Spaces. Their starting rule count is zero and their default Reality effect is zero.
+Domain Labs and user-created Logical Spaces start isolated from Reality unless explicitly governed otherwise.
 
 See [`LOGICAL_UNIVERSES.md`](LOGICAL_UNIVERSES.md), [`LOGICAL_UNIVERSE_TEMPLATE.md`](LOGICAL_UNIVERSE_TEMPLATE.md) and [`DOMAIN_LABS.md`](DOMAIN_LABS.md).
 
@@ -346,7 +388,7 @@ superintelligent capability
 
 The ambition is therefore larger than a conventional application stack. The project investigates whether intelligence can be built as a **coherence-driven, inference-first architecture** whose logical working space can expand, whose candidate logic can be challenged, and whose execution substrate can evolve without redefining the intelligence itself.
 
-That is the sense in which this repository acts as a **blueprint / research architecture for superintelligence**. It is a direction and falsifiable architecture — not a claim that the current MVP has already reached superintelligence.
+That is the sense in which this repository acts as a **blueprint / research architecture for superintelligence**. It is a direction and falsifiable architecture — **not a claim that the current MVP has already reached superintelligence**.
 
 ---
 
@@ -382,7 +424,7 @@ See [`GROVER_DEPTH.md`](GROVER_DEPTH.md).
 
 ## Browser-scale execution and Living Swarm Logical Robots
 
-BUILD 35 showed another substrate property: the same packaged core can execute inside an ephemeral browser session through WebAssembly/Pyodide.
+The same packaged core can execute inside an ephemeral browser session through WebAssembly/Pyodide.
 
 That makes a broader experiment possible:
 
@@ -395,6 +437,15 @@ browser C ─┘
 ```
 
 Many temporary Logical Robots could in principle cooperate as a distributed swarm while keeping raw session state local and exchanging only bounded epistemic packets, contradictions, provenance or verification results.
+
+Specialized robots can also join that model:
+
+```text
+Legal Robot ───────┐
+Evidence Robot ────┼─► bounded capability packets ─► QCDS challenge / Syntract
+Science Robot ─────┤
+Sensor Robot ──────┘
+```
 
 This is intentionally an **optional side experiment**, not a replacement architecture and not a prerequisite for the main Logical Robot.
 
@@ -414,38 +465,44 @@ qcds-logical-robot examples/first_logical_robot_mvp.json --store ./intelligence_
 # Runnable Logical Universe
 qcds-universe examples/logical_universe_lawbook_mvp.json --store ./intelligence_store
 
+# Swedish Housing Law Logical Robot
+qcds-legal-robot robots/legal/sweden_housing/cases/new_private_let_2026.json
+
 # Self-expanding Reality cycle
 qcds-reality-cycle examples/self_expanding_reality_mvp.json --store ./intelligence_store
 
 # Evidence-driven Reality discovery
 qcds-reality-discovery examples/evidence_driven_reality_mvp.json --store ./intelligence_store
 
-# Real public-web Reality discovery
+# Public-web Reality discovery
 qcds-reality-web examples/public_web_reality_capital_mvp.json --store ./intelligence_store
 
 # Bounded continuous Reality growth
 qcds-reality-grow examples/continuous_reality_growth_mvp.json --store ./intelligence_store
 
-# Living Logical Robot — current local web manifestation + I/O
+# Living Logical Robot — local web manifestation + I/O
 qcds-live --store ./intelligence_store --frontier examples/continuous_reality_growth_mvp.json
 ```
 
 ---
 
-## Verified results
+## What is already verifiable
 
-BUILD 23–25 passed a real Wikipedia discovery proof where the robot acquired three public observations, constructed challenge data only after observation, selected/governed `france => paris` and changed a resolved probe from `0 → 2` without rewriting base logical-space rows.
+The repository contains regression and falsification tests for the architectural boundaries it currently implements, including:
 
-BUILD 26–28 then started the actual remote HTTP service on a fresh GitHub runner, visualized governed Reality logic, accepted human dialogue with **zero truth effect**, executed `Explore quantum biology` against real Wikipedia and created new Logical-Robot-owned child frontier work from the observed references.
+- Logical Space representation and governed logical transforms;
+- isolated Logical Universes and rule drift/blast-radius checks;
+- evidence-driven Reality observation with source provenance;
+- Logical Robot I/O where ordinary dialogue has zero automatic truth effect;
+- bounded frontier growth and public-web observation;
+- browser-session execution through the packaged Python core rather than duplicated JavaScript inference;
+- quick and advanced Logical Space interfaces using the same core path;
+- Swedish housing-law statutory regime selection across current, legacy and Chapter 12 paths;
+- a separate praxis layer where precedent relevance is assessed without silently rewriting statutory results.
 
-BUILD 35 added the ephemeral browser sandbox. BUILD 37 added the quick-experiment layer while preserving the full Advanced Logical Space Lab and the same core request path.
+GitHub Actions runs the regression/falsification suite on implementation changes.
 
-The current regression/falsification suite runs in GitHub Actions on implementation changes.
-
-See:
-
-- [`results/BUILD23_25_LOGICAL_ROBOT_LIVE_RESULTS.md`](results/BUILD23_25_LOGICAL_ROBOT_LIVE_RESULTS.md)
-- [`results/BUILD26_28_LIVING_LOGICAL_ROBOT_RESULTS.md`](results/BUILD26_28_LIVING_LOGICAL_ROBOT_RESULTS.md)
+Detailed historical development logs, where retained, belong in `results/` and commit history rather than defining this README.
 
 ---
 
@@ -457,6 +514,7 @@ Useful entry points include:
 
 ```text
 new Logical Robot body / observer
+new specialized Logical Robot under robots/
 small falsifiable Logical Universe
 new Domain Lab
 new oracle + falsifier
@@ -499,7 +557,7 @@ intelligence_store/
 
 CSV/JSONL are transparent MVP backends, not the conceptual identity of the intelligence. Storage/runtime boundaries remain replaceable for accelerated, hybrid or quantum-near substrates.
 
-The public BUILD 35/37 browser sandbox is different: its user state is **session-only** and does not use this persistent local store.
+The public browser sandbox is different: its user state is **session-only** and does not use this persistent local store.
 
 ---
 
@@ -508,26 +566,25 @@ The public BUILD 35/37 browser sandbox is different: its user state is **session
 | Area | Purpose |
 |---|---|
 | `START_HERE.md` | shortest path from curious to building |
-| `examples/hello_logical_space.py` | smallest editable executable example |
 | `QCDS_FABRIC_SPEC_v1.0_CANONICAL.*` | locked canonical QCDS Fabric v1.0 specification |
-| `src/qcds_fabric/` | reference implementation |
-| `src/qcds_fabric/runtime.py` | callable intelligence runtime |
+| `src/qcds_fabric/` | reference QCDS / Logical Robot implementation |
+| `src/qcds_fabric/problem.py` | problem → QCDS → Syntract path |
+| `src/qcds_fabric/fabric.py` | Fabric layer |
 | `src/qcds_fabric/logical_space.py` | shared open-ended Logical Space |
 | `src/qcds_fabric/logical_transform.py` | non-materialized governed logical transforms |
 | `src/qcds_fabric/logical_universe.py` | isolated Logical Universes + drift governance |
+| `src/qcds_fabric/runtime.py` | callable intelligence runtime |
 | `src/qcds_fabric/first_logical_robot.py` | Logical Robot body/runtime bridge |
-| `src/qcds_fabric/public_web_reality.py` | public-web Reality observation body |
-| `src/qcds_fabric/continuous_reality.py` | bounded continuous Reality-growth policy |
-| `src/qcds_fabric/logical_robot_live35.py` | stateless session bridge to QCDS core |
-| `src/qcds_fabric/logical_robot_live37.py` | current quick-start + advanced live manifestation |
-| `src/qcds_fabric/living_robot_invite.py` | BUILD 37 quick experiment layer |
 | `src/qcds_fabric/living_robot_session.py` | advanced session sandbox |
 | `src/qcds_fabric/living_robot_builder.py` | custom Logical Space builder |
+| `robots/` | substantial specialized Logical Robots and their domain material |
+| `robots/legal/sweden_housing/` | Swedish Housing Law Logical Robot domain home |
 | `web/session_core_worker.js` | WebAssembly/Pyodide transport loader — not QCDS logic |
 | `.devcontainer/` | one-click Codespaces runtime |
 | `.github/workflows/pages.yml` | public Pages deployment |
 | `tests/` | regression and falsification tests |
-| `examples/` | runnable experiments |
+| `examples/` | small general runnable experiments |
+| `results/` | retained detailed verification/development results |
 
 Focused docs: [`LIVING_LOGICAL_ROBOT.md`](LIVING_LOGICAL_ROBOT.md), [`LOGICAL_ROBOT_LIVE.md`](LOGICAL_ROBOT_LIVE.md), [`LOGICAL_SPACE.md`](LOGICAL_SPACE.md), [`GLOBAL_LOGIC.md`](GLOBAL_LOGIC.md), [`LOGICAL_UNIVERSES.md`](LOGICAL_UNIVERSES.md), [`LOGICAL_UNIVERSE_TEMPLATE.md`](LOGICAL_UNIVERSE_TEMPLATE.md), [`DOMAIN_LABS.md`](DOMAIN_LABS.md), [`ORACLE_EVOLUTION.md`](ORACLE_EVOLUTION.md), [`ORACLE_GENESIS.md`](ORACLE_GENESIS.md), [`EVIDENCE_PLANNING.md`](EVIDENCE_PLANNING.md), [`GROVER_DEPTH.md`](GROVER_DEPTH.md), [`LIVING_SWARM_LOGICAL_ROBOTS.md`](LIVING_SWARM_LOGICAL_ROBOTS.md).
 
@@ -546,7 +603,7 @@ GitHub Actions runs the same regression/falsification suite on implementation ch
 
 ## Canonical specification
 
-The QCDS Fabric v1.0 canonical artifacts are version-locked and are not rewritten by the Logical Robot, visualization, oracle evolution, global logic, Logical Universes or runtime layers:
+The QCDS Fabric v1.0 canonical artifacts are version-locked and are not rewritten by the Logical Robot, visualization, oracle evolution, global logic, Logical Universes, specialized domain robots or runtime layers:
 
 - [Canonical specification — Markdown](QCDS_FABRIC_SPEC_v1.0_CANONICAL.md)
 - [Canonical specification — PDF](QCDS_FABRIC_SPEC_v1.0_CANONICAL.pdf)
@@ -558,7 +615,7 @@ The QCDS Fabric v1.0 canonical artifacts are version-locked and are not rewritte
 
 ## Research status and claim boundary
 
-This repository is an experimental, falsifiable reference implementation. A coherent distribution, generated/promoted oracle, Syntract, logical binding, global rule, declared-universe rule or web observation is **not automatically external truth**.
+This repository is an experimental, falsifiable reference implementation. A coherent distribution, generated/promoted oracle, Syntract, logical binding, global rule, declared-universe rule, precedent assessment or web observation is **not automatically external truth**.
 
 The project is explicitly aimed at exploring a route toward **superintelligent capability**, but the current software does not by itself establish AGI/ASI, unrestricted natural-language understanding, complete world knowledge, unrestricted self-modification, production browser security, native quantum advantage, legal correctness or correctness on arbitrary real-world problems.
 
