@@ -69,9 +69,9 @@ def build_quantum_full_space_manifest(
 
     No rule is selected by case relevance here. Every represented rule term in
     the loaded corpus is retained. Every represented precedent receives a live
-    precedent dimension. Case/evidence terms are added without deleting any
-    corpus dimension. This is a target manifest only; no physical QPU execution
-    is claimed.
+    precedent dimension and its represented activation/counter logic is kept.
+    Case/evidence terms are added without deleting any corpus dimension. This is
+    a target manifest only; no physical QPU execution is claimed.
     """
     display_by_canonical: dict[str, str] = {}
 
@@ -108,12 +108,18 @@ def build_quantum_full_space_manifest(
                 continue
             precedent_ids.append(precedent_id)
             add(f"precedent:{precedent_id}")
+            # Keep the actual represented praxis logic used by the current
+            # Swedish housing corpus as well as generic future factor fields.
             for key in (
+                "activation_terms",
+                "counter_terms",
                 "similarity_factors",
                 "counter_factors",
                 "case_factors",
                 "legal_factors",
                 "statutory_links",
+                "issue_tags",
+                "principles",
             ):
                 for term in row.get(key, ()):
                     add(term)
