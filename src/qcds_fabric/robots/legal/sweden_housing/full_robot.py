@@ -17,8 +17,8 @@ from qcds_fabric.legal_logical_robot import (
     load_legal_case,
 )
 
+from .cached_full_qcds import run_cached_full_legal_qcds
 from .evidence import LegalEvidenceError
-from .full_qcds import run_full_legal_qcds
 from .qcds_space import LegalQCDSSpaceError
 
 
@@ -51,7 +51,7 @@ class SwedishHousingFullQCDSRobot:
         if not isinstance(raw_evidence, Sequence) or isinstance(raw_evidence, (str, bytes, bytearray)):
             raise LegalEvidenceError("qcds_evidence must be an array of evidence objects")
 
-        integrated_qcds = run_full_legal_qcds(
+        integrated_qcds = run_cached_full_legal_qcds(
             case_id=str(statutory["case_id"]),
             case_terms=tuple(str(value) for value in statutory["case_terms"]),
             resolved_terms=tuple(str(value) for value in statutory["resolved_terms"]),
@@ -87,6 +87,7 @@ class SwedishHousingFullQCDSRobot:
                 "classical_exact_is_reference": True,
                 "grover_emulation_uses_same_bundle_and_oracles": True,
                 "probabilistic_evidence_supported": True,
+                "identical_full_runs_cached_without_changing_inference": True,
                 "final_answer_is_qcds_distribution": True,
                 "statutory_result_preserved": False,
                 "statutory_constraints_preserved": True,
