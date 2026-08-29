@@ -1,0 +1,18 @@
+{
+  "case_id": "legacy-may-2026",
+  "as_of_date": "2026-08-29",
+  "contract_date": "2026-05-10",
+  "facts": {
+    "landlord_type": "natural_person",
+    "residential_use": true,
+    "holiday_purpose": false,
+    "landlord_holds_unit_as_tenant": false,
+    "regular_external_units": 1,
+    "outside_business": true,
+    "unit_is_tenancy_sublet": false,
+    "private_let_sequence": 1,
+    "fixed_term": false,
+    "adverse_tenant_clause": true,
+    "issue_rent_review": true
+  }
+}
