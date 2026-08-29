@@ -102,6 +102,44 @@
         "A contractual term can be legally relevant without being dispositive of the statutory question."
       ],
       "role": "interpretive_precedent"
+    },
+    {
+      "precedent_id": "NJA-2024-657",
+      "court": "Högsta domstolen",
+      "case_number": "Ö 873-24",
+      "name": "Kylbaffeln",
+      "decision_date": "2024-10-24",
+      "authority_class": "hd_precedent",
+      "authority_weight": 1.0,
+      "source_uri": "https://www.domstol.se/hogsta-domstolen/avgoranden2/2024/145340/",
+      "statutory_links": ["12 kap. 11 § jordabalken", "12 kap. 16 § jordabalken", "12 kap. 24 § jordabalken"],
+      "issue_tags": ["defect", "hinder_and_detriment", "notice", "reclamation", "commercial_tenancy"],
+      "activation_terms": ["defect:material", "defect:landlord_not_promptly_remedied_after_notice", "primary_regime:jordabalk_12"],
+      "counter_terms": ["defect:landlord_promptly_remedied_after_notice"],
+      "principles": [
+        "A tenant does not have a separate general duty to make a legal reclamation in order to preserve claims arising from a defect in the right of use.",
+        "The statutory notice duties and the special structure of tenancy law matter when general contract-law principles are considered."
+      ],
+      "role": "interpretive_precedent"
+    },
+    {
+      "precedent_id": "NJA-2025-515",
+      "court": "Högsta domstolen",
+      "case_number": "T 1347-24",
+      "name": "Bergrumsgaraget",
+      "decision_date": "2025-05-22",
+      "authority_class": "hd_precedent",
+      "authority_weight": 1.0,
+      "source_uri": "https://rattspraxis.etjanst.domstol.se/sok/publicering/0a05be5a-3e01-4467-9da4-5c0c25f8b96c?domstolskod=HDO",
+      "statutory_links": ["12 kap. 1 § jordabalken"],
+      "issue_tags": ["classification", "chapter12_scope", "house", "building", "commercial_tenancy"],
+      "activation_terms": ["primary_regime:jordabalk_12", "use:not_residential"],
+      "counter_terms": [],
+      "principles": [
+        "Whether an underground space is a house for Chapter 12 purposes depends on its design and function, not only ordinary-language labels.",
+        "The material meaning and intended use of the agreement can be relevant when deciding whether an arrangement is tenancy."
+      ],
+      "role": "interpretive_precedent"
     }
   ],
   "boundary": {
