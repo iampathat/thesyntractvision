@@ -47,6 +47,16 @@ renderLegalResult=function(result,title){
  const root=document.getElementById('legalResult');if(!root)return;
  root.appendChild(fullQCDSPanel(result.qcds_core||{}));
 };
+
+window.addEventListener('DOMContentLoaded',()=>{
+ const file='jb_probabilistic_sublet_evidence_2026.json';
+ LEGAL_CASE_TITLES[file]='Disputed second-hand use · probabilistic evidence';
+ const grid=document.querySelector('.legalCaseGrid');
+ if(!grid||document.getElementById('probabilistic-legal-case'))return;
+ const article=document.createElement('article');article.className='legalCase';article.id='probabilistic-legal-case';
+ article.innerHTML='<span class="tag">12 KAP · PROBABILISTIC EVIDENCE</span><h4>Disputed independent use</h4><p>The statutory setting is known, but whether the use is truly independent and whether a valid excuse exists are represented as 0.74 / 0.85 evidence pressures. Watch QCDS keep them live instead of silently turning them into facts.</p><button onclick="runLegalCase(\''+file+'\')">RUN CASE →</button>';
+ grid.appendChild(article);
+});
 </script>
 '''
 
