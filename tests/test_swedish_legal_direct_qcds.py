@@ -30,12 +30,20 @@ def test_jordabalk_case_is_real_binary_qcds_space_not_regime_projection() -> Non
     terms = {row["term"] for row in qcds["marginals"]}
     assert "conclusion:jb12_forfeiture_ground_late_residential_rent" in terms
     assert "conclusion:jb12_late_rent_tenancy_recovered_under_represented_section44_conditions" in terms
-    assert any(term.startswith("question:") for term in terms)
 
+    # The old narrow regime pass survives only as a diagnostic/provenance object.
     assert result["statutory_regime_projection"]["core_execution"] == "qcds_fabric.problem.problem_to_syntract"
     assert result["swarm_packet"]["syntract_id"] == qcds["syntract_id"]
     assert result["assessment_model"]["final_answer_is_qcds_distribution"] is True
     assert result["assessment_model"]["statutory_result_preserved"] is False
+
+
+def test_open_assessment_remains_a_live_qcds_dimension_when_rule_path_uses_it() -> None:
+    qcds = _run("jb_apartment_exchange_2026.json")["qcds_core"]
+    terms = {row["term"] for row in qcds["marginals"]}
+
+    assert "question:jb35_exchange_requires_noteworthy_reasons_landlord_inconvenience_compensation_and_residence_duration_checks" in terms
+    assert any(row["kind"] == "assessment" for row in qcds["marginals"])
 
 
 def test_material_defect_reenters_statutory_syntract_and_expands_with_praxis() -> None:
