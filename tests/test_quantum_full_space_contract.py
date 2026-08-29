@@ -120,6 +120,35 @@ def test_full_space_contract_compiles_complete_bundle_without_prebinding_resolve
     assert payload["native_qpu_connected"] is False
 
 
+def test_full_space_dimension_ids_are_collision_safe() -> None:
+    corpus = {
+        "corpus_id": "collision-test",
+        "primary_regime_candidates": ["one", "two"],
+        "sources": [],
+        "sections": [],
+        "rules": [
+            {
+                "rule_id": "collision-rule",
+                "source_id": "test",
+                "section_id": "TEST:1",
+                "match_terms": ["a:b", "a-b"],
+                "emit_terms": ["conclusion:collision-safe"],
+            }
+        ],
+    }
+    compilation = compile_quantum_full_space_contract(
+        corpus=corpus,
+        praxis=None,
+        case_terms=(),
+        resolved_terms=(),
+        unresolved_questions=(),
+        qcds_evidence=(),
+    )
+
+    assert len(compilation.bundle.dimension_ids) == len(set(compilation.bundle.dimension_ids))
+    assert compilation.term_dimensions["a:b"] != compilation.term_dimensions["a-b"]
+
+
 def test_real_swedish_housing_full_space_contract_keeps_entire_loaded_law_and_praxis_universe() -> None:
     corpus = load_legal_corpus()
     praxis = load_legal_praxis()
