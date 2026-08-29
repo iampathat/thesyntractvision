@@ -1,0 +1,20 @@
+{
+  "case_id": "jb12-residential-apartment-exchange",
+  "as_of_date": "2026-08-29",
+  "contract_date": "2026-08-13",
+  "facts": {
+    "landlord_type": "natural_person",
+    "residential_use": true,
+    "holiday_purpose": false,
+    "landlord_holds_unit_as_tenant": true,
+    "regular_external_units": 1,
+    "fixed_term": false,
+    "issue_exchange": true,
+    "exchange_requested": true,
+    "exchange_noteworthy_reasons": true,
+    "exchange_material_landlord_inconvenience": false,
+    "exchange_prohibited_compensation": false,
+    "exchange_resident_at_least_one_year": true,
+    "exchange_exceptional_reasons": false
+  }
+}
