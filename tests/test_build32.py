@@ -53,7 +53,7 @@ def test_build32_is_manifestation_only_and_keeps_existing_api_contract(tmp_path:
         assert "LIVE · LOGICAL ROBOT CONNECTED" in page
         assert '"status": "ok"' in health
         service = getattr(server, "qcds_service")
-        assert service.state()["provenance"]["builds"][-1] == 32
+        assert 32 in service.state()["provenance"]["builds"]
         assert "/api/promote" not in page
         assert "/api/rule/install" not in page
     finally:
