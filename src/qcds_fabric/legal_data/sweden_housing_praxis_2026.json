@@ -1,0 +1,114 @@
+{
+  "praxis_id": "swedish-housing-praxis-2026-08-29",
+  "title": "Swedish Housing Law Praxis Layer",
+  "snapshot_date": "2026-08-29",
+  "purpose": "Source-attributed precedent layer for QCDS legal assessment. Precedents are competing interpretive evidence, not automatic statutory rules.",
+  "authority_scale": {
+    "hd_precedent": 1.0,
+    "note": "Authority weight describes source status, not automatic factual similarity or legal outcome."
+  },
+  "precedents": [
+    {
+      "precedent_id": "NJA-2020-681",
+      "court": "Högsta domstolen",
+      "case_number": "T 3044-19",
+      "name": "Lokalerna i Gulddragaren",
+      "decision_date": "2020-09-11",
+      "authority_class": "hd_precedent",
+      "authority_weight": 1.0,
+      "source_uri": "https://www.domstol.se/hogsta-domstolen/avgoranden2/2020/34423/",
+      "statutory_links": ["12 kap. 1 § jordabalken"],
+      "issue_tags": ["classification", "residential_or_commercial", "chapter12_scope"],
+      "activation_terms": ["use:residential", "use:not_residential", "primary_regime:jordabalk_12"],
+      "counter_terms": [],
+      "principles": [
+        "Whether an apartment is a residential or commercial tenancy depends on the purpose for which it was let, not merely on labels.",
+        "Classification under Chapter 12 can itself be an interpretive question requiring an overall assessment."
+      ],
+      "role": "interpretive_precedent"
+    },
+    {
+      "precedent_id": "NJA-2022-188",
+      "court": "Högsta domstolen",
+      "case_number": "T 3531-21",
+      "name": "Lägenheten i Fältskären",
+      "decision_date": "2022-03-16",
+      "authority_class": "hd_precedent",
+      "authority_weight": 1.0,
+      "source_uri": "https://www.domstol.se/hogsta-domstolen/avgoranden2/2021/102529/",
+      "statutory_links": ["12 kap. 10 § jordabalken", "12 kap. 11 § jordabalken", "12 kap. 12 § jordabalken", "12 kap. 16 § jordabalken"],
+      "issue_tags": ["defect", "hinder_and_detriment", "legal_use_barrier", "habitability"],
+      "activation_terms": ["defect:material", "defect:landlord_not_promptly_remedied_after_notice"],
+      "counter_terms": ["defect:landlord_promptly_remedied_after_notice"],
+      "principles": [
+        "A legal barrier to using a dwelling can constitute hindrance or detriment even when the physical apartment has been presented as ready for occupation.",
+        "Assessment of defects can include legal usability, not only physical condition."
+      ],
+      "role": "interpretive_precedent"
+    },
+    {
+      "precedent_id": "NJA-2022-329",
+      "court": "Högsta domstolen",
+      "case_number": "T 4395-21",
+      "name": "Brandskadan i asyllägenheten",
+      "decision_date": "2022-05-05",
+      "authority_class": "hd_precedent",
+      "authority_weight": 1.0,
+      "source_uri": "https://www.domstol.se/hogsta-domstolen/avgoranden2/2021/103480/",
+      "statutory_links": ["12 kap. 24 § jordabalken"],
+      "issue_tags": ["second_hand_use", "tenant_responsibility", "damage", "independent_use"],
+      "activation_terms": ["sublet:independent_without_consent", "unit:tenancy_sublet"],
+      "counter_terms": [],
+      "principles": [
+        "Responsibility under Chapter 12 can turn on the legal character of another person's use of the dwelling and the tenant's relationship to that use.",
+        "Second-hand and independently exercised use can create assessment questions beyond the existence of a simple contractual label."
+      ],
+      "role": "interpretive_precedent"
+    },
+    {
+      "precedent_id": "NJA-2019-445",
+      "court": "Högsta domstolen",
+      "case_number": "T 4179-18",
+      "name": "Entré Malmö",
+      "decision_date": "2019-06-04",
+      "authority_class": "hd_precedent",
+      "authority_weight": 1.0,
+      "source_uri": "https://www.domstol.se/hogsta-domstolen/avgoranden2/2019/20814/",
+      "statutory_links": ["12 kap. 11 § jordabalken", "12 kap. 16 § jordabalken"],
+      "issue_tags": ["defect", "hinder_and_detriment", "rent_reduction", "early_termination"],
+      "activation_terms": ["defect:material", "defect:landlord_not_promptly_remedied_after_notice", "issue:rent_review"],
+      "counter_terms": [],
+      "principles": [
+        "Hindrance or detriment in the right of use may support rent reduction and, when sufficiently serious, early termination.",
+        "Materiality is an assessment of the concrete impact of the defect on the agreed use."
+      ],
+      "role": "analogical_precedent"
+    },
+    {
+      "precedent_id": "NJA-2011-454",
+      "court": "Högsta domstolen",
+      "case_number": "T 2966-09",
+      "name": "NJA 2011 s. 454",
+      "decision_date": "2011-06-30",
+      "authority_class": "hd_precedent",
+      "authority_weight": 1.0,
+      "source_uri": "https://rattspraxis.etjanst.domstol.se/sok/publicering/77a9d4b1-7f12-4478-a291-7b8f08e8b031",
+      "statutory_links": ["12 kap. 24 § jordabalken"],
+      "issue_tags": ["tenant_responsibility", "negligence", "contractual_house_rules", "damage"],
+      "activation_terms": ["contract:adverse_tenant_clause", "primary_regime:jordabalk_12"],
+      "counter_terms": [],
+      "principles": [
+        "Contractual or house-rule language does not by itself settle statutory liability; negligence and the statutory responsibility framework must be assessed.",
+        "A contractual term can be legally relevant without being dispositive of the statutory question."
+      ],
+      "role": "interpretive_precedent"
+    }
+  ],
+  "boundary": {
+    "precedent_is_not_rule_installation": true,
+    "authority_is_not_similarity": true,
+    "similarity_is_not_outcome": true,
+    "automatic_truth": false,
+    "canonical_spec_modified": false
+  }
+}
