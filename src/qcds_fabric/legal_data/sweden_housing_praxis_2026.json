@@ -2,10 +2,12 @@
   "praxis_id": "swedish-housing-praxis-2026-08-29",
   "title": "Swedish Housing Law Praxis Layer",
   "snapshot_date": "2026-08-29",
-  "purpose": "Source-attributed precedent layer for QCDS legal assessment. Precedents are competing interpretive evidence, not automatic statutory rules.",
+  "purpose": "Source-attributed precedent layer for QCDS legal assessment. Decisions are competing interpretive evidence, not automatic statutory rules. Court authority, factual similarity and outcome remain separate dimensions.",
   "authority_scale": {
     "hd_precedent": 1.0,
-    "note": "Authority weight describes source status, not automatic factual similarity or legal outcome."
+    "svea_hovratt_guiding": 0.82,
+    "svea_hovratt": 0.72,
+    "note": "Authority weight describes source status only. QCDS precedent relevance is similarity/counter-factor assessment; a lower-authority decision can be factually close without outranking an HD precedent as a source of law."
   },
   "precedents": [
     {
@@ -140,6 +142,120 @@
         "The material meaning and intended use of the agreement can be relevant when deciding whether an arrangement is tenancy."
       ],
       "role": "interpretive_precedent"
+    },
+    {
+      "precedent_id": "SVEA-OH-10840-20",
+      "court": "Svea hovrätt",
+      "case_number": "ÖH 10840-20",
+      "name": "Inneboende under frihetsberövande",
+      "decision_date": "2021-05-31",
+      "authority_class": "svea_hovratt",
+      "authority_weight": 0.72,
+      "source_uri": "https://www.domstol.se/svea-hovratt/svea-hovratts-hyresrattsliga-avgoranden/2021/100229/",
+      "statutory_links": ["12 kap. 39 § jordabalken"],
+      "issue_tags": ["second_hand_use", "lodger", "independent_use"],
+      "activation_terms": ["sublet:second_hand", "sublet:independent_without_consent"],
+      "counter_terms": ["sublet:not_independent_without_consent"],
+      "principles": [
+        "An arrangement described as lodging can amount to independent second-hand use when the principal tenant is absent for a sufficiently material period.",
+        "The legal classification depends on the actual use, not only the parties' label."
+      ],
+      "role": "fact_pattern_guidance"
+    },
+    {
+      "precedent_id": "SVEA-OH-9160-21",
+      "court": "Svea hovrätt",
+      "case_number": "ÖH 9160-21",
+      "name": "Otillåten andrahandsupplåtelse under knappt två månader",
+      "decision_date": "2022-04-25",
+      "authority_class": "svea_hovratt_guiding",
+      "authority_weight": 0.82,
+      "source_uri": "https://www.domstol.se/svea-hovratt/svea-hovratts-hyresrattsliga-avgoranden/2022/148236/",
+      "statutory_links": ["12 kap. 39 § jordabalken", "12 kap. 42 § jordabalken"],
+      "issue_tags": ["second_hand_use", "forfeiture", "minor_significance"],
+      "activation_terms": ["sublet:independent_without_consent", "sublet:no_permission", "issue:forfeiture"],
+      "counter_terms": ["sublet:valid_excuse", "sublet:tribunal_permission", "sublet:landlord_consent"],
+      "principles": [
+        "An unauthorized second-hand letting lasting less than two months was, on the facts of that case, not of merely minor significance.",
+        "The minor-significance safeguard is an evaluative question rather than a fixed duration threshold."
+      ],
+      "role": "guiding_analogical_decision"
+    },
+    {
+      "precedent_id": "SVEA-OH-14177-21",
+      "court": "Svea hovrätt",
+      "case_number": "ÖH 14177-21",
+      "name": "Brister och bevisbörda",
+      "decision_date": "2022-06-29",
+      "authority_class": "svea_hovratt_guiding",
+      "authority_weight": 0.82,
+      "source_uri": "https://www.domstol.se/svea-hovratt/svea-hovratts-hyresrattsliga-avgoranden/2022/116372/",
+      "statutory_links": ["12 kap. 9 § jordabalken", "12 kap. 11 § jordabalken", "12 kap. 16 § jordabalken"],
+      "issue_tags": ["defect", "burden_of_proof", "tenant_responsibility", "evidence"],
+      "activation_terms": ["defect:material", "evidence:damage_arose_during_tenancy", "evidence:damage_typically_requires_negligence"],
+      "counter_terms": ["evidence:damage_preexisted_tenancy"],
+      "principles": [
+        "The landlord generally bears the burden of showing that a defect arising during the tenancy was caused by the tenant, with evidential presumptions possible for damage of a type typically caused by carelessness in tenant-controlled areas.",
+        "Legal outcome can therefore depend on evidence structure as well as substantive defect rules."
+      ],
+      "role": "guiding_evidence_decision"
+    },
+    {
+      "precedent_id": "SVEA-H-14449-22",
+      "court": "Svea hovrätt",
+      "case_number": "H 14449-22",
+      "name": "Återbetalning av andrahandshyra",
+      "decision_date": "2024-01-31",
+      "authority_class": "svea_hovratt_guiding",
+      "authority_weight": 0.82,
+      "source_uri": "https://www.domstol.se/svea-hovratt/svea-hovratts-hyresrattsliga-avgoranden/2024/141368/",
+      "statutory_links": ["12 kap. 55 § jordabalken", "12 kap. 55 f § jordabalken"],
+      "issue_tags": ["second_hand_rent", "repayment", "reasonable_rent", "partial_apartment"],
+      "activation_terms": ["sublet:second_hand", "rent:above_second_hand_ceiling", "issue:rent_review"],
+      "counter_terms": ["rent:not_above_second_hand_ceiling"],
+      "principles": [
+        "Assessment of second-hand rent can require attention to the first-hand rent and the actual proportion of the apartment that was sublet.",
+        "Repayment questions can involve both substantive rent ceilings and procedural/claim-holder issues."
+      ],
+      "role": "guiding_rent_decision"
+    },
+    {
+      "precedent_id": "SVEA-OH-4781-18",
+      "court": "Svea hovrätt",
+      "case_number": "ÖH 4781-18",
+      "name": "Större ombyggnad och förlängning",
+      "decision_date": "2018-11-23",
+      "authority_class": "svea_hovratt_guiding",
+      "authority_weight": 0.82,
+      "source_uri": "https://www.domstol.se/svea-hovratt/svea-hovratts-hyresrattsliga-avgoranden/2018/59764/",
+      "statutory_links": ["12 kap. 46 § första stycket 4 jordabalken"],
+      "issue_tags": ["extension", "major_renovation", "reasonableness", "replacement_housing"],
+      "activation_terms": ["issue:extension", "extension:major_renovation", "extension:tenant_hardship_strong"],
+      "counter_terms": ["extension:tenant_hardship_not_strong"],
+      "principles": [
+        "A major renovation does not automatically defeat the tenant's extension right; the reasonableness assessment can include the practical and economic suitability of replacement housing.",
+        "The balancing exercise is concrete and fact-sensitive."
+      ],
+      "role": "guiding_balance_decision"
+    },
+    {
+      "precedent_id": "SVEA-OH-4455-20",
+      "court": "Svea hovrätt",
+      "case_number": "ÖH 4455-20",
+      "name": "Vilken privatupplåtelse var den första?",
+      "decision_date": "2020-11-17",
+      "authority_class": "svea_hovratt_guiding",
+      "authority_weight": 0.82,
+      "source_uri": "https://www.domstol.se/svea-hovratt/svea-hovratts-hyresrattsliga-avgoranden/2020/85331/",
+      "statutory_links": ["1 § lagen (2012:978) om uthyrning av egen bostad"],
+      "issue_tags": ["legacy_private_letting", "first_let", "contract_formation", "transition"],
+      "activation_terms": ["primary_regime:legacy_2012_978_with_jb12", "private_let:first"],
+      "counter_terms": ["private_let:not_first"],
+      "principles": [
+        "Under the legacy private-letting law, the relevant letting occurred through the agreement itself rather than only when physical access began.",
+        "Temporal classification can therefore turn on contract formation rather than move-in date."
+      ],
+      "role": "guiding_legacy_decision"
     }
   ],
   "boundary": {
