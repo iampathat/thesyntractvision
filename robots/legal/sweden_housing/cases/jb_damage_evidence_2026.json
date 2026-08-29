@@ -1,0 +1,18 @@
+{
+  "case_id": "jb12-damage-evidence-structure",
+  "as_of_date": "2026-08-29",
+  "contract_date": "2026-08-14",
+  "facts": {
+    "landlord_type": "natural_person",
+    "residential_use": true,
+    "holiday_purpose": false,
+    "landlord_holds_unit_as_tenant": true,
+    "regular_external_units": 1,
+    "fixed_term": false,
+    "damage_arose_during_tenancy": true,
+    "damage_typically_requires_negligence": true,
+    "tenant_or_responsible_person_negligent_damage": null,
+    "urgent_damage_serious_risk": false,
+    "tenant_notified_landlord_promptly": true
+  }
+}
