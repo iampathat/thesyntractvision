@@ -1,0 +1,140 @@
+{
+  "expansion_id": "swedish-housing-use-transfer-2026-08-29",
+  "title": "Swedish Housing Law — Use, Conduct, Access and Transfer Expansion",
+  "snapshot_date": "2026-08-29",
+  "purpose": "Add tenant care and conduct, landlord access, transfer and exchange paths from Chapter 12 without collapsing statutory reasonableness standards into automatic outcomes.",
+  "sources": [],
+  "sections": [
+    {"section_id":"JB-12:24","source_id":"sfs:1970:994:12","topic":"tenant_care_damage_notice","summary":"The tenant must care for the apartment, can be liable for damage caused by fault/negligence by the tenant or persons for whom the tenant is responsible, and must notify the landlord of urgent damage or defects under the statutory timing rules."},
+    {"section_id":"JB-12:25","source_id":"sfs:1970:994:12","topic":"conduct_and_disturbances","summary":"The tenant must preserve safety, health, order and good condition in the property and must not expose neighbours to disturbances beyond what they reasonably should tolerate."},
+    {"section_id":"JB-12:25a","source_id":"sfs:1970:994:12","topic":"warning_and_social_notice","summary":"For ordinary poor conduct or disturbances the landlord must call on the tenant to stop immediately and, for residential tenancy, notify the municipal social welfare committee; specially serious cases follow a different path."},
+    {"section_id":"JB-12:25b","source_id":"sfs:1970:994:12","topic":"tenant_supervision_duty","summary":"The tenant must closely supervise persons for whom the tenant is responsible so they do not engage in poor conduct or housing disturbances."},
+    {"section_id":"JB-12:26","source_id":"sfs:1970:994:12","topic":"landlord_access","summary":"The landlord has a statutory right to prompt access for necessary inspection of the apartment or its use and for urgent improvements; other works and showings follow additional notice and inconvenience rules."},
+    {"section_id":"JB-12:32","source_id":"sfs:1970:994:12","topic":"transfer_general_rule","summary":"The tenant may not transfer the tenancy without landlord consent unless another statutory transfer route applies. Unreasonable refusal or no response within three weeks gives the tenant a termination route."},
+    {"section_id":"JB-12:34","source_id":"sfs:1970:994:12","topic":"transfer_to_close_relative","summary":"A residential tenant who will no longer use the apartment may obtain tribunal permission to transfer the tenancy to a close relative with whom the tenant has permanently cohabited, if the landlord can reasonably accept the change."},
+    {"section_id":"JB-12:35","source_id":"sfs:1970:994:12","topic":"residential_exchange","summary":"Tribunal permission for a residential exchange requires noteworthy reasons and no material inconvenience to the landlord; prohibited compensation prevents permission, and residence shorter than one year requires exceptional reasons."},
+    {"section_id":"JB-12:38","source_id":"sfs:1970:994:12","topic":"effect_of_authorized_transfer","summary":"After an authorized transfer the outgoing tenant is generally free from obligations for the later period, subject to conditions and specified pre-transfer liabilities."}
+  ],
+  "rules": [
+    {
+      "rule_id":"jb-care-negligent-damage-liability",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:24",
+      "match_terms":["primary_regime:jordabalk_12","damage:tenant_or_responsible_person_negligent"],
+      "emit_terms":["conclusion:jb12_tenant_damage_liability_on_represented_negligence_facts"],
+      "explanation":"The represented facts state negligence by the tenant or a person within the tenant's statutory responsibility sphere, activating the Chapter 12 section 24 damage-liability path."
+    },
+    {
+      "rule_id":"jb-urgent-damage-notice-required",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:24",
+      "match_terms":["primary_regime:jordabalk_12","damage:urgent_serious_risk","damage:tenant_did_not_notify_promptly"],
+      "emit_terms":["conclusion:jb12_breach_of_urgent_damage_notice_duty","question:jb24_additional_damage_caused_by_notice_failure_requires_evidence"],
+      "explanation":"Urgent damage or defects must be reported immediately under section 24; additional liability still depends on what loss the notification failure caused."
+    },
+    {
+      "rule_id":"jb-ordinary-disturbance-procedure-open",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:25+25a+42.9",
+      "match_terms":["primary_regime:jordabalk_12","tenancy:residential","conduct:disturbance","conduct:not_specially_serious"],
+      "emit_terms":["question:jb25_42_ordinary_disturbance_requires_tolerability_warning_social_notice_and_rectification_checks"],
+      "explanation":"Ordinary disturbances are an evaluative and procedural path: tolerability, warning, social-welfare notice and rectification must all be considered before forfeiture can be treated as established."
+    },
+    {
+      "rule_id":"jb-ordinary-disturbance-forfeiture-ground",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:25+25a+42.9",
+      "match_terms":["primary_regime:jordabalk_12","tenancy:residential","conduct:disturbance","conduct:not_specially_serious","conduct:landlord_warned","conduct:social_committee_notified","conduct:not_rectified_after_warning"],
+      "emit_terms":["conclusion:jb12_forfeiture_ground_repeated_disturbance_after_required_procedure","question:jb42_minor_significance_and_proportionality_still_require_check"],
+      "explanation":"The represented facts include disturbance, warning, social-welfare notice and failure to rectify, activating the ordinary disturbance forfeiture route while the statutory minor-significance/proportionality safeguards remain separate."
+    },
+    {
+      "rule_id":"jb-specially-serious-disturbance-forfeiture",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:25a+42.9",
+      "match_terms":["primary_regime:jordabalk_12","tenancy:residential","conduct:disturbance","conduct:specially_serious"],
+      "emit_terms":["conclusion:jb12_specially_serious_disturbance_can_support_forfeiture_without_prior_rectification_warning","question:jb42_minor_significance_or_domestic_abuse_unreasonableness_safeguard_requires_check"],
+      "explanation":"Specially serious disturbances follow the statutory exception to the ordinary prior-warning route; other statutory safeguards remain distinct."
+    },
+    {
+      "rule_id":"jb-access-refusal-forfeiture-ground",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:26+42.10",
+      "match_terms":["primary_regime:jordabalk_12","access:statutory_access_required","access:refused","access:no_valid_excuse"],
+      "emit_terms":["conclusion:jb12_forfeiture_ground_refusal_of_required_access"],
+      "explanation":"Refusal of access required under section 26 without a valid excuse is a represented forfeiture ground under section 42."
+    },
+    {
+      "rule_id":"jb-access-refusal-rectified",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:43",
+      "match_terms":["primary_regime:jordabalk_12","access:statutory_access_required","access:refused","breach:rectified_before_termination"],
+      "emit_terms":["conclusion:jb12_rectification_blocks_eviction_on_represented_access_refusal_ground"],
+      "explanation":"Section 43 prevents eviction on the represented access-refusal ground when rectification occurred before landlord termination."
+    },
+    {
+      "rule_id":"jb-transfer-consent-general",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:32",
+      "match_terms":["primary_regime:jordabalk_12","transfer:requested"],
+      "emit_terms":["conclusion:jb12_transfer_normally_requires_landlord_consent_or_specific_statutory_route"],
+      "explanation":"Section 32 provides the general rule that transfer requires landlord consent unless a specific statutory transfer route applies."
+    },
+    {
+      "rule_id":"jb-transfer-unreasonable-refusal-termination",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:32",
+      "match_terms":["primary_regime:jordabalk_12","transfer:requested","transfer:landlord_refused","transfer:refusal_without_reasonable_cause"],
+      "emit_terms":["conclusion:jb12_tenant_may_terminate_after_unreasonable_transfer_refusal"],
+      "explanation":"A landlord refusal without reasonable cause activates the tenant's statutory termination route under section 32."
+    },
+    {
+      "rule_id":"jb-transfer-no-answer-three-weeks",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:32",
+      "match_terms":["primary_regime:jordabalk_12","transfer:requested","transfer:no_answer_within_three_weeks"],
+      "emit_terms":["conclusion:jb12_tenant_may_terminate_after_no_transfer_answer_within_three_weeks"],
+      "explanation":"No landlord response within three weeks after a consent request activates the section 32 tenant termination route."
+    },
+    {
+      "rule_id":"jb-close-relative-transfer-assessment",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:34",
+      "match_terms":["primary_regime:jordabalk_12","tenancy:residential","transfer:close_relative","transfer:permanent_cohabitation"],
+      "emit_terms":["question:jb34_close_relative_transfer_requires_landlord_reasonable_acceptance_assessment"],
+      "explanation":"Transfer to a close relative with permanent cohabitation still requires the statutory assessment of whether the landlord can reasonably accept the new tenant."
+    },
+    {
+      "rule_id":"jb-close-relative-transfer-criteria-met",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:34",
+      "match_terms":["primary_regime:jordabalk_12","tenancy:residential","transfer:close_relative","transfer:permanent_cohabitation","transfer:landlord_can_reasonably_accept"],
+      "emit_terms":["conclusion:jb12_represented_section34_transfer_conditions_met_subject_to_tribunal_permission"],
+      "explanation":"The represented facts include close relationship, permanent cohabitation and reasonable landlord acceptance; tribunal permission remains the formal statutory route."
+    },
+    {
+      "rule_id":"jb-exchange-assessment",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:35",
+      "match_terms":["primary_regime:jordabalk_12","tenancy:residential","exchange:requested"],
+      "emit_terms":["question:jb35_exchange_requires_noteworthy_reasons_landlord_inconvenience_compensation_and_residence_duration_checks"],
+      "explanation":"Residential exchange is a multi-factor permission question; the robot keeps reasons, landlord inconvenience, prohibited compensation and residence duration explicit."
+    },
+    {
+      "rule_id":"jb-exchange-main-criteria-met",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:35",
+      "match_terms":["primary_regime:jordabalk_12","tenancy:residential","exchange:requested","exchange:noteworthy_reasons","exchange:no_material_landlord_inconvenience","exchange:no_prohibited_compensation","exchange:resident_at_least_one_year"],
+      "emit_terms":["conclusion:jb12_represented_section35_exchange_conditions_met_subject_to_tribunal_permission"],
+      "explanation":"The represented facts satisfy the ordinary section 35 exchange criteria and the one-year residence condition; formal tribunal permission remains required."
+    },
+    {
+      "rule_id":"jb-exchange-short-residence-special-reasons",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:35",
+      "match_terms":["primary_regime:jordabalk_12","tenancy:residential","exchange:requested","exchange:resident_under_one_year"],
+      "emit_terms":["question:jb35_short_residence_requires_exceptional_reasons"],
+      "explanation":"Where either exchange party has lived in the apartment for less than one year, section 35 requires exceptional reasons; the robot does not infer those reasons."
+    }
+  ]
+}
