@@ -53,9 +53,9 @@ def _resolve_terms(base_terms: Sequence[str], rules: Iterable[LogicalTransformRu
 class IntelligenceGrowthView:
     """Read-only explanation of how governed logic changes resolved Reality.
 
-    This is a BUILD 29 manifestation layer. It reads the persistent Reality
-    bindings/rules/candidate records and computes a before/after projection. It
-    has no authority to generate, challenge, promote, retire, or rewrite logic.
+    This BUILD 29 manifestation reads persistent Reality bindings/rules/candidate
+    records and computes a before/after projection. It cannot generate, challenge,
+    promote, retire, or rewrite logic.
     """
 
     store_root: Path
@@ -120,18 +120,22 @@ class IntelligenceGrowthView:
         latest = self._latest_active_history(active_by_id)
         before_rules = self._before_rules(active_rules, latest)
 
-        changed: list[dict[str, Any]] = []
+        examples: list[dict[str, Any]] = []
+        changed_count = 0
         added_term_instances = 0
         for binding in bindings:
             before = _resolve_terms(binding.terms, before_rules)
             after = _resolve_terms(binding.terms, active_rules)
             if before == after:
                 continue
-            added = tuple(term for term in after if term not in set(before))
-            removed = tuple(term for term in before if term not in set(after))
+            changed_count += 1
+            before_set = set(before)
+            after_set = set(after)
+            added = tuple(term for term in after if term not in before_set)
+            removed = tuple(term for term in before if term not in after_set)
             added_term_instances += len(added)
-            if len(changed) < max(1, example_limit):
-                changed.append({
+            if len(examples) < max(1, example_limit):
+                examples.append({
                     "binding_id": binding.binding_id,
                     "base_terms": list(binding.terms),
                     "before": list(before),
@@ -165,9 +169,9 @@ class IntelligenceGrowthView:
                     "confidence": rule.confidence,
                     "source_id": rule.source_id,
                     "direct_matches": direct_matches,
-                    "resolved_bindings_changed": len(changed),
+                    "resolved_bindings_changed": changed_count,
                     "new_resolved_term_instances": added_term_instances,
-                    "examples": changed,
+                    "examples": examples,
                     "provenance": provenance,
                 }
 
@@ -184,9 +188,9 @@ class IntelligenceGrowthView:
             "latest_promotion": promotion,
             "before_after": {
                 "basis": "Reality resolved without vs with the latest active governed rule version",
-                "resolved_bindings_changed": len(changed),
+                "resolved_bindings_changed": changed_count,
                 "new_resolved_term_instances": added_term_instances,
-                "examples": changed,
+                "examples": examples,
             },
             "provenance": {
                 "build": 29,
