@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from qcds_fabric.models import BaseBundle
+from qcds_fabric.oracles import OracleStack
 from qcds_fabric.robots.legal.sweden_housing.execution import (
     classical_exact_profile,
     grover_emulated_profile,
@@ -11,7 +12,9 @@ from qcds_fabric.robots.legal.sweden_housing.execution import (
     target_profile_payload,
     validate_execution_contract,
 )
-from qcds_fabric.oracles import OracleStack
+from qcds_fabric.robots.legal.sweden_housing.quantum_full_space import (
+    build_quantum_full_space_manifest,
+)
 
 
 def _bundle() -> BaseBundle:
@@ -33,8 +36,6 @@ def test_classical_and_grover_emulation_allow_resource_bounded_projection_policy
     assert grover.resource_bounded_emulation is True
     assert grover.semantic_projection_allowed is True
 
-    # A resource-bounded emulator may intentionally receive a smaller active
-    # projection than the total represented universe.
     validate_execution_contract(
         classical,
         represented_dimension_ids=("a", "b", "c", "d"),
@@ -79,7 +80,55 @@ def test_quantum_full_space_is_target_contract_not_fake_software_qpu() -> None:
     assert payload["semantic_projection_allowed"] is False
 
     with pytest.raises(NotImplementedError, match="no physical QPU backend"):
-        # Deliberately pass a classical FabricLayer-shaped object only to prove
-        # the quantum target cannot accidentally execute through emulation.
         _, classical_fabric = classical_exact_profile()
         run_profile(quantum, classical_fabric, _bundle(), OracleStack("empty", "1", ()))
+
+
+def test_quantum_manifest_keeps_rules_and_praxis_that_classical_case_projection_does_not_need() -> None:
+    corpus = {
+        "corpus_id": "law-universe",
+        "primary_regime_candidates": ["jb12", "special"],
+        "rules": [
+            {
+                "rule_id": "rent-rule",
+                "match_terms": ["issue:rent", "rent:late"],
+                "emit_terms": ["conclusion:rent"],
+            },
+            {
+                "rule_id": "exchange-rule",
+                "match_terms": ["issue:exchange", "exchange:reason"],
+                "emit_terms": ["conclusion:exchange"],
+            },
+        ],
+    }
+    praxis = {
+        "precedents": [
+            {
+                "precedent_id": "NJA-X",
+                "case_factors": ["factor:remote-but-represented"],
+                "statutory_links": ["JB-12:35"],
+            }
+        ]
+    }
+
+    manifest = build_quantum_full_space_manifest(
+        corpus=corpus,
+        praxis=praxis,
+        case_terms=("issue:rent",),
+        resolved_terms=("rent:late",),
+        unresolved_questions=(),
+        qcds_evidence=({"term": "evidence:payment-log", "confidence": 0.8},),
+    )
+    payload = manifest.as_dict()
+
+    # The current case is rent, but the native quantum target keeps the represented
+    # exchange branch, the remote precedent and the evidence term too.
+    assert "issue:exchange" in payload["dimension_terms"]
+    assert "conclusion:exchange" in payload["dimension_terms"]
+    assert "precedent:NJA-X" in payload["dimension_terms"]
+    assert "factor:remote-but-represented" in payload["dimension_terms"]
+    assert "evidence:payment-log" in payload["dimension_terms"]
+    assert payload["represented_rule_count"] == 2
+    assert payload["represented_precedent_count"] == 1
+    assert payload["classical_active_projection"] is False
+    assert payload["semantic_prefiltering"] is False
