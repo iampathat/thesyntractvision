@@ -6,11 +6,17 @@ from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
 from qcds_fabric.logical_assertion import normalize_logic_text
+from qcds_fabric.models import BaseBundle, ChannelView, State
+from qcds_fabric.oracles import OracleStack
+from qcds_fabric.semantic import OneHotOracle
+
+from .evidence import evidence_oracles, parse_legal_evidence
+from .qcds_space import LegalRuleConstraintOracle
 
 
 @dataclass(frozen=True)
 class QuantumFullSpaceManifest:
-    """Non-executed manifest of the complete represented legal universe.
+    """Manifest of the complete represented legal universe.
 
     The manifest is independent of the classically projected active BaseBundle.
     Logical proposition terms are kept separately from source/section structure
@@ -56,12 +62,101 @@ class QuantumFullSpaceManifest:
         }
 
 
+@dataclass(frozen=True)
+class QuantumPraxisRelationOracle:
+    """Conditional praxis relation kept inside the full quantum target room.
+
+    A represented activation/counter term is not used to preselect the precedent.
+    Instead both terms remain dimensions and the oracle rewards candidate states
+    whose precedent-relevance dimension is coherent with that relation.
+    """
+
+    oracle_id: str
+    antecedent_dimension: str
+    precedent_dimension: str
+    expected_precedent: int
+    precedent_id: str
+    confidence: float = 0.75
+
+    def __post_init__(self) -> None:
+        if self.expected_precedent not in (0, 1):
+            raise ValueError("expected_precedent must be binary")
+        if not 0.5 <= self.confidence <= 1.0:
+            raise ValueError("praxis relation confidence must be in [0.5, 1.0]")
+
+    @property
+    def dimensions(self) -> tuple[str, str]:
+        return (self.antecedent_dimension, self.precedent_dimension)
+
+    def is_applicable(self, view: ChannelView) -> bool:
+        active = set(view.active_dimension_ids())
+        return self.antecedent_dimension in active and self.precedent_dimension in active
+
+    def score(self, view: ChannelView, state: State) -> float:
+        active = view.state_as_mapping(state)
+        if self.antecedent_dimension not in active or self.precedent_dimension not in active:
+            return 1.0
+        if active[self.antecedent_dimension] != 1:
+            return 1.0
+        matched = active[self.precedent_dimension] == self.expected_precedent
+        return self.confidence if matched else 1.0 - self.confidence
+
+
+@dataclass(frozen=True)
+class QuantumFullSpaceCompilation:
+    """Full BaseBundle + OracleStack contract ready for a native QPU adapter.
+
+    Construction is cheap and does not enumerate the 2^N support. The reference
+    build deliberately stops at this contract because no physical QPU backend is
+    connected.
+    """
+
+    manifest: QuantumFullSpaceManifest
+    bundle: BaseBundle
+    oracle_stack: OracleStack
+    term_dimensions: Mapping[str, str]
+
+    def as_dict(self) -> dict[str, Any]:
+        unknown = sum(1 for value in self.bundle.values if value == "?")
+        return {
+            "full_bundle_id": self.bundle.bundle_id,
+            "full_bundle_width": self.bundle.width,
+            "full_fixed_dimension_count": self.bundle.width - unknown,
+            "full_unknown_dimension_count": unknown,
+            "full_candidate_binary_space": f"2^{unknown}",
+            "full_oracle_stack_identity": self.oracle_stack.identity,
+            "full_oracle_count": len(self.oracle_stack.oracles),
+            "manifest_sha256": self.manifest.manifest_sha256,
+            "candidate_states_materialized": False,
+            "classical_active_projection": False,
+            "semantic_prefiltering": False,
+            "native_qpu_connected": False,
+        }
+
+
 def _canonical(value: Any) -> str:
     return normalize_logic_text(str(value))
 
 
 def _mapping(value: Any) -> Mapping[str, Any] | None:
     return value if isinstance(value, Mapping) else None
+
+
+def _slug(value: Any) -> str:
+    out: list[str] = []
+    separator = False
+    for char in _canonical(value):
+        if char.isalnum():
+            out.append(char)
+            separator = False
+        elif not separator:
+            out.append("-")
+            separator = True
+    return "".join(out).strip("-") or "term"
+
+
+def _full_dimension_id(term: str) -> str:
+    return f"legal::quantum-full::{_slug(term)}"
 
 
 def build_quantum_full_space_manifest(
@@ -79,8 +174,6 @@ def build_quantum_full_space_manifest(
     rule term is retained, every represented source/section remains in the
     source structure, and every represented precedent keeps its activation /
     counter logic. Case/evidence terms are added without deleting corpus logic.
-
-    This is a target manifest only; no physical QPU execution is claimed.
     """
     display_by_canonical: dict[str, str] = {}
 
@@ -135,7 +228,6 @@ def build_quantum_full_space_manifest(
                 continue
             precedent_ids.append(precedent_id)
             add(f"precedent:{precedent_id}")
-            # Preserve the actual current praxis logic and generic future fields.
             for key in (
                 "activation_terms",
                 "counter_terms",
@@ -202,4 +294,144 @@ def build_quantum_full_space_manifest(
     )
 
 
-__all__ = ["QuantumFullSpaceManifest", "build_quantum_full_space_manifest"]
+def compile_quantum_full_space_contract(
+    *,
+    corpus: Mapping[str, Any],
+    praxis: Mapping[str, Any] | None,
+    case_terms: Sequence[str],
+    resolved_terms: Sequence[str],
+    unresolved_questions: Sequence[str],
+    qcds_evidence: Sequence[Mapping[str, Any]] | None,
+) -> QuantumFullSpaceCompilation:
+    """Compile the complete represented law/praxis/evidence room for native QPU.
+
+    Crucially, this function does **not** call `candidate_states()` and does not
+    apply the bounded emulator Condition Formation selector. The full logical
+    term set becomes one BaseBundle and all represented statutory rules become
+    constraint oracles. Praxis activation/counter relations remain conditional
+    oracles inside that same room instead of preselecting precedents.
+    """
+    manifest = build_quantum_full_space_manifest(
+        corpus=corpus,
+        praxis=praxis,
+        case_terms=case_terms,
+        resolved_terms=resolved_terms,
+        unresolved_questions=unresolved_questions,
+        qcds_evidence=qcds_evidence,
+    )
+
+    known = {_canonical(term) for term in (*case_terms, *resolved_terms) if str(term).strip()}
+    term_dimensions = {
+        _canonical(term): _full_dimension_id(term)
+        for term in manifest.dimension_terms
+    }
+    bundle = BaseBundle(
+        bundle_id=f"legal-qcds:quantum-full:{_slug(manifest.corpus_id)}:{manifest.manifest_sha256[:12]}",
+        dimension_ids=tuple(term_dimensions[_canonical(term)] for term in manifest.dimension_terms),
+        values=tuple(1 if _canonical(term) in known else "?" for term in manifest.dimension_terms),
+        provenance={
+            "legal_corpus_id": manifest.corpus_id,
+            "quantum_full_space": True,
+            "manifest_sha256": manifest.manifest_sha256,
+            "semantic_prefiltering": False,
+            "candidate_states_materialized": False,
+            "represented_rule_count": len(manifest.rule_ids),
+            "represented_precedent_count": len(manifest.precedent_ids),
+            "represented_source_count": len(manifest.source_ids),
+            "represented_section_count": len(manifest.section_ids),
+        },
+        semantic_domain={
+            "kind": "swedish_housing_full_represented_legal_space",
+            "execution_target": "native_qpu",
+        },
+    )
+
+    oracles: list[Any] = []
+    regime_dimensions = tuple(
+        term_dimensions[_canonical(f"primary_regime:{value}")]
+        for value in corpus.get("primary_regime_candidates", ())
+        if _canonical(f"primary_regime:{value}") in term_dimensions
+    )
+    if len(regime_dimensions) >= 2:
+        oracles.append(OneHotOracle("legal:quantum-full:primary-regime:onehot", regime_dimensions))
+
+    for raw in corpus.get("rules", ()):
+        row = _mapping(raw)
+        if row is None:
+            continue
+        antecedents = tuple(
+            term_dimensions[_canonical(term)]
+            for term in row.get("match_terms", ())
+            if _canonical(term) in term_dimensions
+        )
+        consequents = tuple(
+            term_dimensions[_canonical(term)]
+            for term in row.get("emit_terms", ())
+            if _canonical(term) in term_dimensions
+        )
+        if not antecedents or not consequents:
+            continue
+        rule_id = str(row.get("rule_id", ""))
+        oracles.append(LegalRuleConstraintOracle(
+            oracle_id=f"legal:quantum-full:rule:{_slug(rule_id)}",
+            antecedent_dimensions=antecedents,
+            consequent_dimensions=consequents,
+            source_id=str(row.get("source_id", "")),
+            section_id=str(row.get("section_id", "")),
+            rule_id=rule_id,
+            confidence=1.0,
+        ))
+
+    if praxis is not None:
+        for raw in praxis.get("precedents", praxis.get("cases", ())):
+            row = _mapping(raw)
+            if row is None:
+                continue
+            precedent_id = str(row.get("precedent_id", row.get("case_id", ""))).strip()
+            precedent_dimension = term_dimensions.get(_canonical(f"precedent:{precedent_id}"))
+            if not precedent_id or precedent_dimension is None:
+                continue
+            for index, term in enumerate(row.get("activation_terms", ())):
+                antecedent = term_dimensions.get(_canonical(term))
+                if antecedent is not None:
+                    oracles.append(QuantumPraxisRelationOracle(
+                        oracle_id=f"legal:quantum-full:praxis:{_slug(precedent_id)}:activation:{index}",
+                        antecedent_dimension=antecedent,
+                        precedent_dimension=precedent_dimension,
+                        expected_precedent=1,
+                        precedent_id=precedent_id,
+                    ))
+            for index, term in enumerate(row.get("counter_terms", ())):
+                antecedent = term_dimensions.get(_canonical(term))
+                if antecedent is not None:
+                    oracles.append(QuantumPraxisRelationOracle(
+                        oracle_id=f"legal:quantum-full:praxis:{_slug(precedent_id)}:counter:{index}",
+                        antecedent_dimension=antecedent,
+                        precedent_dimension=precedent_dimension,
+                        expected_precedent=0,
+                        precedent_id=precedent_id,
+                    ))
+
+    evidence = parse_legal_evidence(qcds_evidence)
+    oracles.extend(evidence_oracles(evidence, term_dimensions))
+
+    stack = OracleStack(
+        stack_id=f"legal-qcds:quantum-full:{_slug(manifest.corpus_id)}",
+        version="1",
+        oracles=tuple(oracles),
+    )
+    return QuantumFullSpaceCompilation(
+        manifest=manifest,
+        bundle=bundle,
+        oracle_stack=stack,
+        term_dimensions=term_dimensions,
+    )
+
+
+__all__ = [
+    "QuantumFullSpaceCompilation",
+    "QuantumFullSpaceManifest",
+    "QuantumPraxisRelationOracle",
+    "build_quantum_full_space_manifest",
+    "compile_quantum_full_space_contract",
+]
