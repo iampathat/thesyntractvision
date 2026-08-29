@@ -5,6 +5,10 @@ on:
     branches: [main, "implementation/**"]
   pull_request:
 
+concurrency:
+  group: qcds-tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
