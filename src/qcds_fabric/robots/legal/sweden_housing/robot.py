@@ -3,6 +3,10 @@
 Domain-specific implementation is composed above the unchanged shared QCDS core.
 """
 
+from __future__ import annotations
+
+import json
+
 from ....legal_assessment_robot import (
     LegalAssessmentResult,
     LegalPraxisError,
@@ -18,6 +22,14 @@ from ....legal_logical_robot import (
     load_legal_corpus,
 )
 
+
+def run_case_json(payload_json: str) -> str:
+    """Browser/transport bridge. Domain and QCDS semantics stay in Python."""
+    payload = json.loads(payload_json)
+    result = SwedishHousingAssessmentRobot().run_case(payload).as_dict()
+    return json.dumps(result, ensure_ascii=False, sort_keys=True)
+
+
 __all__ = [
     "LegalAssessmentResult",
     "LegalLogicalRobotError",
@@ -28,5 +40,6 @@ __all__ = [
     "load_legal_case",
     "load_legal_corpus",
     "load_legal_praxis",
+    "run_case_json",
     "main",
 ]
