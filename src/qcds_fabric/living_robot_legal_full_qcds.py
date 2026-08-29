@@ -20,6 +20,7 @@ function fqBool(v){return v===true?'yes':v===false?'no':'—'}
 function fullQCDSPanel(core){
  const modes=core.execution_modes||{};
  const dual=core.dual_substrate||{},exact=modes.classical_exact||dual.classical_exact||{},grover=modes.grover_emulated||dual.grover_emulated||{},quantum=modes.quantum_full_space||{};
+ const qmanifest=quantum.full_universe_manifest||{};
  const cmp=grover.comparison_to_classical_exact||{};
  const evidence=core.probabilistic_evidence||{};
  const scaling=core.scaling||grover.scaling?.plan||{};
@@ -31,9 +32,9 @@ function fullQCDSPanel(core){
  '<div class="substrateGrid">'+
  '<div class="substrateCard"><h4>CLASSICAL EXACT</h4><strong>'+escapeLegal(exact.syntract_id||core.canonical_final_syntract||core.syntract_id||'—')+'</strong><span>'+escapeLegal(exact.state_count??core.candidate_state_count??'—')+' exact candidate states · resource-bounded Condition Formation allowed · active room itself remains exact.</span></div>'+
  '<div class="substrateCard grover"><h4>GROVER · STATEVECTOR EMULATED</h4><strong>'+escapeLegal(grover.syntract_id||grover.status||'—')+'</strong><span>Status: '+escapeLegal(grover.status||'—')+' · selected m*: '+escapeLegal(depthText)+' · software statevector bound may require exact separable decomposition.</span></div>'+
- '<div class="substrateCard quantum"><h4>QUANTUM FULL SPACE · TARGET</h4><strong>'+escapeLegal(quantum.status||'target_contract_only')+'</strong><span>Semantic prefiltering allowed: '+escapeLegal(fqBool(quantum.semantic_projection_allowed))+'. Full represented universe required: '+escapeLegal(fqBool(quantum.requires_full_logical_universe))+'. Native QPU connected: '+escapeLegal(fqBool(quantum.native_qpu_connected))+'.</span></div>'+
+ '<div class="substrateCard quantum"><h4>QUANTUM FULL SPACE · TARGET</h4><strong>'+escapeLegal(quantum.status||'target_contract_only')+'</strong><span>Full target manifest: '+escapeLegal(quantum.full_universe_dimension_count??qmanifest.represented_dimension_count??'—')+' logical terms · '+escapeLegal(qmanifest.represented_rule_count??'—')+' rules · '+escapeLegal(qmanifest.represented_section_count??'—')+' sections · '+escapeLegal(qmanifest.represented_precedent_count??'—')+' precedents.</span><span>Semantic prefiltering allowed: '+escapeLegal(fqBool(quantum.semantic_projection_allowed))+'. Full represented universe required: '+escapeLegal(fqBool(quantum.requires_full_logical_universe))+'. Native QPU connected: '+escapeLegal(fqBool(quantum.native_qpu_connected))+'.</span></div>'+
  '</div>'+
- '<div class="fullStats">'+fqPill('same active bundle exact↔Grover',fqBool(dual.same_base_bundle))+fqPill('same OracleStack',fqBool(dual.same_oracle_stack))+fqPill('TV distance',cmp.total_variation_distance!==undefined?Number(cmp.total_variation_distance).toFixed(4):'—')+fqPill('same top state',fqBool(cmp.same_top_state))+fqPill('quantum prefilter forbidden',fqBool(core.quantum_full_space_semantic_prefiltering_forbidden))+fqPill('native QPU',fqBool(core.native_qpu))+fqPill('quantum advantage claim',fqBool(core.quantum_advantage_claim))+'</div>';
+ '<div class="fullStats">'+fqPill('same active bundle exact↔Grover',fqBool(dual.same_base_bundle))+fqPill('same OracleStack',fqBool(dual.same_oracle_stack))+fqPill('TV distance',cmp.total_variation_distance!==undefined?Number(cmp.total_variation_distance).toFixed(4):'—')+fqPill('same top state',fqBool(cmp.same_top_state))+fqPill('quantum full terms',quantum.full_universe_dimension_count??'—')+fqPill('active emulation width',quantum.active_emulation_dimension_count??core.logical_width??'—')+fqPill('quantum prefilter forbidden',fqBool(core.quantum_full_space_semantic_prefiltering_forbidden))+fqPill('native QPU',fqBool(core.native_qpu))+fqPill('quantum advantage claim',fqBool(core.quantum_advantage_claim))+'</div>';
 
  const evidenceBlock=document.createElement('div');evidenceBlock.className='evidenceList';
  let evidenceText='No probabilistic case evidence supplied.';
