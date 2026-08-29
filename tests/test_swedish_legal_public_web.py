@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from qcds_fabric.living_robot_legal import living_robot_legal_html
+from qcds_fabric.living_robot_legal_qcds import living_robot_legal_qcds_html
 from qcds_fabric.robots.legal.sweden_housing.robot import (
     SwedishHousingAssessmentRobot,
     load_legal_praxis,
@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def test_public_web_adds_real_legal_world_without_removing_existing_lab() -> None:
-    html = living_robot_legal_html(static_mode=True)
+    html = living_robot_legal_qcds_html(static_mode=True)
 
     assert "TRY SWEDISH LAW" in html
     assert "SPECIALIZED LOGICAL ROBOT · SWEDISH HOUSING LAW" in html
@@ -27,8 +27,8 @@ def test_public_web_adds_real_legal_world_without_removing_existing_lab() -> Non
     assert "legal_run" in html
 
 
-def test_legal_web_explains_the_inference_chain_and_exposes_all_fifteen_cases() -> None:
-    html = living_robot_legal_html(static_mode=True)
+def test_legal_web_explains_direct_qcds_and_exposes_all_fifteen_cases() -> None:
+    html = living_robot_legal_qcds_html(static_mode=True)
 
     for phrase in (
         "1 · CASE FACTS",
@@ -36,13 +36,24 @@ def test_legal_web_explains_the_inference_chain_and_exposes_all_fifteen_cases() 
         "3 · HARD RULES",
         "4 · ASSESSMENT ZONE",
         "5 · PRAXIS",
-        "6 · SYNTRACT",
+        "DIRECT QCDS → LEGAL SYNTRACT",
+        "CONDITION FORMATION",
+        "CONDITIONAL EVOLUTION",
+        "2^N INFERENCE",
+        "TRUTH ALIGNMENT",
+        "Statutory Syntract",
+        "Final Legal Syntract",
+        "DistributionOracle",
+        "actual states",
+        "live ? dimensions",
+        "CSV in RAM",
         "authority ≠ factual similarity ≠ outcome",
         "rules used in this case",
         "represented decisions",
         "active decisions",
         "active praxis space",
         "The robot deliberately refuses to collapse",
+        "the displayed statutory rule path is Condition Formation/provenance, not the final QCDS answer.",
     ):
         assert phrase in html
 
@@ -87,10 +98,10 @@ def test_browser_worker_routes_legal_run_to_packaged_python_robot() -> None:
     assert "run_session_json" in worker
 
 
-def test_pages_packages_recursive_python_legal_data_and_case_fixtures() -> None:
+def test_pages_packages_recursive_python_direct_qcds_and_case_fixtures() -> None:
     workflow = (ROOT / ".github" / "workflows" / "pages.yml").read_text(encoding="utf-8")
 
-    assert "python -m qcds_fabric.living_robot_legal" in workflow
+    assert "python -m qcds_fabric.living_robot_legal_qcds" in workflow
     assert "root.rglob('*')" in workflow
     assert "path.suffix in {'.py', '.json'}" in workflow
     assert "robots/legal/sweden_housing/cases/*.json" in workflow
@@ -111,12 +122,13 @@ def test_praxis_has_grown_with_recent_hd_and_svea_material() -> None:
     assert "SVEA-OH-10365-19" in ids
 
 
-def test_material_defect_fixture_runs_full_statute_plus_active_praxis_path() -> None:
+def test_material_defect_fixture_runs_direct_qcds_plus_active_praxis_path() -> None:
     case = json.loads(
         (ROOT / "robots" / "legal" / "sweden_housing" / "cases" / "material_defect_praxis_2026.json").read_text(encoding="utf-8")
     )
     result = SwedishHousingAssessmentRobot().run_case(case).as_dict()
     praxis = result["praxis_assessment"]
+    qcds = result["qcds_core"]
     matched = {row["precedent_id"] for row in praxis["matched_precedents"]}
 
     assert result["primary_regimes"] == ["privatuthyrningslag_2026_772"]
@@ -125,8 +137,12 @@ def test_material_defect_fixture_runs_full_statute_plus_active_praxis_path() -> 
     assert "NJA-2019-445" in matched
     assert "NJA-2024-657" in matched
     assert praxis["qcds_execution"] == "qcds_fabric.problem.problem_to_syntract"
+    assert praxis["final_syntract_produced_here"] is False
     assert praxis["active_precedent_count"] < praxis["represented_precedent_count"]
     assert len(praxis["stabilized_relevance"]) == praxis["active_precedent_count"]
+    assert qcds["core_execution"] == "qcds_fabric.FabricLayer.run_stabilized_rotation_suite"
+    assert qcds["reentered_statutory_syntract"] is True
+    assert qcds["active_precedent_ids"]
 
 
 def test_json_bridge_returns_same_specialized_robot_shape() -> None:
@@ -138,6 +154,8 @@ def test_json_bridge_returns_same_specialized_robot_shape() -> None:
     assert result["architecture_boundary"]["talks_to_qcds_core"] is True
     assert result["architecture_boundary"]["qcds_core_modified"] is False
     assert "praxis_assessment" in result
+    assert result["qcds_core"]["direct_qcds_base_bundle"] is True
+    assert result["qcds_core"]["csv_in_memory"] is True
     assert result["legal_boundary"]["not_legal_advice"] is True
     assert result["legal_boundary"]["open_textured_standards_remain_assessment_questions"] is True
     assert result["corpus_stats"]["section_count"] >= 44
