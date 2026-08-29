@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 from urllib.parse import parse_qs, urlparse
 
+from .intelligence_growth import IntelligenceGrowthView
 from .living_logical_space import LivingLogicalSpace
 from .living_robot_ui import living_robot_html
 from .logical_robot_control import LogicalRobotControlPlane
@@ -23,7 +24,7 @@ class LiveRobotError(ValueError):
 class LivingLogicalRobotService:
     """One observable/control surface for the same Logical Robot.
 
-    The service composes BUILD 23-27 overlays. It never bypasses QCDS challenge,
+    The service composes BUILD 23-29 overlays. It never bypasses QCDS challenge,
     Reality governance, or the persistent logical stores.
     """
 
@@ -39,6 +40,7 @@ class LivingLogicalRobotService:
         self.events = LogicalRobotEventLog(self.store_root)
         self.control = LogicalRobotControlPlane(self.store_root)
         self.space = LivingLogicalSpace(self.store_root)
+        self.growth = IntelligenceGrowthView(self.store_root)
         self.space.record_growth_snapshot(force=True)
         if seed_continuous_spec is not None:
             existing = [item for item in self.control.frontier() if item.kind == "continuous_mission"]
@@ -58,7 +60,7 @@ class LivingLogicalRobotService:
             "control": self.control.state(),
             "space": self.space._snapshot_counts(),
             "provenance": {
-                "builds": [26, 27, 28],
+                "builds": [26, 27, 28, 29],
                 "web_is_manifestation_only": True,
                 "same_logical_robot_local_or_remote": True,
                 "qcds_core_modified": False,
@@ -96,7 +98,7 @@ def create_live_robot_server(
     allowed_origin = cors_origin.strip() if cors_origin else None
 
     class Handler(BaseHTTPRequestHandler):
-        server_version = "QCDSLivingLogicalRobot/1.0"
+        server_version = "QCDSLivingLogicalRobot/1.1"
 
         def _cors(self) -> None:
             if allowed_origin:
@@ -158,6 +160,9 @@ def create_live_robot_server(
                 return
             if parsed.path == "/api/frontier":
                 self._json({"frontier": [item.as_dict() for item in service.control.frontier()]})
+                return
+            if parsed.path == "/api/growth":
+                self._json(service.growth.snapshot())
                 return
             if parsed.path == "/api/events":
                 query = parse_qs(parsed.query)
