@@ -50,6 +50,37 @@ def parse_legal_evidence(values: Sequence[Mapping[str, Any]] | None) -> tuple[Le
     return tuple(out)
 
 
+def augment_rule_ids_with_evidence(
+    *,
+    corpus: Mapping[str, Any],
+    applied_rule_ids: Sequence[str],
+    resolved_terms: Sequence[str],
+    evidence: Sequence[LegalEvidenceItem],
+) -> tuple[str, ...]:
+    """Activate rules whose antecedents are fully represented by fact or evidence.
+
+    This is Condition Formation only. Evidence-backed antecedents are *not* set
+    true here; adding the rule merely keeps its consequence and uncertain
+    antecedent inside the QCDS room. The actual evidence pressure is applied by
+    EvidenceOracle during Conditional Evolution.
+    """
+    represented = {normalize_logic_text(str(term)) for term in resolved_terms}
+    represented.update(item.canonical_term for item in evidence)
+    selected = list(dict.fromkeys(str(rule_id) for rule_id in applied_rule_ids))
+    selected_set = set(selected)
+    for raw in corpus.get("rules", ()):
+        if not isinstance(raw, Mapping):
+            continue
+        rule_id = str(raw.get("rule_id", ""))
+        if not rule_id or rule_id in selected_set:
+            continue
+        matches = {normalize_logic_text(str(term)) for term in raw.get("match_terms", ())}
+        if matches and matches.issubset(represented):
+            selected.append(rule_id)
+            selected_set.add(rule_id)
+    return tuple(selected)
+
+
 def evidence_oracles(
     items: Sequence[LegalEvidenceItem],
     term_dimensions: Mapping[str, str],
@@ -73,6 +104,7 @@ def evidence_oracles(
 __all__ = [
     "LegalEvidenceError",
     "LegalEvidenceItem",
+    "augment_rule_ids_with_evidence",
     "evidence_oracles",
     "parse_legal_evidence",
 ]
