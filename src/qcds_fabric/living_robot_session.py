@@ -42,7 +42,7 @@ _SECTION = r'''
     </div>
     <div class="sessionStatus" id="sessionStatus">Fill the Logical Space builder above, add a core probe here, then run it.</div>
     <pre class="sessionResult" id="sessionResult" hidden></pre>
-    <div class="sessionPrivacy">No account · no database · no cookie · no persistent server state. Closing this browser tab ends the sandbox session. WebAssembly is an execution substrate only; QCDS inference logic remains in the qcds_fabric core package.</div>
+    <div class="sessionPrivacy">Session storage only · no account · no database · no cookie · no persistent browser or server state. Closing this browser tab ends the sandbox session. WebAssembly is an execution substrate only; QCDS inference logic remains in the qcds_fabric core package.</div>
   </div>
 </section>
 '''
@@ -73,6 +73,10 @@ def living_robot_session_html(*, static_mode: bool = False) -> str:
     html = living_robot_builder_html(static_mode=static_mode)
     if "</style>" not in html or '<section class="understandBuild"' not in html or "</body>" not in html:
         raise RuntimeError("Living Logical Robot markup changed; BUILD 35 session sandbox cannot attach safely")
+    # BUILD 35 is session-only end-to-end. Older UI code remembered an optional
+    # remote-runtime URL in localStorage; on this manifestation even that value
+    # is intentionally scoped to the current tab session.
+    html = html.replace("localStorage", "sessionStorage")
     html = html.replace("</style>", _CSS + "\n</style>", 1)
     html = html.replace('<section class="understandBuild"', _SECTION + '\n<section class="understandBuild"', 1)
     html = html.replace("</body>", _SCRIPT.replace("__STATIC_MODE__", "true" if static_mode else "false") + "\n</body>", 1)
