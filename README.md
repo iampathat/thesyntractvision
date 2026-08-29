@@ -22,17 +22,20 @@ You do **not** need to understand the whole architecture before trying it or bui
 
 **https://iampathat.github.io/thesyntractvision/**
 
-The public playground gives you two doors:
+The public playground gives you several doors into the same architecture:
 
 - **Quick experiments** — Biology, Robotics, Materials, Software or Surprise Me.
+- **Swedish Law** — a substantial specialized Logical Robot over a source-attributed housing-law Logical Universe.
 - **Advanced Logical Space Lab** — the full builder, probes, explicit evidence, observations, guardrails and session sandbox.
 
 The quick experiments are not a separate demo engine. They prefill the same Logical Space fields and call the same `qcds_fabric` core path used by the advanced lab.
 
+The Swedish Law surface is deeper: it forms an active legal `2^N` problem, runs the shared QCDS Fabric, and exposes **Classical Exact** and **Grover-emulated statevector** executions over the same logical contract.
+
 ```text
 browser session
       ↓
-Logical Robot
+Logical Robot / specialized body
       ↓
 QCDS Core
       ↓
@@ -97,12 +100,13 @@ The architecture is built around several strong ideas:
 - uncertainty remains explicit instead of being silently collapsed early;
 - contradictions are representable states, not execution failures;
 - evidence is not automatically truth;
+- hard constraints and probabilistic evidence can coexist in one Logical Space;
 - candidate logic can be challenged and falsified;
 - null/rotation diagnostic views are not counted as independent facts;
 - stalled cycles are resumable;
 - inference semantics are separated from the execution substrate;
 - relevant coherent structure can emerge from an open Logical Space rather than requiring one permanent ontology;
-- the same intelligence can sit behind a browser, API, simulation, sensor or physical robot body.
+- the same intelligence can sit behind a browser, API, simulation, sensor, specialized domain robot or physical robot body.
 
 The current implementation is research software. It does **not** claim that the present Python MVP has already achieved AGI or ASI. The architecture explicitly explores a path toward increasingly general and potentially **superintelligent capability**.
 
@@ -125,8 +129,6 @@ See [`LIVING_LOGICAL_ROBOT.md`](LIVING_LOGICAL_ROBOT.md).
 ## The Living Logical Space
 
 The center of the Living Logical Robot is a projection of a represented Logical Space.
-
-You can watch:
 
 ```text
 observed bindings
@@ -216,6 +218,8 @@ flowchart TD
 
 A browser page, terminal, API, specialized domain robot or future physical robot body is a manifestation/capability surface around the **same Logical Robot architecture**. Replacing or adding a body does not redefine the intelligence.
 
+**Logical Robot does not contain QCDS. Logical Robot talks to QCDS.**
+
 WebAssembly is an execution substrate for the packaged Python core, not a client-side rewrite of QCDS.
 
 ---
@@ -238,23 +242,46 @@ robots/
 
 A specialized Logical Robot can own its domain corpus, case fixtures, source mappings, domain-specific interpretation layers and benchmarks while still calling the **same QCDS / Syntract core**.
 
-The first substantial domain robot is [`robots/legal/sweden_housing/`](robots/legal/sweden_housing/). It models Swedish housing law as a mixed Logical Universe containing statutory rules, transition rules, explicit exceptions, open-textured legal concepts and a separate praxis/precedent assessment layer.
+The first substantial domain robot is [`robots/legal/sweden_housing/`](robots/legal/sweden_housing/). It represents Swedish housing law as a mixed Logical Universe containing hard statutory structure, transition rules, exceptions, open-textured concepts, probabilistic case evidence and source-attributed praxis.
+
+The key execution path is now direct:
 
 ```text
 Swedish Housing Legal Robot
-        ↓
-statutory Logical Universe
-+ facts / missing facts
-+ praxis / analogy / counter-factors
-        ↓
-QCDS / Syntract core
-        ↓
-competing coherent legal states
-        ↓
-Syntract
+        │
+        ├── Jordabalk / private-letting corpus
+        ├── case facts
+        ├── probabilistic evidence
+        └── active praxis
+                 │
+                 ▼
+        Condition Formation
+                 │
+                 ▼
+        BaseBundle + Oracle Stack
+                 │
+          active 2^N room
+                 │
+        ┌────────┴────────┐
+        ▼                 ▼
+CLASSICAL EXACT      GROVER EMULATED
+exact reference      statevector + phase
+rotations            adaptive amplification
+        │                 │
+        └────────┬────────┘
+                 ▼
+       TruthDistribution(s)
+                 ▼
+             Syntract
 ```
 
+The preliminary legal resolver exposes which source-attributed rule paths are relevant. It does **not** install the final legal outcome before QCDS runs. Legal consequences, assessment states and evidence-sensitive propositions remain live QCDS dimensions where appropriate.
+
+Praxis can expand the statutory room through **Syntract re-entry**: the statutory TruthDistribution is carried forward through `DistributionOracle`, active precedent dimensions are added, and QCDS runs again before the final Legal Syntract is bound.
+
 A Legal Logical Robot can also participate as one capability inside a Living Swarm Logical Robot system. Its output remains non-authoritative until challenged/bound through the shared architecture.
+
+See [`robots/legal/sweden_housing/QCDS_EXECUTION.md`](robots/legal/sweden_housing/QCDS_EXECUTION.md).
 
 ---
 
@@ -289,6 +316,22 @@ flowchart TD
 ```
 
 This is why the architecture is not simply “retrieve information and answer.” The desired loop is **representation → competing logical possibilities → constraint/oracle evolution → recursive inference → challenge → binding**.
+
+### Hard constraints and probabilities can coexist
+
+An oracle need not always express the same epistemic character.
+
+```text
+hard statutory constraint       confidence 1.0
+instrument reading              confidence 0.99
+strong documentary evidence     confidence 0.95
+ambiguous factual evidence      confidence 0.74
+counter-evidence                confidence 0.82 against
+```
+
+QCDS can therefore preserve a wide distribution when important discriminators remain uncertain, while converging near 100% when the represented constraints and evidence strongly align.
+
+A probability shown by a QCDS run is **probability mass / coherence in the represented logical universe under the supplied oracle semantics**. It should not automatically be described as an empirically calibrated real-world outcome probability unless that calibration has separately been demonstrated.
 
 ---
 
@@ -414,11 +457,51 @@ flowchart LR
     T --> Y[Syntract binding]
 ```
 
-This is the architectural reason quantum execution matters here: a logical/oracle transformation can operate globally on the represented state rather than requiring an explicit classical rewrite of every affected object.
+The reference software now contains an explicit substrate-parity experiment over a substantial Legal Logical Robot:
 
-This does **not** imply unrestricted instantaneous classical readout of every represented fact. Measurement remains constrained, and Grover-style search is quadratic rather than unrestricted. The current Python implementation demonstrates semantics; quantum advantage and physical-QPU performance remain empirical questions.
+```text
+same BaseBundle + same Oracle Stack
+                 │
+        ┌────────┴────────┐
+        ▼                 ▼
+CLASSICAL EXACT      GROVER EMULATED
+2^N enumeration      equal superposition
+oracle weighting     weighted phase marking
+QCDS rotations       inversion about mean
+stabilization        adaptive Grover depth
+        │                 │
+        └────────┬────────┘
+                 ▼
+       stabilized distributions
+                 ▼
+          sibling Syntracts
+```
 
-See [`GROVER_DEPTH.md`](GROVER_DEPTH.md).
+The Grover-emulated substrate uses software complex-amplitude statevector evolution. Its adaptive depth policy searches for a local amplification maximum before overshoot without consulting an external answer key.
+
+The two substrates are **not required to produce numerically identical distributions**. The experiment holds the logical contract constant and measures substrate behavior through entropy, oracle agreement, total-variation distance, top-state agreement, rotation sensitivity and other diagnostics.
+
+### Scaling the emulation honestly
+
+A bounded software statevector cannot represent an arbitrarily large active room. The current legal scaling layer therefore examines which live dimensions are actually coupled by the Oracle Stack.
+
+Oracle-disconnected components can be executed as bounded parallel Grover-emulated rooms. An oversized component that remains logically coupled is **not silently split into arbitrary chunks and called equivalent to one global Grover operation**.
+
+```text
+separable components        coupled oversized component
+8 · 8 · 8 · 8               one connected logical room
+      │                              │
+      ▼                              ▼
+parallel bounded QCDS       larger substrate / native QPU /
+                            explicit sequential or hybrid
+                            decomposition with declared semantics
+```
+
+This keeps **parallel, sequential and hybrid** execution visible without using a classical shortcut that changes the represented problem.
+
+This does **not** imply unrestricted instantaneous classical readout of every represented fact. Measurement remains constrained, and Grover-style search is quadratic rather than unrestricted. The present statevector path is an emulator; native quantum advantage and physical-QPU performance remain empirical questions.
+
+See [`GROVER_DEPTH.md`](GROVER_DEPTH.md) and [`robots/legal/sweden_housing/QCDS_EXECUTION.md`](robots/legal/sweden_housing/QCDS_EXECUTION.md).
 
 ---
 
@@ -465,8 +548,11 @@ qcds-logical-robot examples/first_logical_robot_mvp.json --store ./intelligence_
 # Runnable Logical Universe
 qcds-universe examples/logical_universe_lawbook_mvp.json --store ./intelligence_store
 
-# Swedish Housing Law Logical Robot
+# Swedish Housing Law Logical Robot — direct exact + Grover-emulated QCDS
 qcds-legal-robot robots/legal/sweden_housing/cases/new_private_let_2026.json
+
+# Probabilistic legal evidence case
+qcds-legal-robot robots/legal/sweden_housing/cases/jb_probabilistic_sublet_evidence_2026.json
 
 # Self-expanding Reality cycle
 qcds-reality-cycle examples/self_expanding_reality_mvp.json --store ./intelligence_store
@@ -497,12 +583,18 @@ The repository contains regression and falsification tests for the architectural
 - bounded frontier growth and public-web observation;
 - browser-session execution through the packaged Python core rather than duplicated JavaScript inference;
 - quick and advanced Logical Space interfaces using the same core path;
-- Swedish housing-law statutory regime selection across current, legacy and Chapter 12 paths;
-- a separate praxis layer where precedent relevance is assessed without silently rewriting statutory results.
+- Swedish housing law projected into a direct active QCDS `2^N` room rather than a finished rule-engine answer;
+- source-attributed legal consequences remaining live dimensions until QCDS evaluates them;
+- statutory Syntract re-entry through `DistributionOracle` before active praxis is bound into the final Legal Syntract;
+- probabilistic case evidence acting as source-attributed oracle pressure instead of being silently promoted to fact;
+- the same legal `BaseBundle + Oracle Stack` executing through Classical Exact and adaptive Grover-statevector substrates;
+- exact-vs-Grover benchmark metrics where the emulated substrate is allowed to diverge or lose;
+- dependency-aware bounded parallel Grover execution for separable components;
+- explicit refusal to silently truncate or fake-partition an oversized coupled logical room.
 
 GitHub Actions runs the regression/falsification suite on implementation changes.
 
-Detailed historical development logs, where retained, belong in `results/` and commit history rather than defining this README.
+Detailed historical development logs, where retained, belong in `results/`, domain-specific working docs and commit history rather than defining this README.
 
 ---
 
@@ -518,7 +610,9 @@ new specialized Logical Robot under robots/
 small falsifiable Logical Universe
 new Domain Lab
 new oracle + falsifier
+new probabilistic evidence source
 new benchmark
+new execution substrate
 better Living Logical Space projection
 new sensor / API / instrument adapter
 bounded swarm / distributed verification experiment
@@ -557,6 +651,8 @@ intelligence_store/
 
 CSV/JSONL are transparent MVP backends, not the conceptual identity of the intelligence. Storage/runtime boundaries remain replaceable for accelerated, hybrid or quantum-near substrates.
 
+The Swedish legal robot also uses a case-scoped CSV projection loaded into RAM before `BaseBundle` construction. That CSV is likewise storage/provenance only; it is not the inference engine.
+
 The public browser sandbox is different: its user state is **session-only** and does not use this persistent local store.
 
 ---
@@ -569,7 +665,9 @@ The public browser sandbox is different: its user state is **session-only** and 
 | `QCDS_FABRIC_SPEC_v1.0_CANONICAL.*` | locked canonical QCDS Fabric v1.0 specification |
 | `src/qcds_fabric/` | reference QCDS / Logical Robot implementation |
 | `src/qcds_fabric/problem.py` | problem → QCDS → Syntract path |
-| `src/qcds_fabric/fabric.py` | Fabric layer |
+| `src/qcds_fabric/fabric.py` | Fabric layer and rotation/stabilization boundary |
+| `src/qcds_fabric/substrates.py` | substrate contract + statevector Grover emulator |
+| `src/qcds_fabric/grover_depth.py` | adaptive Grover-depth / overshoot policy |
 | `src/qcds_fabric/logical_space.py` | shared open-ended Logical Space |
 | `src/qcds_fabric/logical_transform.py` | non-materialized governed logical transforms |
 | `src/qcds_fabric/logical_universe.py` | isolated Logical Universes + drift governance |
@@ -577,8 +675,9 @@ The public browser sandbox is different: its user state is **session-only** and 
 | `src/qcds_fabric/first_logical_robot.py` | Logical Robot body/runtime bridge |
 | `src/qcds_fabric/living_robot_session.py` | advanced session sandbox |
 | `src/qcds_fabric/living_robot_builder.py` | custom Logical Space builder |
+| `src/qcds_fabric/robots/legal/sweden_housing/` | executable Swedish legal body: QCDS space, evidence, substrates, scaling and benchmark |
 | `robots/` | substantial specialized Logical Robots and their domain material |
-| `robots/legal/sweden_housing/` | Swedish Housing Law Logical Robot domain home |
+| `robots/legal/sweden_housing/` | Swedish Housing Law domain corpus, cases and documentation |
 | `web/session_core_worker.js` | WebAssembly/Pyodide transport loader — not QCDS logic |
 | `.devcontainer/` | one-click Codespaces runtime |
 | `.github/workflows/pages.yml` | public Pages deployment |
@@ -586,7 +685,7 @@ The public browser sandbox is different: its user state is **session-only** and 
 | `examples/` | small general runnable experiments |
 | `results/` | retained detailed verification/development results |
 
-Focused docs: [`LIVING_LOGICAL_ROBOT.md`](LIVING_LOGICAL_ROBOT.md), [`LOGICAL_ROBOT_LIVE.md`](LOGICAL_ROBOT_LIVE.md), [`LOGICAL_SPACE.md`](LOGICAL_SPACE.md), [`GLOBAL_LOGIC.md`](GLOBAL_LOGIC.md), [`LOGICAL_UNIVERSES.md`](LOGICAL_UNIVERSES.md), [`LOGICAL_UNIVERSE_TEMPLATE.md`](LOGICAL_UNIVERSE_TEMPLATE.md), [`DOMAIN_LABS.md`](DOMAIN_LABS.md), [`ORACLE_EVOLUTION.md`](ORACLE_EVOLUTION.md), [`ORACLE_GENESIS.md`](ORACLE_GENESIS.md), [`EVIDENCE_PLANNING.md`](EVIDENCE_PLANNING.md), [`GROVER_DEPTH.md`](GROVER_DEPTH.md), [`LIVING_SWARM_LOGICAL_ROBOTS.md`](LIVING_SWARM_LOGICAL_ROBOTS.md).
+Focused docs: [`LIVING_LOGICAL_ROBOT.md`](LIVING_LOGICAL_ROBOT.md), [`LOGICAL_ROBOT_LIVE.md`](LOGICAL_ROBOT_LIVE.md), [`LOGICAL_SPACE.md`](LOGICAL_SPACE.md), [`GLOBAL_LOGIC.md`](GLOBAL_LOGIC.md), [`LOGICAL_UNIVERSES.md`](LOGICAL_UNIVERSES.md), [`LOGICAL_UNIVERSE_TEMPLATE.md`](LOGICAL_UNIVERSE_TEMPLATE.md), [`DOMAIN_LABS.md`](DOMAIN_LABS.md), [`ORACLE_EVOLUTION.md`](ORACLE_EVOLUTION.md), [`ORACLE_GENESIS.md`](ORACLE_GENESIS.md), [`EVIDENCE_PLANNING.md`](EVIDENCE_PLANNING.md), [`GROVER_DEPTH.md`](GROVER_DEPTH.md), [`robots/legal/sweden_housing/QCDS_EXECUTION.md`](robots/legal/sweden_housing/QCDS_EXECUTION.md), [`LIVING_SWARM_LOGICAL_ROBOTS.md`](LIVING_SWARM_LOGICAL_ROBOTS.md).
 
 ---
 
@@ -616,6 +715,8 @@ The QCDS Fabric v1.0 canonical artifacts are version-locked and are not rewritte
 ## Research status and claim boundary
 
 This repository is an experimental, falsifiable reference implementation. A coherent distribution, generated/promoted oracle, Syntract, logical binding, global rule, declared-universe rule, precedent assessment or web observation is **not automatically external truth**.
+
+The current legal substrate-parity experiment establishes that the same represented problem can be executed through exact-classical and Grover-emulated QCDS paths. It does not establish that the Grover emulator reproduces physical quantum hardware, that it has a quantum speed advantage, that its probabilities are calibrated court-outcome forecasts, or that the represented Swedish legal corpus is complete.
 
 The project is explicitly aimed at exploring a route toward **superintelligent capability**, but the current software does not by itself establish AGI/ASI, unrestricted natural-language understanding, complete world knowledge, unrestricted self-modification, production browser security, native quantum advantage, legal correctness or correctness on arbitrary real-world problems.
 
