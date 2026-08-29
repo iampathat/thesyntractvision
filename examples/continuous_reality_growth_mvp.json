@@ -1,0 +1,74 @@
+{
+  "run_id": "continuous-public-reality-demo",
+  "policy": {
+    "max_cycles": 2,
+    "stop_on_conflict": true,
+    "stop_on_quarantine": false,
+    "stop_on_error": true,
+    "allow_revisit_within_run": false
+  },
+  "missions": [
+    {
+      "mission_id": "public-web-italy-capital",
+      "probe_terms": ["rome"],
+      "reality_bindings": [
+        {"binding_id": "country-italy-1", "terms": ["country-italy-1", "italy"], "source_id": "seed:italy:1"},
+        {"binding_id": "country-italy-2", "terms": ["country-italy-2", "italy"], "source_id": "seed:italy:2"},
+        {"binding_id": "country-spain-1", "terms": ["country-spain-1", "spain"], "source_id": "seed:spain:1"},
+        {"binding_id": "country-spain-2", "terms": ["country-spain-2", "spain"], "source_id": "seed:spain:2"},
+        {"binding_id": "country-spain-3", "terms": ["country-spain-3", "spain"], "source_id": "seed:spain:3"},
+        {"binding_id": "country-spain-4", "terms": ["country-spain-4", "spain"], "source_id": "seed:spain:4"},
+        {"binding_id": "country-spain-5", "terms": ["country-spain-5", "spain"], "source_id": "seed:spain:5"},
+        {"binding_id": "country-spain-6", "terms": ["country-spain-6", "spain"], "source_id": "seed:spain:6"}
+      ],
+      "problem": {
+        "mission_id": "italy-capital-problem",
+        "raw_text": "The represented country is Italy; its capital remains unresolved.",
+        "analyzer_id": "build25-public-web-example",
+        "queries": [
+          {"query_id": "country", "subject": "place", "predicate": "country", "candidate_values": ["italy", "spain"]},
+          {"query_id": "capital", "subject": "place", "predicate": "capital", "candidate_values": ["rome", "madrid", "milan"]}
+        ],
+        "claims": [
+          {"subject": "place", "predicate": "country", "value": "italy", "source_id": "seed:italy-current", "confidence": 1.0}
+        ],
+        "rules": []
+      },
+      "failure_observations": [
+        {"observation_id": "italy-capital-unresolved", "kind": "prediction_failure", "query_ids": ["capital"], "severity": 0.7, "description": "Capital unresolved."}
+      ],
+      "generation": {"max_generations": 1, "max_promotions_per_generation": 1, "selection_independent_sources": 2, "holdout_independent_sources": 1}
+    },
+    {
+      "mission_id": "public-web-france-capital",
+      "probe_terms": ["paris"],
+      "reality_bindings": [
+        {"binding_id": "country-france-1", "terms": ["country-france-1", "france"], "source_id": "seed:france:1"},
+        {"binding_id": "country-france-2", "terms": ["country-france-2", "france"], "source_id": "seed:france:2"},
+        {"binding_id": "country-germany-1", "terms": ["country-germany-1", "germany"], "source_id": "seed:germany:1"},
+        {"binding_id": "country-germany-2", "terms": ["country-germany-2", "germany"], "source_id": "seed:germany:2"},
+        {"binding_id": "country-germany-3", "terms": ["country-germany-3", "germany"], "source_id": "seed:germany:3"},
+        {"binding_id": "country-germany-4", "terms": ["country-germany-4", "germany"], "source_id": "seed:germany:4"},
+        {"binding_id": "country-germany-5", "terms": ["country-germany-5", "germany"], "source_id": "seed:germany:5"},
+        {"binding_id": "country-germany-6", "terms": ["country-germany-6", "germany"], "source_id": "seed:germany:6"}
+      ],
+      "problem": {
+        "mission_id": "france-capital-problem",
+        "raw_text": "The represented country is France; its capital remains unresolved.",
+        "analyzer_id": "build25-public-web-example",
+        "queries": [
+          {"query_id": "country", "subject": "place", "predicate": "country", "candidate_values": ["france", "germany"]},
+          {"query_id": "capital", "subject": "place", "predicate": "capital", "candidate_values": ["paris", "berlin", "lyon"]}
+        ],
+        "claims": [
+          {"subject": "place", "predicate": "country", "value": "france", "source_id": "seed:france-current", "confidence": 1.0}
+        ],
+        "rules": []
+      },
+      "failure_observations": [
+        {"observation_id": "france-capital-unresolved", "kind": "prediction_failure", "query_ids": ["capital"], "severity": 1.0, "description": "Capital unresolved."}
+      ],
+      "generation": {"max_generations": 1, "max_promotions_per_generation": 1, "selection_independent_sources": 2, "holdout_independent_sources": 1}
+    }
+  ]
+}
