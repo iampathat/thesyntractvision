@@ -35,27 +35,37 @@ def test_praxis_corpus_is_real_source_attributed_and_not_rules() -> None:
     assert praxis["boundary"]["similarity_is_not_outcome"] is True
 
 
-def test_statutory_result_is_preserved_when_praxis_layer_is_added() -> None:
+def test_statutory_resolver_is_provenance_but_final_result_is_direct_qcds() -> None:
     case = _case("swedish_housing_case_2026.json")
     base = SwedishHousingLegalRobot().run_case(case).as_dict()
     assessed = SwedishHousingAssessmentRobot().run_case(case).as_dict()
 
+    # The readable deterministic projection remains available for provenance.
     assert assessed["primary_regimes"] == base["primary_regimes"]
     assert assessed["conclusions"] == base["conclusions"]
     assert assessed["applied_rules"] == base["applied_rules"]
-    assert assessed["assessment_model"]["statutory_result_preserved"] is True
+    assert assessed["statutory_regime_projection"] == base["qcds_core"]
+
+    # But it is no longer the final QCDS object.
+    assert assessed["assessment_model"]["statutory_result_preserved"] is False
+    assert assessed["assessment_model"]["statutory_constraints_preserved"] is True
+    assert assessed["assessment_model"]["final_answer_is_qcds_distribution"] is True
     assert assessed["assessment_model"]["canonical_spec_modified"] is False
+    assert assessed["qcds_core"]["core_execution"] == "qcds_fabric.FabricLayer.run_stabilized_rotation_suite"
+    assert assessed["qcds_core"]["direct_qcds_base_bundle"] is True
 
 
-def test_second_hand_facts_activate_real_hd_praxis_and_qcds_pass() -> None:
+def test_second_hand_facts_activate_real_hd_praxis_and_integrated_qcds() -> None:
     result = SwedishHousingAssessmentRobot().run_case(
         _case("swedish_housing_case_2026.json")
     ).as_dict()
     praxis = result["praxis_assessment"]
+    qcds = result["qcds_core"]
 
     matched_ids = {row["precedent_id"] for row in praxis["matched_precedents"]}
     assert "NJA-2022-329" in matched_ids
     assert praxis["qcds_execution"] == "qcds_fabric.problem.problem_to_syntract"
+    assert praxis["final_syntract_produced_here"] is False
     assert praxis["evidence_claim_count"] >= 1
     assert praxis["represented_precedent_count"] >= 12
     assert 1 <= praxis["active_precedent_count"] < praxis["represented_precedent_count"]
@@ -64,6 +74,11 @@ def test_second_hand_facts_activate_real_hd_praxis_and_qcds_pass() -> None:
     assert praxis["active_binary_space"] == f"2^{praxis['active_precedent_count']}"
     assert praxis["boundary"]["precedent_installed_as_rule"] is False
     assert praxis["boundary"]["praxis_changes_statutory_conclusions_automatically"] is False
+
+    assert qcds["core_execution"] == "qcds_fabric.FabricLayer.run_stabilized_rotation_suite"
+    assert qcds["candidate_state_count"] == 2 ** qcds["unknown_dimension_count"]
+    assert qcds["reentered_statutory_syntract"] is True
+    assert "NJA-2022-329" in qcds["active_precedent_ids"]
 
 
 def test_material_defect_activates_competing_interpretive_precedents() -> None:
@@ -84,6 +99,7 @@ def test_material_defect_activates_competing_interpretive_precedents() -> None:
     }
     result = SwedishHousingAssessmentRobot().run_case(case).as_dict()
     praxis = result["praxis_assessment"]
+    qcds = result["qcds_core"]
     matched_ids = {row["precedent_id"] for row in praxis["matched_precedents"]}
 
     assert "NJA-2022-188" in matched_ids
@@ -92,6 +108,8 @@ def test_material_defect_activates_competing_interpretive_precedents() -> None:
     assert praxis["qcds_execution"] == "qcds_fabric.problem.problem_to_syntract"
     assert praxis["evidence_claim_count"] >= 4
     assert praxis["active_precedent_count"] >= 3
+    assert qcds["reentered_statutory_syntract"] is True
+    assert qcds["syntract_id"].endswith(":final")
 
 
 def test_praxis_layer_keeps_authority_separate_from_similarity() -> None:
