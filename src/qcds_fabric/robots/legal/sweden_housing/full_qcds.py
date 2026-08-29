@@ -25,6 +25,7 @@ from .qcds_space import (
     _expand_with_praxis,
     _runtime_payload,
 )
+from .scaling import execute_separable_grover_partitions, plan_legal_scaling
 
 
 def _with_probabilistic_evidence(
@@ -37,7 +38,12 @@ def _with_probabilistic_evidence(
 ) -> tuple[LegalQCDSRuntime, tuple[LegalEvidenceItem, ...], tuple[LegalEvidenceItem, ...]]:
     attached = tuple(item for item in evidence if item.canonical_term in runtime.term_dimensions)
     inactive = tuple(item for item in evidence if item.canonical_term not in runtime.term_dimensions)
-    extra = evidence_oracles(attached, runtime.term_dimensions)
+    existing_ids = set(runtime.oracle_stack.oracle_ids)
+    extra = tuple(
+        oracle
+        for oracle in evidence_oracles(attached, runtime.term_dimensions)
+        if oracle.oracle_id not in existing_ids
+    )
     if not extra:
         return runtime, attached, inactive
 
@@ -87,12 +93,19 @@ def _grover_runtime(
 ) -> tuple[LegalQCDSRuntime | None, Mapping[str, Any]]:
     state_count = candidate_state_count(exact.bundle)
     if state_count > max_states:
+        partitioned = execute_separable_grover_partitions(
+            exact.bundle,
+            exact.oracle_stack,
+            max_states=max_states,
+            max_iterations=max_iterations,
+        )
         return None, {
-            "status": "requires_partitioned_execution",
+            "status": "partitioned_or_larger_substrate_required",
             "profile_id": "grover_emulated",
             "state_count": state_count,
             "max_states": max_states,
-            "reason": "monolithic statevector emulation bound exceeded; do not silently truncate the active QCDS room",
+            "reason": "monolithic statevector emulation bound exceeded; the active QCDS room is never silently truncated",
+            "scaling": partitioned,
         }
 
     profile, fabric = grover_emulated_profile(
@@ -133,6 +146,11 @@ def _grover_runtime(
             exact.suite.stabilized_return.stabilized_distribution,
             suite.stabilized_return.stabilized_distribution,
         ),
+        "scaling": plan_legal_scaling(
+            exact.bundle,
+            exact.oracle_stack,
+            max_states=max_states,
+        ).as_dict(),
     })
     return runtime, payload
 
@@ -192,9 +210,8 @@ def run_full_legal_qcds(
             represented_terms=resolved_terms,
             max_unknown_dimensions=max_unknown_dimensions,
         )
-    # Evidence can also target a precedent or another dimension introduced only
-    # during re-entry. Attach any newly available evidence without duplicating
-    # already attached oracle ids.
+    # Evidence may also target a precedent or a dimension introduced only by
+    # re-entry. Existing evidence oracle identities are preserved, never doubled.
     if final_exact is not statutory:
         final_exact, final_attached, final_inactive = _with_probabilistic_evidence(
             final_exact,
@@ -291,6 +308,11 @@ def run_full_legal_qcds(
         "augmented_rule_ids_from_evidence": [
             rule_id for rule_id in augmented_rule_ids if rule_id not in set(applied_rule_ids)
         ],
+        "scaling": plan_legal_scaling(
+            final_exact.bundle,
+            final_exact.oracle_stack,
+            max_states=grover_max_states,
+        ).as_dict(),
         "canonical_final_syntract": final_exact.syntract.syntract_id,
         "canonical_final_reference_substrate": "classical_exact",
         "quantum_emulation_is_sibling_syntract": True,
