@@ -1,0 +1,241 @@
+{
+  "corpus_id": "swedish-housing-law-2026-08-29",
+  "title": "Swedish Housing Law Logical Universe",
+  "jurisdiction": "SE",
+  "domain": "housing-law",
+  "snapshot_date": "2026-08-29",
+  "authority": "Sveriges riksdag / Svensk författningssamling",
+  "purpose": "Declared, source-attributed legal universe for a specialized QCDS Legal Logical Robot. The corpus models applicability, temporal transitions and a bounded set of operational housing-law consequences without modifying QCDS core semantics.",
+  "primary_regime_candidates": [
+    "privatuthyrningslag_2026_772",
+    "legacy_2012_978_with_jb12",
+    "jordabalk_12",
+    "unresolved"
+  ],
+  "sources": [
+    {
+      "source_id": "sfs:2026:772",
+      "title": "Privatuthyrningslag (2026:772)",
+      "uri": "https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/privatuthyrningslag-2026772_sfs-2026-772/",
+      "effective_from": "2026-07-01",
+      "status": "in_force_at_snapshot"
+    },
+    {
+      "source_id": "sfs:2012:978",
+      "title": "Lag (2012:978) om uthyrning av egen bostad",
+      "uri": "https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/lag-2012978-om-uthyrning-av-egen-bostad_sfs-2012-978/",
+      "effective_from": "2013-02-01",
+      "repealed_from": "2026-07-01",
+      "status": "repealed_but_preserved_for_qualifying_existing_contracts"
+    },
+    {
+      "source_id": "sfs:1970:994:12",
+      "title": "Jordabalk (1970:994), 12 kap. Hyra",
+      "uri": "https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/jordabalk-1970994_sfs-1970-994/",
+      "status": "in_force_at_snapshot"
+    }
+  ],
+  "sections": [
+    {"section_id":"2026:772-1:1","source_id":"sfs:2026:772","topic":"scope_private_actor_residential_use","summary":"Applies to compensated residential letting by a natural person or estate, subject to exclusions."},
+    {"section_id":"2026:772-1:3","source_id":"sfs:2026:772","topic":"scope_exclusions","summary":"Excludes regular letting of more than two external units, units held with tenancy right, and holiday-purpose letting."},
+    {"section_id":"2026:772-1:4","source_id":"sfs:2026:772","topic":"mandatory_tenant_protection","summary":"Terms less favorable to the tenant are without effect unless the Act provides otherwise."},
+    {"section_id":"2026:772-1:6","source_id":"sfs:2026:772","topic":"default_duration","summary":"Agreement is indefinite unless a fixed term is agreed."},
+    {"section_id":"2026:772-2:1","source_id":"sfs:2026:772","topic":"rent_amount","summary":"Rent is agreed as a fixed amount, with bounded utility-cost exceptions."},
+    {"section_id":"2026:772-2:5","source_id":"sfs:2026:772","topic":"rent_review","summary":"Tenant may seek rent review; substantially higher rent than comparable private lettings may be reduced."},
+    {"section_id":"2026:772-3:5","source_id":"sfs:2026:772","topic":"serious_defect_termination","summary":"Tenant may terminate immediately for a material defect not promptly remedied after notice."},
+    {"section_id":"2026:772-5:2","source_id":"sfs:2026:772","topic":"second_hand_sublet","summary":"Independent second-hand letting requires landlord consent."},
+    {"section_id":"2026:772-5:3","source_id":"sfs:2026:772","topic":"lodgers","summary":"Lodgers may not be accommodated beyond what the landlord reasonably must accept; consent is required when the unit is part of the landlord's home."},
+    {"section_id":"2026:772-6:1","source_id":"sfs:2026:772","topic":"fixed_term_end_and_tenant_notice","summary":"Fixed-term agreement ends at term; tenant may always terminate with three-month notice to a month-end."},
+    {"section_id":"2026:772-6:2","source_id":"sfs:2026:772","topic":"indefinite_notice","summary":"Indefinite agreement may be terminated with three-month notice to a month-end."},
+    {"section_id":"2026:772-6:3.1","source_id":"sfs:2026:772","topic":"late_rent_termination","summary":"Landlord may terminate immediately when rent is more than two weeks late, subject to cure rules."},
+    {"section_id":"2026:772-6:3.2","source_id":"sfs:2026:772","topic":"unauthorized_transfer_or_sublet","summary":"Unauthorized transfer, independent sublet or specified lodger breach may support immediate termination when no valid excuse exists."},
+    {"section_id":"2026:772-6:5","source_id":"sfs:2026:772","topic":"cure_before_termination","summary":"For specified grounds including late rent, timely cure before termination removes that termination ground."},
+    {"section_id":"2026:772-transition","source_id":"sfs:2026:772","topic":"transition_2026","summary":"Act enters into force 1 July 2026, repeals 2012:978, while the old Act remains applicable to agreements entered under it."},
+    {"section_id":"2012:978-1","source_id":"sfs:2012:978","topic":"legacy_scope_and_jb_residual","summary":"Legacy Act applied to qualifying private residential letting outside business; tenancy sublets excluded; only first letting covered; Chapter 12 JB applied residually."},
+    {"section_id":"2012:978-2","source_id":"sfs:2012:978","topic":"legacy_mandatory_tenant_protection","summary":"Terms less favorable to tenant are without effect unless otherwise provided."},
+    {"section_id":"2012:978-3","source_id":"sfs:2012:978","topic":"legacy_notice_and_no_extension","summary":"Tenant notice is one month, landlord notice three months, and tenant has no extension right unless agreed."},
+    {"section_id":"2012:978-4","source_id":"sfs:2012:978","topic":"legacy_rent_review","summary":"Rent review uses capital and operating cost framework, bounded by the agreed rent."},
+    {"section_id":"2012:978-transition","source_id":"sfs:2012:978","topic":"legacy_transition","summary":"Act entered into force 1 February 2013; earlier agreements remained under Chapter 12 JB."},
+    {"section_id":"JB-12:1","source_id":"sfs:1970:994:12","topic":"chapter12_scope","summary":"Chapter 12 contains the general Swedish tenancy regime and remains the baseline where special private-letting legislation does not displace it."},
+    {"section_id":"JB-12:55","source_id":"sfs:1970:994:12","topic":"general_rent_review","summary":"General Chapter 12 rent rules govern when the special private-letting rent regime is not applicable."},
+    {"section_id":"JB-2026:773-transition","source_id":"sfs:1970:994:12","topic":"jb_2026_transition","summary":"2026 amendments to Chapter 12 entered into force 1 July 2026 with specified transition rules."}
+  ],
+  "rules": [
+    {
+      "rule_id":"regime-new-2026",
+      "source_id":"sfs:2026:772",
+      "section_id":"2026:772-1:1+1:3",
+      "match_terms":["contract:from_2026_07_01","landlord:eligible_private_actor","use:residential","landlord:not_regular_more_than_two_external_units","landlord:not_holds_tenancy","purpose:not_holiday"],
+      "emit_terms":["primary_regime:privatuthyrningslag_2026_772","law:2026_772:applicable"],
+      "explanation":"The 2026 private-letting Act applies because the positive scope requirements are met and the modeled exclusions are explicitly absent."
+    },
+    {
+      "rule_id":"regime-new-excluded-volume",
+      "source_id":"sfs:2026:772",
+      "section_id":"2026:772-1:3.1",
+      "match_terms":["contract:from_2026_07_01","landlord:regular_more_than_two_external_units"],
+      "emit_terms":["law:2026_772:excluded","exclusion:regular_more_than_two_external_units","primary_regime:jordabalk_12"],
+      "explanation":"Regular letting of more than two external units is outside the 2026 Act; the case falls back to the general tenancy-law track modeled here."
+    },
+    {
+      "rule_id":"regime-new-excluded-tenancy-holder",
+      "source_id":"sfs:2026:772",
+      "section_id":"2026:772-1:3.2",
+      "match_terms":["contract:from_2026_07_01","landlord:holds_tenancy"],
+      "emit_terms":["law:2026_772:excluded","exclusion:landlord_holds_tenancy","primary_regime:jordabalk_12"],
+      "explanation":"A landlord who holds the unit with tenancy right is outside the 2026 Act."
+    },
+    {
+      "rule_id":"regime-new-excluded-holiday",
+      "source_id":"sfs:2026:772",
+      "section_id":"2026:772-1:3.3",
+      "match_terms":["contract:from_2026_07_01","purpose:holiday"],
+      "emit_terms":["law:2026_772:excluded","exclusion:holiday_purpose","question:general_regime_after_holiday_exclusion_requires_separate_scope_check"],
+      "explanation":"Holiday-purpose letting is outside the 2026 Act. The robot does not force Chapter 12 applicability without a separate scope check."
+    },
+    {
+      "rule_id":"regime-legacy-2012",
+      "source_id":"sfs:2012:978",
+      "section_id":"2012:978-1+2026:772-transition",
+      "match_terms":["contract:2013_02_01_through_2026_06_30","business:outside","use:residential","purpose:not_holiday","unit:not_tenancy_sublet","private_let:first"],
+      "emit_terms":["primary_regime:legacy_2012_978_with_jb12","law:2012_978:preserved_by_transition","law:jb12:residual"],
+      "explanation":"A qualifying agreement entered before 1 July 2026 remains governed by the repealed 2012 Act under the 2026 transition rule, with Chapter 12 JB residual application."
+    },
+    {
+      "rule_id":"regime-legacy-excluded-later-let",
+      "source_id":"sfs:2012:978",
+      "section_id":"2012:978-1",
+      "match_terms":["contract:2013_02_01_through_2026_06_30","private_let:not_first"],
+      "emit_terms":["law:2012_978:excluded","exclusion:not_first_private_let","primary_regime:jordabalk_12"],
+      "explanation":"The legacy Act only covered the first letting when multiple units were let."
+    },
+    {
+      "rule_id":"regime-legacy-excluded-tenancy-sublet",
+      "source_id":"sfs:2012:978",
+      "section_id":"2012:978-1",
+      "match_terms":["contract:2013_02_01_through_2026_06_30","unit:tenancy_sublet"],
+      "emit_terms":["law:2012_978:excluded","exclusion:tenancy_sublet","primary_regime:jordabalk_12"],
+      "explanation":"The legacy Act did not apply to second-hand letting of a tenancy right."
+    },
+    {
+      "rule_id":"regime-legacy-excluded-business",
+      "source_id":"sfs:2012:978",
+      "section_id":"2012:978-1",
+      "match_terms":["contract:2013_02_01_through_2026_06_30","business:inside"],
+      "emit_terms":["law:2012_978:excluded","exclusion:letting_in_business","primary_regime:jordabalk_12"],
+      "explanation":"The legacy Act required letting outside business activity."
+    },
+    {
+      "rule_id":"regime-before-legacy-act",
+      "source_id":"sfs:2012:978",
+      "section_id":"2012:978-transition",
+      "match_terms":["contract:before_2013_02_01"],
+      "emit_terms":["primary_regime:jordabalk_12","transition:pre_2012_act_contract"],
+      "explanation":"Agreements entered before the 2012 Act took effect remained under Chapter 12 JB."
+    },
+    {
+      "rule_id":"new-adverse-clause",
+      "source_id":"sfs:2026:772",
+      "section_id":"2026:772-1:4",
+      "match_terms":["primary_regime:privatuthyrningslag_2026_772","contract:adverse_tenant_clause"],
+      "emit_terms":["conclusion:adverse_clause_without_effect_against_tenant"],
+      "explanation":"A modeled contractual term that is less favorable to the tenant is ineffective against the tenant unless the Act permits the deviation."
+    },
+    {
+      "rule_id":"legacy-adverse-clause",
+      "source_id":"sfs:2012:978",
+      "section_id":"2012:978-2",
+      "match_terms":["primary_regime:legacy_2012_978_with_jb12","contract:adverse_tenant_clause"],
+      "emit_terms":["conclusion:adverse_clause_without_effect_against_tenant"],
+      "explanation":"The legacy Act likewise made less favorable tenant terms ineffective unless otherwise allowed."
+    },
+    {
+      "rule_id":"new-late-rent-termination",
+      "source_id":"sfs:2026:772",
+      "section_id":"2026:772-6:3.1+6:5",
+      "match_terms":["primary_regime:privatuthyrningslag_2026_772","rent:delay_over_14_days","rent:not_cured_before_termination"],
+      "emit_terms":["conclusion:landlord_immediate_termination_ground_late_rent"],
+      "explanation":"Rent more than two weeks late can support immediate termination when the modeled cure condition has not occurred before termination."
+    },
+    {
+      "rule_id":"new-late-rent-cured",
+      "source_id":"sfs:2026:772",
+      "section_id":"2026:772-6:5",
+      "match_terms":["primary_regime:privatuthyrningslag_2026_772","rent:delay_over_14_days","rent:cured_before_termination"],
+      "emit_terms":["conclusion:late_rent_termination_ground_cured_before_termination"],
+      "explanation":"When the tenant cures before termination on the specified late-rent ground, that ground no longer supports termination."
+    },
+    {
+      "rule_id":"new-sublet-prohibited",
+      "source_id":"sfs:2026:772",
+      "section_id":"2026:772-5:2",
+      "match_terms":["primary_regime:privatuthyrningslag_2026_772","sublet:independent_without_consent"],
+      "emit_terms":["conclusion:independent_sublet_without_consent_prohibited"],
+      "explanation":"Independent second-hand use requires landlord consent."
+    },
+    {
+      "rule_id":"new-sublet-termination",
+      "source_id":"sfs:2026:772",
+      "section_id":"2026:772-6:3.2",
+      "match_terms":["primary_regime:privatuthyrningslag_2026_772","sublet:independent_without_consent","sublet:no_valid_excuse"],
+      "emit_terms":["conclusion:landlord_immediate_termination_ground_unauthorized_sublet"],
+      "explanation":"Unauthorized independent subletting can support immediate termination when no valid excuse is shown."
+    },
+    {
+      "rule_id":"new-tenant-notice-fixed",
+      "source_id":"sfs:2026:772",
+      "section_id":"2026:772-6:1",
+      "match_terms":["primary_regime:privatuthyrningslag_2026_772","contract:fixed_term"],
+      "emit_terms":["conclusion:fixed_term_ends_at_term","conclusion:tenant_notice_three_months"],
+      "explanation":"Fixed term ends at the agreed end, while tenant retains a three-month termination route to a month-end."
+    },
+    {
+      "rule_id":"new-tenant-notice-indefinite",
+      "source_id":"sfs:2026:772",
+      "section_id":"2026:772-6:2",
+      "match_terms":["primary_regime:privatuthyrningslag_2026_772","contract:indefinite"],
+      "emit_terms":["conclusion:tenant_notice_three_months"],
+      "explanation":"Indefinite agreements use the Act's three-month notice route to a month-end."
+    },
+    {
+      "rule_id":"legacy-notice-and-extension",
+      "source_id":"sfs:2012:978",
+      "section_id":"2012:978-3",
+      "match_terms":["primary_regime:legacy_2012_978_with_jb12"],
+      "emit_terms":["conclusion:tenant_notice_one_month","conclusion:landlord_notice_three_months","conclusion:no_tenant_extension_right_unless_agreed"],
+      "explanation":"Legacy private-letting contracts used one-month tenant notice, three-month landlord notice, and no statutory extension right unless agreed."
+    },
+    {
+      "rule_id":"new-rent-review",
+      "source_id":"sfs:2026:772",
+      "section_id":"2026:772-2:5",
+      "match_terms":["primary_regime:privatuthyrningslag_2026_772","issue:rent_review"],
+      "emit_terms":["conclusion:rent_review_uses_comparable_private_lettings_test"],
+      "explanation":"The 2026 Act's modeled rent-review path compares with similar private lettings and can reduce a substantially higher rent."
+    },
+    {
+      "rule_id":"legacy-rent-review",
+      "source_id":"sfs:2012:978",
+      "section_id":"2012:978-4",
+      "match_terms":["primary_regime:legacy_2012_978_with_jb12","issue:rent_review"],
+      "emit_terms":["conclusion:rent_review_uses_capital_and_operating_cost_framework"],
+      "explanation":"The legacy rent-review framework used capital and operating costs, bounded by the agreed rent."
+    },
+    {
+      "rule_id":"jb-rent-review",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:55",
+      "match_terms":["primary_regime:jordabalk_12","issue:rent_review"],
+      "emit_terms":["conclusion:rent_review_uses_jordabalk_chapter12_framework"],
+      "explanation":"When the general tenancy regime controls, Chapter 12 JB supplies the rent-review framework."
+    },
+    {
+      "rule_id":"new-serious-defect-termination",
+      "source_id":"sfs:2026:772",
+      "section_id":"2026:772-3:5",
+      "match_terms":["primary_regime:privatuthyrningslag_2026_772","defect:material","defect:landlord_not_promptly_remedied_after_notice"],
+      "emit_terms":["conclusion:tenant_immediate_termination_ground_material_defect"],
+      "explanation":"A material defect not promptly remedied after notice can support immediate tenant termination."
+    }
+  ]
+}
