@@ -44,7 +44,7 @@ jobs:
       - name: Send I/O and grow robot frontier from real public web
         run: |
           curl -fsS -X POST http://127.0.0.1:8765/api/input -H 'content-type: application/json' -d '{"kind":"dialogue","payload":{"text":"What color is the car?"}}' >/tmp/dialogue.json
-          curl -fsS -X POST http://127.0.0.1:8765/api/input -H 'content-type: application/json' -d '{"kind":"explore_domain","payload":{"text":"quantum biology","priority":7}}' >/tmp/explore.json
+          curl -fsS -X POST http://127.0.0.1:8765/api/input -H 'content-type: application/json' -d '{"kind":"explore_domain","payload":{"text":"quantum biology","priority":20}}' >/tmp/explore.json
           curl -fsS -X POST http://127.0.0.1:8765/api/process-one -H 'content-type: application/json' -d '{}' >/tmp/process.json
           curl -fsS http://127.0.0.1:8765/api/frontier >/tmp/frontier.json
           curl -fsS http://127.0.0.1:8765/api/events?after=0 >/tmp/events.json
