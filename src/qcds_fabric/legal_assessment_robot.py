@@ -27,11 +27,38 @@ def _mapping(value: Any, label: str) -> Mapping[str, Any]:
     return value
 
 
+def _merge_praxis_expansions(praxis: Mapping[str, Any]) -> Mapping[str, Any]:
+    merged = dict(praxis)
+    rows = [dict(_mapping(row, "precedents[]")) for row in praxis["precedents"]]
+    seen = {str(row.get("precedent_id", "")) for row in rows}
+    expansion_ids: list[str] = []
+    for filename in ("sweden_housing_praxis_use_transfer_2026.json",):
+        resource = files("qcds_fabric").joinpath("legal_data").joinpath(filename)
+        if not resource.is_file():
+            continue
+        with resource.open("r", encoding="utf-8") as handle:
+            expansion = _mapping(json.load(handle), f"praxis expansion {filename}")
+        for raw in expansion.get("precedents", ()):
+            row = dict(_mapping(raw, "precedents[]"))
+            precedent_id = str(row.get("precedent_id", ""))
+            if not precedent_id:
+                raise LegalPraxisError("praxis expansion precedent missing precedent_id")
+            if precedent_id in seen:
+                continue
+            rows.append(row)
+            seen.add(precedent_id)
+        expansion_ids.append(str(expansion.get("expansion_id", filename)))
+    merged["precedents"] = rows
+    merged["expansion_ids"] = expansion_ids
+    return merged
+
+
 def load_legal_praxis(path: str | Path | None = None) -> Mapping[str, Any]:
     if path is None:
         resource = files("qcds_fabric").joinpath("legal_data").joinpath("sweden_housing_praxis_2026.json")
         with resource.open("r", encoding="utf-8") as handle:
             payload = json.load(handle)
+        payload = _merge_praxis_expansions(_mapping(payload, "legal praxis"))
     else:
         with Path(path).open("r", encoding="utf-8") as handle:
             payload = json.load(handle)
@@ -116,6 +143,7 @@ def _praxis_qcds_pass(
     common = {
         "praxis_id": praxis["praxis_id"],
         "snapshot_date": praxis.get("snapshot_date"),
+        "praxis_expansion_ids": list(praxis.get("expansion_ids", ())),
         "represented_precedent_count": represented_count,
         "active_precedent_count": active_count,
         "represented_binary_space": f"2^{represented_count}",
@@ -155,6 +183,7 @@ def _praxis_qcds_pass(
         analyzer_id="legal_praxis_active_space_v1",
         provenance={
             "praxis_id": praxis["praxis_id"],
+            "praxis_expansion_ids": tuple(praxis.get("expansion_ids", ())),
             "condition_formation_active_subset": True,
             "represented_precedent_count": represented_count,
             "active_precedent_count": active_count,
