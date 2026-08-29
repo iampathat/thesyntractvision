@@ -1,0 +1,32 @@
+{
+  "domain_id": "replace-me",
+  "title": "My Domain",
+  "tagline": "One sentence explaining the logical space.",
+  "audience": "Domain experts who should attack this experiment",
+  "universe_mode": "simulation",
+  "description": "Describe the space without forcing a hierarchy or fixed ontology.",
+  "challenge": "State one unresolved question with multiple plausible explanations.",
+  "learning_target": "State exactly what new held-out capability would count as learning.",
+  "explore_prompt": "Tell the Logical Robot what domain to investigate and what distinctions matter.",
+  "observations": [
+    {
+      "binding_id": "example-001",
+      "terms": ["entity-001", "condition-a", "measurement-x"],
+      "source_id": "synthetic:example:001",
+      "confidence": 1.0
+    },
+    {
+      "binding_id": "example-002",
+      "terms": ["entity-002", "condition-b", "measurement-y"],
+      "source_id": "synthetic:example:002",
+      "confidence": 1.0
+    }
+  ],
+  "starter_rules": [],
+  "truth_boundary": {
+    "external_truth_claim": false,
+    "solution_rule_supplied": false,
+    "starting_lab_modifies_reality": false
+  },
+  "notes": "Prefer stronger falsification and better observations over a larger vocabulary."
+}
