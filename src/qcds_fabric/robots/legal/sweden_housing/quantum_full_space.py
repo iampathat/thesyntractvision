@@ -31,6 +31,7 @@ class QuantumFullSpaceManifest:
     section_ids: tuple[str, ...]
     precedent_ids: tuple[str, ...]
     case_terms: tuple[str, ...]
+    resolver_terms: tuple[str, ...]
     evidence_terms: tuple[str, ...]
     manifest_sha256: str
 
@@ -53,6 +54,9 @@ class QuantumFullSpaceManifest:
             "represented_precedent_ids": list(self.precedent_ids),
             "case_term_count": len(self.case_terms),
             "case_terms": list(self.case_terms),
+            "resolver_term_count": len(self.resolver_terms),
+            "resolver_terms": list(self.resolver_terms),
+            "resolver_terms_prebound": False,
             "evidence_term_count": len(self.evidence_terms),
             "evidence_terms": list(self.evidence_terms),
             "manifest_sha256": self.manifest_sha256,
@@ -130,6 +134,8 @@ class QuantumFullSpaceCompilation:
             "candidate_states_materialized": False,
             "classical_active_projection": False,
             "semantic_prefiltering": False,
+            "fixed_input_policy": "case_terms_only",
+            "resolver_outputs_prebound": False,
             "native_qpu_connected": False,
         }
 
@@ -173,7 +179,8 @@ def build_quantum_full_space_manifest(
     No statutory rule is selected by current-case relevance here. Every loaded
     rule term is retained, every represented source/section remains in the
     source structure, and every represented precedent keeps its activation /
-    counter logic. Case/evidence terms are added without deleting corpus logic.
+    counter logic. Resolver outputs are represented but are explicitly distinct
+    from original case inputs so they cannot silently become prebound truth.
     """
     display_by_canonical: dict[str, str] = {}
 
@@ -243,18 +250,26 @@ def build_quantum_full_space_manifest(
                     add(term)
 
     normalized_case_terms: list[str] = []
-    for term in (*case_terms, *resolved_terms):
+    for term in case_terms:
         text = str(term).strip()
         if text:
             normalized_case_terms.append(text)
             add(text)
+
+    normalized_resolver_terms: list[str] = []
+    for term in resolved_terms:
+        text = str(term).strip()
+        if text:
+            normalized_resolver_terms.append(text)
+            add(text)
+
     for question in unresolved_questions:
         text = str(question).strip()
         if not text:
             continue
         if not _canonical(text).startswith("question:"):
             text = f"question:{text}"
-        normalized_case_terms.append(text)
+        normalized_resolver_terms.append(text)
         add(text)
 
     evidence_terms: list[str] = []
@@ -276,6 +291,7 @@ def build_quantum_full_space_manifest(
         "sections": sorted(set(section_ids)),
         "precedents": sorted(set(precedent_ids)),
         "case_terms": sorted(set(normalized_case_terms)),
+        "resolver_terms": sorted(set(normalized_resolver_terms)),
         "evidence_terms": sorted(set(evidence_terms)),
     }
     digest = hashlib.sha256(
@@ -289,6 +305,7 @@ def build_quantum_full_space_manifest(
         section_ids=tuple(payload["sections"]),
         precedent_ids=tuple(payload["precedents"]),
         case_terms=tuple(payload["case_terms"]),
+        resolver_terms=tuple(payload["resolver_terms"]),
         evidence_terms=tuple(payload["evidence_terms"]),
         manifest_sha256=digest,
     )
@@ -305,11 +322,14 @@ def compile_quantum_full_space_contract(
 ) -> QuantumFullSpaceCompilation:
     """Compile the complete represented law/praxis/evidence room for native QPU.
 
-    Crucially, this function does **not** call `candidate_states()` and does not
-    apply the bounded emulator Condition Formation selector. The full logical
-    term set becomes one BaseBundle and all represented statutory rules become
-    constraint oracles. Praxis activation/counter relations remain conditional
-    oracles inside that same room instead of preselecting precedents.
+    This function does **not** call `candidate_states()` and does not apply the
+    bounded emulator Condition Formation selector. The full logical term set
+    becomes one BaseBundle and all represented statutory rules become constraint
+    oracles. Praxis activation/counter relations remain conditional oracles.
+
+    Only original `case_terms` are fixed as supplied input. `resolved_terms` from
+    the classical explanatory resolver remain represented as `?`; in particular,
+    a resolver-emitted legal conclusion must not become truth before QCDS runs.
     """
     manifest = build_quantum_full_space_manifest(
         corpus=corpus,
@@ -320,7 +340,7 @@ def compile_quantum_full_space_contract(
         qcds_evidence=qcds_evidence,
     )
 
-    known = {_canonical(term) for term in (*case_terms, *resolved_terms) if str(term).strip()}
+    known_case_inputs = {_canonical(term) for term in case_terms if str(term).strip()}
     term_dimensions = {
         _canonical(term): _full_dimension_id(term)
         for term in manifest.dimension_terms
@@ -328,13 +348,15 @@ def compile_quantum_full_space_contract(
     bundle = BaseBundle(
         bundle_id=f"legal-qcds:quantum-full:{_slug(manifest.corpus_id)}:{manifest.manifest_sha256[:12]}",
         dimension_ids=tuple(term_dimensions[_canonical(term)] for term in manifest.dimension_terms),
-        values=tuple(1 if _canonical(term) in known else "?" for term in manifest.dimension_terms),
+        values=tuple(1 if _canonical(term) in known_case_inputs else "?" for term in manifest.dimension_terms),
         provenance={
             "legal_corpus_id": manifest.corpus_id,
             "quantum_full_space": True,
             "manifest_sha256": manifest.manifest_sha256,
             "semantic_prefiltering": False,
             "candidate_states_materialized": False,
+            "fixed_input_policy": "case_terms_only",
+            "resolver_outputs_prebound": False,
             "represented_rule_count": len(manifest.rule_ids),
             "represented_precedent_count": len(manifest.precedent_ids),
             "represented_source_count": len(manifest.source_ids),
