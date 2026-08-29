@@ -86,7 +86,7 @@ def test_full_space_contract_compiles_complete_bundle_without_classical_candidat
     assert any(oracle_id.startswith("legal:quantum-full:rule:exchange-rule") for oracle_id in oracle_ids)
     assert any(":praxis:nja-x:activation:" in oracle_id for oracle_id in oracle_ids)
     assert any(":praxis:nja-x:counter:" in oracle_id for oracle_id in oracle_ids)
-    assert any(oracle_id.startswith("legal:evidence:") for oracle_id in oracle_ids)
+    assert any(oracle_id.startswith("legal:case-evidence:") for oracle_id in oracle_ids)
 
     assert payload["full_bundle_width"] == compilation.manifest.represented_dimension_count
     assert payload["full_unknown_dimension_count"] > 0
