@@ -90,6 +90,8 @@ def test_quantum_manifest_keeps_rules_and_praxis_that_classical_case_projection_
     corpus = {
         "corpus_id": "law-universe",
         "primary_regime_candidates": ["jb12", "special"],
+        "sources": [{"source_id": "law-source"}],
+        "sections": [{"section_id": "LAW:1", "source_id": "law-source"}],
         "rules": [
             {
                 "rule_id": "rent-rule",
@@ -129,7 +131,10 @@ def test_quantum_manifest_keeps_rules_and_praxis_that_classical_case_projection_
     assert "factor:remote-but-represented" in payload["dimension_terms"]
     assert "evidence:payment-log" in payload["dimension_terms"]
     assert payload["represented_rule_count"] == 2
+    assert payload["represented_source_ids"] == ["law-source"]
+    assert payload["represented_section_ids"] == ["LAW:1"]
     assert payload["represented_precedent_count"] == 1
+    assert payload["source_structure_preserved"] is True
     assert payload["classical_active_projection"] is False
     assert payload["semantic_prefiltering"] is False
 
@@ -150,12 +155,17 @@ def test_real_swedish_legal_quantum_manifest_keeps_full_law_and_praxis_layers() 
     ).as_dict()
 
     assert manifest["represented_rule_count"] == len(corpus["rules"])
+    assert manifest["represented_source_count"] == len(corpus["sources"])
+    assert manifest["represented_section_count"] == len(corpus["sections"])
     assert manifest["represented_precedent_count"] == len(praxis["precedents"])
+    assert "sfs:1970:994:12" in manifest["represented_source_ids"]
+    assert "JB-12:35" in manifest["represented_section_ids"]
     assert "precedent:NJA-2020-681" in manifest["dimension_terms"]
     assert "sublet:independent_without_consent" in manifest["dimension_terms"]
     assert "exchange:requested" in manifest["dimension_terms"]
     assert "conclusion:jb12_represented_section35_exchange_conditions_met_subject_to_tribunal_permission" in manifest["dimension_terms"]
     assert "12 kap. 35 § jordabalken" in manifest["dimension_terms"]
     assert manifest["represented_dimension_count"] > manifest["represented_rule_count"]
+    assert manifest["source_structure_preserved"] is True
     assert manifest["classical_active_projection"] is False
     assert manifest["semantic_prefiltering"] is False
