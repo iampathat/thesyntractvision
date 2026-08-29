@@ -55,7 +55,11 @@ def test_full_space_contract_compiles_complete_bundle_without_prebinding_resolve
         corpus=_synthetic_corpus(),
         praxis=_synthetic_praxis(),
         case_terms=("issue:rent", "rent:late"),
-        resolved_terms=("primary_regime:jb12", "conclusion:rent"),
+        resolved_terms=(
+            "primary_regime:jb12",
+            "conclusion:rent",
+            "conclusion:resolver-only-term",
+        ),
         unresolved_questions=("open discriminator",),
         qcds_evidence=(
             {
@@ -73,12 +77,13 @@ def test_full_space_contract_compiles_complete_bundle_without_prebinding_resolve
     assert compilation.bundle.width == compilation.manifest.represented_dimension_count
     assert len(compilation.bundle.dimension_ids) == len(set(compilation.bundle.dimension_ids))
 
-    # Only original case input is fixed. Classical resolver output is represented
-    # but must remain live for QCDS instead of being installed as truth.
+    # Only original case input is fixed. A resolver can report terms for
+    # diagnostics, but cannot inject a new quantum dimension or install truth.
     assert values_by_term["issue:rent"] == 1
     assert values_by_term["rent:late"] == 1
     assert values_by_term["primary_regime:jb12"] == "?"
     assert values_by_term["conclusion:rent"] == "?"
+    assert "conclusion:resolver-only-term" not in values_by_term
 
     assert values_by_term["issue:exchange"] == "?"
     assert values_by_term["conclusion:exchange"] == "?"
@@ -89,7 +94,11 @@ def test_full_space_contract_compiles_complete_bundle_without_prebinding_resolve
     assert compilation.manifest.case_terms == ("issue:rent", "rent:late")
     assert "primary_regime:jb12" in compilation.manifest.resolver_terms
     assert "conclusion:rent" in compilation.manifest.resolver_terms
+    assert "conclusion:resolver-only-term" in compilation.manifest.resolver_terms
     assert "question:open discriminator" in compilation.manifest.resolver_terms
+    manifest_payload = compilation.manifest.as_dict()
+    assert manifest_payload["resolver_terms_prebound"] is False
+    assert manifest_payload["resolver_terms_injected_into_quantum_space"] is False
 
     oracle_ids = set(compilation.oracle_stack.oracle_ids)
     assert "legal:quantum-full:primary-regime:onehot" in oracle_ids
@@ -107,6 +116,7 @@ def test_full_space_contract_compiles_complete_bundle_without_prebinding_resolve
     assert payload["semantic_prefiltering"] is False
     assert payload["fixed_input_policy"] == "case_terms_only"
     assert payload["resolver_outputs_prebound"] is False
+    assert payload["resolver_terms_injected_into_quantum_space"] is False
     assert payload["native_qpu_connected"] is False
 
 
@@ -118,7 +128,7 @@ def test_real_swedish_housing_full_space_contract_keeps_entire_loaded_law_and_pr
         corpus=corpus,
         praxis=praxis,
         case_terms=("issue:rent_review",),
-        resolved_terms=("tenancy:residential",),
+        resolved_terms=("tenancy:residential", "conclusion:diagnostic-only"),
         unresolved_questions=(),
         qcds_evidence=(),
     )
@@ -137,6 +147,7 @@ def test_real_swedish_housing_full_space_contract_keeps_entire_loaded_law_and_pr
     assert "sublet:independent_without_consent" in represented_terms
     assert "precedent:NJA-2020-681" in represented_terms
     assert "conclusion:jb12_represented_section35_exchange_conditions_met_subject_to_tribunal_permission" in represented_terms
+    assert "conclusion:diagnostic-only" not in represented_terms
 
     assert values_by_term["issue:rent_review"] == 1
     assert values_by_term["tenancy:residential"] == "?"
@@ -157,6 +168,8 @@ def test_real_swedish_housing_full_space_contract_keeps_entire_loaded_law_and_pr
     assert payload["candidate_states_materialized"] is False
     assert payload["semantic_prefiltering"] is False
     assert payload["resolver_outputs_prebound"] is False
+    assert payload["resolver_terms_injected_into_quantum_space"] is False
     assert compilation.bundle.provenance["represented_rule_count"] == len(corpus["rules"])
     assert compilation.bundle.provenance["represented_precedent_count"] == len(praxis["precedents"])
     assert compilation.bundle.provenance["resolver_outputs_prebound"] is False
+    assert compilation.bundle.provenance["resolver_terms_injected_into_quantum_space"] is False
