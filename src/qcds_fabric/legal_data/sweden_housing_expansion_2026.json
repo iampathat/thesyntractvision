@@ -1,0 +1,155 @@
+{
+  "expansion_id": "swedish-housing-jb12-core-2026-08-29",
+  "title": "Swedish Housing Law — Chapter 12 Core Expansion",
+  "snapshot_date": "2026-08-29",
+  "purpose": "Expand the bounded Swedish Housing Law Logical Universe with second-hand letting, forfeiture and recovery, extension/security-of-tenure, rent review and repayment paths. Open-textured standards remain assessment questions rather than fabricated deterministic outcomes.",
+  "sources": [
+    {
+      "source_id": "prop:2025/26:187",
+      "title": "Prop. 2025/26:187 En mer flexibel hyresmarknad",
+      "uri": "https://www.regeringen.se/rattsliga-dokument/proposition/2026/03/prop2.-202526187",
+      "source_class": "preparatory_work",
+      "status": "official_preparatory_work",
+      "note": "Interpretive background to the 2026 private-letting reform and related Chapter 12 amendments; not installed as a statutory rule."
+    }
+  ],
+  "sections": [
+    {"section_id":"JB-12:39","source_id":"sfs:1970:994:12","topic":"second_hand_independent_use","summary":"A tenant may not let or otherwise grant the apartment to another for independent use without landlord consent, subject to statutory exceptions and permission under section 40."},
+    {"section_id":"JB-12:40","source_id":"sfs:1970:994:12","topic":"second_hand_permission","summary":"The Housing and Tenancy Tribunal may permit second-hand letting when the tenant has considerable reasons, the landlord lacks justified reason to refuse, and residential second-hand rent does not exceed the statutory reasonable-rent ceiling."},
+    {"section_id":"JB-12:41","source_id":"sfs:1970:994:12","topic":"outsiders_reasonableness","summary":"A tenant may not accommodate outsiders to an extent the landlord should not reasonably have to accept; size, duration, living conditions, management burden and disturbance risk are expressly relevant assessment factors."},
+    {"section_id":"JB-12:42","source_id":"sfs:1970:994:12","topic":"forfeiture_grounds","summary":"Chapter 12 lists grounds on which the tenancy can be forfeited, including residential rent delay over one week, unauthorized second-hand letting without valid excuse, unreasonable second-hand rent without valid excuse, and specified misuse or serious breaches."},
+    {"section_id":"JB-12:43","source_id":"sfs:1970:994:12","topic":"rectification_and_time_limits","summary":"For several forfeiture grounds timely rectification before termination prevents eviction on that ground; other grounds are subject to knowledge and termination time limits."},
+    {"section_id":"JB-12:44","source_id":"sfs:1970:994:12","topic":"recovery_after_late_rent","summary":"A residential tenant whose tenancy was forfeited for late rent may recover the tenancy by paying within the statutory three-week recovery period after the required notice and social-welfare notification conditions are met."},
+    {"section_id":"JB-12:45a","source_id":"sfs:1970:994:12","topic":"waiver_of_extension_right","summary":"Waiver of the residential tenant's extension right must satisfy statutory form and, in many situations, tribunal-approval requirements; specified limited situations are exempt from approval."},
+    {"section_id":"JB-12:46","source_id":"sfs:1970:994:12","topic":"extension_right_and_exceptions","summary":"A residential tenant generally has a right to extension after landlord termination unless one of the statutory exceptions applies; several exceptions expressly require reasonableness or interest balancing."},
+    {"section_id":"JB-12:49","source_id":"sfs:1970:994:12","topic":"extension_dispute_referral","summary":"A landlord termination is ineffective in an extension dispute unless the dispute is referred to the Housing and Tenancy Tribunal within the statutory time, unless the tenant has already moved."},
+    {"section_id":"JB-12:50","source_id":"sfs:1970:994:12","topic":"right_to_remain_pending_extension_dispute","summary":"When the extension question is unresolved at the end of the term, the tenant generally has a right to remain until the question is finally decided, subject to the statutory enforcement exception."},
+    {"section_id":"JB-12:53","source_id":"sfs:1970:994:12","topic":"rent_review_scope_exceptions","summary":"Sections 54–55 e on residential rent and terms apply subject to exceptions including certain short-duration furnished or holiday lettings and a unit forming part of the lessor's own home."},
+    {"section_id":"JB-12:54","source_id":"sfs:1970:994:12","topic":"rent_term_change_procedure","summary":"A party seeking a change in rent or other terms must notify the counterparty in writing and may apply to the Housing and Tenancy Tribunal if agreement is not reached."},
+    {"section_id":"JB-12:55","source_id":"sfs:1970:994:12","topic":"reasonable_rent_and_use_value","summary":"Disputed rent is set at a reasonable amount; it is not reasonable if markedly higher than equivalent apartments by use value. For second-hand residential letting, rent above the first-hand rent plus bounded additions is never reasonable."},
+    {"section_id":"JB-12:55f","source_id":"sfs:1970:994:12","topic":"repayment_of_excess_second_hand_rent","summary":"For rooms and specified second-hand residential lets, the tribunal can order repayment of rent received above the statutory reasonable amount, with the statutory retrospective limit and interest rules."},
+    {"section_id":"PROP-2025/26:187","source_id":"prop:2025/26:187","topic":"2026_reform_interpretive_background","summary":"The proposition describes the 2026 reform as creating a clearer private-letting regime, more flexible letting, revised second-hand boundaries and related Chapter 12 changes. It is interpretive material, not statutory truth."}
+  ],
+  "rules": [
+    {
+      "rule_id":"jb-second-hand-consent-required",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:39",
+      "match_terms":["primary_regime:jordabalk_12","sublet:independent_without_consent"],
+      "emit_terms":["conclusion:jb12_independent_second_hand_use_requires_consent_or_permission"],
+      "explanation":"Under Chapter 12 section 39, independent second-hand use requires landlord consent unless a statutory exception or tribunal permission applies."
+    },
+    {
+      "rule_id":"jb-second-hand-permission-criteria-met",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:40",
+      "match_terms":["primary_regime:jordabalk_12","sublet:permission_requested","sublet:considerable_reason","sublet:landlord_no_justified_refusal","sublet:rent_reasonable"],
+      "emit_terms":["conclusion:jb12_represented_section40_permission_conditions_met"],
+      "explanation":"The represented facts satisfy the modeled statutory criteria for tribunal permission: considerable reason, no justified landlord refusal and reasonable residential second-hand rent."
+    },
+    {
+      "rule_id":"jb-second-hand-permission-needs-assessment",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:40",
+      "match_terms":["primary_regime:jordabalk_12","sublet:permission_requested"],
+      "emit_terms":["question:jb40_permission_requires_all_statutory_criteria_and_overall_assessment"],
+      "explanation":"A permission request opens a multi-factor statutory assessment; the robot does not infer missing reasons, landlord objections or rent reasonableness."
+    },
+    {
+      "rule_id":"jb-outsider-use-reasonableness-zone",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:41",
+      "match_terms":["primary_regime:jordabalk_12","outsiders:extent_questionable"],
+      "emit_terms":["question:jb41_reasonableness_requires_size_duration_conditions_management_and_disturbance_balance"],
+      "explanation":"Section 41 is intentionally represented as an assessment zone: several listed circumstances must be weighed before the extent of outsider accommodation can be judged unreasonable."
+    },
+    {
+      "rule_id":"jb-residential-rent-delay-forfeiture-ground",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:42.1+44",
+      "match_terms":["primary_regime:jordabalk_12","tenancy:residential","rent:delay_over_7_days"],
+      "emit_terms":["conclusion:jb12_forfeiture_ground_late_residential_rent","question:jb44_recovery_may_restore_tenancy_if_notice_and_payment_conditions_are_met"],
+      "explanation":"For a residential tenancy, more than one week of rent delay is a statutory forfeiture ground, but the separate recovery mechanism in section 44 must still be considered."
+    },
+    {
+      "rule_id":"jb-residential-rent-recovered",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:44",
+      "match_terms":["primary_regime:jordabalk_12","tenancy:residential","rent:delay_over_7_days","rent:landlord_terminated_for_delay","rent:recovered_within_three_weeks_after_notice"],
+      "emit_terms":["conclusion:jb12_late_rent_tenancy_recovered_under_represented_section44_conditions"],
+      "explanation":"The represented facts include landlord termination for rent delay and payment within the three-week statutory recovery period after notice, so the modeled section 44 recovery path is activated."
+    },
+    {
+      "rule_id":"jb-unauthorized-second-hand-forfeiture-ground",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:42.3+43",
+      "match_terms":["primary_regime:jordabalk_12","tenancy:residential","sublet:independent_without_consent","sublet:no_permission","sublet:no_valid_excuse"],
+      "emit_terms":["conclusion:jb12_forfeiture_ground_unauthorized_second_hand_use","question:jb42_minor_significance_and_jb43_time_limits_still_require_check"],
+      "explanation":"Unauthorized residential second-hand letting without required consent/permission and without valid excuse is a statutory forfeiture ground, while the minor-significance safeguard and section 43 timing rules remain separate checks."
+    },
+    {
+      "rule_id":"jb-outsider-use-rectified-before-termination",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:42.7+43",
+      "match_terms":["primary_regime:jordabalk_12","outsiders:extent_unreasonable","breach:rectified_before_termination"],
+      "emit_terms":["conclusion:jb12_rectification_blocks_eviction_on_represented_outsider_use_ground"],
+      "explanation":"Where the represented section 41 misuse is corrected before landlord termination, section 43 prevents eviction on that modeled ground."
+    },
+    {
+      "rule_id":"jb-excess-second-hand-rent",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:55.4+55f",
+      "match_terms":["primary_regime:jordabalk_12","tenancy:residential","sublet:second_hand","rent:above_second_hand_ceiling"],
+      "emit_terms":["conclusion:jb12_second_hand_rent_not_reasonable","question:jb55f_repayment_requires_amount_period_and_application_facts"],
+      "explanation":"For represented residential second-hand letting, rent above the first-hand rent plus permitted additions is never reasonable; repayment scope still depends on amount, period and application facts."
+    },
+    {
+      "rule_id":"jb-extension-default-right",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:46",
+      "match_terms":["primary_regime:jordabalk_12","tenancy:residential","issue:extension"],
+      "emit_terms":["conclusion:jb12_extension_right_exists_subject_to_section46_exceptions"],
+      "explanation":"Chapter 12 section 46 starts from a residential tenant extension right after landlord termination, subject to listed exceptions."
+    },
+    {
+      "rule_id":"jb-extension-serious-breach-assessment",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:46.2",
+      "match_terms":["primary_regime:jordabalk_12","issue:extension","extension:tenant_obligations_seriously_breached"],
+      "emit_terms":["question:jb46_2_requires_degree_and_reasonableness_assessment"],
+      "explanation":"A serious tenant breach can defeat extension only after the statutory degree/reasonableness assessment; this is deliberately not collapsed into a binary rule."
+    },
+    {
+      "rule_id":"jb-extension-major-renovation-assessment",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:46.4",
+      "match_terms":["primary_regime:jordabalk_12","issue:extension","extension:major_renovation"],
+      "emit_terms":["question:jb46_4_major_renovation_requires_necessity_and_tenant_reasonableness_balance"],
+      "explanation":"Major renovation is not an automatic loss of tenancy; necessity, practical ability to remain and reasonableness toward the tenant must be assessed."
+    },
+    {
+      "rule_id":"jb-extension-personal-disposal-interest-assessment",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:46.6",
+      "match_terms":["primary_regime:jordabalk_12","issue:extension","extension:one_or_two_family_nonbusiness","extension:landlord_personal_disposal_interest"],
+      "emit_terms":["question:jb46_6_balance_landlord_disposal_interest_against_tenant_reasonableness"],
+      "explanation":"For the represented one-/two-family non-business situation, the landlord's disposal interest must be balanced against whether the tenant should reasonably move."
+    },
+    {
+      "rule_id":"jb-extension-pending-right-to-remain",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:50",
+      "match_terms":["primary_regime:jordabalk_12","issue:extension","extension:dispute_pending_after_term"],
+      "emit_terms":["conclusion:jb12_tenant_may_remain_while_extension_dispute_is_pending_subject_to_enforcement_exception"],
+      "explanation":"Section 50 generally allows the tenant to remain until the extension question is finally decided when the dispute is still pending at term end."
+    },
+    {
+      "rule_id":"jb-rent-change-procedure",
+      "source_id":"sfs:1970:994:12",
+      "section_id":"JB-12:54",
+      "match_terms":["primary_regime:jordabalk_12","issue:rent_review"],
+      "emit_terms":["conclusion:jb12_rent_change_uses_written_notice_and_hyresnamnd_procedure_if_no_agreement"],
+      "explanation":"A Chapter 12 residential rent-change dispute follows the written notice and tribunal application route in section 54, subject to the statutory scope rules."
+    }
+  ]
+}
