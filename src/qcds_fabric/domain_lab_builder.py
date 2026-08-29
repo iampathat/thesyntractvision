@@ -48,6 +48,11 @@ def normalize_custom_domain_pack(payload: Mapping[str, Any]) -> dict[str, Any]:
     universe_mode = str(payload.get("universe_mode", "simulation")).strip().lower()
     if universe_mode not in _ALLOWED_MODES:
         raise CustomDomainLabError("universe_mode must be simulation or declared")
+    authority = str(payload.get("authority", "")).strip()
+    if universe_mode == "declared" and not authority:
+        raise CustomDomainLabError("authority is required for declared universes")
+    if len(authority) > 300:
+        raise CustomDomainLabError("authority is too long")
 
     raw_observations = payload.get("observations")
     if not isinstance(raw_observations, list) or not raw_observations:
@@ -104,6 +109,7 @@ def normalize_custom_domain_pack(payload: Mapping[str, Any]) -> dict[str, Any]:
         "tagline": str(payload.get("tagline") or "Custom open Logical Space.").strip()[:240],
         "audience": str(payload.get("audience") or "Domain experts").strip()[:240],
         "universe_mode": universe_mode,
+        "authority": authority,
         "description": _required_text(payload, "description"),
         "challenge": _required_text(payload, "challenge"),
         "learning_target": _required_text(payload, "learning_target"),
@@ -137,7 +143,7 @@ class CustomDomainLabService:
                     universe_id=universe_id,
                     mode=str(pack["universe_mode"]),
                     description=str(pack["description"]),
-                    authority="",
+                    authority=str(pack["authority"]),
                     provenance={
                         "domain_lab": pack["domain_id"],
                         "custom_pack": True,
