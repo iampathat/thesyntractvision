@@ -27,7 +27,7 @@ from .qcds_space import (
     _expand_with_praxis,
     _runtime_payload,
 )
-from .quantum_full_space import build_quantum_full_space_manifest
+from .quantum_full_space import compile_quantum_full_space_contract
 from .scaling import execute_separable_grover_partitions, plan_legal_scaling
 
 
@@ -181,11 +181,9 @@ def run_full_legal_qcds(
     keep software execution finite, but they execute the resulting active room
     without silently deleting candidate states.
 
-    `quantum_full_space` is a separate native-QPU target contract. It is not
-    physically executed by this build. Its semantics explicitly forbid dropping
-    represented legal dimensions merely to satisfy classical memory or state-
-    count limits. Relevance must be allowed to emerge through Conditions,
-    oracles, amplitude evolution, recursive inference and Syntract binding.
+    `quantum_full_space` compiles a separate complete BaseBundle + OracleStack
+    over the represented law/praxis/evidence universe without enumerating its
+    classical 2^N support. It is a native-QPU target contract only in this build.
     """
     evidence = parse_legal_evidence(qcds_evidence)
     augmented_rule_ids = augment_rule_ids_with_evidence(
@@ -261,7 +259,7 @@ def run_full_legal_qcds(
         }
         grover_payload = grover_qcds
 
-    full_manifest = build_quantum_full_space_manifest(
+    full_compilation = compile_quantum_full_space_contract(
         corpus=corpus,
         praxis=praxis,
         case_terms=case_terms,
@@ -269,6 +267,7 @@ def run_full_legal_qcds(
         unresolved_questions=unresolved_questions,
         qcds_evidence=qcds_evidence,
     )
+    full_manifest = full_compilation.manifest
     quantum_target = quantum_full_space_profile()
     quantum_target_payload = dict(target_profile_payload(quantum_target))
     quantum_target_payload.update({
@@ -279,9 +278,14 @@ def run_full_legal_qcds(
         "classical_prefiltering_for_memory": False,
         "software_emulation_of_full_universe": False,
         "full_universe_manifest": full_manifest.as_dict(),
+        "full_universe_contract": full_compilation.as_dict(),
+        "full_universe_bundle_id": full_compilation.bundle.bundle_id,
+        "full_universe_oracle_stack_identity": full_compilation.oracle_stack.identity,
+        "full_universe_oracle_count": len(full_compilation.oracle_stack.oracles),
         "active_emulation_dimension_count": final_exact.bundle.width,
-        "full_universe_dimension_count": full_manifest.represented_dimension_count,
+        "full_universe_dimension_count": full_compilation.bundle.width,
         "full_universe_is_not_active_emulation_projection": True,
+        "candidate_states_materialized": False,
     })
 
     attached_sources = [
