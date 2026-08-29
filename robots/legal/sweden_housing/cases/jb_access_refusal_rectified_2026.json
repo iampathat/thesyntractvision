@@ -1,0 +1,18 @@
+{
+  "case_id": "jb12-access-refusal-rectified",
+  "as_of_date": "2026-08-29",
+  "contract_date": "2026-08-11",
+  "facts": {
+    "landlord_type": "natural_person",
+    "residential_use": true,
+    "holiday_purpose": false,
+    "landlord_holds_unit_as_tenant": true,
+    "regular_external_units": 1,
+    "fixed_term": false,
+    "issue_forfeiture": true,
+    "statutory_access_required": true,
+    "access_refused": true,
+    "valid_excuse_for_access_refusal": false,
+    "rectified_before_termination": true
+  }
+}
