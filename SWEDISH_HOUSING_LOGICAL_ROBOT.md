@@ -1,168 +1,101 @@
 # Swedish Housing Law Logical Robot
 
-> A specialized Logical Robot body above the existing QCDS / Syntract architecture.
+> A specialized Logical Robot body above the shared QCDS / Syntract architecture.
 
-This is the first non-toy legal Logical Universe in this repository. It models a bounded snapshot of Swedish housing law and lets a case move through source-attributed legal rules, unresolved fact requirements and the existing QCDS core without introducing a second reasoning engine.
+The canonical domain home is:
 
-## Architecture
+[`robots/legal/sweden_housing/`](robots/legal/sweden_housing/)
+
+The robot represents a bounded, source-attributed Swedish housing-law Logical Universe and runs each active legal problem through the existing QCDS Fabric.
+
+## Current architecture
 
 ```text
 case facts
     ↓
-Swedish Housing Legal Logical Robot
+Swedish Housing Law Logical Robot
     ↓
-source-attributed declared Logical Universe
+Condition Formation
+relevant source-attributed statutory constraints
++ live legal / assessment dimensions
     ↓
-existing LogicalRuleGovernance
+in-memory CSV active table
     ↓
-existing LogicalSpaceResolver
+BaseBundle + OracleStack
     ↓
-applicable regime + consequences + unresolved facts
+exact active 2^N QCDS space
     ↓
-existing qcds_fabric.problem.problem_to_syntract
+dimension-null + position + oracle-exposure rotations
     ↓
-Syntract / truth distribution
+stabilized TruthDistribution
     ↓
-optional bounded swarm packet
+STATUTORY SYNTRACT
+    ↓
+DistributionOracle re-entry
++ active praxis dimensions / evidence
+    ↓
+expanded QCDS space
+    ↓
+FINAL LEGAL SYNTRACT
 ```
 
-The Legal Logical Robot is a **body/capability**, not QCDS itself. It does not move inference authority into a legal adapter, UI or swarm layer.
+The preliminary legal resolver is retained for **Condition Formation, source selection and provenance**. It is not the producer of the final Legal Syntract.
 
-## Corpus snapshot
+Hard statutory consequences remain `?` dimensions before direct QCDS execution. Source-attributed legal rules become oracle constraints over candidate states. The stabilized QCDS distribution is what is bound as Syntract.
 
-Packaged corpus:
+The active table may be serialized as CSV and loaded in memory, but CSV is only storage. Inference remains in the shared QCDS classes:
 
-`src/qcds_fabric/legal_data/sweden_housing_2026.json`
+```text
+BaseBundle
+OracleStack
+FabricLayer
+DistributionOracle
+Syntract
+```
 
-Snapshot date: **2026-08-29**.
+The legal robot does not contain a second QCDS implementation and the browser does not duplicate legal inference in JavaScript.
 
-The first corpus deliberately stays bounded but real. It currently represents selected applicability, transition, rent, notice, subletting, defect and termination logic from:
+## Read the current documentation
 
-- **Privatuthyrningslag (2026:772)** — current private-letting regime from 1 July 2026.
-- **Lag (2012:978) om uthyrning av egen bostad** — repealed from 1 July 2026 but preserved for qualifying agreements entered under that Act.
-- **Jordabalk (1970:994), 12 kap. Hyra** — the general tenancy-law track represented by this first legal universe.
+- [`robots/legal/sweden_housing/README.md`](robots/legal/sweden_housing/README.md) — domain overview.
+- [`robots/legal/sweden_housing/QCDS_EXECUTION.md`](robots/legal/sweden_housing/QCDS_EXECUTION.md) — exact direct-QCDS execution path.
+- [`robots/legal/sweden_housing/COVERAGE.md`](robots/legal/sweden_housing/COVERAGE.md) — represented legal coverage.
+- [`robots/legal/sweden_housing/SOURCES.md`](robots/legal/sweden_housing/SOURCES.md) — sources and authority classes.
+- [`robots/legal/sweden_housing/ASSESSMENT_MODEL.md`](robots/legal/sweden_housing/ASSESSMENT_MODEL.md) — hard law, assessment and praxis boundaries.
 
-Official source URIs are stored with the corpus and returned with the applied rule path.
-
-This is not a claim that the corpus is a complete representation of Swedish housing law. It is a source-attributed, inspectable legal universe intended for falsifiable QCDS experiments.
-
-## Why this is different from the old lawbook demo
-
-The old `examples/logical_universe_lawbook_mvp.json` was intentionally tiny: `human => legal_person`.
-
-BUILD 39 does not replace that regression fixture. Instead it adds a separate domain robot with:
-
-- multiple statutory regimes;
-- date-dependent applicability;
-- transition rules;
-- exclusions and fallbacks;
-- mandatory tenant-protection rules;
-- rent-review paths;
-- notice rules;
-- late-rent cure logic;
-- unauthorized subletting logic;
-- material-defect logic;
-- explicit unresolved fact requirements;
-- official source provenance;
-- a real QCDS `problem_to_syntract` pass after legal-universe resolution.
-
-The represented legal corpus may contain many sections and rules while a single case activates only the subset whose conditions are present in that case binding.
-
-## Run the current-law example
+## Run it
 
 ```bash
 python -m pip install -e '.[test]'
-qcds-legal-robot examples/swedish_housing_case_2026.json
+qcds-legal-robot robots/legal/sweden_housing/cases/jb_late_rent_recovery_2026.json
 ```
 
-The example concerns a new August 2026 residential letting by a natural person, together with rent-review, late-rent, contractual and subletting facts.
+Or use the public browser:
 
-## Run the transition example
+**https://iampathat.github.io/thesyntractvision/**
 
-```bash
-qcds-legal-robot examples/swedish_housing_case_legacy_2026.json
-```
+Choose **Swedish Law**.
 
-This case was entered in May 2026 and is designed to exercise the transition from the repealed 2012 private-letting Act into the 2026 legal snapshot.
+## Output boundary
 
-## Run the general Chapter 12 track
-
-```bash
-qcds-legal-robot examples/swedish_housing_case_jb12_2026.json
-```
-
-This case changes one important scope condition: regular letting of more than two external units. The specialized 2026 private-letting regime is therefore excluded in the modeled universe and the case enters the represented Chapter 12 track.
-
-## Case input
-
-A case is explicit structured evidence, not free text silently promoted to law or truth.
-
-```json
-{
-  "case_id": "example",
-  "as_of_date": "2026-08-29",
-  "contract_date": "2026-08-10",
-  "facts": {
-    "landlord_type": "natural_person",
-    "residential_use": true,
-    "holiday_purpose": false,
-    "landlord_holds_unit_as_tenant": false,
-    "regular_external_units": 2
-  }
-}
-```
-
-Missing facts become explicit `question:*` terms. The robot must not invent them merely to reach a legal regime.
-
-## Output
-
-The result separates several layers that are easy to conflate in ordinary legal-answer systems:
+The public assessment result keeps the deterministic legal projection for explanation and provenance, but the main `qcds_core` object is the direct active-space execution. It exposes:
 
 ```text
-case_terms
-resolved_terms
-primary_regimes
-conclusions
-unresolved_questions
-applied_rules
-sources
-qcds_core
-swarm_packet
+candidate_binary_space
+candidate_state_count
+unknown_dimension_count
+oracle_count
+baseline_marginals
+marginals
+rotation_sensitivity
+statutory_syntract_id
+syntract_id
 ```
 
-`applied_rules` and `sources` provide the inspectable legal path. `qcds_core` proves that the specialized robot communicates with the existing QCDS core rather than replacing it.
-
-## Swarm boundary
-
-The robot emits an optional bounded capability packet:
-
-```text
-packet_type: qcds.logical_robot.capability_result.v1
-robot_kind: legal_logical_robot
-capability: swedish_housing_law
-raw_case_included: false
-authoritative_over_peer_reality: false
-```
-
-A future Living Swarm Logical Robot may exchange this packet as source-attributed input for challenge or verification. A peer must not treat it as automatic truth or permit it to overwrite Reality.
-
-## Architecture boundary
-
-BUILD 39 intentionally does **not** modify:
-
-- the canonical QCDS four phases;
-- `fabric.py`;
-- `problem.py`;
-- `oracles.py`;
-- `rotations.py`;
-- `stabilize.py`;
-- the existing BUILD 38 public Logical Robot experience;
-- the main README architecture narrative.
-
-The new layer reuses existing Logical Universe governance/resolution and existing `problem_to_syntract` execution.
+When relevant praxis activates, `syntract_id` is the final Syntract produced after the statutory QCDS distribution re-enters QCDS and the logical room expands with precedent dimensions.
 
 ## Legal boundary
 
-This is research software and an inspectable architecture experiment. It is **not legal advice** and the current corpus is not complete Swedish housing law.
+This is research software and an inspectable architecture experiment. It is **not legal advice**, and the represented corpus is not complete Swedish housing law.
 
-Every run carries a corpus snapshot date. A case evaluated for a later date must first establish that the legal snapshot is still current.
+Every run carries a legal snapshot. Missing or open facts are not silently invented merely to force a legal answer.
