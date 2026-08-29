@@ -8,17 +8,19 @@ from qcds_fabric.living_robot_legal_full_qcds import living_robot_legal_full_qcd
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_full_legal_web_exposes_both_qcds_execution_substrates() -> None:
+def test_full_legal_web_exposes_all_qcds_execution_modes() -> None:
     html = living_robot_legal_full_qcds_html(static_mode=True)
 
     for phrase in (
-        "SAME QCDS · TWO EXECUTION SUBSTRATES",
+        "SAME QCDS · THREE EXECUTION MODES",
         "CLASSICAL EXACT",
         "GROVER · STATEVECTOR EMULATED",
-        "same BaseBundle and OracleStack",
+        "QUANTUM FULL SPACE · TARGET",
+        "resource-bounded software modes",
+        "represented logical dimensions may not be removed merely to satisfy classical memory limits",
         "Probabilistic evidence",
         "Scaling / decomposition",
-        "not automatically a calibrated probability of how a court will rule",
+        "Classical projection is an emulator concession, not a QCDS quantum principle",
         "DIRECT QCDS → LEGAL SYNTRACT",
         "TRY SWEDISH LAW",
     ):
