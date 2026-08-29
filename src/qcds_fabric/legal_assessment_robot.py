@@ -61,7 +61,6 @@ def _praxis_qcds_pass(
 ) -> Mapping[str, Any]:
     known = _norm_terms(resolved_terms)
     precedents = _precedent_rows(praxis)
-    candidates = tuple(normalize_logic_text(str(row["precedent_id"])) for row in precedents)
     claims: list[SemanticClaim] = []
     matched: list[dict[str, Any]] = []
 
@@ -111,15 +110,22 @@ def _praxis_qcds_pass(
             "source_uri": row.get("source_uri"),
         })
 
+    active_candidates = tuple(normalize_logic_text(str(row["precedent_id"])) for row in matched)
+    represented_count = len(precedents)
+    active_count = len(active_candidates)
     common = {
         "praxis_id": praxis["praxis_id"],
         "snapshot_date": praxis.get("snapshot_date"),
-        "represented_precedent_count": len(precedents),
+        "represented_precedent_count": represented_count,
+        "active_precedent_count": active_count,
+        "represented_binary_space": f"2^{represented_count}",
+        "active_binary_space": f"2^{active_count}",
+        "condition_formation": "The full praxis corpus remains represented. Only precedents with an explicit similarity or counter-factor enter the active QCDS working space for this case.",
         "authority_scale": dict(_mapping(praxis.get("authority_scale", {}), "authority_scale")),
-        "source_hierarchy_note": "Authority is reported separately from factual similarity. The QCDS relevance pass below compares represented similarity/counter-factors; it does not let a lower court outrank a higher court merely by being factually close.",
+        "source_hierarchy_note": "Authority is reported separately from factual similarity. The QCDS relevance pass compares represented similarity/counter-factors; it does not let a lower court outrank a higher court merely by being factually close.",
     }
 
-    if not claims:
+    if not claims or not active_candidates:
         return {
             **common,
             "status": "no_represented_praxis_match",
@@ -137,26 +143,28 @@ def _praxis_qcds_pass(
 
     frame = SemanticProblemFrame(
         mission_id=f"praxis-{normalize_logic_text(case_id).replace(' ', '-')}",
-        raw_text="Assess which represented housing-law precedents are most relevant to the current legal case factors.",
+        raw_text="Assess which active represented housing-law precedents are most relevant to the current legal case factors.",
         queries=(ProblemQuery(
             query_id="praxis-relevance",
             subject=case_id,
             predicate="precedent_relevance",
-            candidate_values=candidates,
-            original_text="Which represented precedents are most relevant to this case?",
+            candidate_values=active_candidates,
+            original_text="Which active represented precedents are most relevant to this case?",
         ),),
         claims=tuple(claims),
-        analyzer_id="legal_praxis_similarity_v2",
+        analyzer_id="legal_praxis_active_space_v1",
         provenance={
             "praxis_id": praxis["praxis_id"],
+            "condition_formation_active_subset": True,
+            "represented_precedent_count": represented_count,
+            "active_precedent_count": active_count,
             "precedent_is_not_rule_installation": True,
             "authority_is_not_similarity": True,
             "similarity_is_not_outcome": True,
-            "candidate_count": len(candidates),
             "canonical_spec_modified": False,
         },
     )
-    result = problem_to_syntract(frame, max_width=max(8, len(candidates)))
+    result = problem_to_syntract(frame, max_width=max(8, active_count))
     stabilized = [
         {"precedent_id": item.value, "probability": item.probability}
         for item in result.inference.stabilized_queries["praxis-relevance"]
@@ -231,7 +239,8 @@ class SwedishHousingAssessmentRobot:
                 "hard_layer": "source-attributed statute / transition / scope / procedural conditions",
                 "assessment_layer": "open-textured statutory standards, missing discriminators, factual similarity and counter-factors",
                 "praxis_layer": "HD precedent plus identified Svea hovrätt guidance, with authority class kept separate from factual similarity",
-                "qcds_role": "stabilize competing represented interpretive relevance without turning precedent into automatic truth",
+                "condition_formation": "the large represented legal corpus is projected into a bounded active case space before QCDS inference",
+                "qcds_role": "stabilize competing active interpretive relevance without turning precedent into automatic truth",
                 "statutory_result_preserved": True,
                 "canonical_spec_modified": False,
             },
