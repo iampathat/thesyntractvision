@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "qcds-fabric"
-version = "1.29.0"
+version = "1.30.0"
 description = "Reference implementation scaffold for QCDS Fabric v1.0"
 requires-python = ">=3.11"
 license = {text = "MIT"}
@@ -12,7 +12,7 @@ authors = [{name = "Patrik Sundblom"}]
 
 [project.scripts]
 qcds-logical-robot = "qcds_fabric.logical_space:main"
-qcds-legal-robot = "qcds_fabric.legal_logical_robot:main"
+qcds-legal-robot = "qcds_fabric.legal_assessment_robot:main"
 qcds-universe = "qcds_fabric.logical_universe_runner:main"
 qcds-reality-cycle = "qcds_fabric.self_expanding_reality:main"
 qcds-reality-discovery = "qcds_fabric.evidence_driven_reality:main"
