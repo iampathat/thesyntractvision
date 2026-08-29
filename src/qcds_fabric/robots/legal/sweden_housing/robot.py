@@ -24,7 +24,9 @@ from ....legal_logical_robot import (
 )
 from .full_robot import SwedishHousingFullQCDSRobot, main
 
-SwedishHousingAssessmentRobot = SwedishHousingFullQCDSRobot
+
+class SwedishHousingAssessmentRobot(SwedishHousingFullQCDSRobot):
+    """Stable public class name backed by the full QCDS implementation."""
 
 
 def run_case_json(payload_json: str) -> str:
