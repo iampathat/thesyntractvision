@@ -12,14 +12,17 @@ from qcds_fabric.logical_assertion import normalize_logic_text
 class QuantumFullSpaceManifest:
     """Non-executed manifest of the complete represented legal universe.
 
-    This object is deliberately independent of the classically projected active
-    BaseBundle. It records what a native quantum QCDS substrate is expected to
-    keep represented before Conditions/oracles let relevance emerge.
+    The manifest is independent of the classically projected active BaseBundle.
+    Logical proposition terms are kept separately from source/section structure
+    so preserving the whole represented legal universe does not pretend every
+    source identifier or paragraph identifier is itself one binary proposition.
     """
 
     corpus_id: str
     dimension_terms: tuple[str, ...]
     rule_ids: tuple[str, ...]
+    source_ids: tuple[str, ...]
+    section_ids: tuple[str, ...]
     precedent_ids: tuple[str, ...]
     case_terms: tuple[str, ...]
     evidence_terms: tuple[str, ...]
@@ -36,6 +39,10 @@ class QuantumFullSpaceManifest:
             "dimension_terms": list(self.dimension_terms),
             "represented_rule_count": len(self.rule_ids),
             "represented_rule_ids": list(self.rule_ids),
+            "represented_source_count": len(self.source_ids),
+            "represented_source_ids": list(self.source_ids),
+            "represented_section_count": len(self.section_ids),
+            "represented_section_ids": list(self.section_ids),
             "represented_precedent_count": len(self.precedent_ids),
             "represented_precedent_ids": list(self.precedent_ids),
             "case_term_count": len(self.case_terms),
@@ -45,6 +52,7 @@ class QuantumFullSpaceManifest:
             "manifest_sha256": self.manifest_sha256,
             "classical_active_projection": False,
             "semantic_prefiltering": False,
+            "source_structure_preserved": True,
         }
 
 
@@ -67,11 +75,12 @@ def build_quantum_full_space_manifest(
 ) -> QuantumFullSpaceManifest:
     """Compile the complete represented legal universe for native quantum target.
 
-    No rule is selected by case relevance here. Every represented rule term in
-    the loaded corpus is retained. Every represented precedent receives a live
-    precedent dimension and its represented activation/counter logic is kept.
-    Case/evidence terms are added without deleting any corpus dimension. This is
-    a target manifest only; no physical QPU execution is claimed.
+    No statutory rule is selected by current-case relevance here. Every loaded
+    rule term is retained, every represented source/section remains in the
+    source structure, and every represented precedent keeps its activation /
+    counter logic. Case/evidence terms are added without deleting corpus logic.
+
+    This is a target manifest only; no physical QPU execution is claimed.
     """
     display_by_canonical: dict[str, str] = {}
 
@@ -80,6 +89,24 @@ def build_quantum_full_space_manifest(
         if not text:
             return
         display_by_canonical.setdefault(_canonical(text), text)
+
+    source_ids: list[str] = []
+    for raw in corpus.get("sources", ()):
+        row = _mapping(raw)
+        if row is None:
+            continue
+        source_id = str(row.get("source_id", "")).strip()
+        if source_id:
+            source_ids.append(source_id)
+
+    section_ids: list[str] = []
+    for raw in corpus.get("sections", ()):
+        row = _mapping(raw)
+        if row is None:
+            continue
+        section_id = str(row.get("section_id", "")).strip()
+        if section_id:
+            section_ids.append(section_id)
 
     for value in corpus.get("primary_regime_candidates", ()):
         add(f"primary_regime:{value}")
@@ -108,8 +135,7 @@ def build_quantum_full_space_manifest(
                 continue
             precedent_ids.append(precedent_id)
             add(f"precedent:{precedent_id}")
-            # Keep the actual represented praxis logic used by the current
-            # Swedish housing corpus as well as generic future factor fields.
+            # Preserve the actual current praxis logic and generic future fields.
             for key in (
                 "activation_terms",
                 "counter_terms",
@@ -154,6 +180,8 @@ def build_quantum_full_space_manifest(
         "corpus_id": str(corpus.get("corpus_id", "")),
         "dimensions": list(dimension_terms),
         "rules": sorted(set(rule_ids)),
+        "sources": sorted(set(source_ids)),
+        "sections": sorted(set(section_ids)),
         "precedents": sorted(set(precedent_ids)),
         "case_terms": sorted(set(normalized_case_terms)),
         "evidence_terms": sorted(set(evidence_terms)),
@@ -165,6 +193,8 @@ def build_quantum_full_space_manifest(
         corpus_id=payload["corpus_id"],
         dimension_terms=dimension_terms,
         rule_ids=tuple(payload["rules"]),
+        source_ids=tuple(payload["sources"]),
+        section_ids=tuple(payload["sections"]),
         precedent_ids=tuple(payload["precedents"]),
         case_terms=tuple(payload["case_terms"]),
         evidence_terms=tuple(payload["evidence_terms"]),
