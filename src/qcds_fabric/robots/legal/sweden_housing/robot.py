@@ -1,6 +1,8 @@
 """Stable entry point for the Swedish Housing Law Logical Robot.
 
-Domain-specific implementation is composed above the unchanged shared QCDS core.
+The specialized robot is a body above the shared QCDS core. The public path
+uses the full dual-substrate QCDS execution while retaining the older
+assessment class under an explicit legacy name for regression comparison.
 """
 
 from __future__ import annotations
@@ -10,9 +12,8 @@ import json
 from ....legal_assessment_robot import (
     LegalAssessmentResult,
     LegalPraxisError,
-    SwedishHousingAssessmentRobot,
+    SwedishHousingAssessmentRobot as LegacySwedishHousingAssessmentRobot,
     load_legal_praxis,
-    main,
 )
 from ....legal_logical_robot import (
     LegalLogicalRobotError,
@@ -21,6 +22,9 @@ from ....legal_logical_robot import (
     load_legal_case,
     load_legal_corpus,
 )
+from .full_robot import SwedishHousingFullQCDSRobot, main
+
+SwedishHousingAssessmentRobot = SwedishHousingFullQCDSRobot
 
 
 def run_case_json(payload_json: str) -> str:
@@ -31,11 +35,13 @@ def run_case_json(payload_json: str) -> str:
 
 
 __all__ = [
+    "LegacySwedishHousingAssessmentRobot",
     "LegalAssessmentResult",
     "LegalLogicalRobotError",
     "LegalPraxisError",
     "LegalRobotResult",
     "SwedishHousingAssessmentRobot",
+    "SwedishHousingFullQCDSRobot",
     "SwedishHousingLegalRobot",
     "load_legal_case",
     "load_legal_corpus",
