@@ -1,0 +1,13 @@
+BUILD 22 implementation boundary
+
+New overlay only:
+- src/qcds_fabric/evidence_driven_reality.py
+- tests/test_build22.py
+- examples/evidence_driven_reality_mvp.json
+- EVIDENCE_DRIVEN_REALITY.md
+- results/BUILD22_*
+- pyproject.toml package/CLI update
+
+Existing QCDS/Fabric, oracle genesis/evolution, evidence planning, Logical Robot, Logical Space, Logical Universe, BUILD 21 and locked canonical artifacts are unchanged.
+
+canonical_spec_modified=false

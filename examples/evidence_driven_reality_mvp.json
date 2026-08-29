@@ -1,0 +1,72 @@
+{
+  "mission_id": "build22-evidence-driven-winged-demo",
+  "probe_terms": ["flies"],
+  "reality_bindings": [
+    {"binding_id": "creature-001", "terms": ["creature-001", "winged"], "source_id": "reality:001"},
+    {"binding_id": "creature-002", "terms": ["creature-002", "winged"], "source_id": "reality:002"},
+    {"binding_id": "creature-003", "terms": ["creature-003", "grounded"], "source_id": "reality:003"},
+    {"binding_id": "creature-004", "terms": ["creature-004", "grounded"], "source_id": "reality:004"},
+    {"binding_id": "creature-005", "terms": ["creature-005", "grounded"], "source_id": "reality:005"},
+    {"binding_id": "creature-006", "terms": ["creature-006", "grounded"], "source_id": "reality:006"},
+    {"binding_id": "creature-007", "terms": ["creature-007", "grounded"], "source_id": "reality:007"},
+    {"binding_id": "creature-008", "terms": ["creature-008", "grounded"], "source_id": "reality:008"}
+  ],
+  "problem": {
+    "mission_id": "build22-live-winged",
+    "raw_text": "An observed creature is winged; its represented movement ability remains unresolved.",
+    "analyzer_id": "build22-example",
+    "queries": [
+      {"query_id": "trait", "subject": "creature", "predicate": "trait", "candidate_values": ["winged", "grounded"]},
+      {"query_id": "ability", "subject": "creature", "predicate": "ability", "candidate_values": ["flies", "walks", "swims"]}
+    ],
+    "claims": [
+      {"subject": "creature", "predicate": "trait", "value": "winged", "source_id": "live:trait:evidence", "confidence": 1.0}
+    ],
+    "rules": []
+  },
+  "failure_observations": [
+    {
+      "observation_id": "ability-unresolved",
+      "kind": "prediction_failure",
+      "query_ids": ["ability"],
+      "severity": 1.0,
+      "description": "The ability is unresolved; acquire observations that discriminate rival oracle hypotheses."
+    }
+  ],
+  "observation_pool": [
+    {
+      "observation_id": "winged-observation-a",
+      "query_id": "ability",
+      "observed_value": "flies",
+      "source_id": "independent:winged:a",
+      "context": {"trait": "winged"},
+      "capability": "search",
+      "confidence": 1.0
+    },
+    {
+      "observation_id": "winged-observation-b",
+      "query_id": "ability",
+      "observed_value": "flies",
+      "source_id": "independent:winged:b",
+      "context": {"trait": "winged"},
+      "capability": "search",
+      "confidence": 1.0
+    },
+    {
+      "observation_id": "grounded-observation-a",
+      "query_id": "ability",
+      "observed_value": "walks",
+      "source_id": "independent:grounded:a",
+      "context": {"trait": "grounded"},
+      "capability": "search",
+      "confidence": 1.0
+    }
+  ],
+  "generation": {
+    "evaluation_mode": "baseline",
+    "max_generations": 1,
+    "max_promotions_per_generation": 1,
+    "selection_independent_sources": 2,
+    "holdout_independent_sources": 1
+  }
+}
