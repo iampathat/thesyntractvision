@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import pytest
 
+from qcds_fabric.legal_assessment_robot import load_legal_praxis
+from qcds_fabric.legal_logical_robot import load_legal_corpus
 from qcds_fabric.models import BaseBundle
 from qcds_fabric.oracles import OracleStack
 from qcds_fabric.robots.legal.sweden_housing.execution import (
@@ -121,8 +123,6 @@ def test_quantum_manifest_keeps_rules_and_praxis_that_classical_case_projection_
     )
     payload = manifest.as_dict()
 
-    # The current case is rent, but the native quantum target keeps the represented
-    # exchange branch, the remote precedent and the evidence term too.
     assert "issue:exchange" in payload["dimension_terms"]
     assert "conclusion:exchange" in payload["dimension_terms"]
     assert "precedent:NJA-X" in payload["dimension_terms"]
@@ -132,3 +132,30 @@ def test_quantum_manifest_keeps_rules_and_praxis_that_classical_case_projection_
     assert payload["represented_precedent_count"] == 1
     assert payload["classical_active_projection"] is False
     assert payload["semantic_prefiltering"] is False
+
+
+def test_real_swedish_legal_quantum_manifest_keeps_full_law_and_praxis_layers() -> None:
+    corpus = load_legal_corpus()
+    praxis = load_legal_praxis()
+
+    manifest = build_quantum_full_space_manifest(
+        corpus=corpus,
+        praxis=praxis,
+        # Deliberately narrow current case: rent only. The quantum target must
+        # still retain represented exchange/sublet/praxis logic outside it.
+        case_terms=("issue:rent_review",),
+        resolved_terms=("tenancy:residential",),
+        unresolved_questions=(),
+        qcds_evidence=(),
+    ).as_dict()
+
+    assert manifest["represented_rule_count"] == len(corpus["rules"])
+    assert manifest["represented_precedent_count"] == len(praxis["precedents"])
+    assert "precedent:NJA-2020-681" in manifest["dimension_terms"]
+    assert "sublet:independent_without_consent" in manifest["dimension_terms"]
+    assert "exchange:requested" in manifest["dimension_terms"]
+    assert "conclusion:jb12_represented_section35_exchange_conditions_met_subject_to_tribunal_permission" in manifest["dimension_terms"]
+    assert "12 kap. 35 § jordabalken" in manifest["dimension_terms"]
+    assert manifest["represented_dimension_count"] > manifest["represented_rule_count"]
+    assert manifest["classical_active_projection"] is False
+    assert manifest["semantic_prefiltering"] is False
