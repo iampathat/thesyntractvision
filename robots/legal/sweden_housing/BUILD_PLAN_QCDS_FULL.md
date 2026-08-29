@@ -15,7 +15,7 @@ The root README is **not frozen**. It should be complemented whenever these addi
 
 ## Build sequence
 
-- [ ] **Build A — Dual substrate execution**: shared legal runtime, exact classical and Grover-emulated passes, substrate provenance, side-by-side result comparison.
+- [~] **Build A — Dual substrate execution**: shared legal runtime, exact classical and Grover-emulated passes, substrate provenance, side-by-side result comparison.
 - [ ] **Build B — Probabilistic evidence**: case facts/evidence may carry explicit confidence; hard law stays hard; evidence becomes source-attributed probabilistic oracle pressure.
 - [ ] **Build C — Integrated final Syntract**: statutory Syntract re-entry + active praxis + probabilistic evidence in one final QCDS space.
 - [ ] **Build D — Scaling**: deterministic Condition Formation, bounded exact partitions, parallel/sequential/hybrid partition execution, Syntract re-entry across partitions; never silently truncate an active logical space.
