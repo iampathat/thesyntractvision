@@ -164,7 +164,9 @@ def _slug(value: Any) -> str:
 
 
 def _full_dimension_id(term: str) -> str:
-    return f"legal::quantum-full::{_slug(term)}"
+    canonical = _canonical(term)
+    digest = hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:12]
+    return f"legal::quantum-full::{_slug(term)}::{digest}"
 
 
 def build_quantum_full_space_manifest(
