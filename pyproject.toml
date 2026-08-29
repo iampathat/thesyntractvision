@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "qcds-fabric"
-version = "1.23.0"
+version = "1.24.0"
 description = "Reference implementation scaffold for QCDS Fabric v1.0"
 requires-python = ">=3.11"
 license = {text = "MIT"}
@@ -19,6 +19,7 @@ qcds-observe = "qcds_fabric.logical_robot_live:main"
 qcds-live = "qcds_fabric.logical_robot_live:main"
 qcds-reality-web = "qcds_fabric.public_web_reality:main"
 qcds-reality-grow = "qcds_fabric.continuous_reality:main"
+qcds-domain-lab = "qcds_fabric.domain_lab_cli:main"
 
 [project.optional-dependencies]
 test = ["pytest>=8"]
