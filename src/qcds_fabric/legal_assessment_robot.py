@@ -111,8 +111,17 @@ def _praxis_qcds_pass(
             "source_uri": row.get("source_uri"),
         })
 
+    common = {
+        "praxis_id": praxis["praxis_id"],
+        "snapshot_date": praxis.get("snapshot_date"),
+        "represented_precedent_count": len(precedents),
+        "authority_scale": dict(_mapping(praxis.get("authority_scale", {}), "authority_scale")),
+        "source_hierarchy_note": "Authority is reported separately from factual similarity. The QCDS relevance pass below compares represented similarity/counter-factors; it does not let a lower court outrank a higher court merely by being factually close.",
+    }
+
     if not claims:
         return {
+            **common,
             "status": "no_represented_praxis_match",
             "matched_precedents": [],
             "qcds_execution": None,
@@ -137,16 +146,17 @@ def _praxis_qcds_pass(
             original_text="Which represented precedents are most relevant to this case?",
         ),),
         claims=tuple(claims),
-        analyzer_id="legal_praxis_similarity_v1",
+        analyzer_id="legal_praxis_similarity_v2",
         provenance={
             "praxis_id": praxis["praxis_id"],
             "precedent_is_not_rule_installation": True,
             "authority_is_not_similarity": True,
             "similarity_is_not_outcome": True,
+            "candidate_count": len(candidates),
             "canonical_spec_modified": False,
         },
     )
-    result = problem_to_syntract(frame, max_width=8)
+    result = problem_to_syntract(frame, max_width=max(8, len(candidates)))
     stabilized = [
         {"precedent_id": item.value, "probability": item.probability}
         for item in result.inference.stabilized_queries["praxis-relevance"]
@@ -157,6 +167,9 @@ def _praxis_qcds_pass(
         {
             "precedent_id": row["precedent_id"],
             "name": row["name"],
+            "court": row["court"],
+            "authority_class": row["authority_class"],
+            "authority_weight": row["authority_weight"],
             "principles": row["principles"],
             "source_uri": row["source_uri"],
         }
@@ -164,9 +177,8 @@ def _praxis_qcds_pass(
         if normalize_logic_text(str(row["precedent_id"])) in leader_set
     ]
     return {
+        **common,
         "status": "ok",
-        "praxis_id": praxis["praxis_id"],
-        "snapshot_date": praxis["snapshot_date"],
         "matched_precedents": matched,
         "qcds_execution": "qcds_fabric.problem.problem_to_syntract",
         "syntract_id": result.syntract.syntract_id,
@@ -194,12 +206,7 @@ class LegalAssessmentResult:
 
 
 class SwedishHousingAssessmentRobot:
-    """Composes the existing statutory Legal Robot with a QCDS praxis assessment layer.
-
-    The statutory result is preserved. Praxis is added as competing interpretive
-    evidence and receives its own QCDS pass; it is never installed as a hard
-    Logical Transform rule and cannot silently rewrite the statutory conclusion.
-    """
+    """Compose hard statutory logic with a separate QCDS interpretive layer."""
 
     def __init__(
         self,
@@ -221,9 +228,10 @@ class SwedishHousingAssessmentRobot:
             **statutory,
             "praxis_assessment": praxis,
             "assessment_model": {
-                "hard_layer": "source-attributed statute / transition / scope logic",
-                "soft_layer": "precedent similarity, counter-factors and interpretive principles",
-                "qcds_role": "stabilize competing represented precedent relevance without turning precedent into automatic truth",
+                "hard_layer": "source-attributed statute / transition / scope / procedural conditions",
+                "assessment_layer": "open-textured statutory standards, missing discriminators, factual similarity and counter-factors",
+                "praxis_layer": "HD precedent plus identified Svea hovrätt guidance, with authority class kept separate from factual similarity",
+                "qcds_role": "stabilize competing represented interpretive relevance without turning precedent into automatic truth",
                 "statutory_result_preserved": True,
                 "canonical_spec_modified": False,
             },
