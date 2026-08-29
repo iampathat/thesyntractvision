@@ -14,10 +14,35 @@ Coverage does not mean the robot claims to reproduce every possible interpretati
 | Explicit statutory requirement | hard declared condition | consent required for independent second-hand use |
 | Explicit statutory consequence | hard conclusion when all represented conditions match | late rent can create a forfeiture ground |
 | Rescue / cure path | separate hard path | section 44 recovery after late residential rent |
+| Procedural safeguard | separate condition/path | warning, social-welfare notice, rectification, time limit |
 | Open statutory standard | unresolved assessment question until facts discriminate it | minor significance, reasonableness, materiality |
 | Case law | interpretive candidate, never installed as statute | HD/Svea decision with similarity and counter-factors |
 | Preparatory work | interpretive/source context | Prop. 2025/26:187 |
-| Case evidence | case-scoped fact/evidence only | consent, delay, defect, tenant hardship |
+| Case evidence | case-scoped fact/evidence only | consent, delay, disturbance, defect, tenant hardship |
+
+## Modular statutory layers
+
+The current legal universe is assembled from separate domain layers rather than one endlessly growing rules file:
+
+```text
+base housing-law corpus
+  Privatuthyrningslag 2026:772
+  legacy 2012:978
+  Chapter 12 baseline
+          │
+          ├── Chapter 12 core expansion
+          │     second hand / forfeiture / recovery
+          │     extension / rent review
+          │
+          └── use / conduct / access / transfer expansion
+                care / disturbance / access
+                transfer / close relative / exchange
+          │
+          ▼
+merged declared Legal Universe
+```
+
+The same QCDS core is used regardless of how many legal domain layers are represented.
 
 ## Statutory universe
 
@@ -57,17 +82,23 @@ Current represented themes include:
 
 ### Jordabalken, 12 kap.
 
-The current Chapter 12 expansion is intentionally focused on areas where hard rules and judgment interact.
+The Chapter 12 representation deliberately concentrates on areas where hard rules and judgment cross each other.
 
 | Section area | Current representation | Logic character |
 |---|---|---|
 | 1 § | general Chapter 12 scope / classification links | scope + interpretation |
 | 9–16 §§ | selected defect/use links through represented rules and praxis | mixed |
-| 24 § | selected tenant-responsibility links through praxis | interpretive/evidential |
+| 24 § | care, represented negligent damage liability and urgent-notice duty; evidence links in praxis | hard duty + evidence |
+| 25–25 b §§ | conduct, housing disturbance, warning/social-welfare procedure and supervision | open standard + procedure |
+| 26 § | landlord access for necessary inspection/use checks/urgent work; refusal path | hard access right + safeguards |
+| 32 § | general transfer consent rule; unreasonable refusal/no answer within three weeks | hard gate + reasonableness |
+| 34 § | transfer to close relative after permanent cohabitation | permission + open acceptance assessment |
+| 35 § | residential apartment exchange | multi-factor permission assessment |
+| 38 § | selected effects of authorized transfer | statutory context |
 | 39 § | independent second-hand use requires consent/permission | hard gate |
 | 40 § | tribunal permission criteria | multi-condition + assessment |
 | 41 § | outsiders/lodgers beyond reasonable extent | open reasonableness standard |
-| 42 § | selected forfeiture grounds, including late rent and unauthorized second-hand letting | hard grounds + minor-significance safeguard |
+| 42 § | selected forfeiture grounds: rent, second hand, unreasonable use, disturbances, access | hard grounds + statutory safeguards |
 | 43 § | selected rectification/time-limit effects | hard procedural safeguards |
 | 44 § | residential late-rent recovery | hard rescue path with required conditions |
 | 45 a § | waiver-of-extension-right source representation | statutory context |
@@ -79,29 +110,47 @@ The current Chapter 12 expansion is intentionally focused on areas where hard ru
 | 55 § | reasonable rent / use-value / second-hand ceiling | hard ceiling + evaluative comparison |
 | 55 f § | repayment of excess second-hand rent | hard remedy path + amount/time/application discriminators |
 
-## Open assessment zones
+## Examples of open assessment zones
 
-The following are examples where the current robot deliberately **does not force an answer** from statute alone:
+The robot deliberately **does not force an answer** from statute alone where the statute itself requires judgment.
 
 ```text
+Section 25 / 42
+  Is the behaviour a disturbance people should not reasonably have to tolerate?
+  Is it specially serious or ordinary?
+  Was warning required and given?
+  Was the social-welfare committee notified?
+  Was it corrected?
+  Is the breach still of minor significance?
+
+Section 34
+  Is the transferee a close relative?
+  Was the cohabitation genuinely permanent?
+  Can the landlord reasonably accept the new tenant?
+
+Section 35
+  Are the exchange reasons noteworthy?
+  Would the exchange cause material inconvenience to the landlord?
+  Is prohibited compensation involved?
+  Has either party lived in the apartment less than one year?
+  If so, are there exceptional reasons?
+
 Section 40
   Are the tenant's reasons considerable?
   Does the landlord have a justified reason to refuse?
   Is the proposed second-hand rent reasonable?
 
 Section 41
-  What is the apartment size?
-  How many people stay there?
-  For how long?
+  What is the apartment size and layout?
+  How many people stay there and for how long?
   What are the living conditions?
-  Does use create management difficulty or cost?
-  Is there disturbance risk?
+  Does use create management difficulty, cost or disturbance risk?
   → what must the landlord reasonably accept?
 
 Section 42 / 43
   Is the breach of minor significance?
   Was it corrected in time?
-  Were termination/time-limit requirements met?
+  Were warning, notice and termination/time-limit requirements met?
 
 Section 46
   How serious is the breach?
@@ -113,11 +162,11 @@ Section 46
   → is non-extension reasonable?
 ```
 
-These questions are a feature of the legal model, not missing UI polish. They mark where additional facts, argument or authority is required.
+These questions are a feature of the legal model. They mark where additional facts, evidence, argument or authority is required.
 
 ## Praxis corpus
 
-The current represented praxis layer contains both Högsta domstolen precedent and identified Svea hovrätt housing-law guidance.
+The represented praxis layer now contains **16+ source-attributed decisions** spanning Högsta domstolen precedent and identified Svea hovrätt housing-law guidance.
 
 ### Högsta domstolen
 
@@ -137,6 +186,9 @@ The current represented praxis layer contains both Högsta domstolen precedent a
 - H 14449-22 — second-hand rent repayment / proportion of apartment actually sublet.
 - ÖH 4781-18 / RH 2018:41 — major renovation and reasonableness in an extension dispute.
 - ÖH 4455-20 — which private letting counts as the first under the legacy Act.
+- ÖH 11710-21 — serious poor conduct did not automatically equal the separate category of specially serious housing disturbance.
+- ÖH 9885-20 — changed economic circumstances as noteworthy reasons for apartment exchange require a concrete assessment.
+- ÖH 10365-19 — permanent cohabitation for close-relative transfer is fact-sensitive; case-law time references remain guidance rather than statutory duration rules.
 
 ## Full universe vs active QCDS space
 
@@ -144,7 +196,7 @@ The robot does not send every represented decision into every inference run.
 
 ```text
 FULL PRAXIS CORPUS
-13 represented decisions
+16+ represented decisions
        │
        │ compare case terms with explicit
        │ similarity + counter-factors
@@ -167,6 +219,8 @@ This is the main classical scaling strategy for the current legal robot: **grow 
 
 ## Executable case coverage
 
+The case library now contains **15 executable probes** into different parts of the legal universe.
+
 | Fixture | Main question | Why it matters for QCDS |
 |---|---|---|
 | `new_private_let_2026.json` | Which post-reform regime applies? | temporal/scope gate |
@@ -179,15 +233,20 @@ This is the main classical scaling strategy for the current legal robot: **grow 
 | `jb_excess_second_hand_rent_2026.json` | Is second-hand rent above the ceiling and what repayment follows? | hard ceiling + remedy discriminators |
 | `jb_outsider_reasonableness_2026.json` | Is outsider use beyond what is reasonable? | intentionally unresolved open standard |
 | `jb_second_hand_permission_2026.json` | Are section 40 permission criteria represented? | multi-condition assessment |
+| `jb_disturbance_after_warning_2026.json` | What happens after ordinary disturbances continue despite warning and social notice? | open tolerability + procedure + forfeiture |
+| `jb_access_refusal_rectified_2026.json` | Can access refusal create forfeiture while later rectification blocks eviction? | hard ground + cure path coexist |
+| `jb_transfer_unreasonable_refusal_2026.json` | What follows from an unreasonable landlord refusal to consent to transfer? | consent gate + reasonableness + tenant remedy |
+| `jb_apartment_exchange_2026.json` | Are the represented section 35 exchange criteria present? | multi-factor permission + guiding praxis |
+| `jb_damage_evidence_2026.json` | Does evidence pointing toward negligence equal proven tenant liability? | substantive law + evidence structure + refusal to invent fact |
 
 ## Not represented yet
 
 The robot is growing, but the current snapshot is not the whole Swedish tenancy system. Important future areas include broader coverage of:
 
 - condition/maintenance and rent-reduction remedies;
-- disturbance and particularly serious disturbance paths;
-- access obligations;
-- transfers/exchanges;
+- particularly serious disturbance variants and domestic-abuse safeguards in greater detail;
+- detailed access/works timing and compensation variants;
+- more transfer/exchange exceptions and commercial transfer;
 - demolition/redevelopment and more section 46 variants;
 - collective negotiation interactions;
 - commercial tenancy in greater depth;
@@ -196,4 +255,4 @@ The robot is growing, but the current snapshot is not the whole Swedish tenancy 
 - richer preparatory works and later case treatment;
 - evidence disputes, documents, witness claims and competing party narratives.
 
-Those should be added as distinct represented layers rather than flattened into one rule table.
+Those should continue to be added as distinct represented layers rather than flattened into one rule table.
