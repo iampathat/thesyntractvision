@@ -59,6 +59,20 @@ def test_probabilistic_fact_activates_rule_but_remains_live_qcds_dimension() -> 
     assert dual["same_oracle_stack"] is True
     assert dual["grover_emulated"]["status"] == "ok"
     assert dual["grover_emulated"]["selected_grover_iterations"]
+
+    modes = result["execution_modes"]
+    assert set(modes) == {"classical_exact", "grover_emulated", "quantum_full_space"}
+    assert modes["classical_exact"]["resource_bounded_emulation"] is True
+    assert modes["classical_exact"]["semantic_projection_allowed"] is True
+    assert modes["grover_emulated"]["resource_bounded_emulation"] is True
+    quantum = modes["quantum_full_space"]
+    assert quantum["status"] == "target_contract_only"
+    assert quantum["semantic_projection_allowed"] is False
+    assert quantum["requires_full_logical_universe"] is True
+    assert quantum["native_qpu_connected"] is False
+    assert quantum["full_universe_manifest"]["semantic_prefiltering"] is False
+    assert quantum["full_universe_dimension_count"] >= result["logical_width"]
+    assert result["quantum_full_space_semantic_prefiltering_forbidden"] is True
     assert result["native_qpu"] is False
     assert result["quantum_advantage_claim"] is False
 
