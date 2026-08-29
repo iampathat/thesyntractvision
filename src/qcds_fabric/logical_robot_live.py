@@ -13,7 +13,7 @@ from urllib.parse import parse_qs, urlparse
 from .intelligence_growth import IntelligenceGrowthView
 from .learning_moment import LearningMomentView
 from .living_logical_space import LivingLogicalSpace
-from .living_robot_learning import living_robot_learning_html
+from .living_robot_clarity import living_robot_clarity_html
 from .logical_robot_control import LogicalRobotControlPlane
 from .logical_robot_observatory import LogicalRobotEventLog
 
@@ -25,7 +25,7 @@ class LiveRobotError(ValueError):
 class LivingLogicalRobotService:
     """One observable/control surface for the same Logical Robot.
 
-    The service composes BUILD 23-31 overlays. It never bypasses QCDS challenge,
+    The service composes BUILD 23-32 overlays. It never bypasses QCDS challenge,
     Reality governance, or the persistent logical stores.
     """
 
@@ -62,7 +62,7 @@ class LivingLogicalRobotService:
             "control": self.control.state(),
             "space": self.space._snapshot_counts(),
             "provenance": {
-                "builds": [26, 27, 28, 29, 30, 31],
+                "builds": [26, 27, 28, 29, 30, 31, 32],
                 "web_is_manifestation_only": True,
                 "same_logical_robot_local_or_remote": True,
                 "qcds_core_modified": False,
@@ -100,7 +100,7 @@ def create_live_robot_server(
     allowed_origin = cors_origin.strip() if cors_origin else None
 
     class Handler(BaseHTTPRequestHandler):
-        server_version = "QCDSLivingLogicalRobot/1.3"
+        server_version = "QCDSLivingLogicalRobot/1.4"
 
         def _cors(self) -> None:
             if allowed_origin:
@@ -142,7 +142,7 @@ def create_live_robot_server(
         def do_GET(self) -> None:  # noqa: N802
             parsed = urlparse(self.path)
             if parsed.path == "/":
-                body = living_robot_learning_html(static_mode=False).encode("utf-8")
+                body = living_robot_clarity_html(static_mode=False).encode("utf-8")
                 self.send_response(HTTPStatus.OK)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
                 self.send_header("Content-Length", str(len(body)))

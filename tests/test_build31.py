@@ -130,7 +130,8 @@ def test_build31_live_api_exposes_learning_without_new_truth_endpoint(tmp_path: 
         assert "/api/rule/install" not in page
         assert learning["promotion"]["rule_id"] == "human-happy"
         assert learning["discovery"]["hypotheses_rejected"] == 9
-        assert state["provenance"]["builds"][-1] == 31
+        assert 31 in state["provenance"]["builds"]
+        assert state["provenance"]["builds"][-1] >= 31
     finally:
         service = getattr(server, "qcds_service")
         service.close()
