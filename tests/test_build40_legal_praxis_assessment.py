@@ -110,4 +110,4 @@ def test_public_legal_cli_routes_through_assessment_robot() -> None:
     pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
 
     assert 'version = "1.30.0"' in pyproject
-    assert 'qcds-legal-robot = "qcds_fabric.legal_assessment_robot:main"' in pyproject
+    assert 'qcds-legal-robot = "qcds_fabric.robots.legal.sweden_housing.robot:main"' in pyproject
