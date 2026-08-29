@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "src/qcds_fabric/living_robot_ui.py"
+      - "src/qcds_fabric/living_robot_experience.py"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -35,7 +36,7 @@ jobs:
       - name: Export the static Logical Robot manifestation
         run: |
           mkdir -p _site
-          python -m qcds_fabric.living_robot_ui --export _site/index.html
+          python -m qcds_fabric.living_robot_experience --export _site/index.html
           touch _site/.nojekyll
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
