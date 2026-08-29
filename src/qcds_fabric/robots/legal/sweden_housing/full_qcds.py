@@ -27,6 +27,7 @@ from .qcds_space import (
     _expand_with_praxis,
     _runtime_payload,
 )
+from .quantum_full_space import build_quantum_full_space_manifest
 from .scaling import execute_separable_grover_partitions, plan_legal_scaling
 
 
@@ -260,6 +261,14 @@ def run_full_legal_qcds(
         }
         grover_payload = grover_qcds
 
+    full_manifest = build_quantum_full_space_manifest(
+        corpus=corpus,
+        praxis=praxis,
+        case_terms=case_terms,
+        resolved_terms=resolved_terms,
+        unresolved_questions=unresolved_questions,
+        qcds_evidence=qcds_evidence,
+    )
     quantum_target = quantum_full_space_profile()
     quantum_target_payload = dict(target_profile_payload(quantum_target))
     quantum_target_payload.update({
@@ -269,6 +278,10 @@ def run_full_legal_qcds(
         "decomposition_policy": "parallel/sequential/hybrid decomposition is valid only when it is itself a semantics-preserving QCDS/Syntract operation over the complete represented universe",
         "classical_prefiltering_for_memory": False,
         "software_emulation_of_full_universe": False,
+        "full_universe_manifest": full_manifest.as_dict(),
+        "active_emulation_dimension_count": final_exact.bundle.width,
+        "full_universe_dimension_count": full_manifest.represented_dimension_count,
+        "full_universe_is_not_active_emulation_projection": True,
     })
 
     attached_sources = [
