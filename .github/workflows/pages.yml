@@ -20,6 +20,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      pages_ready: ${{ steps.configure.outcome == 'success' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -32,15 +34,24 @@ jobs:
           mkdir -p _site
           python -m qcds_fabric.living_robot_ui --export _site/index.html
           touch _site/.nojekyll
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
           path: _site
+      - name: Configure Pages
+        id: configure
+        continue-on-error: true
+        uses: actions/configure-pages@v5
+      - name: Explain first-time Pages enablement
+        if: steps.configure.outcome != 'success'
+        run: |
+          echo '### GitHub Pages is not enabled yet' >> "$GITHUB_STEP_SUMMARY"
+          echo '' >> "$GITHUB_STEP_SUMMARY"
+          echo 'The Living Logical Robot static site was built and uploaded successfully.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Enable **Settings → Pages → Build and deployment → Source: GitHub Actions** once, then rerun this workflow.' >> "$GITHUB_STEP_SUMMARY"
 
   deploy:
-    if: github.event_name != 'pull_request'
+    if: needs.build.outputs.pages_ready == 'true'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
