@@ -44,3 +44,12 @@ def test_readme_keeps_easy_entry_and_full_architecture_depth() -> None:
     assert "Conditional Evolution" in readme
     assert "Recursive Inference" in readme
     assert "Truth-Alignment / Syntract Binding" in readme
+
+    # Resource-bounded emulation must never be confused with the quantum target.
+    assert "CLASSICAL EXACT" in readme
+    assert "GROVER EMULATED" in readme
+    assert "QUANTUM FULL SPACE" in readme
+    assert "Emulator modes may project" in readme
+    assert "Quantum Full Space must not prefilter away the universe" in readme
+    assert "Do not remove represented logical dimensions merely because a classical machine thinks they are irrelevant or cannot fit them in RAM" in readme
+    assert "quantum_full_space.py" in readme
