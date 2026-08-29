@@ -46,21 +46,30 @@ def _context_from_request(request: LogicalRobotRequest) -> dict[str, str]:
     }
 
 
-def _bounded_search_query(request: LogicalRobotRequest) -> str:
-    context = _context_from_request(request)
-    candidates = [
-        _norm(str(value))
-        for query_id in request.query_ids
-        for value in request.candidate_values.get(query_id, ())
-        if _norm(str(value))
-    ]
-    dimension_words: list[str] = []
+def _relation_tokens(request: LogicalRobotRequest, query_id: str) -> tuple[str, ...]:
+    tokens: list[str] = [_norm(query_id)]
     for dimension in request.dimension_ids:
-        pieces = [piece.replace("_", " ") for piece in str(dimension).split("::") if piece]
-        dimension_words.extend(pieces[-2:])
-    tokens = [*context.values(), *dimension_words, *candidates]
+        pieces = [_norm(piece.replace("_", " ")) for piece in str(dimension).split("::") if piece]
+        if len(pieces) >= 2:
+            tokens.append(pieces[-2])
+    return tuple(dict.fromkeys(token for token in tokens if token))
+
+
+def _bounded_search_query(request: LogicalRobotRequest) -> str:
+    """Build a target-blind, candidate-neutral discovery query.
+
+    Candidate values are deliberately excluded. The search axis contains only the
+    requested context plus represented query/relation names. Candidate values are
+    evaluated later against acquired documents.
+    """
+
+    context = _context_from_request(request)
+    relation_words: list[str] = []
+    for query_id in request.query_ids:
+        relation_words.extend(_relation_tokens(request, query_id))
+    tokens = [*context.values(), *relation_words]
     unique = list(dict.fromkeys(token for token in tokens if token))
-    query = " ".join(unique[:18]).strip()
+    query = " ".join(unique[:12]).strip()
     if not query:
         query = " ".join(request.objective.split())[:300]
     if not query:
@@ -77,19 +86,68 @@ def _contains_token(text: str, token: str) -> bool:
     return bool(re.search(r"(?<!\w)" + re.escape(_norm(token)) + r"(?!\w)", _norm(text)))
 
 
+def _word_gap_pattern(left: str, right: str, *, max_words: int = 10) -> str:
+    gap = rf"(?:\W+\w+){{0,{max_words}}}\W+"
+    return rf"(?<!\w){re.escape(_norm(left))}(?!\w){gap}(?<!\w){re.escape(_norm(right))}(?!\w)"
+
+
+def _assertion_shape(sentence: str, *, candidate: str, relations: Sequence[str], contexts: Sequence[str]) -> tuple[bool, tuple[str, ...]]:
+    """Require more than co-occurrence before a web sentence becomes evidence."""
+
+    normalized = _norm(sentence)
+    candidate_norm = _norm(candidate)
+    if not _contains_token(normalized, candidate_norm):
+        return False, ()
+    copula = r"(?:is|are|was|were|became|becomes|remains|remain|has|have|had|can)"
+    reasons: list[str] = []
+
+    for relation in relations:
+        relation_norm = _norm(relation)
+        if not _contains_token(normalized, relation_norm):
+            continue
+        candidate_then_relation = re.search(
+            rf"(?<!\w){re.escape(candidate_norm)}(?!\w)(?:\W+\w+){{0,8}}\W+{copula}(?:\W+\w+){{0,8}}\W+(?<!\w){re.escape(relation_norm)}(?!\w)",
+            normalized,
+        )
+        relation_then_candidate = re.search(
+            rf"(?<!\w){re.escape(relation_norm)}(?!\w)(?:\W+\w+){{0,8}}\W+{copula}(?:\W+\w+){{0,8}}\W+(?<!\w){re.escape(candidate_norm)}(?!\w)",
+            normalized,
+        )
+        if candidate_then_relation or relation_then_candidate:
+            reasons.append("candidate_relation_assertion")
+            return True, tuple(reasons)
+
+    for context in contexts:
+        context_norm = _norm(context)
+        if not _contains_token(normalized, context_norm):
+            continue
+        context_then_candidate = re.search(
+            rf"(?<!\w){re.escape(context_norm)}(?!\w)(?:\W+\w+){{0,8}}\W+{copula}(?:\W+\w+){{0,8}}\W+(?<!\w){re.escape(candidate_norm)}(?!\w)",
+            normalized,
+        )
+        candidate_then_context = re.search(
+            rf"(?<!\w){re.escape(candidate_norm)}(?!\w)(?:\W+\w+){{0,8}}\W+{copula}(?:\W+\w+){{0,8}}\W+(?<!\w){re.escape(context_norm)}(?!\w)",
+            normalized,
+        )
+        if context_then_candidate or candidate_then_context:
+            reasons.append("context_candidate_assertion")
+            return True, tuple(reasons)
+
+    return False, ()
+
+
 @dataclass(frozen=True)
 class ContextualCandidateExtractor:
-    """Target-blind candidate observation extractor for BUILD 24.
+    """Target-blind assertion extractor for BUILD 24.
 
-    It scores represented candidate values only from text already acquired by the
-    Logical Robot. A requested logical context may be established anywhere in the
-    same document (including its title), while the candidate must still appear in
-    an evidential sentence. It never sees selection/holdout roles or expected
-    answers. This is observation ingress, not a truth oracle.
+    The requested context may be established anywhere in the same document, but
+    the candidate must occur in an assertion-shaped evidence sentence rather than
+    merely co-occurring with relation/context words. Selection/holdout roles and
+    expected answers remain invisible. This is observation ingress, not truth.
     """
 
-    extractor_id: str = "contextual_candidate_extractor_v2"
-    min_score: float = 2.5
+    extractor_id: str = "contextual_candidate_extractor_v3"
+    min_score: float = 3.0
     min_margin: float = 0.5
 
     def extract(self, request: LogicalRobotRequest, document: WebDocument) -> tuple[LogicalObservation, ...]:
@@ -97,29 +155,16 @@ class ContextualCandidateExtractor:
         document_text = f"{document.reference.title}. {document.reference.snippet}. {document.text}"
         document_norm = _norm(document_text)
         text_sentences = _sentences(document_text)
-        document_context_hits = {
-            value for value in context_values
-            if _contains_token(document_norm, value)
-        }
+        document_context_hits = tuple(value for value in context_values if _contains_token(document_norm, value))
+        if context_values and not document_context_hits:
+            return ()
+
         observations: list[LogicalObservation] = []
         for query_id in request.query_ids:
             candidates = tuple(request.candidate_values.get(query_id, ()))
             if not candidates:
                 continue
-            relation_tokens = tuple(
-                dict.fromkeys(
-                    token
-                    for token in (
-                        _norm(query_id),
-                        *(
-                            _norm(piece)
-                            for dimension in request.dimension_ids
-                            for piece in str(dimension).split("::")[-2:-1]
-                        ),
-                    )
-                    if token
-                )
-            )
+            relations = _relation_tokens(request, query_id)
             scored: list[tuple[str, float, str, tuple[str, ...]]] = []
             for candidate in candidates:
                 candidate_norm = _norm(candidate)
@@ -130,24 +175,27 @@ class ContextualCandidateExtractor:
                     normalized = _norm(sentence)
                     if not _contains_token(normalized, candidate_norm):
                         continue
-                    reasons: list[str] = ["candidate_in_sentence"]
-                    score = 1.0
-                    same_sentence_context = tuple(
-                        value for value in context_values if _contains_token(normalized, value)
+                    assertion_ok, assertion_reasons = _assertion_shape(
+                        normalized,
+                        candidate=candidate_norm,
+                        relations=relations,
+                        contexts=context_values,
                     )
+                    if not assertion_ok:
+                        continue
+                    reasons = ["candidate_in_sentence", *assertion_reasons]
+                    score = 2.0
+                    same_sentence_context = tuple(value for value in context_values if _contains_token(normalized, value))
                     if same_sentence_context:
                         score += 1.5
                         reasons.append("context_in_same_sentence")
                     elif document_context_hits:
                         score += 1.0
                         reasons.append("context_established_in_document")
-                    relation_hits = tuple(token for token in relation_tokens if _contains_token(normalized, token))
+                    relation_hits = tuple(token for token in relations if _contains_token(normalized, token))
                     if relation_hits:
                         score += 1.0
                         reasons.append("represented_relation_in_sentence")
-                    elif any(word in normalized for word in (" is ", " are ", "known as", "called", "can ")):
-                        score += 0.5
-                        reasons.append("bounded_relational_cue")
                     if score > best_score:
                         best_score = score
                         best_sentence = sentence
@@ -161,7 +209,7 @@ class ContextualCandidateExtractor:
             digest = hashlib.sha256(
                 f"{request.evidence_action_id}|{query_id}|{document.reference.reference_id}|{winner}".encode("utf-8")
             ).hexdigest()[:16]
-            confidence = min(0.92, 0.55 + 0.08 * top_score)
+            confidence = min(0.92, 0.55 + 0.07 * top_score)
             observations.append(
                 LogicalObservation(
                     observation_id=f"publicweb:{digest}",
@@ -179,10 +227,11 @@ class ContextualCandidateExtractor:
                         "challenge_role_visible": False,
                         "expected_answer_visible": False,
                         "source_is_evidence_not_truth": True,
+                        "search_candidate_values_used": False,
                         "source_independence_scope": "distinct_document_reference_only",
                         "publisher_independence_claim": False,
                         "context_binding_scope": "same_document",
-                        "candidate_evidence_scope": "sentence",
+                        "candidate_evidence_scope": "assertion_sentence",
                         "score": top_score,
                         "score_margin": top_score - second_score,
                         "score_reasons": list(reasons),
@@ -203,8 +252,8 @@ class ContextualPublicWebTool:
     search_backend: WebSearchBackend = field(default_factory=WikipediaSearchBackend)
     read_backend: WebReadBackend = field(default_factory=HttpWebReadBackend)
     extractor: ContextualCandidateExtractor = field(default_factory=ContextualCandidateExtractor)
-    search_limit: int = 6
-    max_pages_per_context: int = 5
+    search_limit: int = 8
+    max_pages_per_context: int = 6
     max_chars_per_page: int = 50_000
     tool_id: str = "contextual_public_web_logical_robot_v1"
     capabilities: tuple[str, ...] = ("search", "read", "follow", "query", "compare")
@@ -244,6 +293,7 @@ class ContextualPublicWebTool:
                         "tool": self.tool_id,
                         "read_only": True,
                         "external_truth_claim": False,
+                        "candidate_neutral_search": True,
                         "search_query": _bounded_search_query(request),
                     },
                 )
@@ -261,6 +311,7 @@ class ContextualPublicWebTool:
                     "tool": self.tool_id,
                     "read_only": True,
                     "external_truth_claim": False,
+                    "candidate_neutral_search": True,
                     "publisher_independence_claim": False,
                 },
             )
