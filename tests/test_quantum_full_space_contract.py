@@ -50,12 +50,12 @@ def _synthetic_praxis() -> dict[str, object]:
     }
 
 
-def test_full_space_contract_compiles_complete_bundle_without_classical_candidate_materialization() -> None:
+def test_full_space_contract_compiles_complete_bundle_without_prebinding_resolver_output() -> None:
     compilation = compile_quantum_full_space_contract(
         corpus=_synthetic_corpus(),
         praxis=_synthetic_praxis(),
-        case_terms=("issue:rent",),
-        resolved_terms=("rent:late",),
+        case_terms=("issue:rent", "rent:late"),
+        resolved_terms=("primary_regime:jb12", "conclusion:rent"),
         unresolved_questions=("open discriminator",),
         qcds_evidence=(
             {
@@ -72,13 +72,24 @@ def test_full_space_contract_compiles_complete_bundle_without_classical_candidat
 
     assert compilation.bundle.width == compilation.manifest.represented_dimension_count
     assert len(compilation.bundle.dimension_ids) == len(set(compilation.bundle.dimension_ids))
+
+    # Only original case input is fixed. Classical resolver output is represented
+    # but must remain live for QCDS instead of being installed as truth.
     assert values_by_term["issue:rent"] == 1
     assert values_by_term["rent:late"] == 1
+    assert values_by_term["primary_regime:jb12"] == "?"
+    assert values_by_term["conclusion:rent"] == "?"
+
     assert values_by_term["issue:exchange"] == "?"
     assert values_by_term["conclusion:exchange"] == "?"
     assert values_by_term["precedent:NJA-X"] == "?"
     assert values_by_term["question:open discriminator"] == "?"
     assert values_by_term["evidence:payment-log"] == "?"
+
+    assert compilation.manifest.case_terms == ("issue:rent", "rent:late")
+    assert "primary_regime:jb12" in compilation.manifest.resolver_terms
+    assert "conclusion:rent" in compilation.manifest.resolver_terms
+    assert "question:open discriminator" in compilation.manifest.resolver_terms
 
     oracle_ids = set(compilation.oracle_stack.oracle_ids)
     assert "legal:quantum-full:primary-regime:onehot" in oracle_ids
@@ -94,6 +105,8 @@ def test_full_space_contract_compiles_complete_bundle_without_classical_candidat
     assert payload["candidate_states_materialized"] is False
     assert payload["classical_active_projection"] is False
     assert payload["semantic_prefiltering"] is False
+    assert payload["fixed_input_policy"] == "case_terms_only"
+    assert payload["resolver_outputs_prebound"] is False
     assert payload["native_qpu_connected"] is False
 
 
@@ -110,6 +123,7 @@ def test_real_swedish_housing_full_space_contract_keeps_entire_loaded_law_and_pr
         qcds_evidence=(),
     )
     payload = compilation.as_dict()
+    values_by_term = dict(zip(compilation.manifest.dimension_terms, compilation.bundle.values))
 
     assert compilation.bundle.width == compilation.manifest.represented_dimension_count
     assert compilation.manifest.represented_dimension_count > len(corpus["rules"])
@@ -123,6 +137,9 @@ def test_real_swedish_housing_full_space_contract_keeps_entire_loaded_law_and_pr
     assert "sublet:independent_without_consent" in represented_terms
     assert "precedent:NJA-2020-681" in represented_terms
     assert "conclusion:jb12_represented_section35_exchange_conditions_met_subject_to_tribunal_permission" in represented_terms
+
+    assert values_by_term["issue:rent_review"] == 1
+    assert values_by_term["tenancy:residential"] == "?"
 
     rule_oracles = [
         oracle_id for oracle_id in compilation.oracle_stack.oracle_ids
@@ -139,5 +156,7 @@ def test_real_swedish_housing_full_space_contract_keeps_entire_loaded_law_and_pr
     assert payload["full_candidate_binary_space"] == f"2^{payload['full_unknown_dimension_count']}"
     assert payload["candidate_states_materialized"] is False
     assert payload["semantic_prefiltering"] is False
+    assert payload["resolver_outputs_prebound"] is False
     assert compilation.bundle.provenance["represented_rule_count"] == len(corpus["rules"])
     assert compilation.bundle.provenance["represented_precedent_count"] == len(praxis["precedents"])
+    assert compilation.bundle.provenance["resolver_outputs_prebound"] is False
