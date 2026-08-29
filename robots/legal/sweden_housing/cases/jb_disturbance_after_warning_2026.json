@@ -1,0 +1,19 @@
+{
+  "case_id": "jb12-disturbance-after-warning",
+  "as_of_date": "2026-08-29",
+  "contract_date": "2026-08-09",
+  "facts": {
+    "landlord_type": "natural_person",
+    "residential_use": true,
+    "holiday_purpose": false,
+    "landlord_holds_unit_as_tenant": true,
+    "regular_external_units": 1,
+    "fixed_term": false,
+    "issue_forfeiture": true,
+    "disturbance_occurred": true,
+    "disturbance_specially_serious": false,
+    "landlord_warned_to_stop": true,
+    "social_committee_notified": true,
+    "disturbance_rectified_after_warning": false
+  }
+}
