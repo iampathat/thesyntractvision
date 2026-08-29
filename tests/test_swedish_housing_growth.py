@@ -77,7 +77,7 @@ def test_section41_case_refuses_to_fake_a_binary_answer() -> None:
 
     assert result["primary_regimes"] == ["jordabalk_12"]
     assert "jb41_reasonableness_requires_size_duration_conditions_management_and_disturbance_balance" in result["unresolved_questions"]
-    assert "outsider_use_unreasonable_extent" in result["unresolved_questions"]
+    assert "outsider use unreasonable extent" in result["unresolved_questions"]
 
 
 def test_section40_permission_case_can_show_conditions_met_without_installing_decision() -> None:
