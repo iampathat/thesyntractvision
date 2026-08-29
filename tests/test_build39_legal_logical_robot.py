@@ -18,11 +18,13 @@ def test_legal_corpus_is_non_toy_and_source_attributed() -> None:
 
     assert corpus["corpus_id"] == "swedish-housing-law-2026-08-29"
     assert corpus["snapshot_date"] == "2026-08-29"
-    assert len(corpus["sources"]) == 3
-    assert len(corpus["sections"]) >= 20
-    assert len(corpus["rules"]) >= 20
-    uris = {row["uri"] for row in corpus["sources"]}
-    assert all(uri.startswith("https://www.riksdagen.se/") for uri in uris)
+    assert len(corpus["sources"]) >= 4
+    assert len(corpus["sections"]) >= 35
+    assert len(corpus["rules"]) >= 30
+    source_ids = {row["source_id"] for row in corpus["sources"]}
+    assert {"sfs:2026:772", "sfs:2012:978", "sfs:1970:994:12", "prop:2025/26:187"} <= source_ids
+    assert all(str(row["uri"]).startswith("https://") for row in corpus["sources"])
+    assert any(row.get("source_class") == "preparatory_work" for row in corpus["sources"])
 
 
 def test_current_2026_case_resolves_real_rule_path_and_calls_qcds_core() -> None:
@@ -39,8 +41,8 @@ def test_current_2026_case_resolves_real_rule_path_and_calls_qcds_core() -> None
         "fixed_term_ends_at_term",
         "tenant_notice_three_months",
     }.issubset(conclusions)
-    assert result["base_binding_count"] >= 24
-    assert result["active_rule_count"] >= 20
+    assert result["base_binding_count"] >= 35
+    assert result["active_rule_count"] >= 30
     assert "regime-new-2026" in result["applied_rules"]
     assert result["qcds_core"]["core_execution"] == "qcds_fabric.problem.problem_to_syntract"
     assert result["qcds_core"]["canonical_spec_modified"] is False
