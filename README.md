@@ -6,11 +6,11 @@
 
 Instead of treating intelligence as a trained model that produces one answer, QCDS works over explicit logical space, applies logical and evidential constraints as **oracles**, preserves uncertainty, tests competing views, and recursively binds what remains coherent.
 
-The repository contains the locked QCDS Fabric v1.0 specification and a tested Python reference implementation. The current implementation includes a persistent intelligence runtime, inspectable **Logical Space**, non-materialized global logic, isolated **Logical Universes** with rule-drift governance, and a runnable **Logical Robot** that can seek external evidence and return it to the same QCDS reasoning loop.
+The repository contains the locked QCDS Fabric v1.0 specification and a tested Python reference implementation. The current implementation includes a persistent intelligence runtime, inspectable **Logical Space**, non-materialized global logic, isolated **Logical Universes** with rule-drift governance, a self-expanding evidence-driven `reality` loop, and a runnable **Logical Robot** that can seek external evidence, grow governed Reality logic and be manifested as a live local web page with human↔robot I/O.
 
 **Author and originator:** Patrik Sundblom  
 **Canonical architecture:** QCDS Fabric v1.0 — locked  
-**Reference software:** Python package `qcds-fabric` 1.10.0  
+**Reference software:** Python package `qcds-fabric` 1.16.0  
 **Theory/specification:** CC BY 4.0  
 **Software:** MIT
 
@@ -292,9 +292,9 @@ QCDS reasons again
 
 The robot does **not** decide what is true by itself. If two sources explicitly support competing logic, both observations can be returned to QCDS.
 
-The public-web body currently includes a key-free Wikipedia search backend and bounded read-only HTTP retrieval. Live falsification replaced page-level mention voting with candidate-neutral search plus a bounded assertion check: represented terms must actually be bound in the observed text. A page about Lyon therefore does not become evidence for `France / capital / Lyon` merely because `Lyon` occurs many times, and a page about a magazine named *Capital* does not become evidence that Paris is the capital of France merely because the words appear nearby.
+The public-web body currently includes a key-free Wikipedia search backend and bounded read-only HTTP retrieval. Live falsification replaced page-level mention voting with **candidate-neutral search plus assertion-shaped evidence binding**: represented candidates must participate in an actual assertion in the observed sentence, while context may be established by the same document. A sentence such as `the capital outfit ... Lyon ... Coupe de France` is therefore rejected rather than becoming false evidence for `France => Lyon`.
 
-### Run the MVP
+### Run the original MVP
 
 ```bash
 python -m pip install -e '.[test]'
@@ -302,6 +302,31 @@ qcds-logical-robot examples/first_logical_robot_mvp.json --store ./intelligence_
 ```
 
 The first run creates the mission. Later runs reuse the same persistent intelligence state and shared Logical Space.
+
+### Watch the same Logical Robot live
+
+The web page is only a **manifestation/body of the same Logical Robot**. It is a live view and I/O surface; deleting it does not change the intelligence.
+
+```bash
+# Terminal 1 — manifest the robot as a local web page
+qcds-observe --store ./intelligence_store
+
+# Terminal 2 — let the same robot acquire real public-web evidence
+qcds-reality-web \
+  examples/public_web_reality_capital_mvp.json \
+  --store ./intelligence_store
+
+# Or let it continue over a bounded unresolved Reality frontier
+qcds-reality-grow \
+  examples/continuous_reality_growth_mvp.json \
+  --store ./intelligence_store
+```
+
+`qcds-observe` shows Reality counts, oracle/rule changes and the discovery event stream while the robot works. Its human↔robot inbox supports `/status`, `/run <mission_id>`, `/pause` and `/stop`. Ordinary free text is recorded transparently with zero automatic truth effect.
+
+The real public-web proof on a fresh GitHub runner produced three Wikipedia observations, constructed selection/holdout only after observation, selected and governed `france => paris`, and changed the resolved knowledge probe from `0 → 2` without rewriting the base logical-space rows.
+
+See [`LOGICAL_ROBOT_LIVE.md`](LOGICAL_ROBOT_LIVE.md) and [`results/BUILD23_25_LOGICAL_ROBOT_LIVE_RESULTS.md`](results/BUILD23_25_LOGICAL_ROBOT_LIVE_RESULTS.md).
 
 ---
 
@@ -316,6 +341,8 @@ intelligence_store/
 ├── logical_rule_history.csv
 ├── logical_rule_candidates.csv
 ├── logical_universes.csv
+├── logical_robot_events.jsonl         # live manifestation/event stream
+├── logical_robot_inbox.jsonl          # transparent human → robot I/O
 ├── universes/
 │   └── <universe_id>/
 │       ├── logical_space.csv
@@ -334,7 +361,7 @@ intelligence_store/
 
 `current_oracles.csv` shows the active evolvable oracle population. `oracle_history.csv` shows how that population changed through genesis, promotion, mutation and retirement.
 
-CSV is intentionally an MVP backend. The runtime/store boundary remains replaceable so later implementations can use accelerator-, FPGA- or quantum-near representations without changing how a Logical Robot calls the intelligence.
+CSV/JSONL are intentionally MVP backends. The runtime/store boundary remains replaceable so later implementations can use accelerator-, FPGA- or quantum-near representations without changing how a Logical Robot calls the intelligence.
 
 ---
 
@@ -361,6 +388,8 @@ Evidence planning
 
 The robot does not need to know how QCDS internals work. It receives an information need, observes, returns evidence and logic, and the same QCDS machine continues.
 
+Web pages, terminal UIs, API bodies and future physical robot bodies are manifestations/observation surfaces around this same intelligence boundary; they are not separate intelligences.
+
 ---
 
 ## Repository guide
@@ -376,6 +405,9 @@ The robot does not need to know how QCDS internals work. It receives an informat
 | `src/qcds_fabric/logical_universe.py` | Isolated Logical Universes and rule-drift governance |
 | `LOGICAL_UNIVERSE_TEMPLATE.md` | Empty, explanatory template for defining and falsifying a new Logical Universe |
 | `src/qcds_fabric/first_logical_robot.py` | Runnable Logical Robot body/runtime bridge |
+| `src/qcds_fabric/logical_robot_observatory.py` | BUILD 23 web manifestation, live event stream and I/O |
+| `src/qcds_fabric/public_web_reality.py` | BUILD 24 real public-web observation body for Reality discovery |
+| `src/qcds_fabric/continuous_reality.py` | BUILD 25 bounded continuous Reality-growth policy |
 | `src/qcds_fabric/intelligence_store.py` | Human-readable mission persistence |
 | `src/qcds_fabric/oracle_genesis.py` | Oracle-gap discovery and genesis |
 | `src/qcds_fabric/oracle_evolution.py` | Challenged oracle evolution and lineage |
@@ -384,7 +416,7 @@ The robot does not need to know how QCDS internals work. It receives an informat
 | `examples/` | Runnable examples |
 | `IMPLEMENTATION.md` | Detailed implementation history and boundaries |
 
-Focused documentation: [`LOGICAL_SPACE.md`](LOGICAL_SPACE.md), [`GLOBAL_LOGIC.md`](GLOBAL_LOGIC.md), [`LOGICAL_UNIVERSES.md`](LOGICAL_UNIVERSES.md), [`LOGICAL_UNIVERSE_TEMPLATE.md`](LOGICAL_UNIVERSE_TEMPLATE.md), [`PROBLEM_TO_SYNTRACT.md`](PROBLEM_TO_SYNTRACT.md), [`ORACLE_EVOLUTION.md`](ORACLE_EVOLUTION.md), [`ORACLE_GENESIS.md`](ORACLE_GENESIS.md), [`EVIDENCE_PLANNING.md`](EVIDENCE_PLANNING.md), [`LOGICAL_ROBOT.md`](LOGICAL_ROBOT.md), [`PERSISTENT_RUNTIME.md`](PERSISTENT_RUNTIME.md), [`FIRST_LOGICAL_ROBOT.md`](FIRST_LOGICAL_ROBOT.md).
+Focused documentation: [`LOGICAL_ROBOT_LIVE.md`](LOGICAL_ROBOT_LIVE.md), [`LOGICAL_SPACE.md`](LOGICAL_SPACE.md), [`GLOBAL_LOGIC.md`](GLOBAL_LOGIC.md), [`LOGICAL_UNIVERSES.md`](LOGICAL_UNIVERSES.md), [`LOGICAL_UNIVERSE_TEMPLATE.md`](LOGICAL_UNIVERSE_TEMPLATE.md), [`PROBLEM_TO_SYNTRACT.md`](PROBLEM_TO_SYNTRACT.md), [`ORACLE_EVOLUTION.md`](ORACLE_EVOLUTION.md), [`ORACLE_GENESIS.md`](ORACLE_GENESIS.md), [`EVIDENCE_PLANNING.md`](EVIDENCE_PLANNING.md), [`LOGICAL_ROBOT.md`](LOGICAL_ROBOT.md), [`PERSISTENT_RUNTIME.md`](PERSISTENT_RUNTIME.md), [`FIRST_LOGICAL_ROBOT.md`](FIRST_LOGICAL_ROBOT.md).
 
 ---
 
@@ -438,5 +470,3 @@ Reference software: **MIT**.
 Implementation, editorial, visualization or AI assistance may be acknowledged separately and does not alter conceptual authorship.
 
 ---
-
-**Welcome to the end of the beginning.**
