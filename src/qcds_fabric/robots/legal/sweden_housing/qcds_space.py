@@ -1,0 +1,657 @@
+from __future__ import annotations
+
+import csv
+import hashlib
+import io
+from dataclasses import dataclass
+from typing import Any, Mapping, Sequence
+
+from qcds_fabric.fabric import FabricLayer, StabilizedRotationSuiteResult
+from qcds_fabric.logical_assertion import normalize_logic_text
+from qcds_fabric.models import BaseBundle, ChannelView, State, Syntract, TruthDistribution
+from qcds_fabric.oracles import DistributionOracle, OracleStack
+from qcds_fabric.semantic import EvidenceOracle, OneHotOracle
+
+
+class LegalQCDSSpaceError(ValueError):
+    """Raised when an active legal QCDS space cannot be represented exactly."""
+
+
+def _canon(value: str) -> str:
+    return normalize_logic_text(str(value))
+
+
+def _slug(value: str) -> str:
+    out: list[str] = []
+    sep = False
+    for char in _canon(value):
+        if char.isalnum():
+            out.append(char)
+            sep = False
+        elif not sep:
+            out.append("-")
+            sep = True
+    return "".join(out).strip("-") or "term"
+
+
+def _mapping(value: Any, label: str) -> Mapping[str, Any]:
+    if not isinstance(value, Mapping):
+        raise LegalQCDSSpaceError(f"{label} must be an object")
+    return value
+
+
+@dataclass(frozen=True)
+class LegalSpaceRow:
+    dimension_id: str
+    kind: str
+    term: str
+    initial_value: int | str
+    source_id: str = ""
+    section_id: str = ""
+    note: str = ""
+
+    def __post_init__(self) -> None:
+        if self.initial_value not in (0, 1, "?"):
+            raise LegalQCDSSpaceError("legal-space initial value must be 0, 1 or ?")
+        if not self.dimension_id or not self.term:
+            raise LegalQCDSSpaceError("legal-space row requires dimension_id and term")
+
+
+@dataclass(frozen=True)
+class LegalRuleConstraintOracle:
+    """Multi-antecedent statutory implication evaluated inside a QCDS state.
+
+    The oracle does not derive a conclusion before QCDS. It only scores a
+    candidate state for coherence with the represented statutory constraint.
+    If a rotated view removes any participating dimension, the constraint is
+    deliberately not evaluated in that view rather than treating absence as 0.
+    """
+
+    oracle_id: str
+    antecedent_dimensions: tuple[str, ...]
+    consequent_dimensions: tuple[str, ...]
+    source_id: str
+    section_id: str
+    rule_id: str
+    confidence: float = 1.0
+
+    def __post_init__(self) -> None:
+        if not self.oracle_id or not self.rule_id:
+            raise ValueError("legal rule oracle requires identities")
+        if not self.antecedent_dimensions or not self.consequent_dimensions:
+            raise ValueError("legal rule oracle requires antecedent and consequent dimensions")
+        if not 0.5 <= self.confidence <= 1.0:
+            raise ValueError("legal rule oracle confidence must be in [0.5, 1.0]")
+
+    @property
+    def dimensions(self) -> tuple[str, ...]:
+        return tuple(dict.fromkeys((*self.antecedent_dimensions, *self.consequent_dimensions)))
+
+    def is_applicable(self, view: ChannelView) -> bool:
+        active = set(view.active_dimension_ids())
+        return all(dimension_id in active for dimension_id in self.dimensions)
+
+    def score(self, view: ChannelView, state: State) -> float:
+        active = view.state_as_mapping(state)
+        if not all(dimension_id in active for dimension_id in self.dimensions):
+            return 1.0
+        antecedent_true = all(active[dimension_id] == 1 for dimension_id in self.antecedent_dimensions)
+        if not antecedent_true:
+            return 1.0
+        consequent_true = all(active[dimension_id] == 1 for dimension_id in self.consequent_dimensions)
+        return self.confidence if consequent_true else 1.0 - self.confidence
+
+
+@dataclass(frozen=True)
+class LegalQCDSRuntime:
+    bundle: BaseBundle
+    oracle_stack: OracleStack
+    suite: StabilizedRotationSuiteResult
+    syntract: Syntract
+    rows: tuple[LegalSpaceRow, ...]
+    term_dimensions: Mapping[str, str]
+    active_rule_ids: tuple[str, ...]
+    active_precedents: tuple[Mapping[str, Any], ...]
+    csv_text: str
+
+
+def _dimension_id(kind: str, term: str) -> str:
+    return f"legal::{kind}::{_slug(term)}"
+
+
+def _row_kind(term: str) -> str:
+    canonical = _canon(term)
+    if canonical.startswith("primary regime:"):
+        return "regime"
+    if canonical.startswith("conclusion:"):
+        return "conclusion"
+    if canonical.startswith("question:"):
+        return "assessment"
+    if canonical.startswith("precedent:"):
+        return "precedent"
+    if canonical.startswith("law:") or canonical.startswith("exclusion:") or canonical.startswith("transition:"):
+        return "legal_state"
+    return "condition"
+
+
+def _csv_roundtrip(rows: Sequence[LegalSpaceRow]) -> tuple[tuple[LegalSpaceRow, ...], str]:
+    """Use CSV as the tabular active-space substrate, loaded entirely in memory."""
+    buffer = io.StringIO()
+    fieldnames = ("dimension_id", "kind", "term", "initial_value", "source_id", "section_id", "note")
+    writer = csv.DictWriter(buffer, fieldnames=fieldnames, lineterminator="\n")
+    writer.writeheader()
+    for row in rows:
+        writer.writerow({
+            "dimension_id": row.dimension_id,
+            "kind": row.kind,
+            "term": row.term,
+            "initial_value": row.initial_value,
+            "source_id": row.source_id,
+            "section_id": row.section_id,
+            "note": row.note,
+        })
+    text = buffer.getvalue()
+
+    loaded: list[LegalSpaceRow] = []
+    for raw in csv.DictReader(io.StringIO(text)):
+        value: int | str
+        if raw["initial_value"] == "?":
+            value = "?"
+        else:
+            value = int(raw["initial_value"])
+        loaded.append(LegalSpaceRow(
+            dimension_id=raw["dimension_id"],
+            kind=raw["kind"],
+            term=raw["term"],
+            initial_value=value,
+            source_id=raw.get("source_id", ""),
+            section_id=raw.get("section_id", ""),
+            note=raw.get("note", ""),
+        ))
+    return tuple(loaded), text
+
+
+def _marginal(distribution: TruthDistribution, bundle: BaseBundle, dimension_id: str) -> float:
+    index = bundle.dimension_ids.index(dimension_id)
+    return sum(
+        probability
+        for state, probability in zip(distribution.support, distribution.probabilities)
+        if state[index] == 1
+    )
+
+
+def _projection(runtime: LegalQCDSRuntime) -> list[dict[str, Any]]:
+    distribution = runtime.suite.stabilized_return.stabilized_distribution
+    out: list[dict[str, Any]] = []
+    for row in runtime.rows:
+        if row.initial_value != "?":
+            continue
+        out.append({
+            "dimension_id": row.dimension_id,
+            "kind": row.kind,
+            "term": row.term,
+            "probability_true": _marginal(distribution, runtime.bundle, row.dimension_id),
+            "source_id": row.source_id,
+            "section_id": row.section_id,
+        })
+    out.sort(key=lambda item: (-float(item["probability_true"]), str(item["term"])))
+    return out
+
+
+def _top_states(runtime: LegalQCDSRuntime, limit: int = 8) -> list[dict[str, Any]]:
+    distribution = runtime.suite.stabilized_return.stabilized_distribution
+    indexed = sorted(
+        enumerate(distribution.probabilities),
+        key=lambda item: item[1],
+        reverse=True,
+    )[:limit]
+    rows_by_dimension = {row.dimension_id: row for row in runtime.rows}
+    out: list[dict[str, Any]] = []
+    for index, probability in indexed:
+        state = distribution.support[index]
+        active_terms = [
+            rows_by_dimension[dimension_id].term
+            for dimension_id, value in zip(runtime.bundle.dimension_ids, state)
+            if value == 1 and rows_by_dimension[dimension_id].kind in {"regime", "conclusion", "assessment", "precedent", "legal_state"}
+        ]
+        out.append({"probability": probability, "active_terms": active_terms})
+    return out
+
+
+def _syntract(
+    *,
+    case_id: str,
+    stage: str,
+    bundle: BaseBundle,
+    stack: OracleStack,
+    suite: StabilizedRotationSuiteResult,
+    rows: Sequence[LegalSpaceRow],
+    active_rule_ids: Sequence[str],
+    active_precedents: Sequence[Mapping[str, Any]],
+    csv_text: str,
+    prior_syntract_id: str | None = None,
+) -> Syntract:
+    distribution = suite.stabilized_return.stabilized_distribution
+    return Syntract(
+        syntract_id=f"syntract:legal:sweden-housing:{_slug(case_id)}:{stage}",
+        bound_distribution=distribution,
+        evidence_provenance={
+            "case_id": case_id,
+            "legal_domain": "swedish_housing_law",
+            "stage": stage,
+            "active_rule_ids": tuple(active_rule_ids),
+            "active_precedent_ids": tuple(str(row.get("precedent_id", "")) for row in active_precedents),
+            "dimension_rows": tuple({
+                "dimension_id": row.dimension_id,
+                "kind": row.kind,
+                "term": row.term,
+                "initial_value": row.initial_value,
+                "source_id": row.source_id,
+                "section_id": row.section_id,
+            } for row in rows),
+            "csv_in_memory": True,
+            "csv_sha256": hashlib.sha256(csv_text.encode("utf-8")).hexdigest(),
+            "oracle_stack": stack.identity,
+            "prior_syntract_id": prior_syntract_id,
+        },
+        contradiction_provenance=tuple(distribution.contradiction_markers),
+        composition_provenance={
+            "direct_qcds_base_bundle": True,
+            "condition_formation": True,
+            "conditional_evolution_oracle_stack": True,
+            "recursive_inference": True,
+            "truth_alignment_stabilization": True,
+            "hard_collapse": False,
+            "can_reenter": True,
+            "can_expand": True,
+            "canonical_spec_modified": False,
+        },
+    )
+
+
+def _build_statutory_runtime(
+    *,
+    case_id: str,
+    case_terms: Sequence[str],
+    unresolved_questions: Sequence[str],
+    corpus: Mapping[str, Any],
+    applied_rule_ids: Sequence[str],
+    max_unknown_dimensions: int,
+) -> LegalQCDSRuntime:
+    rule_index = {str(row["rule_id"]): _mapping(row, "rules[]") for row in corpus["rules"]}
+    active_rules = tuple(rule_index[rule_id] for rule_id in applied_rule_ids if rule_id in rule_index)
+    known_terms = {_canon(term): str(term) for term in case_terms}
+
+    term_meta: dict[str, dict[str, str]] = {}
+    active_terms: dict[str, str] = dict(known_terms)
+    for row in active_rules:
+        source_id = str(row.get("source_id", ""))
+        section_id = str(row.get("section_id", ""))
+        for term in (*row.get("match_terms", ()), *row.get("emit_terms", ())):
+            canonical = _canon(str(term))
+            active_terms.setdefault(canonical, str(term))
+            term_meta.setdefault(canonical, {"source_id": source_id, "section_id": section_id})
+
+    regime_terms = [f"primary_regime:{value}" for value in corpus["primary_regime_candidates"]]
+    for term in regime_terms:
+        active_terms.setdefault(_canon(term), term)
+
+    for question in unresolved_questions:
+        term = str(question)
+        if not _canon(term).startswith("question:"):
+            term = f"question:{term}"
+        active_terms.setdefault(_canon(term), term)
+
+    rows: list[LegalSpaceRow] = []
+    term_dimensions: dict[str, str] = {}
+    for canonical, display in active_terms.items():
+        kind = _row_kind(display)
+        dimension_id = _dimension_id(kind, display)
+        term_dimensions[canonical] = dimension_id
+        meta = term_meta.get(canonical, {})
+        rows.append(LegalSpaceRow(
+            dimension_id=dimension_id,
+            kind=kind,
+            term=display,
+            initial_value=1 if canonical in known_terms else "?",
+            source_id=meta.get("source_id", ""),
+            section_id=meta.get("section_id", ""),
+            note="case condition" if canonical in known_terms else "QCDS candidate dimension",
+        ))
+
+    loaded_rows, csv_text = _csv_roundtrip(rows)
+    unknown_count = sum(row.initial_value == "?" for row in loaded_rows)
+    if unknown_count > max_unknown_dimensions:
+        raise LegalQCDSSpaceError(
+            f"active statutory QCDS space requires 2^{unknown_count} states; exact classical limit is 2^{max_unknown_dimensions} for this runner"
+        )
+
+    bundle = BaseBundle(
+        bundle_id=f"legal-qcds:{_slug(case_id)}:statutory",
+        dimension_ids=tuple(row.dimension_id for row in loaded_rows),
+        values=tuple(row.initial_value for row in loaded_rows),
+        provenance={
+            "case_id": case_id,
+            "legal_corpus_id": corpus["corpus_id"],
+            "active_rule_ids": tuple(str(row["rule_id"]) for row in active_rules),
+            "csv_in_memory": True,
+            "unknown_dimension_count": unknown_count,
+            "candidate_binary_space": f"2^{unknown_count}",
+            "canonical_spec_modified": False,
+        },
+        semantic_domain={"kind": "swedish_housing_active_legal_space", "stage": "statutory"},
+    )
+
+    oracles: list[Any] = []
+    regime_dimensions = tuple(term_dimensions[_canon(term)] for term in regime_terms)
+    if len(regime_dimensions) >= 2:
+        oracles.append(OneHotOracle("legal:primary-regime:onehot", regime_dimensions))
+
+    for row in active_rules:
+        antecedents = tuple(term_dimensions[_canon(str(term))] for term in row.get("match_terms", ()))
+        consequents = tuple(term_dimensions[_canon(str(term))] for term in row.get("emit_terms", ()))
+        oracles.append(LegalRuleConstraintOracle(
+            oracle_id=f"legal:rule:{_slug(str(row['rule_id']))}",
+            antecedent_dimensions=antecedents,
+            consequent_dimensions=consequents,
+            source_id=str(row.get("source_id", "")),
+            section_id=str(row.get("section_id", "")),
+            rule_id=str(row["rule_id"]),
+            confidence=1.0,
+        ))
+
+    stack = OracleStack(
+        stack_id=f"legal-qcds:{_slug(case_id)}:statutory",
+        version="1",
+        oracles=tuple(oracles),
+    )
+    suite = FabricLayer().run_stabilized_rotation_suite(
+        bundle,
+        stack,
+        include_positional=True,
+        include_oracle_exposure=True,
+        include_crossed=False,
+    )
+    syntract = _syntract(
+        case_id=case_id,
+        stage="statutory",
+        bundle=bundle,
+        stack=stack,
+        suite=suite,
+        rows=loaded_rows,
+        active_rule_ids=tuple(str(row["rule_id"]) for row in active_rules),
+        active_precedents=(),
+        csv_text=csv_text,
+    )
+    return LegalQCDSRuntime(
+        bundle=bundle,
+        oracle_stack=stack,
+        suite=suite,
+        syntract=syntract,
+        rows=loaded_rows,
+        term_dimensions=term_dimensions,
+        active_rule_ids=tuple(str(row["rule_id"]) for row in active_rules),
+        active_precedents=(),
+        csv_text=csv_text,
+    )
+
+
+def _active_precedents(praxis: Mapping[str, Any], represented_terms: Sequence[str]) -> tuple[dict[str, Any], ...]:
+    known = {_canon(term) for term in represented_terms}
+    active: list[dict[str, Any]] = []
+    for raw in praxis.get("precedents", ()):
+        row = _mapping(raw, "precedents[]")
+        activation = [str(term) for term in row.get("activation_terms", ())]
+        counter = [str(term) for term in row.get("counter_terms", ())]
+        activation_hits = [term for term in activation if _canon(term) in known]
+        counter_hits = [term for term in counter if _canon(term) in known]
+        if not activation_hits and not counter_hits:
+            continue
+        active.append({
+            **dict(row),
+            "matched_similarity_factors": activation_hits,
+            "matched_counter_factors": counter_hits,
+        })
+    return tuple(active)
+
+
+def _expand_with_praxis(
+    *,
+    case_id: str,
+    statutory: LegalQCDSRuntime,
+    praxis: Mapping[str, Any],
+    represented_terms: Sequence[str],
+    max_unknown_dimensions: int,
+) -> LegalQCDSRuntime:
+    precedents = _active_precedents(praxis, represented_terms)
+    if not precedents:
+        return statutory
+
+    extra_rows = [
+        LegalSpaceRow(
+            dimension_id=_dimension_id("precedent", f"precedent:{row['precedent_id']}"),
+            kind="precedent",
+            term=f"precedent:{row['precedent_id']}",
+            initial_value="?",
+            source_id=str(row.get("precedent_id", "")),
+            section_id="|".join(str(value) for value in row.get("statutory_links", ())),
+            note="active precedent relevance",
+        )
+        for row in precedents
+    ]
+    loaded_rows, csv_text = _csv_roundtrip((*statutory.rows, *extra_rows))
+    unknown_count = sum(row.initial_value == "?" for row in loaded_rows)
+    if unknown_count > max_unknown_dimensions:
+        raise LegalQCDSSpaceError(
+            f"integrated legal QCDS space requires 2^{unknown_count} states; exact classical limit is 2^{max_unknown_dimensions} for this runner"
+        )
+
+    bundle = BaseBundle(
+        bundle_id=f"legal-qcds:{_slug(case_id)}:integrated",
+        dimension_ids=tuple(row.dimension_id for row in loaded_rows),
+        values=tuple(row.initial_value for row in loaded_rows),
+        provenance={
+            **dict(statutory.bundle.provenance),
+            "stage": "integrated_statute_praxis",
+            "prior_syntract_id": statutory.syntract.syntract_id,
+            "active_precedent_ids": tuple(str(row["precedent_id"]) for row in precedents),
+            "unknown_dimension_count": unknown_count,
+            "candidate_binary_space": f"2^{unknown_count}",
+        },
+        semantic_domain={"kind": "swedish_housing_active_legal_space", "stage": "integrated_statute_praxis"},
+    )
+
+    prior = statutory.suite.stabilized_return.stabilized_distribution
+    prior_probabilities = {state: probability for state, probability in zip(prior.support, prior.probabilities)}
+    oracles: list[Any] = [
+        *statutory.oracle_stack.oracles,
+        DistributionOracle(
+            oracle_id="legal:statutory-syntract-reentry",
+            dimension_ids=statutory.bundle.dimension_ids,
+            probabilities=prior_probabilities,
+            power=1.0,
+        ),
+    ]
+
+    precedent_dimensions = {row.source_id: row.dimension_id for row in extra_rows}
+    for precedent in precedents:
+        precedent_id = str(precedent["precedent_id"])
+        dimension_id = precedent_dimensions[precedent_id]
+        for index, factor in enumerate(precedent.get("matched_similarity_factors", ())):
+            oracles.append(EvidenceOracle(
+                oracle_id=f"legal:praxis:{_slug(precedent_id)}:similarity:{index}",
+                dimension_id=dimension_id,
+                expected_value=1,
+                confidence=0.75,
+                source_id=precedent_id,
+                claim_text=f"represented similarity factor: {factor}",
+            ))
+        for index, factor in enumerate(precedent.get("matched_counter_factors", ())):
+            oracles.append(EvidenceOracle(
+                oracle_id=f"legal:praxis:{_slug(precedent_id)}:counter:{index}",
+                dimension_id=dimension_id,
+                expected_value=0,
+                confidence=0.75,
+                source_id=precedent_id,
+                claim_text=f"represented counter-factor: {factor}",
+            ))
+
+    stack = OracleStack(
+        stack_id=f"legal-qcds:{_slug(case_id)}:integrated",
+        version="2",
+        oracles=tuple(oracles),
+    )
+    suite = FabricLayer().run_stabilized_rotation_suite(
+        bundle,
+        stack,
+        include_positional=True,
+        include_oracle_exposure=True,
+        include_crossed=False,
+    )
+    syntract = _syntract(
+        case_id=case_id,
+        stage="final",
+        bundle=bundle,
+        stack=stack,
+        suite=suite,
+        rows=loaded_rows,
+        active_rule_ids=statutory.active_rule_ids,
+        active_precedents=precedents,
+        csv_text=csv_text,
+        prior_syntract_id=statutory.syntract.syntract_id,
+    )
+    term_dimensions = dict(statutory.term_dimensions)
+    term_dimensions.update({_canon(row.term): row.dimension_id for row in extra_rows})
+    return LegalQCDSRuntime(
+        bundle=bundle,
+        oracle_stack=stack,
+        suite=suite,
+        syntract=syntract,
+        rows=loaded_rows,
+        term_dimensions=term_dimensions,
+        active_rule_ids=statutory.active_rule_ids,
+        active_precedents=precedents,
+        csv_text=csv_text,
+    )
+
+
+def _regime_projection(runtime: LegalQCDSRuntime, candidates: Sequence[str]) -> list[dict[str, Any]]:
+    distribution = runtime.suite.stabilized_return.stabilized_distribution
+    raw: list[tuple[str, float]] = []
+    for value in candidates:
+        term = f"primary_regime:{value}"
+        dimension_id = runtime.term_dimensions.get(_canon(term))
+        if dimension_id is None:
+            continue
+        raw.append((str(value), _marginal(distribution, runtime.bundle, dimension_id)))
+    total = sum(probability for _, probability in raw)
+    return [
+        {"value": value, "probability": probability / total if total else 0.0}
+        for value, probability in sorted(raw, key=lambda item: (-item[1], item[0]))
+    ]
+
+
+def _runtime_payload(runtime: LegalQCDSRuntime, corpus: Mapping[str, Any]) -> dict[str, Any]:
+    projection = _projection(runtime)
+    regime_projection = _regime_projection(runtime, corpus["primary_regime_candidates"])
+    leading = []
+    if regime_projection:
+        peak = float(regime_projection[0]["probability"])
+        leading = [row["value"] for row in regime_projection if abs(float(row["probability"]) - peak) <= 1e-12]
+    unknown_count = sum(row.initial_value == "?" for row in runtime.rows)
+    return {
+        "status": "ok",
+        "core_execution": "qcds_fabric.FabricLayer.run_stabilized_rotation_suite",
+        "direct_qcds_base_bundle": True,
+        "syntract_id": runtime.syntract.syntract_id,
+        "leading_candidates": leading,
+        "stabilized": regime_projection,
+        "baseline": regime_projection,
+        "logical_width": runtime.bundle.width,
+        "unknown_dimension_count": unknown_count,
+        "candidate_binary_space": f"2^{unknown_count}",
+        "candidate_state_count": len(runtime.suite.baseline_distribution.support),
+        "oracle_count": len(runtime.oracle_stack.oracles),
+        "active_rule_ids": list(runtime.active_rule_ids),
+        "active_precedent_ids": [str(row.get("precedent_id", "")) for row in runtime.active_precedents],
+        "marginals": projection,
+        "top_states": _top_states(runtime),
+        "entropy": runtime.suite.stabilized_return.stabilized_distribution.entropy,
+        "oracle_agreement": runtime.suite.stabilized_return.stabilized_distribution.oracle_agreement,
+        "retained_uncertainty": runtime.suite.stabilized_return.retained_uncertainty,
+        "rotation_sensitivity": dict(runtime.suite.stabilized_return.rotation_sensitivity),
+        "conflict_markers": list(runtime.suite.stabilized_return.stabilized_distribution.contradiction_markers),
+        "csv_in_memory": True,
+        "csv_row_count": len(runtime.rows),
+        "csv_sha256": hashlib.sha256(runtime.csv_text.encode("utf-8")).hexdigest(),
+        "phases": {
+            "1_condition_formation": "case facts + activated statutory dimensions + live assessment dimensions",
+            "2_conditional_evolution": "source-attributed legal rule oracles and praxis evidence oracles",
+            "3_recursive_inference": "exact classical enumeration of the active 2^N legal state space across rotation banks",
+            "4_truth_alignment_verification": "stabilized distribution bound as the legal Syntract",
+        },
+        "canonical_spec_modified": False,
+    }
+
+
+def run_integrated_legal_qcds(
+    *,
+    case_id: str,
+    case_terms: Sequence[str],
+    resolved_terms: Sequence[str],
+    unresolved_questions: Sequence[str],
+    corpus: Mapping[str, Any],
+    applied_rule_ids: Sequence[str],
+    praxis: Mapping[str, Any] | None = None,
+    max_unknown_dimensions: int = 18,
+) -> Mapping[str, Any]:
+    """Run the active Swedish legal space through the actual QCDS Fabric.
+
+    Hard-law resolution is used only for Condition Formation: it tells the legal
+    body which source-attributed rule constraints are active. Consequences are
+    not fixed in the BaseBundle. They remain '?' dimensions and are resolved by
+    QCDS over the exact active binary state space.
+
+    When praxis is supplied, the statutory Syntract is re-entered through a
+    DistributionOracle and the space is expanded with active precedent
+    dimensions before a second stabilized QCDS pass binds the final Syntract.
+    """
+    statutory = _build_statutory_runtime(
+        case_id=case_id,
+        case_terms=case_terms,
+        unresolved_questions=unresolved_questions,
+        corpus=corpus,
+        applied_rule_ids=applied_rule_ids,
+        max_unknown_dimensions=max_unknown_dimensions,
+    )
+    statutory_payload = _runtime_payload(statutory, corpus)
+
+    final_runtime = statutory
+    if praxis is not None:
+        final_runtime = _expand_with_praxis(
+            case_id=case_id,
+            statutory=statutory,
+            praxis=praxis,
+            represented_terms=resolved_terms,
+            max_unknown_dimensions=max_unknown_dimensions,
+        )
+    final_payload = _runtime_payload(final_runtime, corpus)
+    final_payload["statutory_syntract_id"] = statutory.syntract.syntract_id
+    final_payload["reentered_statutory_syntract"] = final_runtime is not statutory
+    final_payload["statutory_pass"] = {
+        "syntract_id": statutory_payload["syntract_id"],
+        "candidate_binary_space": statutory_payload["candidate_binary_space"],
+        "candidate_state_count": statutory_payload["candidate_state_count"],
+        "oracle_count": statutory_payload["oracle_count"],
+        "entropy": statutory_payload["entropy"],
+        "retained_uncertainty": statutory_payload["retained_uncertainty"],
+    }
+    return final_payload
+
+
+__all__ = [
+    "LegalQCDSSpaceError",
+    "LegalRuleConstraintOracle",
+    "LegalSpaceRow",
+    "run_integrated_legal_qcds",
+]
