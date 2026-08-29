@@ -55,6 +55,11 @@ def grover_emulated_profile(
     return profile, FabricLayer(kernel=substrate)
 
 
+def candidate_state_count(bundle: BaseBundle) -> int:
+    """Return exact baseline state count without materializing the state tuple."""
+    return 1 << sum(1 for value in bundle.values if value == "?")
+
+
 def run_profile(
     profile: LegalExecutionProfile,
     fabric: FabricLayer,
@@ -65,7 +70,7 @@ def run_profile(
     include_oracle_exposure: bool = True,
     include_crossed: bool = False,
 ) -> StabilizedRotationSuiteResult:
-    state_count = len(bundle.candidate_states())
+    state_count = candidate_state_count(bundle)
     if profile.max_states and state_count > profile.max_states:
         raise ValueError(
             f"execution profile {profile.profile_id} supports at most {profile.max_states} states; "
@@ -116,6 +121,7 @@ def profile_payload(
 
 __all__ = [
     "LegalExecutionProfile",
+    "candidate_state_count",
     "classical_exact_profile",
     "grover_emulated_profile",
     "profile_payload",
