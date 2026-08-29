@@ -57,8 +57,11 @@ def test_second_hand_facts_activate_real_hd_praxis_and_qcds_pass() -> None:
     assert "NJA-2022-329" in matched_ids
     assert praxis["qcds_execution"] == "qcds_fabric.problem.problem_to_syntract"
     assert praxis["evidence_claim_count"] >= 1
-    assert len(praxis["stabilized_relevance"]) >= 12
     assert praxis["represented_precedent_count"] >= 12
+    assert 1 <= praxis["active_precedent_count"] < praxis["represented_precedent_count"]
+    assert len(praxis["stabilized_relevance"]) == praxis["active_precedent_count"]
+    assert praxis["represented_binary_space"].startswith("2^")
+    assert praxis["active_binary_space"] == f"2^{praxis['active_precedent_count']}"
     assert praxis["boundary"]["precedent_installed_as_rule"] is False
     assert praxis["boundary"]["praxis_changes_statutory_conclusions_automatically"] is False
 
@@ -88,6 +91,7 @@ def test_material_defect_activates_competing_interpretive_precedents() -> None:
     assert "tenant_immediate_termination_ground_material_defect" in result["conclusions"]
     assert praxis["qcds_execution"] == "qcds_fabric.problem.problem_to_syntract"
     assert praxis["evidence_claim_count"] >= 4
+    assert praxis["active_precedent_count"] >= 3
 
 
 def test_praxis_layer_keeps_authority_separate_from_similarity() -> None:
