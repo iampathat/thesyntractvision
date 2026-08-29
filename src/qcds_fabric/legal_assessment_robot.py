@@ -14,6 +14,7 @@ from .legal_logical_robot import (
 )
 from .logical_assertion import normalize_logic_text
 from .problem import ProblemQuery, SemanticProblemFrame, problem_to_syntract
+from .robots.legal.sweden_housing.qcds_space import LegalQCDSSpaceError, run_integrated_legal_qcds
 from .semantic import SemanticClaim
 
 
@@ -86,6 +87,12 @@ def _praxis_qcds_pass(
     resolved_terms: Sequence[str],
     praxis: Mapping[str, Any],
 ) -> Mapping[str, Any]:
+    """Legacy readable praxis projection retained as diagnostics.
+
+    The final Legal Syntract is no longer produced here. It is produced by the
+    integrated direct QCDS legal space in qcds_space.py. This projection remains
+    useful for explaining which cases activated and why.
+    """
     known = _norm_terms(resolved_terms)
     precedents = _precedent_rows(praxis)
     claims: list[SemanticClaim] = []
@@ -150,7 +157,8 @@ def _praxis_qcds_pass(
         "active_binary_space": f"2^{active_count}",
         "condition_formation": "The full praxis corpus remains represented. Only precedents with an explicit similarity or counter-factor enter the active QCDS working space for this case.",
         "authority_scale": dict(_mapping(praxis.get("authority_scale", {}), "authority_scale")),
-        "source_hierarchy_note": "Authority is reported separately from factual similarity. The QCDS relevance pass compares represented similarity/counter-factors; it does not let a lower court outrank a higher court merely by being factually close.",
+        "source_hierarchy_note": "Authority is reported separately from factual similarity. Relevance does not make a lower court authoritative over a higher source.",
+        "final_syntract_produced_here": False,
     }
 
     if not claims or not active_candidates:
@@ -171,7 +179,7 @@ def _praxis_qcds_pass(
 
     frame = SemanticProblemFrame(
         mission_id=f"praxis-{normalize_logic_text(case_id).replace(' ', '-')}",
-        raw_text="Assess which active represented housing-law precedents are most relevant to the current legal case factors.",
+        raw_text="Diagnostic projection of which active represented housing-law precedents are most relevant to the current legal case factors.",
         queries=(ProblemQuery(
             query_id="praxis-relevance",
             subject=case_id,
@@ -180,16 +188,14 @@ def _praxis_qcds_pass(
             original_text="Which active represented precedents are most relevant to this case?",
         ),),
         claims=tuple(claims),
-        analyzer_id="legal_praxis_active_space_v1",
+        analyzer_id="legal_praxis_diagnostic_projection_v2",
         provenance={
             "praxis_id": praxis["praxis_id"],
-            "praxis_expansion_ids": tuple(praxis.get("expansion_ids", ())),
             "condition_formation_active_subset": True,
-            "represented_precedent_count": represented_count,
-            "active_precedent_count": active_count,
             "precedent_is_not_rule_installation": True,
             "authority_is_not_similarity": True,
             "similarity_is_not_outcome": True,
+            "final_legal_syntract_produced_elsewhere": True,
             "canonical_spec_modified": False,
         },
     )
@@ -218,7 +224,7 @@ def _praxis_qcds_pass(
         "status": "ok",
         "matched_precedents": matched,
         "qcds_execution": "qcds_fabric.problem.problem_to_syntract",
-        "syntract_id": result.syntract.syntract_id,
+        "diagnostic_syntract_id": result.syntract.syntract_id,
         "evidence_claim_count": len(claims),
         "leading_precedents": leaders,
         "stabilized_relevance": stabilized,
@@ -243,7 +249,7 @@ class LegalAssessmentResult:
 
 
 class SwedishHousingAssessmentRobot:
-    """Compose hard statutory logic with a separate QCDS interpretive layer."""
+    """Bind one final Legal Syntract from statute, case facts and active praxis."""
 
     def __init__(
         self,
@@ -261,16 +267,35 @@ class SwedishHousingAssessmentRobot:
             resolved_terms=tuple(str(value) for value in statutory["resolved_terms"]),
             praxis=self.praxis,
         )
+        integrated_qcds = run_integrated_legal_qcds(
+            case_id=str(statutory["case_id"]),
+            case_terms=tuple(str(value) for value in statutory["case_terms"]),
+            resolved_terms=tuple(str(value) for value in statutory["resolved_terms"]),
+            unresolved_questions=tuple(str(value) for value in statutory["unresolved_questions"]),
+            corpus=self.legal_robot.corpus,
+            applied_rule_ids=tuple(str(value) for value in statutory["applied_rules"]),
+            praxis=self.praxis,
+        )
+        swarm = {
+            **dict(_mapping(statutory["swarm_packet"], "swarm_packet")),
+            "syntract_id": integrated_qcds["syntract_id"],
+            "qcds_space": integrated_qcds["candidate_binary_space"],
+        }
         payload = {
             **statutory,
+            "statutory_regime_projection": statutory["qcds_core"],
+            "qcds_core": integrated_qcds,
             "praxis_assessment": praxis,
+            "swarm_packet": swarm,
             "assessment_model": {
-                "hard_layer": "source-attributed statute / transition / scope / procedural conditions",
-                "assessment_layer": "open-textured statutory standards, missing discriminators, factual similarity and counter-factors",
-                "praxis_layer": "HD precedent plus identified Svea hovrätt guidance, with authority class kept separate from factual similarity",
-                "condition_formation": "the large represented legal corpus is projected into a bounded active case space before QCDS inference",
-                "qcds_role": "stabilize competing active interpretive relevance without turning precedent into automatic truth",
-                "statutory_result_preserved": True,
+                "hard_layer": "source-attributed statute / transition / scope / procedural conditions become active QCDS constraints, not a precomputed final answer",
+                "assessment_layer": "open-textured statutory standards remain live '?' dimensions unless evidence and constraints discriminate them",
+                "praxis_layer": "active HD/Svea precedent dimensions are added during QCDS re-entry; authority metadata remains separate from factual similarity",
+                "condition_formation": "case facts activate a bounded statutory rule set and its legal dimensions; the active table is serialized and loaded in memory as CSV",
+                "qcds_role": "enumerate the exact active 2^N legal state space, apply source-attributed oracle constraints, rotate/challenge it, re-enter the statutory Syntract with praxis, and bind the stabilized final Legal Syntract",
+                "statutory_result_preserved": False,
+                "statutory_constraints_preserved": True,
+                "final_answer_is_qcds_distribution": True,
                 "canonical_spec_modified": False,
             },
         }
@@ -279,7 +304,7 @@ class SwedishHousingAssessmentRobot:
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Run Swedish housing statutory logic plus QCDS precedent assessment above the unchanged core."
+        description="Run Swedish housing law as an integrated exact classical QCDS logical space and bind the final Legal Syntract."
     )
     parser.add_argument("case", help="Path to a housing-law case JSON")
     parser.add_argument("--praxis", help="Optional alternate praxis JSON")
@@ -289,7 +314,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             praxis=load_legal_praxis(args.praxis) if args.praxis else None,
         )
         result = robot.run_case(load_legal_case(args.case))
-    except (OSError, json.JSONDecodeError, LegalLogicalRobotError, LegalPraxisError, ValueError) as exc:
+    except (OSError, json.JSONDecodeError, LegalLogicalRobotError, LegalPraxisError, LegalQCDSSpaceError, ValueError) as exc:
         parser.error(str(exc))
         return 2
     print(json.dumps(result.as_dict(), ensure_ascii=False, indent=2, sort_keys=True))
