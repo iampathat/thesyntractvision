@@ -19,7 +19,7 @@ The legal snapshot is currently **2026-08-29**.
 
 ```text
 FULL REPRESENTED LEGAL UNIVERSE
-statutes + dates + transition + rules + praxis + source provenance
+statutes + dates + transition + modular rule layers + praxis + provenance
                          │
                          ▼
                        CASE
@@ -33,7 +33,7 @@ statutes + dates + transition + rules + praxis + source provenance
           ▼                             ▼
    HARD / DECLARED PATH          ASSESSMENT PATH
  scope · deadline · rule         reasonableness · degree
- explicit consequence            materiality · balancing
+ procedure · consequence         materiality · balancing
           │                             │
           │                       relevant praxis
           │                       analogy / counter-factor
@@ -55,6 +55,30 @@ factual similarity ≠ legal outcome
 missing fact ≠ permission to guess
 ```
 
+## The legal universe grows in layers
+
+The domain is no longer one expanding JSON pile. The robot assembles several bounded legal layers at runtime:
+
+```text
+base housing-law corpus
+        │
+        ├── Chapter 12 core expansion
+        │     second hand / forfeiture / recovery
+        │     extension / rent review
+        │
+        ├── use / conduct / access / transfer expansion
+        │     care / disturbances / access
+        │     transfer / close relative / exchange
+        │
+        └── praxis layers
+              HD + identified Svea guidance
+        │
+        ▼
+merged Legal Universe for the snapshot
+```
+
+That pattern is intentional: future areas can be added as distinct legal modules without changing QCDS core semantics.
+
 ## What is hard and what is soft?
 
 Some legal conditions can be represented very strictly:
@@ -63,29 +87,36 @@ Some legal conditions can be represented very strictly:
 - rent is more than a stated statutory delay threshold;
 - a required consent exists or does not exist;
 - a statutory time window is represented as met or not met;
-- a special statute is excluded by an explicit scope condition.
+- a special statute is excluded by an explicit scope condition;
+- a warning or statutory notice has or has not been represented;
+- a landlord did or did not answer a transfer request within the represented three-week period.
 
 Other questions are inherently evaluative:
 
 - is a breach of **minor significance**?
+- is a disturbance more than neighbours **reasonably should tolerate**?
+- is the disturbance **specially serious**?
 - is accommodation of outsiders more than the landlord **reasonably must accept**?
-- are reasons for second-hand letting **considerable**?
+- are reasons for second-hand letting or an apartment exchange sufficiently strong?
+- can the landlord **reasonably accept** a close-relative transfer?
 - does the landlord have a **justified reason** to refuse?
 - is a defect **material**?
 - is it **reasonable** that a tenant move because of a major renovation?
 - how should the landlord's interest be balanced against the tenant's hardship?
 
-Those are not converted into hard truth just because they occur in a statute. They remain explicit **assessment questions** until represented facts, rules and interpretive authority discriminate them.
+Those are not converted into hard truth just because they occur in a statute. They remain explicit **assessment questions** until represented facts, evidence and interpretive authority discriminate them.
 
 ## Current Chapter 12 coverage
 
-The represented Chapter 12 core now includes important parts of:
+The represented Chapter 12 universe now includes important parts of:
 
+- **24–26 §§** — care/damage responsibility, conduct/disturbances, warning/social-welfare procedure, supervision and landlord access;
+- **32–38 §§** — transfer, close-relative transfer, apartment exchange and selected effects of authorized transfer;
 - **39–41 §§** — second-hand letting, permission and outsider/lodger reasonableness;
 - **42–44 §§** — forfeiture, rectification/time limits and recovery after late residential rent;
 - **45 a–50 §§** — extension/security of tenure, exceptions, referral and right to remain during a pending extension dispute;
 - **53–55 f §§** — rent-review scope, procedure, reasonable rent, second-hand ceilings and repayment;
-- existing defect, classification and other Chapter 12 links represented through the praxis layer.
+- selected defect, classification and evidential questions represented through the praxis layer.
 
 See [`COVERAGE.md`](COVERAGE.md) for the detailed matrix.
 
@@ -98,11 +129,11 @@ The praxis corpus contains authority metadata, issue tags, statutory links, simi
 Example:
 
 ```text
-13 represented decisions
+16+ represented decisions
         ↓ case facts
-4 decisions share explicit factors
+3 decisions share explicit factors
         ↓ Condition Formation
-active praxis space = 2^4
+active praxis space = 2^3
         ↓
 QCDS relevance challenge
         ↓
@@ -154,7 +185,7 @@ qcds-legal-robot robots/legal/sweden_housing/cases/jb_unauthorized_sublet_forfei
 
 ## Case library
 
-The `cases/` directory is an executable teaching and regression library. It currently includes examples of:
+The `cases/` directory is an executable teaching and regression library. It now contains **15 probes** spanning temporal law, hard statutory rules, cure paths, evidence and open balancing:
 
 | Case | What it demonstrates |
 |---|---|
@@ -166,8 +197,13 @@ The `cases/` directory is an executable teaching and regression library. It curr
 | `jb_late_rent_recovery_2026.json` | forfeiture ground and statutory recovery represented together |
 | `jb_extension_renovation_balance_2026.json` | default security of tenure + major-renovation reasonableness balance |
 | `jb_excess_second_hand_rent_2026.json` | statutory second-hand rent ceiling + repayment discriminator + guiding praxis |
-| `jb_outsider_reasonableness_2026.json` | a deliberately unresolved section 41 reasonableness problem |
+| `jb_outsider_reasonableness_2026.json` | deliberately unresolved section 41 reasonableness |
 | `jb_second_hand_permission_2026.json` | multi-condition tribunal permission under section 40 |
+| `jb_disturbance_after_warning_2026.json` | ordinary disturbance path: tolerability, warning, social notice, rectification and forfeiture |
+| `jb_access_refusal_rectified_2026.json` | access refusal can create a ground while timely rectification blocks eviction on that ground |
+| `jb_transfer_unreasonable_refusal_2026.json` | general transfer consent rule and the tenant remedy after unreasonable refusal |
+| `jb_apartment_exchange_2026.json` | section 35 exchange criteria plus guiding praxis about noteworthy reasons |
+| `jb_damage_evidence_2026.json` | evidence pointing toward negligence without silently declaring negligence proven |
 
 These fixtures are **not** the domain model. They are probes into the growing legal universe.
 
@@ -178,10 +214,10 @@ This is a specialized Logical Robot, not another intelligence core.
 ```text
 Swedish Housing Legal Robot
         │
-        ├── domain corpus
+        ├── modular domain corpus
         ├── case projection
         ├── statutory resolver
-        └── praxis activation
+        └── active praxis formation
                  │
                  ▼
 qcds_fabric.problem.problem_to_syntract
@@ -222,7 +258,7 @@ Its packet is explicitly **non-authoritative over peer Reality**. Specialized ex
 
 This directory is where the legal robot grows. Natural next layers include:
 
-- substantially more of Chapter 12;
+- more of Chapter 12 and more detailed exception/safeguard variants;
 - more HD precedent and identified guiding Svea hovrätt decisions;
 - Hyresnämnd material where it adds a distinct evidential/interpretive role;
 - propositions, SOU and later treatment of case law;
