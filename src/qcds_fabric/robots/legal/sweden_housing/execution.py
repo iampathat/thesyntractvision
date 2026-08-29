@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Mapping
+from typing import Mapping, Sequence
 
 from qcds_fabric.fabric import FabricLayer, StabilizedRotationSuiteResult
 from qcds_fabric.grover_depth import AdaptiveGroverSubstrate, GroverDepthConfig
@@ -16,16 +16,33 @@ class LegalExecutionProfile:
     substrate_id: str
     exact_classical_reference: bool
     grover_emulated: bool
+    native_quantum_target: bool
+    semantic_projection_allowed: bool
+    resource_bounded_emulation: bool
     max_states: int
     grover_max_iterations: int | None = None
 
+    @property
+    def requires_full_logical_universe(self) -> bool:
+        return self.native_quantum_target and not self.semantic_projection_allowed
+
 
 def classical_exact_profile(*, top_k: int = 8) -> tuple[LegalExecutionProfile, FabricLayer]:
+    """Exact bounded classical reference over the already formed active room.
+
+    Classical execution may use resource-aware Condition Formation before this
+    profile is invoked. Once the BaseBundle is supplied, however, this profile
+    enumerates its complete 2^N support and never silently prunes candidate
+    states.
+    """
     profile = LegalExecutionProfile(
         profile_id="classical_exact",
         substrate_id="classical",
         exact_classical_reference=True,
         grover_emulated=False,
+        native_quantum_target=False,
+        semantic_projection_allowed=True,
+        resource_bounded_emulation=True,
         max_states=0,
         grover_max_iterations=None,
     )
@@ -38,6 +55,13 @@ def grover_emulated_profile(
     max_states: int = 4096,
     max_iterations: int = 8,
 ) -> tuple[LegalExecutionProfile, FabricLayer]:
+    """Software statevector/Grover emulation of the active QCDS room.
+
+    This mode is deliberately resource bounded. It may run a classically formed
+    active room or an exact separable decomposition, because the statevector is
+    materialized in software. That classical resource concession must never be
+    confused with the native quantum target semantics.
+    """
     config = GroverDepthConfig(
         top_k=top_k,
         max_states=max_states,
@@ -49,15 +73,67 @@ def grover_emulated_profile(
         substrate_id=substrate.substrate_id,
         exact_classical_reference=False,
         grover_emulated=True,
+        native_quantum_target=False,
+        semantic_projection_allowed=True,
+        resource_bounded_emulation=True,
         max_states=max_states,
         grover_max_iterations=max_iterations,
     )
     return profile, FabricLayer(kernel=substrate)
 
 
+def quantum_full_space_profile() -> LegalExecutionProfile:
+    """Native-QPU target contract for QCDS.
+
+    This is an architectural execution contract, not a software QPU backend.
+    The represented logical universe must not be reduced merely to satisfy a
+    classical state-count/memory bound. Relevance is intended to emerge through
+    Conditions, oracle interaction, amplitude evolution and recursive QCDS.
+
+    A future native substrate must either accept the full represented bundle or
+    use a decomposition that is itself a QCDS/Syntract operation preserving the
+    complete represented universe. Classical semantic pre-filtering is forbidden
+    in this mode.
+    """
+    return LegalExecutionProfile(
+        profile_id="quantum_full_space",
+        substrate_id="native_qpu_target",
+        exact_classical_reference=False,
+        grover_emulated=False,
+        native_quantum_target=True,
+        semantic_projection_allowed=False,
+        resource_bounded_emulation=False,
+        max_states=0,
+        grover_max_iterations=None,
+    )
+
+
 def candidate_state_count(bundle: BaseBundle) -> int:
     """Return exact baseline state count without materializing the state tuple."""
     return 1 << sum(1 for value in bundle.values if value == "?")
+
+
+def validate_execution_contract(
+    profile: LegalExecutionProfile,
+    *,
+    represented_dimension_ids: Sequence[str],
+    execution_dimension_ids: Sequence[str],
+) -> None:
+    """Enforce the classical-emulation vs native-quantum boundary.
+
+    Emulation may intentionally execute a resource-bounded projection. Native
+    quantum target mode may not drop represented dimensions as a hidden
+    classical pre-filter.
+    """
+    represented = tuple(dict.fromkeys(str(value) for value in represented_dimension_ids))
+    executed = tuple(dict.fromkeys(str(value) for value in execution_dimension_ids))
+    if profile.requires_full_logical_universe and set(executed) != set(represented):
+        missing = sorted(set(represented) - set(executed))
+        extra = sorted(set(executed) - set(represented))
+        raise ValueError(
+            "quantum_full_space forbids semantic pre-filtering; execution dimensions must equal "
+            f"the represented logical universe (missing={missing}, extra={extra})"
+        )
 
 
 def run_profile(
@@ -70,6 +146,10 @@ def run_profile(
     include_oracle_exposure: bool = True,
     include_crossed: bool = False,
 ) -> StabilizedRotationSuiteResult:
+    if profile.native_quantum_target:
+        raise NotImplementedError(
+            "quantum_full_space is a native-QPU target contract; no physical QPU backend is connected in this reference build"
+        )
     state_count = candidate_state_count(bundle)
     if profile.max_states and state_count > profile.max_states:
         raise ValueError(
@@ -106,6 +186,9 @@ def profile_payload(
         "substrate_id": profile.substrate_id,
         "exact_classical_reference": profile.exact_classical_reference,
         "grover_emulated": profile.grover_emulated,
+        "native_quantum_target": profile.native_quantum_target,
+        "semantic_projection_allowed": profile.semantic_projection_allowed,
+        "resource_bounded_emulation": profile.resource_bounded_emulation,
         "state_count": len(baseline.support),
         "baseline_entropy": baseline.entropy,
         "stabilized_entropy": stabilized.entropy,
@@ -119,11 +202,30 @@ def profile_payload(
     }
 
 
+def target_profile_payload(profile: LegalExecutionProfile) -> Mapping[str, object]:
+    """Describe a non-executed target profile without pretending it ran."""
+    return {
+        "profile_id": profile.profile_id,
+        "substrate_id": profile.substrate_id,
+        "status": "target_contract_only",
+        "native_quantum_target": profile.native_quantum_target,
+        "semantic_projection_allowed": profile.semantic_projection_allowed,
+        "requires_full_logical_universe": profile.requires_full_logical_universe,
+        "resource_bounded_emulation": profile.resource_bounded_emulation,
+        "native_qpu_connected": False,
+        "quantum_advantage_claim": False,
+        "rule": "do not remove represented logical dimensions merely to satisfy classical memory/state-count limits",
+    }
+
+
 __all__ = [
     "LegalExecutionProfile",
     "candidate_state_count",
     "classical_exact_profile",
     "grover_emulated_profile",
     "profile_payload",
+    "quantum_full_space_profile",
     "run_profile",
+    "target_profile_payload",
+    "validate_execution_contract",
 ]
