@@ -10,10 +10,11 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 from urllib.parse import parse_qs, urlparse
 
+from .domain_lab import DomainLabService
 from .intelligence_growth import IntelligenceGrowthView
 from .learning_moment import LearningMomentView
 from .living_logical_space import LivingLogicalSpace
-from .living_robot_clarity import living_robot_clarity_html
+from .living_robot_domains import living_robot_domains_html
 from .logical_robot_control import LogicalRobotControlPlane
 from .logical_robot_observatory import LogicalRobotEventLog
 
@@ -25,7 +26,7 @@ class LiveRobotError(ValueError):
 class LivingLogicalRobotService:
     """One observable/control surface for the same Logical Robot.
 
-    The service composes BUILD 23-32 overlays. It never bypasses QCDS challenge,
+    The service composes BUILD 23-33 overlays. It never bypasses QCDS challenge,
     Reality governance, or the persistent logical stores.
     """
 
@@ -43,6 +44,7 @@ class LivingLogicalRobotService:
         self.space = LivingLogicalSpace(self.store_root)
         self.growth = IntelligenceGrowthView(self.store_root)
         self.learning = LearningMomentView(self.store_root)
+        self.domains = DomainLabService(self.store_root)
         self.space.record_growth_snapshot(force=True)
         if seed_continuous_spec is not None:
             existing = [item for item in self.control.frontier() if item.kind == "continuous_mission"]
@@ -62,7 +64,7 @@ class LivingLogicalRobotService:
             "control": self.control.state(),
             "space": self.space._snapshot_counts(),
             "provenance": {
-                "builds": [26, 27, 28, 29, 30, 31, 32],
+                "builds": [26, 27, 28, 29, 30, 31, 32, 33],
                 "web_is_manifestation_only": True,
                 "same_logical_robot_local_or_remote": True,
                 "qcds_core_modified": False,
@@ -100,7 +102,7 @@ def create_live_robot_server(
     allowed_origin = cors_origin.strip() if cors_origin else None
 
     class Handler(BaseHTTPRequestHandler):
-        server_version = "QCDSLivingLogicalRobot/1.4"
+        server_version = "QCDSLivingLogicalRobot/1.5"
 
         def _cors(self) -> None:
             if allowed_origin:
@@ -142,7 +144,7 @@ def create_live_robot_server(
         def do_GET(self) -> None:  # noqa: N802
             parsed = urlparse(self.path)
             if parsed.path == "/":
-                body = living_robot_clarity_html(static_mode=False).encode("utf-8")
+                body = living_robot_domains_html(static_mode=False).encode("utf-8")
                 self.send_response(HTTPStatus.OK)
                 self.send_header("Content-Type", "text/html; charset=utf-8")
                 self.send_header("Content-Length", str(len(body)))
@@ -168,6 +170,9 @@ def create_live_robot_server(
                 return
             if parsed.path == "/api/learning":
                 self._json(service.learning.snapshot())
+                return
+            if parsed.path == "/api/domains":
+                self._json(service.domains.catalog())
                 return
             if parsed.path == "/api/events":
                 query = parse_qs(parsed.query)
@@ -208,6 +213,20 @@ def create_live_robot_server(
                 if parsed.path == "/api/process-one":
                     item = service.control.process_one()
                     self._json({"processed": None if item is None else item.as_dict()}, 202)
+                    return
+                if parsed.path == "/api/domain/start":
+                    result = service.domains.start(str(payload.get("domain_id", "")))
+                    service.events.emit(
+                        "domain_lab_started",
+                        {
+                            "domain_id": result["domain_id"],
+                            "universe_id": result["universe_id"],
+                            "truth_effect_on_reality": 0,
+                            "solution_rule_supplied": False,
+                        },
+                        source="human",
+                    )
+                    self._json(result, 202)
                     return
             except (ValueError, RuntimeError, LiveRobotError) as exc:
                 self._json({"error": str(exc)}, 400)
