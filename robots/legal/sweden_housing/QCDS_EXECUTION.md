@@ -2,62 +2,161 @@
 
 The Swedish Housing Law Logical Robot is a specialized body above the shared QCDS / Syntract architecture. It does **not** use QCDS as a label after a conventional rules engine has already decided the legal answer.
 
-The active legal space itself is the QCDS space.
+The legal universe is represented logically, and the execution semantics are deliberately split into three modes so classical resource limits can never be mistaken for the native quantum target.
 
-## One logical contract, two execution substrates
-
-The current legal robot can execute the same active `BaseBundle` and the same `OracleStack` through two reference substrates:
+## One architecture, three execution modes
 
 ```text
 FULL REPRESENTED LEGAL UNIVERSE
-Jordabalk 12 kap. + private-letting law + transition + praxis
+Jordabalk 12 kap. + private-letting law + transition + praxis + evidence
                               │
                               ▼
-                            CASE
+                         QCDS CONDITIONS
                               │
-                              ▼
-                    CONDITION FORMATION
-                              │
-        hard structural facts + relevant dimensions
-        + source-attributed legal constraints
-        + probabilistic evidence terms
-                              │
-                              ▼
-                   IN-MEMORY CSV TABLE
-                fixed structure = 1 / live = ?
-                              │
-                              ▼
-                    BaseBundle + OracleStack
-                              │
-              SAME LOGICAL CONTRACT
-                              │
-             ┌────────────────┴────────────────┐
-             │                                 │
-             ▼                                 ▼
-      CLASSICAL EXACT                 GROVER EMULATED
-      exact 2^N support               software statevector
-      oracle weighting                equal superposition
-      QCDS rotations                  weighted phase marking
-      stabilization                   adaptive Grover m*
-             │                        mark + diffuse
-             │                        QCDS rotations
-             │                                 │
-             ▼                                 ▼
-      TruthDistribution                 TruthDistribution
-             │                                 │
-             ▼                                 ▼
-   reference Legal Syntract           sibling Grover Syntract
+          ┌───────────────────┼────────────────────┐
+          │                   │                    │
+          ▼                   ▼                    ▼
+ CLASSICAL EXACT       GROVER EMULATED      QUANTUM FULL SPACE
+ reference emulator    software statevector   native-QPU target
+ resource bounded      resource bounded       NO semantic prefilter
+ active projection     active projection      full represented universe
+ exact 2^N support     Grover / phase         relevance emerges in QCDS
+          │                   │                    │
+          └──────────────┬────┘                    │
+                         ▼                         │
+                 TruthDistribution                │
+                         ▼                         │
+                      Syntract                     │
+                                                   ▼
+                                      future native QPU execution
 ```
 
-**Classical Exact** is the reproducible reference emulator for the current legal robot. **Grover Emulated** is a software quantum-statevector execution of the same logical problem. It does not claim native-QPU execution or quantum advantage.
+### Mode 1 — Classical Exact
 
-A future native quantum substrate should consume the same `BaseBundle + OracleStack` boundary rather than redefine the legal robot or QCDS semantics.
+`classical_exact` is the reproducible reference emulator.
+
+Classical resources are finite, so **Condition Formation may project the full represented legal universe into a smaller active room**. That is an emulator concession. Once the active `BaseBundle` is formed, the classical reference enumerates its complete `2^N` support and does not silently delete candidate states inside that room.
+
+```text
+full represented law
+        ↓
+resource-aware classical Condition Formation
+        ↓
+active room
+        ↓
+exact 2^N enumeration
+```
+
+### Mode 2 — Grover Emulated
+
+`grover_emulated` executes the same active `BaseBundle + OracleStack` through the software statevector/Grover substrate.
+
+It uses:
+
+- equal superposition over the active support;
+- score-derived weighted phase marking;
+- inversion about the mean;
+- adaptive Grover depth;
+- QCDS rotation/stabilization.
+
+This mode is still **software emulation**, so a memory/state-count bound is legitimate. Exact separable components may be executed separately when the oracle dependency graph proves separability. A coupled oversized component is never arbitrarily chunked and called equivalent to one global Grover operation.
+
+### Mode 3 — Quantum Full Space
+
+`quantum_full_space` is the native-QPU target contract.
+
+This mode has a different and stricter rule:
+
+> **Represented logical dimensions may not be removed merely to satisfy classical memory or state-count limits.**
+
+The target is not:
+
+```text
+full law
+  ↓
+classical relevance filter
+  ↓
+small quantum problem
+```
+
+The target is:
+
+```text
+FULL REPRESENTED LOGICAL UNIVERSE
+        │
+        ├── statute
+        ├── transition rules
+        ├── exceptions
+        ├── open legal standards
+        ├── praxis
+        ├── case facts
+        ├── disputed facts
+        ├── evidence
+        └── represented legal relationships
+        │
+        ▼
+   quantum representation / superposition
+        │
+        ▼
+      Conditions
+        │
+        ▼
+       oracles
+        │
+        ▼
+ Grover / amplitude evolution
+        │
+        ▼
+ recursive QCDS inference
+        │
+        ▼
+ relevance / coherent structure emerges
+        │
+        ▼
+      SYNTRACT
+```
+
+A physical QPU backend is **not connected in the current reference build**, so this mode reports `target_contract_only`. The software must not pretend Grover statevector emulation is native quantum execution.
+
+## Full-universe manifest
+
+The quantum target now has a separate manifest built independently of the classical active-case projection.
+
+The manifest includes:
+
+- every represented regime candidate;
+- every represented rule antecedent;
+- every represented rule consequence;
+- every represented rule ID;
+- every represented precedent dimension;
+- represented precedent factors / statutory links;
+- case terms;
+- unresolved case questions;
+- probabilistic evidence terms.
+
+The manifest exposes:
+
+```text
+full_universe_dimension_count
+represented_rule_count
+represented_precedent_count
+manifest_sha256
+```
+
+and is explicitly marked:
+
+```text
+classical_active_projection = false
+semantic_prefiltering = false
+```
+
+This lets tests and future QPU adapters distinguish the **complete represented legal universe** from the bounded active room used by current emulators.
 
 ## The preliminary legal resolver is Condition Formation, not the answer
 
-The legal body still contains deterministic, source-attributed machinery. Its role is to identify reachable statutory structure and make the legal path inspectable.
+The legal body still contains deterministic, source-attributed machinery. In the current emulators its role includes resource-aware Condition Formation.
 
-It may fix things that are structurally known for the run:
+It may fix things structurally known for the run:
 
 ```text
 contract date = known
@@ -82,22 +181,15 @@ A consequence such as:
 conclusion:jb12_forfeiture_ground_late_residential_rent
 ```
 
-remains a live QCDS dimension. The source-attributed Jordabalk rule is an oracle constraint over candidate states. A candidate state that violates a hard applicable rule loses coherence under that oracle.
+remains a live QCDS dimension. The source-attributed Jordabalk rule is an oracle constraint over candidate states.
 
-```text
-legal resolver
-    = forms the active source-attributed problem
-
-QCDS
-    = evaluates the represented candidate space
-      and binds the stabilized TruthDistribution as Syntract
-```
+For the native quantum target, Condition Formation must be understood more broadly: it may **mark, bind, transform or condition** the represented universe, but it may not delete dimensions simply because a classical machine would struggle to materialize them.
 
 ## Probabilistic legal evidence
 
 Not every legally important proposition is a hard case fact.
 
-The public legal case format therefore supports `qcds_evidence`:
+The case format supports `qcds_evidence`:
 
 ```json
 {
@@ -112,41 +204,34 @@ The public legal case format therefore supports `qcds_evidence`:
 }
 ```
 
-An evidence-backed term can activate a relevant statutory constraint during Condition Formation **without being set to true**.
+An evidence-backed term may activate a relevant statutory relation in the emulator without being set to true.
 
 ```text
-represented evidence: independent use @ 0.74
-                    │
-                    ▼
-relevant section 39 / 42 rule enters active room
-                    │
-                    ▼
-independent use remains ?
-                    │
-                    ▼
-EvidenceOracle applies 0.74 pressure inside QCDS
+independent use @ 0.74
+        ↓
+term remains ?
+        ↓
+EvidenceOracle
+        ↓
+weighted QCDS pressure
 ```
 
-This distinction is essential:
+The distinction remains:
 
 ```text
 hard law ≠ uncertain fact
-uncertain fact ≠ hard false/true
+uncertain fact ≠ hard true/false
 confidence ≠ calibrated court-outcome probability
 ```
 
-Multiple supporting and opposing evidence items can coexist as separate source-attributed oracle pressure. A strong, contradiction-free case can concentrate near 100%; an ambiguous case can retain a broad distribution.
-
-The resulting percentages describe probability mass / coherence **inside the represented QCDS universe under the supplied oracle semantics**. They are not automatically empirical probabilities of how a real court will decide until separately calibrated against real outcomes.
-
 ## CSV is storage, not intelligence
 
-The active legal table is serialized to CSV and reloaded entirely in memory before execution:
+Current classical execution can serialize the active legal table to CSV and reload it in memory:
 
 ```text
-large represented legal corpus
+represented legal corpus
         ↓
-Condition Formation
+classical Condition Formation
         ↓
 active CSV projection
         ↓
@@ -157,13 +242,11 @@ BaseBundle + OracleStack
 QCDS
 ```
 
-The CSV decides nothing. It is a transparent and cheap tabular substrate for the active projection.
+The CSV decides nothing. It is a transparent implementation backend for the emulator. **The quantum architecture is not defined by CSV projection.**
 
-Each Syntract records the SHA-256 digest of the active CSV projection so the exact represented table behind a run is inspectable.
+## What `2^N` means in the emulators
 
-## What `2^N` means
-
-If the active room contains `N` live binary dimensions, Classical Exact enumerates exactly:
+If the current active emulation room contains `N` live binary dimensions, Classical Exact enumerates exactly:
 
 ```text
 2^N candidate states
@@ -171,249 +254,144 @@ If the active room contains `N` live binary dimensions, Classical Exact enumerat
 
 Known structural dimensions do not branch. `?` dimensions do.
 
-Example:
-
-```text
-known: residential tenancy               = 1
-known: rent > seven days late            = 1
-
-live: primary regime                     = ?
-live: forfeiture ground                  = ?
-live: section 44 recovery                = ?
-live: procedural discriminator           = ?
-
-4 live dimensions
-→ 2^4 = 16 states
-```
-
-The legal runtime exposes:
-
-- logical width;
-- number of live dimensions;
-- `2^N` candidate-space notation;
-- actual candidate-state count;
-- oracle count;
-- baseline and stabilized marginals;
-- entropy and retained uncertainty;
-- rotation sensitivity;
-- top coherent legal states;
-- evidence provenance;
-- statutory and final Syntract IDs;
-- execution substrate and Grover depth where applicable.
+For a future native quantum substrate, the architectural goal is not to classically enumerate those `2^N` rows first. The represented dimensions are encoded in the quantum state and acted on through conditions/oracles/amplitude evolution subject to physical measurement limits.
 
 ## The four canonical QCDS phases
 
 ### 1. Condition Formation — Superposition
 
-The case activates only legal dimensions and constraints that can matter to the represented problem. Hard structural facts can be fixed. Legal outcomes, assessment states and evidence-sensitive propositions remain live.
+**Emulation:** may use resource-aware projection to create a bounded active room.
+
+**Quantum Full Space:** the complete represented logical universe remains represented; Conditions shape the state rather than semantically deleting dimensions for memory convenience.
 
 ### 2. Conditional Evolution — Constraint / Oracle
 
-Hard statutory rules become legal constraint oracles.
-
-A source rule:
-
-```text
-A + B + C → D
-```
-
-is evaluated against candidate states. If `A`, `B` and `C` hold, a state violating `D` is incoherent under the hard oracle.
-
-Probabilistic evidence uses `EvidenceOracle` rather than converting uncertain evidence into hard law or hard fact.
-
-Praxis remains a separate epistemic source class; precedent is never installed as statute.
+Hard statutory rules become legal constraint oracles. Probabilistic evidence becomes soft evidence-oracle pressure. Praxis remains a distinct source class.
 
 ### 3. Recursive Inference — Amplification / Recursion
 
-Both execution profiles use the shared QCDS Fabric rotation/stabilization boundary.
+Classical Exact performs full candidate-state evaluation inside its active room.
 
-**Classical Exact** enumerates the active support and applies oracle weighting over every candidate state.
+Grover Emulated performs software statevector phase/amplitude evolution inside the same active room.
 
-**Grover Emulated** uses the existing adaptive statevector/Grover substrate:
-
-```text
-equal superposition
-      ↓
-score-derived weighted phase marking
-      ↓
-inversion about the mean
-      ↓
-adaptive search for local Grover depth m*
-      ↓
-rotation banks
-      ↓
-stabilization
-```
-
-The adaptive depth policy detects overshoot and selects a local depth using only the current oracle-score profile, not an external answer key.
-
-The QCDS rotation families remain visible:
-
-- dimension-null;
-- position;
-- oracle exposure;
-- crossed rotations where explicitly enabled.
+Quantum Full Space targets native quantum execution where oracle interaction and amplitude evolution can operate over the full represented universe without first materializing every candidate row classically.
 
 ### 4. Truth-Alignment Verification — Syntract Binding
 
-Rotated distributions are returned to canonical coordinates and stabilized.
+Rotated / evolved distributions are stabilized and bound:
 
 ```text
-stabilized TruthDistribution
-             ↓
-          Syntract
+TruthDistribution
+      ↓
+   Syntract
 ```
 
-The distribution is the QCDS object. The preliminary resolver output is provenance / Condition Formation, not the final truth object.
+The preliminary resolver is not the truth object.
 
 ## Statutory Syntract re-entry and praxis
 
-Praxis is not pasted beside a finished answer.
-
-The statutory QCDS distribution re-enters the next QCDS pass through `DistributionOracle`:
+The statutory distribution can re-enter a later QCDS pass through `DistributionOracle`:
 
 ```text
 STATUTORY SYNTRACT
         ↓
 DistributionOracle
         +
-active precedent dimensions
+praxis
         +
-similarity evidence
+similarity / counter-evidence
         +
-counter-evidence
-        +
-case evidence where relevant
+case evidence
         ↓
-expanded QCDS room
+QCDS again
         ↓
 FINAL LEGAL SYNTRACT
 ```
 
-Only precedents with explicit represented similarity or counter-factors enter the active case room.
+In current emulation only explicitly activated precedent dimensions enter the bounded active room.
 
-The separate `problem_to_syntract` precedent ranking remains available as a human-readable diagnostic. It does **not** produce the final Legal Syntract.
+In Quantum Full Space the **entire represented praxis layer remains represented in the target universe**; relevance is not required to be classically decided first.
 
-```text
-authority ≠ similarity
-similarity ≠ outcome
-precedent ≠ automatic rule installation
-```
+## Scaling: emulation vs quantum target
 
-## Scaling without pretending arbitrary chunks are Grover-equivalent
+The rule is deliberately different for the two worlds.
 
-There are two different implementation bounds:
+### Resource-bounded emulation
 
-1. the direct exact-classical legal runner has an explicit maximum live width for a single exact integrated run;
-2. the software statevector/Grover emulator has its own maximum state count, currently normally `4096` states for the legal public path.
+Allowed:
 
-The statevector bound is not solved by silently deleting legal dimensions.
+- bounded active projection during Condition Formation;
+- exact `2^N` execution of that active room;
+- exact separable parallel components;
+- declared sequential / hybrid Syntract re-entry;
+- larger software substrate when required.
 
-The scaling planner builds a dependency graph from **which live dimensions each oracle couples**.
+Not allowed:
 
-If a large active room separates into oracle-disconnected components conditioned on fixed structural facts, those components can be run as bounded Grover-emulated partitions:
+- silently dropping dimensions *inside* the declared active room;
+- pretending arbitrary chunks are globally Grover-equivalent.
 
-```text
-ACTIVE ROOM
-   │
-   ├── component A  2^8 ─┐
-   ├── component B  2^8 ─┼─ parallel bounded execution
-   ├── component C  2^8 ─┤
-   └── component D  2^8 ─┘
-```
+### Quantum Full Space
 
-This is an actual separability claim derived from oracle dependencies.
+Allowed:
 
-If an oversized component is still logically coupled by its oracles, the implementation **refuses to pretend arbitrary chunking is equivalent to global Grover evolution**:
+- the complete represented universe;
+- native oracle/amplitude operations;
+- parallel / sequential / hybrid decomposition **only when the decomposition itself preserves the full QCDS semantics**;
+- Syntract re-entry / recursive composition that preserves represented information.
 
-```text
-large coupled component
-        ↓
-NOT silently chunked
-        ↓
-requires one of:
-- larger emulator substrate
-- native quantum substrate
-- explicit domain decomposition with declared semantics
-- sequential Syntract re-entry where that decomposition is logically justified
-- hybrid execution with explicit boundaries
-```
+Not allowed:
 
-Parallel, sequential and hybrid execution remain part of the QCDS architecture. The current scaling implementation executes separable parallel Grover components and exposes the boundary for sequential/hybrid composition instead of inventing an equivalence for a coupled global room.
+- classically removing dimensions merely because they appear irrelevant;
+- classically pruning the universe to fit RAM and calling that native QCDS quantum execution.
+
+This distinction applies beyond law. DNA is the same architectural class of problem: a classically inconvenient dimension can still be the dimension whose relation becomes decisive under the global oracle structure.
 
 ## Exact vs Grover benchmark
 
-The legal robot includes benchmark utilities that compare the two substrates on the same logical contract.
+The legal robot compares Classical Exact and Grover Emulated on the same active logical contract.
 
-Reported metrics include:
+Metrics include:
 
-- state-support size;
+- support size;
 - entropy;
 - oracle agreement;
 - retained uncertainty;
-- selected Grover depth by view;
-- total-variation distance between stabilized distributions;
+- selected Grover depth;
+- total-variation distance;
 - maximum probability delta;
 - top-state agreement;
 - conflict markers.
 
-The benchmark explicitly allows Grover-emulated QCDS to lose. There is no requirement that Grover statevector dynamics numerically reproduce Classical Exact normalized-oracle weighting.
+Grover emulation is allowed to lose. The purpose is falsifiable substrate comparison, not confirmation.
 
-What must be shared is the **logical contract**: same problem dimensions and same source-attributed OracleStack.
-
-## Current public reference case for probabilistic evidence
-
-`cases/jb_probabilistic_sublet_evidence_2026.json` represents a Chapter 12 subletting problem where the statutory setting is known but two decisive propositions are evidential rather than hard:
-
-```text
-independent use without consent   0.74 support
-no valid excuse                   0.85 support
-```
-
-Those terms remain live QCDS dimensions. They can activate relevant Jordabalk constraints but are not pre-installed as facts.
+Quantum Full Space is not included in numerical substrate comparisons until a genuine compatible native backend is connected.
 
 ## Implementation map
 
 ```text
 src/qcds_fabric/robots/legal/sweden_housing/
-├── qcds_space.py       direct legal BaseBundle / OracleStack / Syntract path
-├── execution.py        Classical Exact + Grover Emulated profiles
-├── evidence.py         probabilistic legal evidence
-├── full_qcds.py        integrated dual-substrate orchestration
-├── cached_full_qcds.py identical-run cache only; no inference shortcut
-├── scaling.py          oracle-component scaling / parallel execution
-├── comparison.py       distribution comparison
-├── benchmark.py        exact-vs-Grover benchmark metrics
-├── full_robot.py       public specialized robot body
-└── robot.py            stable public facade
+├── qcds_space.py          bounded active legal BaseBundle / OracleStack / Syntract
+├── execution.py           Classical Exact, Grover Emulated, Quantum Full Space contracts
+├── quantum_full_space.py  complete represented-universe manifest for native target
+├── evidence.py            probabilistic legal evidence
+├── full_qcds.py           integrated three-mode orchestration
+├── cached_full_qcds.py    identical-run cache only; no inference shortcut
+├── scaling.py             oracle-component scaling / parallel emulation
+├── comparison.py          distribution comparison
+├── benchmark.py           exact-vs-Grover emulator benchmark
+├── full_robot.py          public specialized robot body
+└── robot.py               stable public facade
 ```
 
-The implementation reuses shared core classes such as:
-
-```text
-BaseBundle
-OracleStack
-FabricLayer
-DistributionOracle
-EvidenceOracle
-AdaptiveGroverSubstrate
-Syntract
-```
-
-The canonical QCDS core is not copied into the Legal Logical Robot and is not reimplemented in JavaScript.
-
-The public browser calls the stable Python robot through Pyodide/WebAssembly. The browser is a body. The QCDS intelligence remains underneath.
+Shared core classes remain shared; the legal robot does not contain a second QCDS implementation.
 
 ## Claim boundary
 
-The current implementation establishes a falsifiable reference path for:
+The current implementation now establishes a falsifiable distinction between:
 
-- direct legal `2^N` QCDS execution;
-- hard statutory constraints and soft probabilistic evidence in one logical room;
-- statutory Syntract re-entry with active praxis;
-- exact-classical and Grover-emulated sibling executions over the same logical contract;
-- bounded separable parallel Grover execution;
-- explicit refusal to silently truncate or fake-partition coupled state spaces;
-- benchmark comparison of substrate behavior.
+- bounded Classical Exact reference execution;
+- bounded Grover/statevector emulation;
+- a non-executed **Quantum Full Space** target contract that forbids semantic prefiltering and records the complete represented legal universe.
 
-It does **not** establish native quantum advantage, production legal correctness, calibrated court-outcome probabilities, complete Swedish housing-law coverage, or superintelligence.
+It does **not** claim a physical QPU is connected, that the full universe has been executed natively, that quantum advantage has been demonstrated, that court outcomes are calibrated probabilities, or that Swedish law coverage is complete.
