@@ -1,0 +1,33 @@
+{
+  "case_id": "jb12-probabilistic-sublet-evidence",
+  "as_of_date": "2026-08-29",
+  "contract_date": "2026-08-03",
+  "facts": {
+    "landlord_type": "natural_person",
+    "residential_use": true,
+    "holiday_purpose": false,
+    "landlord_holds_unit_as_tenant": true,
+    "regular_external_units": 1,
+    "fixed_term": false,
+    "second_hand_let": true,
+    "sublet_permission_from_landlord": false,
+    "sublet_permission_from_hyresnamnd": false,
+    "issue_forfeiture": true
+  },
+  "qcds_evidence": [
+    {
+      "term": "sublet:independent_without_consent",
+      "confidence": 0.74,
+      "polarity": true,
+      "source_id": "evidence:occupancy-pattern",
+      "note": "Observed occupancy pattern supports independent use, but the character of the use is disputed."
+    },
+    {
+      "term": "sublet:no_valid_excuse",
+      "confidence": 0.85,
+      "polarity": true,
+      "source_id": "evidence:no-excuse-record",
+      "note": "The represented record strongly supports absence of a valid excuse, but this is evidence rather than a hard case fact."
+    }
+  ]
+}
