@@ -1,0 +1,20 @@
+{
+  "case_id": "jb12-second-hand-permission-request",
+  "as_of_date": "2026-08-29",
+  "contract_date": "2026-08-06",
+  "facts": {
+    "landlord_type": "natural_person",
+    "residential_use": true,
+    "holiday_purpose": false,
+    "landlord_holds_unit_as_tenant": true,
+    "regular_external_units": 1,
+    "fixed_term": false,
+    "second_hand_let": false,
+    "sublet_permission_from_landlord": false,
+    "sublet_permission_from_hyresnamnd": null,
+    "sublet_permission_requested": true,
+    "sublet_considerable_reasons": true,
+    "landlord_justified_refusal": false,
+    "sublet_rent_reasonable": true
+  }
+}
