@@ -73,50 +73,88 @@ def _sentences(text: str) -> tuple[str, ...]:
     return tuple(" ".join(part.split()) for part in parts if len(part.strip()) >= 8)
 
 
+def _contains_token(text: str, token: str) -> bool:
+    return bool(re.search(r"(?<!\w)" + re.escape(_norm(token)) + r"(?!\w)", _norm(text)))
+
+
 @dataclass(frozen=True)
 class ContextualCandidateExtractor:
     """Target-blind candidate observation extractor for BUILD 24.
 
     It scores represented candidate values only from text already acquired by the
-    Logical Robot. It never sees selection/holdout roles or expected answers.
-    This is observation ingress, not a truth oracle.
+    Logical Robot. A requested logical context may be established anywhere in the
+    same document (including its title), while the candidate must still appear in
+    an evidential sentence. It never sees selection/holdout roles or expected
+    answers. This is observation ingress, not a truth oracle.
     """
 
-    extractor_id: str = "contextual_candidate_extractor_v1"
-    min_score: float = 2.0
+    extractor_id: str = "contextual_candidate_extractor_v2"
+    min_score: float = 2.5
     min_margin: float = 0.5
 
     def extract(self, request: LogicalRobotRequest, document: WebDocument) -> tuple[LogicalObservation, ...]:
         context_values = tuple(_context_from_request(request).values())
-        text_sentences = _sentences(f"{document.reference.title}. {document.reference.snippet}. {document.text}")
+        document_text = f"{document.reference.title}. {document.reference.snippet}. {document.text}"
+        document_norm = _norm(document_text)
+        text_sentences = _sentences(document_text)
+        document_context_hits = {
+            value for value in context_values
+            if _contains_token(document_norm, value)
+        }
         observations: list[LogicalObservation] = []
         for query_id in request.query_ids:
             candidates = tuple(request.candidate_values.get(query_id, ()))
             if not candidates:
                 continue
-            scored: list[tuple[str, float, str]] = []
+            relation_tokens = tuple(
+                dict.fromkeys(
+                    token
+                    for token in (
+                        _norm(query_id),
+                        *(
+                            _norm(piece)
+                            for dimension in request.dimension_ids
+                            for piece in str(dimension).split("::")[-2:-1]
+                        ),
+                    )
+                    if token
+                )
+            )
+            scored: list[tuple[str, float, str, tuple[str, ...]]] = []
             for candidate in candidates:
                 candidate_norm = _norm(candidate)
                 best_score = 0.0
                 best_sentence = ""
+                best_reasons: tuple[str, ...] = ()
                 for sentence in text_sentences:
                     normalized = _norm(sentence)
-                    if not re.search(r"(?<!\w)" + re.escape(candidate_norm) + r"(?!\w)", normalized):
+                    if not _contains_token(normalized, candidate_norm):
                         continue
+                    reasons: list[str] = ["candidate_in_sentence"]
                     score = 1.0
-                    score += sum(
-                        1.5
-                        for value in context_values
-                        if re.search(r"(?<!\w)" + re.escape(value) + r"(?!\w)", normalized)
+                    same_sentence_context = tuple(
+                        value for value in context_values if _contains_token(normalized, value)
                     )
-                    if any(word in normalized for word in ("capital", "is", "are", "known", "called", "ability")):
+                    if same_sentence_context:
+                        score += 1.5
+                        reasons.append("context_in_same_sentence")
+                    elif document_context_hits:
+                        score += 1.0
+                        reasons.append("context_established_in_document")
+                    relation_hits = tuple(token for token in relation_tokens if _contains_token(normalized, token))
+                    if relation_hits:
+                        score += 1.0
+                        reasons.append("represented_relation_in_sentence")
+                    elif any(word in normalized for word in (" is ", " are ", "known as", "called", "can ")):
                         score += 0.5
+                        reasons.append("bounded_relational_cue")
                     if score > best_score:
                         best_score = score
                         best_sentence = sentence
-                scored.append((candidate, best_score, best_sentence))
+                        best_reasons = tuple(reasons)
+                scored.append((candidate, best_score, best_sentence, best_reasons))
             scored.sort(key=lambda item: (-item[1], _norm(item[0])))
-            winner, top_score, excerpt = scored[0]
+            winner, top_score, excerpt, reasons = scored[0]
             second_score = scored[1][1] if len(scored) > 1 else 0.0
             if top_score < self.min_score or top_score - second_score < self.min_margin:
                 continue
@@ -143,6 +181,11 @@ class ContextualCandidateExtractor:
                         "source_is_evidence_not_truth": True,
                         "source_independence_scope": "distinct_document_reference_only",
                         "publisher_independence_claim": False,
+                        "context_binding_scope": "same_document",
+                        "candidate_evidence_scope": "sentence",
+                        "score": top_score,
+                        "score_margin": top_score - second_score,
+                        "score_reasons": list(reasons),
                     },
                 )
             )
