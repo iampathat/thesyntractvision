@@ -1,0 +1,17 @@
+{
+  "case_id": "jb12-extension-major-renovation-balance",
+  "as_of_date": "2026-08-29",
+  "contract_date": "2025-02-01",
+  "facts": {
+    "landlord_type": "company",
+    "residential_use": true,
+    "holiday_purpose": false,
+    "landlord_holds_unit_as_tenant": false,
+    "regular_external_units": 20,
+    "fixed_term": false,
+    "issue_extension": true,
+    "major_renovation_planned": true,
+    "tenant_hardship_strong": true,
+    "extension_dispute_pending_after_term": true
+  }
+}
