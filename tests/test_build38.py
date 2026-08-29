@@ -75,7 +75,7 @@ def test_quick_ui_explains_inference_journey_without_replacing_advanced_lab() ->
 
     assert "BUILD38_SEEDS" in html
     assert "adaptive | stressed | dormant | apoptotic" in html
-    assert "EVIDENCE PULL" in html
+    assert "evidence pull" in html
     assert "STABILIZED LEADER" in html
     assert "NULL CHALLENGE" in html
     assert "OPEN ADVANCED LOGICAL SPACE LAB" in html
