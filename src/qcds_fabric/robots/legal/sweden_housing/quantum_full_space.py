@@ -57,6 +57,7 @@ class QuantumFullSpaceManifest:
             "resolver_term_count": len(self.resolver_terms),
             "resolver_terms": list(self.resolver_terms),
             "resolver_terms_prebound": False,
+            "resolver_terms_injected_into_quantum_space": False,
             "evidence_term_count": len(self.evidence_terms),
             "evidence_terms": list(self.evidence_terms),
             "manifest_sha256": self.manifest_sha256,
@@ -136,6 +137,7 @@ class QuantumFullSpaceCompilation:
             "semantic_prefiltering": False,
             "fixed_input_policy": "case_terms_only",
             "resolver_outputs_prebound": False,
+            "resolver_terms_injected_into_quantum_space": False,
             "native_qpu_connected": False,
         }
 
@@ -179,8 +181,9 @@ def build_quantum_full_space_manifest(
     No statutory rule is selected by current-case relevance here. Every loaded
     rule term is retained, every represented source/section remains in the
     source structure, and every represented precedent keeps its activation /
-    counter logic. Resolver outputs are represented but are explicitly distinct
-    from original case inputs so they cannot silently become prebound truth.
+    counter logic. Classical resolver outputs are retained only as diagnostics:
+    they do not create quantum dimensions. Open unresolved questions remain live
+    because they describe missing discriminators rather than precomputed truth.
     """
     display_by_canonical: dict[str, str] = {}
 
@@ -256,12 +259,14 @@ def build_quantum_full_space_manifest(
             normalized_case_terms.append(text)
             add(text)
 
+    # The classical resolver is diagnostic for Quantum Full Space. Its outputs
+    # are recorded for comparison but never allowed to enlarge or pre-shape the
+    # native quantum logical room.
     normalized_resolver_terms: list[str] = []
     for term in resolved_terms:
         text = str(term).strip()
         if text:
             normalized_resolver_terms.append(text)
-            add(text)
 
     for question in unresolved_questions:
         text = str(question).strip()
@@ -328,8 +333,8 @@ def compile_quantum_full_space_contract(
     oracles. Praxis activation/counter relations remain conditional oracles.
 
     Only original `case_terms` are fixed as supplied input. `resolved_terms` from
-    the classical explanatory resolver remain represented as `?`; in particular,
-    a resolver-emitted legal conclusion must not become truth before QCDS runs.
+    the classical explanatory resolver are diagnostics only: they neither become
+    truth nor introduce new dimensions into the native quantum target.
     """
     manifest = build_quantum_full_space_manifest(
         corpus=corpus,
@@ -357,6 +362,7 @@ def compile_quantum_full_space_contract(
             "candidate_states_materialized": False,
             "fixed_input_policy": "case_terms_only",
             "resolver_outputs_prebound": False,
+            "resolver_terms_injected_into_quantum_space": False,
             "represented_rule_count": len(manifest.rule_ids),
             "represented_precedent_count": len(manifest.precedent_ids),
             "represented_source_count": len(manifest.source_ids),
