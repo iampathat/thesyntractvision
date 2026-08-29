@@ -21,9 +21,15 @@ def test_praxis_corpus_is_real_source_attributed_and_not_rules() -> None:
     praxis = load_legal_praxis()
 
     assert praxis["praxis_id"] == "swedish-housing-praxis-2026-08-29"
-    assert len(praxis["precedents"]) >= 5
-    assert all(row["court"] == "Högsta domstolen" for row in praxis["precedents"])
+    assert len(praxis["precedents"]) >= 12
+    hd = [row for row in praxis["precedents"] if row["authority_class"] == "hd_precedent"]
+    svea = [row for row in praxis["precedents"] if str(row["authority_class"]).startswith("svea_hovratt")]
+    assert len(hd) >= 7
+    assert len(svea) >= 5
+    assert all(row["court"] == "Högsta domstolen" for row in hd)
+    assert all(row["court"] == "Svea hovrätt" for row in svea)
     assert all(str(row["source_uri"]).startswith("https://") for row in praxis["precedents"])
+    assert praxis["authority_scale"]["hd_precedent"] > praxis["authority_scale"]["svea_hovratt_guiding"]
     assert praxis["boundary"]["precedent_is_not_rule_installation"] is True
     assert praxis["boundary"]["authority_is_not_similarity"] is True
     assert praxis["boundary"]["similarity_is_not_outcome"] is True
@@ -51,7 +57,8 @@ def test_second_hand_facts_activate_real_hd_praxis_and_qcds_pass() -> None:
     assert "NJA-2022-329" in matched_ids
     assert praxis["qcds_execution"] == "qcds_fabric.problem.problem_to_syntract"
     assert praxis["evidence_claim_count"] >= 1
-    assert len(praxis["stabilized_relevance"]) >= 5
+    assert len(praxis["stabilized_relevance"]) >= 12
+    assert praxis["represented_precedent_count"] >= 12
     assert praxis["boundary"]["precedent_installed_as_rule"] is False
     assert praxis["boundary"]["praxis_changes_statutory_conclusions_automatically"] is False
 
@@ -83,7 +90,7 @@ def test_material_defect_activates_competing_interpretive_precedents() -> None:
     assert praxis["evidence_claim_count"] >= 4
 
 
-def test_praxis_layer_returns_no_fake_answer_when_no_factor_matches() -> None:
+def test_praxis_layer_keeps_authority_separate_from_similarity() -> None:
     case = {
         "case_id": "plain-current-case",
         "as_of_date": "2026-08-29",
@@ -100,9 +107,9 @@ def test_praxis_layer_returns_no_fake_answer_when_no_factor_matches() -> None:
     result = SwedishHousingAssessmentRobot().run_case(case).as_dict()
     praxis = result["praxis_assessment"]
 
-    # Classification precedent may be relevant because residential use itself is
-    # represented, but no precedent may silently change the statutory result.
     assert praxis["boundary"]["similarity_equals_outcome"] is False
+    assert praxis["boundary"]["authority_equals_similarity"] is False
+    assert "Authority is reported separately" in praxis["source_hierarchy_note"]
     assert result["primary_regimes"] == ["privatuthyrningslag_2026_772"]
 
 
