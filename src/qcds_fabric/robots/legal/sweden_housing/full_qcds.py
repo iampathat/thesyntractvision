@@ -16,7 +16,9 @@ from .execution import (
     classical_exact_profile,
     grover_emulated_profile,
     profile_payload,
+    quantum_full_space_profile,
     run_profile,
+    target_profile_payload,
 )
 from .qcds_space import (
     LegalQCDSRuntime,
@@ -104,7 +106,9 @@ def _grover_runtime(
             "profile_id": "grover_emulated",
             "state_count": state_count,
             "max_states": max_states,
-            "reason": "monolithic statevector emulation bound exceeded; the active QCDS room is never silently truncated",
+            "reason": "software statevector emulation bound exceeded; emulation may use exact separable decomposition but the active QCDS room is never silently truncated",
+            "resource_bounded_emulation": True,
+            "semantic_projection_allowed": True,
             "scaling": partitioned,
         }
 
@@ -169,12 +173,18 @@ def run_full_legal_qcds(
     grover_max_states: int = 4096,
     grover_max_iterations: int = 8,
 ) -> Mapping[str, Any]:
-    """Execute one legal room through exact QCDS and Grover-emulated QCDS.
+    """Execute one legal problem through all defined QCDS execution modes.
 
-    The same domain dimensions and OracleStack are used for both substrates.
-    The exact classical run is the reference emulator. The Grover path is an
-    explicitly simulated quantum substrate and makes no native-QPU or quantum
-    advantage claim.
+    `classical_exact` and `grover_emulated` are resource-bounded reference/
+    emulation modes. They may use classically projected Condition Formation to
+    keep software execution finite, but they execute the resulting active room
+    without silently deleting candidate states.
+
+    `quantum_full_space` is a separate native-QPU target contract. It is not
+    physically executed by this build. Its semantics explicitly forbid dropping
+    represented legal dimensions merely to satisfy classical memory or state-
+    count limits. Relevance must be allowed to emerge through Conditions,
+    oracles, amplitude evolution, recursive inference and Syntract binding.
     """
     evidence = parse_legal_evidence(qcds_evidence)
     augmented_rule_ids = augment_rule_ids_with_evidence(
@@ -210,8 +220,6 @@ def run_full_legal_qcds(
             represented_terms=resolved_terms,
             max_unknown_dimensions=max_unknown_dimensions,
         )
-    # Evidence may also target a precedent or a dimension introduced only by
-    # re-entry. Existing evidence oracle identities are preserved, never doubled.
     if final_exact is not statutory:
         final_exact, final_attached, final_inactive = _with_probabilistic_evidence(
             final_exact,
@@ -229,6 +237,8 @@ def run_full_legal_qcds(
         "substrate_id": "classical",
         "exact_classical_reference": True,
         "grover_emulated": False,
+        "resource_bounded_emulation": True,
+        "semantic_projection_allowed": True,
     })
 
     grover_runtime, grover_payload = _grover_runtime(
@@ -249,6 +259,17 @@ def run_full_legal_qcds(
             "4_truth_alignment_verification": "the stabilized Grover-emulated TruthDistribution is bound as a sibling Legal Syntract",
         }
         grover_payload = grover_qcds
+
+    quantum_target = quantum_full_space_profile()
+    quantum_target_payload = dict(target_profile_payload(quantum_target))
+    quantum_target_payload.update({
+        "represented_universe": "full represented Swedish housing-law Logical Universe: statutory law, transitions, praxis, evidence and other represented legal dimensions",
+        "condition_formation_policy": "Conditions may mark, bind or transform the represented universe but may not delete dimensions merely to fit classical memory",
+        "relevance_policy": "relevance is intended to emerge from oracle interaction, amplitude evolution, recursive QCDS inference and Syntract binding",
+        "decomposition_policy": "parallel/sequential/hybrid decomposition is valid only when it is itself a semantics-preserving QCDS/Syntract operation over the complete represented universe",
+        "classical_prefiltering_for_memory": False,
+        "software_emulation_of_full_universe": False,
+    })
 
     attached_sources = [
         {
@@ -271,6 +292,12 @@ def run_full_legal_qcds(
         for item in final_inactive
     ]
 
+    scaling = plan_legal_scaling(
+        final_exact.bundle,
+        final_exact.oracle_stack,
+        max_states=grover_max_states,
+    ).as_dict()
+
     return {
         **exact_payload,
         "statutory_syntract_id": statutory.syntract.syntract_id,
@@ -284,6 +311,19 @@ def run_full_legal_qcds(
             "entropy": statutory_payload["entropy"],
             "retained_uncertainty": statutory_payload["retained_uncertainty"],
         },
+        "execution_modes": {
+            "classical_exact": {
+                "status": "ok",
+                "profile_id": "classical_exact",
+                "resource_bounded_emulation": True,
+                "semantic_projection_allowed": True,
+                "full_active_room_executed_exactly": True,
+                "full_represented_legal_universe_required": False,
+                "syntract_id": final_exact.syntract.syntract_id,
+            },
+            "grover_emulated": grover_payload,
+            "quantum_full_space": quantum_target_payload,
+        },
         "dual_substrate": {
             "same_logical_contract": True,
             "same_base_bundle": True,
@@ -293,6 +333,8 @@ def run_full_legal_qcds(
                 "state_count": candidate_state_count(final_exact.bundle),
                 "entropy": final_exact.suite.stabilized_return.stabilized_distribution.entropy,
                 "oracle_agreement": final_exact.suite.stabilized_return.stabilized_distribution.oracle_agreement,
+                "resource_bounded_emulation": True,
+                "semantic_projection_allowed": True,
             },
             "grover_emulated": grover_payload,
         },
@@ -308,15 +350,13 @@ def run_full_legal_qcds(
         "augmented_rule_ids_from_evidence": [
             rule_id for rule_id in augmented_rule_ids if rule_id not in set(applied_rule_ids)
         ],
-        "scaling": plan_legal_scaling(
-            final_exact.bundle,
-            final_exact.oracle_stack,
-            max_states=grover_max_states,
-        ).as_dict(),
+        "scaling": scaling,
         "canonical_final_syntract": final_exact.syntract.syntract_id,
         "canonical_final_reference_substrate": "classical_exact",
         "quantum_emulation_is_sibling_syntract": True,
         "native_qpu": False,
+        "native_quantum_target_defined": True,
+        "quantum_full_space_semantic_prefiltering_forbidden": True,
         "quantum_advantage_claim": False,
     }
 
