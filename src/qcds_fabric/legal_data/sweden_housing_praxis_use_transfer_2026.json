@@ -1,0 +1,63 @@
+{
+  "expansion_id": "swedish-housing-praxis-use-transfer-2026-08-29",
+  "snapshot_date": "2026-08-29",
+  "precedents": [
+    {
+      "precedent_id": "SVEA-OH-11710-21",
+      "court": "Svea hovrätt",
+      "case_number": "ÖH 11710-21",
+      "name": "Allvarlig skötsamhetsbrist men inte särskilt allvarlig störning",
+      "decision_date": "2022-02-14",
+      "authority_class": "svea_hovratt",
+      "authority_weight": 0.72,
+      "source_uri": "https://www.domstol.se/svea-hovratt/svea-hovratts-hyresrattsliga-avgoranden/2022/108169/",
+      "statutory_links": ["12 kap. 25 § jordabalken", "12 kap. 46 § första stycket 1 och 2 jordabalken"],
+      "issue_tags": ["disturbance", "poor_conduct", "specially_serious", "extension"],
+      "activation_terms": ["conduct:disturbance", "conduct:not_specially_serious", "issue:extension"],
+      "counter_terms": ["conduct:specially_serious"],
+      "principles": [
+        "Conduct can be a serious breach of the tenant's duty to preserve order and good condition without necessarily satisfying the separate category of specially serious housing disturbance.",
+        "The legal classification of severity is fact-sensitive and should not be inferred solely from an alarming factual label."
+      ],
+      "role": "fact_pattern_guidance"
+    },
+    {
+      "precedent_id": "SVEA-OH-9885-20",
+      "court": "Svea hovrätt",
+      "case_number": "ÖH 9885-20",
+      "name": "Ekonomiska skäl för lägenhetsbyte",
+      "decision_date": "2021-01-29",
+      "authority_class": "svea_hovratt_guiding",
+      "authority_weight": 0.82,
+      "source_uri": "https://www.domstol.se/svea-hovratt/svea-hovratts-hyresrattsliga-avgoranden/2021/89333/",
+      "statutory_links": ["12 kap. 35 § jordabalken"],
+      "issue_tags": ["exchange", "noteworthy_reasons", "income_change", "reasonableness"],
+      "activation_terms": ["exchange:requested", "exchange:noteworthy_reasons"],
+      "counter_terms": ["exchange:no_noteworthy_reasons"],
+      "principles": [
+        "Whether changed economic circumstances amount to noteworthy reasons for an apartment exchange depends on the concrete size, durability and practical effect of the change on the tenant's ability to carry the existing rent.",
+        "The statutory reason criterion is therefore not reducible to a fixed income-change threshold."
+      ],
+      "role": "guiding_balance_decision"
+    },
+    {
+      "precedent_id": "SVEA-OH-10365-19",
+      "court": "Svea hovrätt",
+      "case_number": "ÖH 10365-19",
+      "name": "Varaktigt sammanboende vid närståendeöverlåtelse",
+      "decision_date": "2020-02-25",
+      "authority_class": "svea_hovratt",
+      "authority_weight": 0.72,
+      "source_uri": "https://www.domstol.se/svea-hovratt/svea-hovratts-hyresrattsliga-avgoranden/2020/59834/",
+      "statutory_links": ["12 kap. 34 § jordabalken"],
+      "issue_tags": ["transfer", "close_relative", "permanent_cohabitation"],
+      "activation_terms": ["transfer:close_relative", "transfer:permanent_cohabitation"],
+      "counter_terms": ["transfer:no_permanent_cohabitation"],
+      "principles": [
+        "Permanent cohabitation is an evaluative condition. Earlier case law treats cohabitation approaching three years as a normal reference point absent special circumstances, while a shorter period can be insufficient on the facts.",
+        "A time reference from precedent is interpretive guidance, not an automatic statutory duration rule."
+      ],
+      "role": "fact_pattern_guidance"
+    }
+  ]
+}
