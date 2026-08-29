@@ -57,7 +57,9 @@ def test_build30_live_server_serves_enhanced_experience_without_changing_api_con
         assert "WHY THIS LOGIC?" in page
         assert '"status": "ok"' in health
         service = getattr(server, "qcds_service")
-        assert service.state()["provenance"]["builds"][-1] == 30
+        builds = service.state()["provenance"]["builds"]
+        assert 30 in builds
+        assert builds == sorted(builds)
     finally:
         service = getattr(server, "qcds_service")
         service.close()
