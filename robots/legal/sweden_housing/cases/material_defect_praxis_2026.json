@@ -1,0 +1,16 @@
+{
+  "case_id": "material-defect-praxis-2026",
+  "as_of_date": "2026-08-29",
+  "contract_date": "2026-08-10",
+  "facts": {
+    "landlord_type": "natural_person",
+    "residential_use": true,
+    "holiday_purpose": false,
+    "landlord_holds_unit_as_tenant": false,
+    "regular_external_units": 1,
+    "fixed_term": false,
+    "material_defect": true,
+    "landlord_promptly_remedied_after_notice": false,
+    "issue_rent_review": true
+  }
+}
