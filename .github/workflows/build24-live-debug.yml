@@ -1,0 +1,48 @@
+name: BUILD 24 Live Observation Debug
+on:
+  push:
+    branches: [test/build24-live-debug]
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install
+        run: python -m pip install -e '.[test]'
+      - name: Print live observation bindings
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from qcds_fabric.evidence_driven_reality import load_evidence_driven_reality_spec
+          from qcds_fabric.public_web_reality import ContextualPublicWebTool, run_public_web_reality_spec
+
+          class SpyTool:
+              tool_id = 'spy-live-public-web'
+              capabilities = ('search','read','follow','query','compare')
+              def __init__(self): self.inner = ContextualPublicWebTool()
+              def observe(self, request):
+                  result = self.inner.observe(request)
+                  print('\nREQUEST', request.capability, request.evidence_action_id)
+                  print('CONTEXT', json.dumps(request.provenance.get('build22_context_assignments', {}), sort_keys=True))
+                  print('CANDIDATES', json.dumps({k:list(v) for k,v in request.candidate_values.items()}, sort_keys=True))
+                  for obs in result.observations:
+                      print('OBS', json.dumps({
+                          'query_id':obs.query_id,
+                          'value':obs.observed_value,
+                          'source':obs.source_id,
+                          'uri':obs.uri,
+                          'excerpt':obs.excerpt,
+                          'provenance':dict(obs.provenance),
+                      }, ensure_ascii=False, sort_keys=True))
+                  print('REFS', json.dumps(list(result.discovered_references), ensure_ascii=False))
+                  print('NOTES', json.dumps(list(result.notes), ensure_ascii=False))
+                  return result
+
+          spec = load_evidence_driven_reality_spec('examples/public_web_reality_capital_mvp.json')
+          result = run_public_web_reality_spec(spec, store_root='/tmp/qcds-live-debug', tools=(SpyTool(),))
+          print('\nFINAL', json.dumps(result.as_dict(), indent=2, sort_keys=True))
+          PY
