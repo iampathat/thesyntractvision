@@ -206,46 +206,51 @@ class LearningMomentView:
 
 
 def recorded_verified_learning_moment() -> dict[str, Any]:
-    """Published BUILD 22 proof used by static GitHub Pages.
+    """Published BUILD 24 live-public-web proof used by static GitHub Pages.
 
-    This is deliberately labelled recorded proof by the caller and never exposed
-    as a live runtime snapshot.
+    Unknown submetrics stay null instead of borrowing values from another proof.
+    The caller labels this recorded proof and never presents it as live runtime data.
     """
     return {
         "status": "learned",
         "headline": "THE LOGICAL ROBOT LEARNED SOMETHING",
         "message": (
-            "Recorded verified proof: the system moved from unresolved ability to governed reusable logic."
+            "Recorded verified live-web proof: public evidence led through competing logic, challenge and governance to a reusable Reality rule."
         ),
-        "learning_id": "recorded-build22-winged-flies",
+        "learning_id": "recorded-build24-france-paris",
         "promotion": {
-            "rule_id": "genesis:winged:implies:flies",
+            "rule_id": "genesis:france:implies:paris",
             "version": 1,
-            "rule_text": "winged ⇒ flies",
+            "rule_text": "france ⇒ paris",
             "confidence": 1.0,
+            "emit_terms": ["paris"],
             "resolved_bindings_changed": 2,
             "new_resolved_term_instances": 2,
         },
         "capability_change": {
-            "before": ["bird-a", "winged"],
-            "after": ["bird-a", "winged", "flies"],
-            "added_terms": ["flies"],
+            "before": ["france", "country"],
+            "after": ["france", "country", "paris"],
+            "added_terms": ["paris"],
             "resolved_bindings_changed": 2,
             "new_resolved_term_instances": 2,
             "direct_base_matches": 2,
-            "example_binding_id": "recorded-proof-example",
+            "example_binding_id": "recorded-live-web-proof-example",
         },
         "discovery": {
             "linked": True,
-            "mission_id": "build22-recorded-proof",
+            "mission_id": "build24-live-public-web-proof-v3",
             "status": "expanded",
             "oracle_gaps": 1,
             "rival_hypotheses": 12,
-            "hypotheses_rejected": 9,
+            "hypotheses_rejected": None,
             "oracles_promoted": 1,
             "robot_observations": 3,
             "independent_sources": 3,
-            "source_ids": ["source-a", "source-b", "source-c"],
+            "source_ids": [
+                "wikipedia:en:169335",
+                "wikipedia:en:181337",
+                "wikipedia:en:169339",
+            ],
             "challenge_cases": 3,
             "selection_cases": 2,
             "holdout_cases": 1,
@@ -271,7 +276,8 @@ def recorded_verified_learning_moment() -> dict[str, Any]:
         "provenance": {
             "build": 31,
             "recorded_verified_proof": True,
-            "proof_run": 33210935010,
+            "proof_run": 33236672283,
+            "proof_marker": "BUILD24_LIVE_PUBLIC_WEB_PROOF_V3_OK",
             "qcds_core_modified": False,
             "canonical_spec_modified": False,
         },
