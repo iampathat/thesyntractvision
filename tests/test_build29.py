@@ -87,5 +87,6 @@ def test_static_manifest_shows_verified_logic_growth_not_fake_live() -> None:
     html = living_robot_html(static_mode=True)
     assert "RECORDED VERIFIED PROOF" in html
     assert "france ⇒ paris" in html
-    assert "resolved_bindings_changed:2" not in html  # data remains structured, not a fake status string
+    assert "resolved_bindings_changed:2" in html
+    assert "new_resolved_term_instances:2" in html
     assert "verified-build24-proof" in html
