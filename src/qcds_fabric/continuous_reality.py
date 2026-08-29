@@ -301,7 +301,7 @@ class ContinuousRealityRunner:
             terminal_status = "max_cycles_reached" if cycle == policy.max_cycles else "frontier_progressing"
 
         remaining = tuple(candidate.mission_id for candidate in self._frontier(missions, set(), allow_revisit=True))
-        active_rules = len(self.universes.rules("reality").active_rules())
+        active_rules = len(self.universes.rules("reality").rules(active_only=True))
         result = ContinuousRealityResult(
             run_id=run_id,
             status=terminal_status,
