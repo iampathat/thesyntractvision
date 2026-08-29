@@ -25,6 +25,17 @@ def test_full_legal_web_exposes_both_qcds_execution_substrates() -> None:
         assert phrase in html
 
 
+def test_full_web_exposes_real_probabilistic_jordabalk_case() -> None:
+    html = living_robot_legal_full_qcds_html(static_mode=True)
+    fixture = ROOT / "robots" / "legal" / "sweden_housing" / "cases" / "jb_probabilistic_sublet_evidence_2026.json"
+
+    assert fixture.is_file()
+    assert "jb_probabilistic_sublet_evidence_2026.json" in html
+    assert "Disputed independent use" in html
+    assert "0.74 / 0.85 evidence pressures" in html
+    assert "qcds_evidence" in fixture.read_text(encoding="utf-8")
+
+
 def test_pages_exports_full_qcds_surface_and_recursive_python_package() -> None:
     workflow = (ROOT / ".github" / "workflows" / "pages.yml").read_text(encoding="utf-8")
 
