@@ -13,7 +13,20 @@ Current source used by the represented universe:
 
 https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/jordabalk-1970994_sfs-1970-994/
 
-Current represented areas include Chapter 12 scope, second-hand letting, permission, outsiders/lodgers, forfeiture, rectification/recovery, extension/security of tenure and residential rent review.
+Current represented areas include:
+
+- Chapter 12 scope/classification;
+- selected defect and responsibility questions;
+- tenant care, damage notification and evidence links;
+- poor conduct, housing disturbances, warning/social-welfare procedure and supervision;
+- landlord access and refusal/rectification;
+- transfer, close-relative transfer and apartment exchange;
+- second-hand letting, permission and outsiders/lodgers;
+- forfeiture, rectification and late-rent recovery;
+- extension/security of tenure;
+- residential rent review, second-hand ceilings and repayment.
+
+The current Riksdagen SFS page states that the Jordabalk text is amended through **SFS 2026:1498**. The legal robot snapshot is still explicitly dated 2026-08-29 and must be revalidated for later case dates.
 
 ### Privatuthyrningslag (2026:772)
 
@@ -124,6 +137,24 @@ https://www.domstol.se/svea-hovratt/svea-hovratts-hyresrattsliga-avgoranden/2020
 
 Represented themes: legacy private-letting law, first letting and the legal significance of contract formation versus physical move-in.
 
+### ÖH 11710-21 — Allvarlig skötsamhetsbrist men inte särskilt allvarlig störning
+
+https://www.domstol.se/svea-hovratt/svea-hovratts-hyresrattsliga-avgoranden/2022/108169/
+
+Represented themes: poor conduct, disturbance severity and the distinction between a serious breach and the separate specially-serious-disturbance category.
+
+### ÖH 9885-20 — Ekonomiska skäl för lägenhetsbyte
+
+https://www.domstol.se/svea-hovratt/svea-hovratts-hyresrattsliga-avgoranden/2021/89333/
+
+Represented themes: apartment exchange and the fact-sensitive assessment of changed economic circumstances as noteworthy reasons.
+
+### ÖH 10365-19 — Varaktigt sammanboende vid närståendeöverlåtelse
+
+https://www.domstol.se/svea-hovratt/svea-hovratts-hyresrattsliga-avgoranden/2020/59834/
+
+Represented themes: close-relative transfer, permanent cohabitation and the difference between case-law guidance and a hard statutory duration rule.
+
 ## Source classes are not flattened
 
 The current robot keeps these concepts separate:
@@ -133,6 +164,7 @@ statute
   ≠ preparatory work
   ≠ HD precedent
   ≠ guiding appellate decision
+  ≠ ordinary appellate decision
   ≠ ordinary case fact
 ```
 
