@@ -1,0 +1,20 @@
+{
+  "case_id": "anna-august-2026",
+  "as_of_date": "2026-08-29",
+  "contract_date": "2026-08-10",
+  "facts": {
+    "landlord_type": "natural_person",
+    "residential_use": true,
+    "holiday_purpose": false,
+    "landlord_holds_unit_as_tenant": false,
+    "regular_external_units": 2,
+    "fixed_term": true,
+    "adverse_tenant_clause": true,
+    "issue_rent_review": true,
+    "rent_delay_days": 17,
+    "rent_cured_before_termination": false,
+    "independent_sublet_without_consent": true,
+    "valid_excuse_for_sublet": false,
+    "material_defect": false
+  }
+}
