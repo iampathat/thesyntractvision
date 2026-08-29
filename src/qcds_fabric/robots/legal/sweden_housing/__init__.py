@@ -18,7 +18,11 @@ __all__ = [
 
 
 def __getattr__(name: str) -> Any:
-    if name in {"SwedishHousingAssessmentRobot", "SwedishHousingFullQCDSRobot"}:
+    if name == "SwedishHousingAssessmentRobot":
+        from .robot import SwedishHousingAssessmentRobot
+
+        return SwedishHousingAssessmentRobot
+    if name == "SwedishHousingFullQCDSRobot":
         from .full_robot import SwedishHousingFullQCDSRobot
 
         return SwedishHousingFullQCDSRobot
