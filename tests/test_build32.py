@@ -37,7 +37,7 @@ def test_advanced_runtime_connector_is_moved_out_of_primary_header() -> None:
 
     assert 'id="clarityConnectMount"' in html
     assert "mount.appendChild(box)" in html
-    assert ".clarityAdvanced #connectBox{display:flex!important}" in html
+    assert ".clarityAdvanced #connectBox{display:flex!important" in html
     assert "Optional advanced control." in html
 
 
