@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 
 def test_readme_keeps_easy_entry_and_full_architecture_depth() -> None:
@@ -8,6 +9,11 @@ def test_readme_keeps_easy_entry_and_full_architecture_depth() -> None:
     assert "## Start in 60 seconds" in readme
     assert "Advanced Logical Space Lab" in readme
     assert "START_HERE.md" in readme
+
+    # The README describes the architecture, not the development diary.
+    assert not re.search(r"\bBUILD\s+\d", readme)
+    assert "## Specialized Logical Robots" in readme
+    assert "robots/legal/sweden_housing/" in readme
 
     # The easy door must never replace the architecture behind it.
     required_sections = (
