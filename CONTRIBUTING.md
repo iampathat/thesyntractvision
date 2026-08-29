@@ -1,5 +1,7 @@
 # Contributing to The Syntract Vision
 
+**New here? Start with [`BUILD_WITH_THE_LOGICAL_ROBOT.md`](BUILD_WITH_THE_LOGICAL_ROBOT.md)** for a short map from “what am I looking at?” to a first falsifiable contribution.
+
 The fastest way to contribute is **not** to rewrite the QCDS core.
 
 The repository is intentionally layered so new experiments can be built around a stable inference architecture and then falsified independently.
