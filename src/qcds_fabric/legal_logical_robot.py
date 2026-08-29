@@ -69,17 +69,23 @@ def _merge_rows(base: list[Any], extra: Sequence[Any], *, id_key: str, label: st
     return out
 
 
-def _merge_default_expansion(corpus: Mapping[str, Any]) -> Mapping[str, Any]:
-    resource = files("qcds_fabric").joinpath("legal_data").joinpath("sweden_housing_expansion_2026.json")
-    if not resource.is_file():
-        return corpus
-    with resource.open("r", encoding="utf-8") as handle:
-        expansion = _mapping(json.load(handle), "legal expansion")
+def _merge_default_expansions(corpus: Mapping[str, Any]) -> Mapping[str, Any]:
     merged = dict(corpus)
-    merged["sources"] = _merge_rows(list(corpus["sources"]), expansion.get("sources", ()), id_key="source_id", label="sources[]")
-    merged["sections"] = _merge_rows(list(corpus["sections"]), expansion.get("sections", ()), id_key="section_id", label="sections[]")
-    merged["rules"] = _merge_rows(list(corpus["rules"]), expansion.get("rules", ()), id_key="rule_id", label="rules[]")
-    merged["expansion_ids"] = [str(expansion.get("expansion_id", "swedish-housing-expansion"))]
+    expansion_ids: list[str] = []
+    for filename in (
+        "sweden_housing_expansion_2026.json",
+        "sweden_housing_use_transfer_2026.json",
+    ):
+        resource = files("qcds_fabric").joinpath("legal_data").joinpath(filename)
+        if not resource.is_file():
+            continue
+        with resource.open("r", encoding="utf-8") as handle:
+            expansion = _mapping(json.load(handle), f"legal expansion {filename}")
+        merged["sources"] = _merge_rows(list(merged["sources"]), expansion.get("sources", ()), id_key="source_id", label="sources[]")
+        merged["sections"] = _merge_rows(list(merged["sections"]), expansion.get("sections", ()), id_key="section_id", label="sections[]")
+        merged["rules"] = _merge_rows(list(merged["rules"]), expansion.get("rules", ()), id_key="rule_id", label="rules[]")
+        expansion_ids.append(str(expansion.get("expansion_id", filename)))
+    merged["expansion_ids"] = expansion_ids
     return merged
 
 
@@ -88,7 +94,7 @@ def load_legal_corpus(path: str | Path | None = None) -> Mapping[str, Any]:
         resource = files("qcds_fabric").joinpath("legal_data").joinpath("sweden_housing_2026.json")
         with resource.open("r", encoding="utf-8") as handle:
             payload = json.load(handle)
-        payload = _merge_default_expansion(_mapping(payload, "legal corpus"))
+        payload = _merge_default_expansions(_mapping(payload, "legal corpus"))
     else:
         with Path(path).open("r", encoding="utf-8") as handle:
             payload = json.load(handle)
@@ -200,6 +206,10 @@ def _case_terms(case: Mapping[str, Any], snapshot: date) -> tuple[tuple[str, ...
         terms.append("issue:forfeiture")
     if facts.get("issue_extension") is True:
         terms.append("issue:extension")
+    if facts.get("issue_transfer") is True:
+        terms.append("issue:transfer")
+    if facts.get("issue_exchange") is True:
+        terms.append("issue:exchange")
 
     if facts.get("rent_delay_days") is not None:
         try:
@@ -237,8 +247,7 @@ def _case_terms(case: Mapping[str, Any], snapshot: date) -> tuple[tuple[str, ...
     elif independent is False:
         terms.append("sublet:not_independent_without_consent")
 
-    if optional_flag("second_hand_let", "sublet:second_hand", "sublet:not_second_hand") is True:
-        pass
+    optional_flag("second_hand_let", "sublet:second_hand", "sublet:not_second_hand")
     landlord_consent = optional_flag("sublet_permission_from_landlord", "sublet:landlord_consent", "sublet:no_landlord_consent")
     tribunal_permission = optional_flag("sublet_permission_from_hyresnamnd", "sublet:tribunal_permission", "sublet:no_tribunal_permission")
     if landlord_consent is False and tribunal_permission is False:
@@ -277,6 +286,25 @@ def _case_terms(case: Mapping[str, Any], snapshot: date) -> tuple[tuple[str, ...
             questions.append("question:landlord_promptly_remedied_after_notice")
     optional_flag("damage_arose_during_tenancy", "evidence:damage_arose_during_tenancy", "evidence:damage_preexisted_tenancy")
     optional_flag("damage_typically_requires_negligence", "evidence:damage_typically_requires_negligence", "evidence:damage_not_typically_negligence")
+    optional_flag("tenant_or_responsible_person_negligent_damage", "damage:tenant_or_responsible_person_negligent", "damage:no_represented_tenant_negligence")
+    optional_flag("urgent_damage_serious_risk", "damage:urgent_serious_risk", "damage:not_urgent_serious_risk")
+    notified = optional_flag("tenant_notified_landlord_promptly", "damage:tenant_notified_promptly", "damage:tenant_did_not_notify_promptly")
+    if facts.get("urgent_damage_serious_risk") is True and notified is None:
+        questions.append("question:tenant_notified_landlord_promptly")
+
+    disturbance = optional_flag("disturbance_occurred", "conduct:disturbance", "conduct:no_disturbance")
+    serious = optional_flag("disturbance_specially_serious", "conduct:specially_serious", "conduct:not_specially_serious")
+    optional_flag("landlord_warned_to_stop", "conduct:landlord_warned", "conduct:landlord_not_warned")
+    optional_flag("social_committee_notified", "conduct:social_committee_notified", "conduct:social_committee_not_notified")
+    optional_flag("disturbance_rectified_after_warning", "conduct:rectified_after_warning", "conduct:not_rectified_after_warning")
+    if disturbance is True and serious is None:
+        questions.append("question:disturbance_specially_serious")
+
+    access_required = optional_flag("statutory_access_required", "access:statutory_access_required", "access:no_statutory_access_requirement")
+    access_refused = optional_flag("access_refused", "access:refused", "access:not_refused")
+    access_excuse = optional_flag("valid_excuse_for_access_refusal", "access:valid_excuse", "access:no_valid_excuse")
+    if access_required is True and access_refused is True and access_excuse is None:
+        questions.append("question:valid_excuse_for_access_refusal")
 
     optional_flag("tenant_obligations_seriously_breached", "extension:tenant_obligations_seriously_breached", "extension:tenant_obligations_not_seriously_breached")
     optional_flag("major_renovation_planned", "extension:major_renovation", "extension:no_major_renovation")
@@ -284,6 +312,34 @@ def _case_terms(case: Mapping[str, Any], snapshot: date) -> tuple[tuple[str, ...
     optional_flag("landlord_personal_disposal_interest", "extension:landlord_personal_disposal_interest", "extension:no_landlord_personal_disposal_interest")
     optional_flag("tenant_hardship_strong", "extension:tenant_hardship_strong", "extension:tenant_hardship_not_strong")
     optional_flag("extension_dispute_pending_after_term", "extension:dispute_pending_after_term", "extension:dispute_not_pending_after_term")
+
+    if facts.get("transfer_requested") is True:
+        terms.append("transfer:requested")
+    optional_flag("landlord_transfer_refused", "transfer:landlord_refused", "transfer:landlord_not_refused")
+    optional_flag("transfer_refusal_reasonable", "transfer:refusal_reasonable_cause", "transfer:refusal_without_reasonable_cause")
+    answer_three_weeks = optional_flag("landlord_transfer_answer_within_three_weeks", "transfer:answer_within_three_weeks", "transfer:no_answer_within_three_weeks")
+    if facts.get("transfer_requested") is True and answer_three_weeks is None:
+        questions.append("question:landlord_transfer_answer_within_three_weeks")
+    optional_flag("transfer_to_close_relative", "transfer:close_relative", "transfer:not_close_relative")
+    optional_flag("permanent_cohabitation_with_transferee", "transfer:permanent_cohabitation", "transfer:no_permanent_cohabitation")
+    optional_flag("landlord_can_reasonably_accept_transferee", "transfer:landlord_can_reasonably_accept", "transfer:landlord_cannot_reasonably_accept")
+
+    if facts.get("exchange_requested") is True:
+        terms.append("exchange:requested")
+    optional_flag("exchange_noteworthy_reasons", "exchange:noteworthy_reasons", "exchange:no_noteworthy_reasons")
+    inconvenience = optional_flag("exchange_material_landlord_inconvenience", "exchange:material_landlord_inconvenience", "exchange:no_material_landlord_inconvenience")
+    compensation = optional_flag("exchange_prohibited_compensation", "exchange:prohibited_compensation", "exchange:no_prohibited_compensation")
+    residence_year = optional_flag("exchange_resident_at_least_one_year", "exchange:resident_at_least_one_year", "exchange:resident_under_one_year")
+    optional_flag("exchange_exceptional_reasons", "exchange:exceptional_reasons", "exchange:no_exceptional_reasons")
+    if facts.get("exchange_requested") is True:
+        if facts.get("exchange_noteworthy_reasons") is None:
+            questions.append("question:exchange_noteworthy_reasons")
+        if inconvenience is None:
+            questions.append("question:exchange_material_landlord_inconvenience")
+        if compensation is None:
+            questions.append("question:exchange_prohibited_compensation")
+        if residence_year is None:
+            questions.append("question:exchange_residence_duration")
 
     return tuple(dict.fromkeys(terms)), tuple(dict.fromkeys(questions))
 
