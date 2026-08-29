@@ -1,0 +1,19 @@
+{
+  "case_id": "jb12-unauthorized-sublet-forfeiture",
+  "as_of_date": "2026-08-29",
+  "contract_date": "2026-08-03",
+  "facts": {
+    "landlord_type": "natural_person",
+    "residential_use": true,
+    "holiday_purpose": false,
+    "landlord_holds_unit_as_tenant": true,
+    "regular_external_units": 1,
+    "fixed_term": false,
+    "second_hand_let": true,
+    "independent_sublet_without_consent": true,
+    "sublet_permission_from_landlord": false,
+    "sublet_permission_from_hyresnamnd": false,
+    "valid_excuse_for_sublet": false,
+    "issue_forfeiture": true
+  }
+}
