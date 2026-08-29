@@ -23,7 +23,12 @@ from .qcds_space import LegalQCDSSpaceError
 
 
 class SwedishHousingFullQCDSRobot:
-    """Public Swedish housing robot using the full dual-substrate QCDS path."""
+    """Public Swedish housing robot using all defined QCDS execution modes.
+
+    Classical Exact and Grover Emulated execute the bounded active software room.
+    Quantum Full Space is exposed as a separate non-executed native-QPU target
+    contract whose manifest preserves the complete represented legal universe.
+    """
 
     def __init__(
         self,
@@ -64,12 +69,18 @@ class SwedishHousingFullQCDSRobot:
             grover_max_iterations=self.grover_max_iterations,
         )
 
+        quantum_target = _mapping(
+            _mapping(integrated_qcds["execution_modes"], "execution_modes")["quantum_full_space"],
+            "execution_modes.quantum_full_space",
+        )
         swarm = {
             **dict(_mapping(statutory["swarm_packet"], "swarm_packet")),
             "syntract_id": integrated_qcds["canonical_final_syntract"],
             "qcds_space": integrated_qcds["candidate_binary_space"],
             "reference_substrate": integrated_qcds["canonical_final_reference_substrate"],
             "grover_emulation_status": integrated_qcds["dual_substrate"]["grover_emulated"]["status"],
+            "quantum_full_space_status": quantum_target["status"],
+            "quantum_full_space_dimension_count": quantum_target["full_universe_dimension_count"],
         }
         payload = {
             **statutory,
@@ -80,12 +91,16 @@ class SwedishHousingFullQCDSRobot:
             "assessment_model": {
                 "hard_layer": "source-attributed statute, transition, scope and procedure become QCDS constraints; they do not install the final legal outcome",
                 "assessment_layer": "open standards and evidence-sensitive propositions remain live dimensions with uncertainty-bearing oracle pressure",
-                "praxis_layer": "active precedent dimensions enter the same final QCDS room through statutory Syntract re-entry",
-                "condition_formation": "hard structural facts, probabilistic evidence terms and source-attributed rules define the bounded active room",
-                "qcds_role": "execute the same logical contract through exact classical and Grover-emulated substrates, rotate/challenge it, stabilize the TruthDistribution and bind sibling Syntracts",
-                "two_execution_variants": True,
+                "praxis_layer": "active precedent dimensions enter the bounded final emulation room through statutory Syntract re-entry; the native quantum target manifest retains the represented praxis universe without classical relevance deletion",
+                "condition_formation": "software emulation may form a bounded active room from hard structure, evidence and source-attributed rules; Quantum Full Space may condition but not semantically delete represented dimensions for memory convenience",
+                "qcds_role": "run bounded exact-classical and Grover-statevector reference paths while preserving a separate full-universe native quantum target contract",
+                "three_execution_modes": True,
+                "execution_modes": ["classical_exact", "grover_emulated", "quantum_full_space"],
                 "classical_exact_is_reference": True,
-                "grover_emulation_uses_same_bundle_and_oracles": True,
+                "grover_emulation_uses_same_active_bundle_and_oracles": True,
+                "quantum_full_space_requires_complete_represented_universe": True,
+                "quantum_full_space_semantic_prefiltering_forbidden": True,
+                "native_qpu_connected": False,
                 "probabilistic_evidence_supported": True,
                 "identical_full_runs_cached_without_changing_inference": True,
                 "final_answer_is_qcds_distribution": True,
@@ -99,7 +114,7 @@ class SwedishHousingFullQCDSRobot:
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Run Swedish housing law through exact and Grover-emulated QCDS and bind Legal Syntracts."
+        description="Run Swedish housing law through Classical Exact and Grover-emulated QCDS, expose the full-space native quantum target manifest, and bind Legal Syntracts."
     )
     parser.add_argument("case", help="Path to a housing-law case JSON")
     parser.add_argument("--praxis", help="Optional alternate praxis JSON")
