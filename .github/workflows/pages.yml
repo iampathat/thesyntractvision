@@ -4,23 +4,8 @@ on:
   push:
     branches: [main]
     paths:
-      - "src/qcds_fabric/living_robot_ui.py"
-      - "src/qcds_fabric/living_robot_experience.py"
-      - "src/qcds_fabric/living_robot_learning.py"
-      - "src/qcds_fabric/living_robot_clarity.py"
-      - "src/qcds_fabric/living_robot_domains.py"
-      - "src/qcds_fabric/living_robot_builder.py"
-      - "src/qcds_fabric/living_robot_session.py"
-      - "src/qcds_fabric/living_robot_invite.py"
-      - "src/qcds_fabric/living_robot_invite38.py"
-      - "src/qcds_fabric/domain_lab.py"
-      - "src/qcds_fabric/domain_lab_builder.py"
-      - "src/qcds_fabric/session_sandbox_core.py"
-      - "src/qcds_fabric/logical_robot_live34.py"
-      - "src/qcds_fabric/logical_robot_live35.py"
-      - "src/qcds_fabric/logical_robot_live37.py"
-      - "src/qcds_fabric/logical_robot_live38.py"
-      - "src/qcds_fabric/learning_moment.py"
+      - "src/qcds_fabric/**"
+      - "robots/legal/sweden_housing/**"
       - "web/session_core_worker.js"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
@@ -49,18 +34,21 @@ jobs:
           python-version: "3.12"
       - name: Install package
         run: python -m pip install -e .
-      - name: Export the static Logical Robot invitation + advanced sandbox
+      - name: Export the static Logical Robot + Swedish Legal Robot
         run: |
-          mkdir -p _site
-          python -m qcds_fabric.living_robot_invite38 --export _site/index.html
+          mkdir -p _site/legal/cases
+          python -m qcds_fabric.living_robot_legal --export _site/index.html
           cp web/session_core_worker.js _site/session_core_worker.js
+          cp robots/legal/sweden_housing/cases/*.json _site/legal/cases/
           python - <<'PY'
           from pathlib import Path
           from zipfile import ZIP_DEFLATED, ZipFile
 
+          root = Path('src/qcds_fabric')
           with ZipFile('_site/qcds_fabric.zip', 'w', compression=ZIP_DEFLATED) as archive:
-              for path in sorted(Path('src/qcds_fabric').glob('*.py')):
-                  archive.write(path, path.relative_to('src'))
+              for path in sorted(root.rglob('*')):
+                  if path.is_file() and path.suffix in {'.py', '.json'}:
+                      archive.write(path, path.relative_to('src'))
           PY
           touch _site/.nojekyll
       - name: Upload Pages artifact
@@ -77,7 +65,7 @@ jobs:
         run: |
           echo '### GitHub Pages is not enabled yet' >> "$GITHUB_STEP_SUMMARY"
           echo '' >> "$GITHUB_STEP_SUMMARY"
-          echo 'The Living Logical Robot invitation and advanced sandbox were built and uploaded successfully.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'The Living Logical Robot and Swedish Legal Robot were built and uploaded successfully.' >> "$GITHUB_STEP_SUMMARY"
           echo 'Enable **Settings → Pages → Build and deployment → Source: GitHub Actions** once, then rerun this workflow.' >> "$GITHUB_STEP_SUMMARY"
 
   deploy:
