@@ -1,126 +1,157 @@
 # Contributing to The Syntract Vision
 
-**New here? Start with [`BUILD_WITH_THE_LOGICAL_ROBOT.md`](BUILD_WITH_THE_LOGICAL_ROBOT.md)** for a short map from “what am I looking at?” to a first falsifiable contribution.
+You do **not** need to understand or agree with every part of the long-range QCDS vision before contributing something useful.
 
-The fastest way to contribute is **not** to rewrite the QCDS core.
+Start with a small, inspectable problem.
 
-The repository is intentionally layered so new experiments can be built around a stable inference architecture and then falsified independently.
+**First time here? Read [`START_HERE.md`](START_HERE.md) first.**
 
-## Good first contribution paths
+## The fastest first contribution
 
-### Build a new Logical Robot body / observer
+```bash
+git clone https://github.com/iampathat/thesyntractvision.git
+cd thesyntractvision
+python -m pip install -e '.[test]'
+python examples/hello_logical_space.py
+```
+
+Then edit `examples/hello_logical_space.py` and run it again.
+
+If that makes sense, you already understand enough of the boundary to begin building.
+
+---
+
+## Pick a contribution lane
+
+### Make the Logical Robot easier to use
+
+Good examples:
+
+- clearer Logical Space visualization;
+- provenance inspection;
+- before → after views;
+- contradiction overlays;
+- accessibility/mobile improvements;
+- better session sandbox interaction.
+
+The UI is a manifestation of the Logical Robot. Do not move fundamental QCDS inference or truth authority into the browser.
+
+### Add an observation body
 
 Examples:
 
-```text
-public data API
-scientific instrument adapter
-file / paper observer
-simulation observer
-camera or other physical sensor adapter
-```
+- scientific API;
+- simulation;
+- file/paper observer;
+- laboratory instrument;
+- camera/sensor adapter;
+- another bounded public information source.
 
-A body observes and returns source-attributed evidence. It does not become a new intelligence and it does not get authority to declare truth.
+An observation body returns source-attributed evidence. It does not declare truth or install solution rules.
 
-### Build a small Logical Universe
+### Build a small Logical Universe or Domain Lab
 
-Use [`LOGICAL_UNIVERSE_TEMPLATE.md`](LOGICAL_UNIVERSE_TEMPLATE.md) to define a bounded lawbook, game, engineering specification, scientific micro-domain, simulation or hypothetical world.
+This is a great path if you know a domain better than you know this codebase.
 
-Small universes are especially useful when their truth conditions and falsifiers are explicit.
+Use a bounded problem where you can say what would count as success **and what would falsify it**.
 
-### Falsify an oracle or inference behavior
+Start with [`DOMAIN_LABS.md`](DOMAIN_LABS.md) and [`LOGICAL_UNIVERSE_TEMPLATE.md`](LOGICAL_UNIVERSE_TEMPLATE.md).
 
-Strong contributions are tests that can make an implementation fail for a meaningful reason:
+### Try to break an oracle or inference behavior
+
+Useful failures include:
 
 ```text
 source bias
 position bias
+contradictory evidence
 oracle dominance
-contradiction
-holdout regression
+target / holdout leakage
+false semantic binding
 rule drift
 cross-substrate mismatch
-false semantic binding
 ```
 
-A failing falsifier that reveals a real weakness is more valuable than a decorative green test.
+A test that exposes a real weakness is a successful contribution even when it turns CI red at first.
 
-### Improve the Living Logical Robot
+### Build a benchmark
 
-The web page is only a manifestation of the same Logical Robot. Useful contributions include:
-
-- better large-space projection;
-- time travel through Reality growth;
-- Syntract highlighting;
-- oracle/null/rotation visualization;
-- provenance inspection;
-- accessibility/mobile interaction;
-- additional safe observation bodies;
-- remote-runtime adapters.
-
-Do not move inference or truth decisions into the browser merely to make the visualization easier.
-
-### Add a benchmark
-
-Benchmarks should publish:
+A useful benchmark states:
 
 - exact commit;
+- workload/data;
 - environment;
-- input/workload;
-- assertions/falsifiers;
+- assertion/falsifier;
 - raw or inspectable result;
 - what the result demonstrates;
 - what it does **not** demonstrate.
 
-## Architecture boundary
+### Explore distributed / swarm behavior
 
-The locked QCDS Fabric v1.0 canonical artifacts are not ordinary implementation files.
+[`LIVING_SWARM_LOGICAL_ROBOTS.md`](LIVING_SWARM_LOGICAL_ROBOTS.md) is an optional playground for bounded peer exchange between Logical Robots.
 
-Do not change canonical files as part of an unrelated feature or MVP.
+It is deliberately not a replacement for QCDS or the main Logical Robot architecture.
 
-New bodies, interfaces, benchmarks and application experiments should normally live above the existing architecture:
+---
+
+## The architecture boundary
+
+Keep this picture nearby:
 
 ```text
-QCDS / Fabric core
+QCDS / Fabric Core
         ↑
 Logical Space / Universes / governed logic
         ↑
 Logical Robot
         ↑
-observers / bodies / applications / visualizations
+web / APIs / simulations / sensors / robot bodies
 ```
 
-## Claims
+**Build upward first.**
 
-Please distinguish implementation results from research claims.
+Changing the core is appropriate only when the capability is genuinely reusable architecture and cannot cleanly live above it.
 
-A successful Python benchmark does not by itself establish AGI/ASI, quantum advantage, external truth or production correctness. A web source is evidence, not truth merely because it was retrieved.
+The locked QCDS Fabric v1.0 canonical files are not ordinary feature files.
 
-## Run everything
+---
+
+## Three things we do not want hidden in a contribution
+
+1. **No automatic truth.** Human text, web pages and sensor readings are evidence/input, not truth merely because they were received.
+2. **No hidden solution rule.** Do not bake the desired answer into a demo and then report that the system discovered it.
+3. **No accidental second QCDS.** Do not reimplement fundamental inference in JavaScript, UI helpers or integration code just to make a feature easier.
+
+---
+
+## Run the checks
 
 ```bash
 python -m pip install -e '.[test]'
 pytest -q
 ```
 
-To see the running system:
+To run the full local Logical Robot:
 
 ```bash
-qcds-live \
-  --store ./intelligence_store \
-  --frontier examples/continuous_reality_growth_mvp.json
+qcds-live --store ./intelligence_store --frontier examples/continuous_reality_growth_mvp.json
 ```
 
-Or open the repository in GitHub Codespaces; the Living Logical Robot starts on the forwarded port automatically.
+Or use GitHub Codespaces from the README.
+
+---
 
 ## Pull requests
 
-Prefer a focused branch and a non-draft PR with:
+The repository includes a PR template. Keep the PR focused and tell us:
 
-- the problem being tested;
-- the architectural layer being changed;
-- explicit falsifiers;
-- the observed result;
-- confirmation of whether canonical/core files changed.
+- what you tried to improve;
+- which architectural layer changed;
+- the shortest way to reproduce it;
+- what would falsify the result;
+- whether core/canonical files changed;
+- the observed before → after result.
 
-The project values inspectability, falsification and clean architectural boundaries over feature count.
+Small PRs are welcome. A five-line falsifier can be more valuable than a thousand-line feature.
+
+If you are unsure where to begin, take the hello example, replace its toy domain with something you actually know, and make one uncertainty inspectable.
