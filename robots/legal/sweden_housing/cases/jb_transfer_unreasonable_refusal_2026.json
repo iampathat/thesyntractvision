@@ -1,0 +1,18 @@
+{
+  "case_id": "jb12-transfer-unreasonable-refusal",
+  "as_of_date": "2026-08-29",
+  "contract_date": "2026-08-12",
+  "facts": {
+    "landlord_type": "natural_person",
+    "residential_use": true,
+    "holiday_purpose": false,
+    "landlord_holds_unit_as_tenant": true,
+    "regular_external_units": 1,
+    "fixed_term": false,
+    "issue_transfer": true,
+    "transfer_requested": true,
+    "landlord_transfer_refused": true,
+    "transfer_refusal_reasonable": false,
+    "landlord_transfer_answer_within_three_weeks": true
+  }
+}
