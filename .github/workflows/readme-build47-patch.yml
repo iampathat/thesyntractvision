@@ -1,0 +1,102 @@
+name: Patch Build 47 README
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/readme-build47-patch.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Correct question / Logical Space / oracle boundary
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('README.md')
+          text = path.read_text(encoding='utf-8')
+
+          replacements = [
+              (
+                  'The Swedish Law surface is deeper: it forms an active legal `2^N` problem, runs the shared QCDS Fabric, exposes **Classical Exact** and **Grover-emulated statevector** executions, and separately exposes the **Quantum Full Space** native-QPU target contract where semantic prefiltering is forbidden.',
+                  'The Swedish Law surface is deeper: a human question plus supplied material/facts enters a bounded translator, which forms the active legal Logical Space. Source-attributed statutory, praxis and evidence **oracles then filter that space** before the shared QCDS Fabric runs. The surface exposes **Classical Exact** and **Grover-emulated statevector** executions, and separately exposes the **Quantum Full Space** native-QPU target contract where semantic prefiltering is forbidden.'
+              ),
+              (
+                  'Logic remains represented / manifested through **oracles or emulated oracles**. Hosting does not redefine the logic and does not create a second QCDS architecture.',
+                  'Questions, material and observations are translated into a **Logical Space**. **Oracles or emulated oracles are filters / constraints over that Logical Space**; they do not replace the space and they do not answer the question by themselves. Hosting does not redefine the logic and does not create a second QCDS architecture.'
+              ),
+              (
+                  'The same `BaseBundle + OracleStack` contract can now be hosted in an ephemeral browser/session, an external runtime or a central high-capacity fabric. Oracle spaces can be exported and imported with Logical Universe identity and provenance preserved.',
+                  'The same represented Logical Space and its `BaseBundle + OracleStack` execution contract can now be hosted in an ephemeral browser/session, an external runtime or a central high-capacity fabric. Spaces and their oracle-filter contracts can be exported and imported with Logical Universe identity and provenance preserved.'
+              ),
+              (
+                  '''```mermaid
+flowchart TD
+    LOGIC[Represented logic]
+    LOGIC --> O[Oracles / emulated oracles]
+    O --> SESSION[Browser / session host]
+    O --> EXTERNAL[External robot / lab host]
+    O --> CENTRAL[Central oracle-space host]
+    SESSION -->|bounded transfer| CENTRAL
+    EXTERNAL -->|bounded transfer| CENTRAL
+    SESSION --> Q[Same QCDS Fabric]
+    EXTERNAL --> Q
+    CENTRAL --> Q
+    Q --> T[TruthDistribution]
+    T --> S[Syntract]
+```''',
+                  '''```mermaid
+flowchart TD
+    INPUT[Question / material / observations] --> TR[Translator]
+    TR --> LOGIC[Logical Space]
+    LOGIC --> SESSION[Browser / session host]
+    LOGIC --> EXTERNAL[External robot / lab host]
+    LOGIC --> CENTRAL[Central high-capacity host]
+    SESSION --> OS[Oracle filters / emulated oracles]
+    EXTERNAL --> OE[Oracle filters / emulated oracles]
+    CENTRAL --> OC[Oracle filters / emulated oracles]
+    SESSION -->|bounded transfer| CENTRAL
+    EXTERNAL -->|bounded transfer| CENTRAL
+    OS --> Q[Same QCDS Fabric]
+    OE --> Q
+    OC --> Q
+    Q --> T[TruthDistribution]
+    T --> S[Syntract]
+```'''
+              ),
+              (
+                  'browser / Pyodide session       up to 18 live emulation dimensions',
+                  'browser / Pyodide session       up to 16 live emulation dimensions'
+              ),
+              (
+                  'This remains the **same QCDS architecture**: logic → oracles / emulated oracles → QCDS four phases → TruthDistribution → Syntract.',
+                  'This remains the **same QCDS architecture**: question / material → translator → Logical Space → oracle filters / emulated oracle filters → QCDS four phases → TruthDistribution → Syntract.'
+              ),
+              (
+                  '| `src/qcds_fabric/oracle_space.py` | session/external/central hosting and transfer of the same oracle-manifested logical contract |',
+                  '| `src/qcds_fabric/oracle_space.py` | session/external/central hosting and transfer of Logical Spaces with their oracle-filter execution contract and provenance |'
+              ),
+          ]
+
+          for old, new in replacements:
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'expected exactly one README match, got {count}: {old[:90]!r}')
+              text = text.replace(old, new, 1)
+
+          path.write_text(text, encoding='utf-8')
+          PY
+      - name: Commit README only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          git diff --cached --check
+          git commit -m "Correct README question-space-oracle architecture"
+          git push origin HEAD:main
