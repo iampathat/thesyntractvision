@@ -5,18 +5,19 @@ import re
 from pathlib import Path
 from typing import Sequence
 
-from .living_robot_public_fix49 import living_robot_public_fix49_html as _base_html
+from .living_robot_public_syntract63 import living_robot_public_syntract63_html as _base_html
 
 
-PUBLIC_BUILD = "53"
+PUBLIC_BUILD = "63"
 
 
 def living_robot_public_html(*, static_mode: bool = False) -> str:
     """Single stable public exporter used by both Pages and regression tests.
 
     Presentation/routing only. The QCDS four phases, oracle semantics, Logical
-    Space inference and Syntract binding remain defined by their existing core
-    modules and are deliberately not reimplemented here.
+    Space inference, parallel Syntract composition and Syntract binding remain
+    defined by their existing Python modules and are deliberately not
+    reimplemented here.
     """
 
     html = _base_html(static_mode=static_mode)
