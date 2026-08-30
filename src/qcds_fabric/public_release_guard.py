@@ -12,12 +12,15 @@ CRITICAL_IDS = (
     "public-overview",
     "try-logical-robot",
     "public-legal-question",
+    "public-syntracts",
     "public-advanced",
     "publicLegalQuestionText",
     "publicLegalContext",
     "publicLegalRun",
     "publicLegalInlineStatus",
     "publicLegalQuickResult",
+    "publicSyntractStatus",
+    "publicSyntractResult",
     "quickResult",
     "swedish-legal-robot",
 )
@@ -36,6 +39,8 @@ PUBLIC_LEGAL_CASES = (
 REQUIRED_PACKAGE_FILES = (
     "qcds_fabric/session_sandbox_core.py",
     "qcds_fabric/problem.py",
+    "qcds_fabric/parallel_syntracts.py",
+    "qcds_fabric/syntract_parallel_demos.py",
     "qcds_fabric/robots/legal/sweden_housing/quick_question.py",
     "qcds_fabric/robots/legal/sweden_housing/question_ingress.py",
 )
@@ -74,15 +79,18 @@ def validate_public_site(site: str | Path) -> None:
         "question/material → translator → Logical Space → oracle filters → QCDS four phases → TruthDistribution → Syntract",
         "QCDS four phases remain unchanged",
         "legal_question_run",
+        "syntract_demo_run",
         "RUN QUESTION →",
         "TRY QCDS",
         "LEGAL ROBOT",
+        "SYNTRACTS",
         "ADVANCED",
+        "No voting. No hard collapse. No separate fusion engine.",
     ):
         if phrase not in html:
             errors.append(f"public HTML missing contract phrase: {phrase}")
 
-    for message_type in ("run", "legal_question_run", "legal_run"):
+    for message_type in ("run", "legal_question_run", "legal_run", "syntract_demo_run"):
         if message_type not in worker:
             errors.append(f"worker missing message route: {message_type}")
 
@@ -90,6 +98,7 @@ def validate_public_site(site: str | Path) -> None:
         "run_session_json",
         "run_swedish_housing_question_json",
         "run_swedish_housing_case_json",
+        "run_syntract_demo_json",
     ):
         if symbol not in worker:
             errors.append(f"worker missing Python bridge: {symbol}")
