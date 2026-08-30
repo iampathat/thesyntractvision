@@ -71,6 +71,56 @@ class FabricLayer:
             "oracle_agreement_spread": max(agreements) - min(agreements),
         }
 
+    @staticmethod
+    def _reuse_equivalent_classical_distribution(
+        distribution: TruthDistribution,
+        view: ChannelView,
+        *,
+        reason: str,
+    ) -> TruthDistribution:
+        """Bind an exact classical distribution to an equivalent rotation view.
+
+        The classical reference kernel enumerates candidate states in canonical
+        coordinates. ``position_map`` never changes those states or the logical
+        dimension mapping, and ``OracleStack.score`` combines the same oracle set
+        with order-independent multiplication/agreement. Therefore position-only
+        and oracle-exposure-only rotations are mathematically identical for this
+        reference kernel. Reusing the already computed distribution preserves
+        every view and every 2^N state while avoiding redundant enumeration.
+        """
+        return replace(
+            distribution,
+            provenance={
+                **dict(distribution.provenance),
+                "null_dimension_id": view.null_dimension_id,
+                "transformation": dict(view.transformation_provenance),
+                "equivalent_classical_rotation_reuse": True,
+                "equivalent_classical_rotation_reason": reason,
+            },
+        )
+
+    def _rotation_bank_from_distribution(
+        self,
+        family: str,
+        views: Sequence[ChannelView],
+        distribution: TruthDistribution,
+        *,
+        reason: str,
+    ) -> RotationBankResult:
+        resolved = tuple(self._view_for_substrate(view) for view in views)
+        if not resolved:
+            raise ValueError("rotation bank cannot be empty")
+        distributions = tuple(
+            self._reuse_equivalent_classical_distribution(distribution, view, reason=reason)
+            for view in resolved
+        )
+        return RotationBankResult(
+            family=family,
+            views=resolved,
+            distributions=distributions,
+            diagnostics=self._diagnostics(distributions),
+        )
+
     def _run_rotation_views(
         self,
         family: str,
@@ -80,7 +130,24 @@ class FabricLayer:
         resolved = tuple(self._view_for_substrate(view) for view in views)
         if not resolved:
             raise ValueError("rotation bank cannot be empty")
-        distributions = tuple(self.kernel.run(view, oracle_stack) for view in resolved)
+
+        # Position-only and oracle-order-only rotations are exact invariances of
+        # ClassicalInferenceKernel. Compute the full support once, then retain all
+        # requested views with view-specific provenance. Other substrates still
+        # execute every view so substrate-specific bias remains observable.
+        if isinstance(self.kernel, ClassicalInferenceKernel) and family in {"position", "oracle_exposure"}:
+            seed = self.kernel.run(resolved[0], oracle_stack)
+            distributions = (seed,) + tuple(
+                self._reuse_equivalent_classical_distribution(
+                    seed,
+                    view,
+                    reason=f"{family}_is_exactly_invariant_in_classical_reference",
+                )
+                for view in resolved[1:]
+            )
+        else:
+            distributions = tuple(self.kernel.run(view, oracle_stack) for view in resolved)
+
         return RotationBankResult(
             family=family,
             views=resolved,
@@ -189,9 +256,25 @@ class FabricLayer:
             )
         }
         if include_positional:
-            families["position"] = self.run_positional_bank(bundle, oracle_stack)
+            if isinstance(self.kernel, ClassicalInferenceKernel):
+                families["position"] = self._rotation_bank_from_distribution(
+                    "position",
+                    positional_views(bundle, oracle_stack),
+                    null_result.baseline_distribution,
+                    reason="position_is_exactly_invariant_in_classical_reference",
+                )
+            else:
+                families["position"] = self.run_positional_bank(bundle, oracle_stack)
         if include_oracle_exposure:
-            families["oracle_exposure"] = self.run_oracle_exposure_bank(bundle, oracle_stack)
+            if isinstance(self.kernel, ClassicalInferenceKernel):
+                families["oracle_exposure"] = self._rotation_bank_from_distribution(
+                    "oracle_exposure",
+                    oracle_exposure_views(bundle, oracle_stack),
+                    null_result.baseline_distribution,
+                    reason="oracle_exposure_order_is_exactly_invariant_in_classical_reference",
+                )
+            else:
+                families["oracle_exposure"] = self.run_oracle_exposure_bank(bundle, oracle_stack)
         if include_crossed:
             families["crossed"] = self.run_crossed_bank(bundle, oracle_stack)
 
