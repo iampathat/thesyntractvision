@@ -5,18 +5,31 @@ You do **not** need to understand the whole QCDS architecture before you can use
 The shortest useful mental model is:
 
 ```text
-something is uncertain
+question / material / uncertainty
         ↓
-Logical Robot represents the problem
+Logical Space + translated oracle logic
         ↓
-QCDS Core evaluates the represented logical space
+QCDS Core / Fabric
         ↓
-Syntract / result comes back
+TruthDistribution
         ↓
-you can inspect, challenge or extend it
+Syntract
+        ↓
+gap / evidence / Logical Robot / swarm / re-entry when needed
+        ↺
 ```
 
-The browser, API, sensor, simulation or robot body is **not** the intelligence. It is a way to communicate with the Logical Robot. Fundamental inference stays in the QCDS core.
+The browser, API, sensor, simulation or robot body is **not** the intelligence. It is a way to communicate with the same QCDS / Syntract system. Fundamental inference stays in the QCDS core.
+
+For new Python integrations, the recommended composition boundary is now one object:
+
+```python
+from qcds_fabric import SyntractSystem
+
+system = SyntractSystem()
+```
+
+`SyntractSystem` does not replace or reinterpret QCDS. It delegates to the existing problem-to-Syntract path, persistent runtime, Central QCDS Fabric, swarm re-entry and Logical Robot evidence loop. The historical BUILD modules remain implementation history and lower-level APIs; new integrations do not need to assemble them manually.
 
 ---
 
@@ -58,24 +71,31 @@ http://127.0.0.1:8765/
 
 Or use the **Open in GitHub Codespaces** button in the README and skip local setup.
 
-### 3. I want to change something
+### 3. I want to build with the architecture
 
-Start with the smallest executable example:
+Start from the unified boundary:
+
+```python
+from qcds_fabric import SyntractSystem
+
+system = SyntractSystem()
+```
+
+The same object can then:
+
+- run a structured problem or semantic adapter through QCDS to a Syntract;
+- expose the resulting Oracle Space;
+- mount and execute spaces centrally in parallel, sequential or hybrid topology;
+- let QCDS uncertainty create bounded swarm frontier work;
+- return swarm oracle manifestations through the same QCDS Fabric;
+- create a persistent mission with `system.mission(store)`;
+- run genesis/evidence planning and Logical Robot observation through that same mission boundary.
+
+For the smallest lower-level executable example you can still run:
 
 ```bash
 python examples/hello_logical_space.py
 ```
-
-Then open `examples/hello_logical_space.py` and change:
-
-- the Logical Space observations;
-- the unresolved question;
-- the candidate values;
-- the explicit evidence.
-
-Run it again.
-
-That is the fastest way to see the architecture from code rather than documentation.
 
 ---
 
@@ -83,15 +103,16 @@ That is the fastest way to see the architecture from code rather than documentat
 
 You normally **should not start by changing the QCDS core**.
 
-Choose something around it:
+Choose something around the unified system boundary:
 
 | If you like... | Start here | First useful contribution |
 |---|---|---|
+| System integration | `src/qcds_fabric/syntract_system.py` | Connect another existing QCDS capability without duplicating inference |
 | Front-end / visualization | `src/qcds_fabric/living_robot_session.py` | Make Logical Space changes easier to see |
 | APIs / integrations | `src/qcds_fabric/logical_robot_control.py` | Add a bounded observation body |
 | Science / research | `DOMAIN_LABS.md` | Create a falsifiable domain lab |
 | Logic / verification | `tests/` + oracle modules | Add a falsifier or contradiction case |
-| Distributed systems | `LIVING_SWARM_LOGICAL_ROBOTS.md` | Experiment with bounded peer verification |
+| Distributed systems | `src/qcds_fabric/central_fabric.py` + `swarm_intelligence.py` | Extend execution capacity while preserving universe identity |
 | Quantum / substrate work | `GROVER_DEPTH.md` + Fabric modules | Test substrate parity or execution semantics |
 | Robotics / sensors | Logical Robot body boundary | Add a source-attributed sensor adapter |
 
@@ -102,16 +123,21 @@ A contribution is valuable when it makes something **observable, falsifiable or 
 ## The one boundary to remember
 
 ```text
+question / material
+      ↓
+translator / semantic adapter
+      ↓
+Logical Space + oracle logic
+      ↓
 QCDS / Fabric Core
-        ↑
-Logical Space / Universes / governed logic
-        ↑
-Logical Robot
-        ↑
-web / APIs / simulations / sensors / robot bodies
+      ↓
+TruthDistribution → Syntract
+      ↓
+Logical Robot / swarm / evidence / re-entry
+      ↺
 ```
 
-Build upward first.
+The outer components can change. The QCDS inference semantics do not move into them.
 
 Do not duplicate QCDS inference in a UI layer just because the UI is easier to modify.
 
@@ -142,12 +168,13 @@ CHECK
   What would falsify the current result?
 ```
 
-Small, inspectable experiments are preferred to giant opaque demos.
+Small, inspectable experiments are still useful, but they now plug into the same `SyntractSystem` rather than defining another architecture.
 
 ---
 
 ## Where to go next
 
+- **Unified system boundary:** `src/qcds_fabric/syntract_system.py`
 - **Build something:** [`BUILD_WITH_THE_LOGICAL_ROBOT.md`](BUILD_WITH_THE_LOGICAL_ROBOT.md)
 - **Contribute:** [`CONTRIBUTING.md`](CONTRIBUTING.md)
 - **Logical Spaces:** [`LOGICAL_SPACE.md`](LOGICAL_SPACE.md)
@@ -155,4 +182,4 @@ Small, inspectable experiments are preferred to giant opaque demos.
 - **Living Logical Robot:** [`LIVING_LOGICAL_ROBOT.md`](LIVING_LOGICAL_ROBOT.md)
 - **Canonical QCDS specification:** [`QCDS_FABRIC_SPEC_v1.0_CANONICAL.md`](QCDS_FABRIC_SPEC_v1.0_CANONICAL.md)
 
-If you are unsure where you fit, build one tiny Logical Space first. The architecture becomes much easier once you have watched one concrete problem pass through it.
+The BUILD files remain useful for provenance and engineering history. They are no longer the mental model you need in order to use the system.
