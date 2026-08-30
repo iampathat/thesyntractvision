@@ -28,7 +28,7 @@ function fullQCDSPanel(core){
  const depthText=Object.keys(depths).length?Object.entries(depths).slice(0,10).map(([k,v])=>k+'='+v).join(' · '):'none / not run';
  const wrap=document.createElement('div');wrap.className='fullQCDS';
  wrap.innerHTML='<div class="fullQCDSTitle"><b>7 · SAME QCDS · THREE EXECUTION MODES</b><span>classical reference · Grover emulation · full-space quantum target</span></div>'+
- '<p class="legalStageIntro">Classical Exact and Grover Emulated are resource-bounded software modes. They may receive a classically projected active room, but execute that room without silently deleting candidate states. Quantum Full Space is a separate native-QPU target contract: represented logical dimensions may not be removed merely to satisfy classical memory limits. No physical QPU is connected in this build.</p>'+
+ '<p class="legalStageIntro">Classical Exact and Grover Emulated are resource-bounded software modes. They may receive a classically projected active room, but execute that room without silently deleting candidate states. Quantum Full Space is a separate native-QPU target contract: represented logical dimensions may not be removed merely to satisfy classical memory limits. No physical QPU is connected.</p>'+
  '<div class="substrateGrid">'+
  '<div class="substrateCard"><h4>CLASSICAL EXACT</h4><strong>'+escapeLegal(exact.syntract_id||core.canonical_final_syntract||core.syntract_id||'—')+'</strong><span>'+escapeLegal(exact.state_count??core.candidate_state_count??'—')+' exact candidate states · resource-bounded Condition Formation allowed · active room itself remains exact.</span></div>'+
  '<div class="substrateCard grover"><h4>GROVER · STATEVECTOR EMULATED</h4><strong>'+escapeLegal(grover.syntract_id||grover.status||'—')+'</strong><span>Status: '+escapeLegal(grover.status||'—')+' · selected m*: '+escapeLegal(depthText)+' · software statevector bound may require exact separable decomposition.</span></div>'+
@@ -57,7 +57,8 @@ window.addEventListener('DOMContentLoaded',()=>{
  const grid=document.querySelector('.legalCaseGrid');
  if(!grid||document.getElementById('probabilistic-legal-case'))return;
  const article=document.createElement('article');article.className='legalCase';article.id='probabilistic-legal-case';
- article.innerHTML='<span class="tag">12 KAP · PROBABILISTIC EVIDENCE</span><h4>Disputed independent use</h4><p>The statutory setting is known, but whether the use is truly independent and whether a valid excuse exists are represented as 0.74 / 0.85 evidence pressures. Watch QCDS keep them live instead of silently turning them into facts.</p><button onclick="runLegalCase(\''+file+'\')">RUN CASE →</button>';
+ article.innerHTML=`<span class="tag">12 KAP · PROBABILISTIC EVIDENCE</span><h4>Disputed independent use</h4><p>The statutory setting is known, but whether the use is truly independent and whether a valid excuse exists are represented as 0.74 / 0.85 evidence pressures. Watch QCDS keep them live instead of silently turning them into facts.</p><button type="button">RUN CASE →</button>`;
+ const button=article.querySelector('button');if(button)button.addEventListener('click',()=>runLegalCase(file));
  grid.appendChild(article);
 });
 </script>
