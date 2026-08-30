@@ -40,7 +40,14 @@ def test_swarm_packets_return_as_oracles_to_same_qcds_core() -> None:
         universe_id=space.universe_id,
         source_robot_id="robot-evidence",
         work_type="evidence",
-        oracle=EvidenceOracle("swarm:evidence:b", "fact:b", confidence=0.8, polarity=True),
+        oracle=EvidenceOracle(
+            oracle_id="swarm:evidence:b",
+            dimension_id="fact:b",
+            expected_value=1,
+            confidence=0.8,
+            source_id="robot-evidence",
+            claim_text="bounded swarm observation",
+        ),
         provenance={"observation": "bounded-test"},
     )
 
