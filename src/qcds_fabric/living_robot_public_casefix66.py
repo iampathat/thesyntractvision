@@ -45,6 +45,16 @@ def _replace_once(html: str, old: str, new: str, label: str) -> str:
     return html.replace(old, new, 1)
 
 
+def _replace_last_of_two(html: str, old: str, new: str, label: str) -> str:
+    count = html.count(old)
+    if count != 2:
+        raise RuntimeError(f"public quick-case contract changed for {label}: expected 2 matches, found {count}")
+    before, marker, after = html.rpartition(old)
+    if not marker:
+        raise RuntimeError(f"public quick-case contract changed for {label}: final match missing")
+    return before + new + after
+
+
 def living_robot_public_casefix66_html(*, static_mode: bool = False) -> str:
     """Public-only demo repair without changing QCDS inference semantics.
 
@@ -56,8 +66,8 @@ def living_robot_public_casefix66_html(*, static_mode: bool = False) -> str:
     html = _base_html(static_mode=static_mode)
     for label, old, new in _SEED_REPLACEMENTS:
         html = _replace_once(html, old, new, label)
-    html = _replace_once(html, _OLD_ROWS, _NEW_ROWS, "quick-result tie detection")
-    html = _replace_once(html, _OLD_SUMMARY, _NEW_SUMMARY, "quick-result summary")
+    html = _replace_last_of_two(html, _OLD_ROWS, _NEW_ROWS, "Pick-a-World tie detection")
+    html = _replace_once(html, _OLD_SUMMARY, _NEW_SUMMARY, "Pick-a-World summary")
     if "</style>" not in html:
         raise RuntimeError("public style block missing; duplicate Legal Robot seed cannot be hidden")
     html = html.replace("</style>", _HIDE_DUPLICATE_LEGAL_CSS + "\n</style>", 1)
