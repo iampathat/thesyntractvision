@@ -41,13 +41,16 @@ jobs:
           python-version: "3.12"
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e '.[test]'
-      - name: Build 41-44 architecture smoke
+      - name: QCDS architecture and public ingress smoke
         run: >-
           pytest -q
           tests/test_build41_architecture_guardrails.py
           tests/test_build42_oracle_space_topology.py
           tests/test_build43_swarm_intelligence.py
           tests/test_build44_central_fabric.py
+          tests/test_legal_question_ingress.py
+          tests/test_public_compact_surface.py
+          tests/test_public_javascript_syntax.py
 
   test:
     needs: architecture-smoke
