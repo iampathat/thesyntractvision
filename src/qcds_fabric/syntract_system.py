@@ -13,6 +13,7 @@ from .evidence_planning import (
 )
 from .fabric import FabricLayer
 from .intelligence_store import CsvIntelligenceStore, StoredMissionState
+from .logical_robot import LogicalRobotPolicy, LogicalRobotRunResult, LogicalRobotTool
 from .models import Syntract, TruthDistribution
 from .oracle_evolution import OracleChallengeSuite, OracleEvolutionConfig
 from .oracle_genesis import (
@@ -33,7 +34,7 @@ from .problem import (
     run_problem_compilation,
     run_problem_text,
 )
-from .runtime import RuntimeStepResult, SuperintelligenceRuntime
+from .runtime import RuntimeRobotResult, RuntimeStepResult, SuperintelligenceRuntime
 from .swarm_intelligence import (
     SwarmFrontierTask,
     SwarmOraclePacket,
@@ -104,12 +105,33 @@ class SyntractMissionStep:
         return self.runtime_step.state
 
 
+@dataclass(frozen=True)
+class SyntractRobotCycle:
+    """One QCDS -> plan -> Logical Robot -> evidence -> QCDS cycle."""
+
+    runtime_result: RuntimeRobotResult
+    execution: SyntractExecution
+
+    @property
+    def robot(self) -> LogicalRobotRunResult | None:
+        return self.runtime_result.robot
+
+    @property
+    def state(self) -> StoredMissionState:
+        return self.runtime_result.state
+
+    @property
+    def evidence_result_count(self) -> int:
+        robot = self.robot
+        return 0 if robot is None else len(robot.evidence_results)
+
+
 class SyntractMission:
     """Persistent mission view over the existing SuperintelligenceRuntime.
 
-    BUILD 56 does not create a new loop. It makes BUILD 15's persistent runtime
-    callable through the same system boundary used for ordinary QCDS/Syntract
-    execution.
+    It exposes the already implemented genesis/evidence/robot loop through the
+    same system boundary used for ordinary QCDS/Syntract execution. It does not
+    add a second inference or truth path.
     """
 
     def __init__(
@@ -183,6 +205,41 @@ class SyntractMission:
     ) -> SyntractExecution:
         self.runtime.observe(mission_id, results)
         return self.current(mission_id)
+
+    def run_robot_once(
+        self,
+        mission_id: str,
+        challenge_suite: OracleChallengeSuite,
+        tools: Sequence[LogicalRobotTool],
+        *,
+        observations: Sequence[OracleFailureObservation] = (),
+        robot_policy: LogicalRobotPolicy | None = None,
+        genesis_generators: Sequence[OracleGenesisGenerator] = (PairwiseSemanticRuleGenesisGenerator(),),
+        discovery_config: OracleGapDiscoveryConfig | None = None,
+        evolution_config: OracleEvolutionConfig | None = None,
+        planning_config: EvidencePlanningConfig | None = None,
+        continuation_policy: ContinuationPolicy | None = None,
+    ) -> SyntractRobotCycle:
+        result = self.runtime.run_logical_robot_once(
+            mission_id,
+            challenge_suite,
+            tools,
+            observations=observations,
+            robot_policy=robot_policy,
+            genesis_generators=genesis_generators,
+            discovery_config=discovery_config,
+            evolution_config=evolution_config,
+            planning_config=planning_config,
+            continuation_policy=continuation_policy,
+        )
+        final_step = result.followup_step or result.initial_step
+        execution = self.system.run_compilation(
+            final_step.compilation,
+            universe_id=self.universe_id,
+            space_id=f"space:{mission_id}",
+            syntract_id=f"syntract:mission:{mission_id}:cycle:{result.state.cycle_index}",
+        )
+        return SyntractRobotCycle(runtime_result=result, execution=execution)
 
 
 class SyntractSystem:
@@ -408,6 +465,7 @@ __all__ = [
     "SyntractSystemError",
     "SyntractExecution",
     "SyntractMissionStep",
+    "SyntractRobotCycle",
     "SyntractMission",
     "SyntractSystem",
 ]
