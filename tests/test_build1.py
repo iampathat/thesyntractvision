@@ -60,6 +60,34 @@ def test_oracle_exposure_rotation_is_same_stack_different_order():
     assert all(distribution.probabilities == first.probabilities for distribution in result.distributions)
 
 
+def test_stabilized_suite_reuses_exact_classical_position_and_oracle_invariances():
+    calls: list[ChannelView] = []
+
+    class CountingClassicalKernel(ClassicalInferenceKernel):
+        def run(self, view, oracle_stack):
+            calls.append(view)
+            return super().run(view, oracle_stack)
+
+    result = FabricLayer(kernel=CountingClassicalKernel()).run_stabilized_rotation_suite(bundle2(), stack2())
+
+    # Baseline + one exact run for each dimension-null view. Position and oracle
+    # exposure views are all retained but reuse the mathematically identical
+    # baseline distribution instead of re-enumerating the same 2^N support.
+    assert len(calls) == 3
+    assert len(result.families["position"].views) == 2
+    assert len(result.families["oracle_exposure"].views) == 2
+    assert all(
+        distribution.provenance.get("equivalent_classical_rotation_reuse") is True
+        for distribution in result.families["position"].distributions
+    )
+    assert all(
+        distribution.provenance.get("equivalent_classical_rotation_reuse") is True
+        for distribution in result.families["oracle_exposure"].distributions
+    )
+    assert result.families["position"].diagnostics["view_count"] == 2.0
+    assert result.families["oracle_exposure"].diagnostics["view_count"] == 2.0
+
+
 def test_crossed_bank_preserves_null_position_and_oracle_provenance():
     oracle_stack = stack2()
     result = FabricLayer().run_crossed_bank(bundle2(), oracle_stack)
