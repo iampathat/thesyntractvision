@@ -41,7 +41,7 @@ jobs:
           python-version: "3.12"
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e '.[test]'
-      - name: QCDS architecture, unified system and public ingress smoke
+      - name: QCDS architecture, unified system, parallel Syntracts and public ingress smoke
         run: >-
           pytest -q
           tests/test_build41_architecture_guardrails.py
@@ -53,6 +53,9 @@ jobs:
           tests/test_build57_syntract_system_topology.py
           tests/test_build58_syntract_robot_cycle.py
           tests/test_build59_unified_public_api.py
+          tests/test_build61_parallel_syntracts.py
+          tests/test_build62_syntract_parallel_demos.py
+          tests/test_build63_public_syntracts.py
           tests/test_legal_question_ingress.py
           tests/test_public_compact_surface.py
           tests/test_public_legal_question49.py
