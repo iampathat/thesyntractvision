@@ -46,7 +46,7 @@ def _match(text: str, *patterns: str) -> bool:
 
 
 def translate_legal_question(case: Mapping[str, Any]) -> tuple[dict[str, Any], LegalQuestionIngress]:
-    """Return a case copy whose issue flags may be derived from the question.
+    """Return a case copy with a bounded question-derived logical scope.
 
     Existing explicit facts are never overwritten. The mapping is deliberately
     conservative and bounded. If the question cannot be classified, the
@@ -71,12 +71,15 @@ def translate_legal_question(case: Mapping[str, Any]) -> tuple[dict[str, Any], L
             unresolved_reason="no human question supplied; using explicit structured case scope",
         )
         translated["facts"] = facts
+        translated["question_scope_terms"] = []
         return translated, ingress
 
     derived: dict[str, bool] = {}
     scope_terms: list[str] = []
 
     def issue(flag: str, term: str) -> None:
+        # A question may establish that an issue must be examined. It may not
+        # establish the substantive fact or outcome that resolves the issue.
         if flag not in facts:
             facts[flag] = True
             derived[flag] = True
@@ -94,30 +97,29 @@ def translate_legal_question(case: Mapping[str, Any]) -> tuple[dict[str, Any], L
     if _match(question, r"hyresnivå", r"för hög hyra", r"återbetal", r"rent review", r"excess rent", r"repayment"):
         issue("issue_rent_review", "issue:rent_review")
 
-    # Permission is a question-scope switch in the represented legal corpus, not
-    # a factual claim that permission actually exists.
     if _match(question, r"tillstånd.*andra hand", r"andrahand.*tillstånd", r"permission.*sublet", r"permission.*second.hand"):
         if "sublet_permission_requested" not in facts:
             facts["sublet_permission_requested"] = True
             derived["sublet_permission_requested"] = True
-        scope_terms.append("sublet:permission_requested")
+        if "sublet:permission_requested" not in scope_terms:
+            scope_terms.append("sublet:permission_requested")
 
-    # Regime/scope questions need no issue flag; the dates and supplied case
-    # facts form the regime space and the statutory oracles discriminate it.
     regime_question = _match(question, r"vilken lag", r"vilket regelverk", r"which law", r"which statute", r"governs", r"legal regime")
     if regime_question:
         scope_terms.append("query:legal_regime")
 
+    scope_terms = list(dict.fromkeys(scope_terms))
     recognized = bool(scope_terms)
     ingress = LegalQuestionIngress(
         question=question,
         translator_id=_TRANSLATOR_ID,
         recognized=recognized,
         derived_fact_flags=derived,
-        logical_scope_terms=tuple(dict.fromkeys(scope_terms)),
+        logical_scope_terms=tuple(scope_terms),
         unresolved_reason=None if recognized else "question not classified by bounded legal translator; no issue scope was invented",
     )
     translated["facts"] = facts
+    translated["question_scope_terms"] = scope_terms
     return translated, ingress
 
 
