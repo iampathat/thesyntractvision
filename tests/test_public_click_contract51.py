@@ -22,7 +22,7 @@ def _defined_callable(script: str, name: str) -> bool:
     return any(re.search(pattern, script) for pattern in patterns)
 
 
-def test_every_inline_click_references_a_defined_callable_in_deployed_javascript() -> None:
+def test_every_inline_click_references_a_defined_app_callable_in_deployed_javascript() -> None:
     html = living_robot_public_html(static_mode=True)
     script = _inline_scripts(html)
     handlers = _onclick_handlers(html)
@@ -30,10 +30,12 @@ def test_every_inline_click_references_a_defined_callable_in_deployed_javascript
     assert handlers
     called: set[str] = set()
     for handler in handlers:
-        called.update(re.findall(r"\b([A-Za-z_$][A-Za-z0-9_$]*)\s*\(", handler))
+        # Member methods such as document.getElementById() and
+        # element.scrollIntoView() are browser APIs, not application handlers.
+        called.update(re.findall(r"(?<!\.)\b([A-Za-z_$][A-Za-z0-9_$]*)\s*\(", handler))
 
     missing = sorted(name for name in called if not _defined_callable(script, name))
-    assert not missing, f"onclick handlers reference undefined callables: {missing}"
+    assert not missing, f"onclick handlers reference undefined application callables: {missing}"
 
 
 def test_primary_navigation_and_subnavigation_are_wired_to_real_targets() -> None:
