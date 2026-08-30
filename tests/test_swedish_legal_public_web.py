@@ -101,7 +101,7 @@ def test_browser_worker_routes_legal_run_to_packaged_python_robot() -> None:
 def test_pages_packages_recursive_python_direct_qcds_and_case_fixtures() -> None:
     workflow = (ROOT / ".github" / "workflows" / "pages.yml").read_text(encoding="utf-8")
 
-    assert "python -m qcds_fabric.living_robot_legal_full_qcds" in workflow
+    assert "python -m qcds_fabric.living_robot_public_compact" in workflow
     assert "root.rglob('*')" in workflow
     assert "path.suffix in {'.py', '.json'}" in workflow
     assert "robots/legal/sweden_housing/cases/*.json" in workflow
@@ -154,6 +154,8 @@ def test_json_bridge_returns_same_specialized_robot_shape() -> None:
     assert result["architecture_boundary"]["talks_to_qcds_core"] is True
     assert result["architecture_boundary"]["qcds_core_modified"] is False
     assert "praxis_assessment" in result
+    assert "question_ingress" in result
+    assert result["question_ingress"]["question_creates_truth"] is False
     assert result["qcds_core"]["direct_qcds_base_bundle"] is True
     assert result["qcds_core"]["csv_in_memory"] is True
     assert result["legal_boundary"]["not_legal_advice"] is True
