@@ -5,10 +5,10 @@ import re
 from pathlib import Path
 from typing import Sequence
 
-from .living_robot_public_syntract63 import living_robot_public_syntract63_html as _base_html
+from .living_robot_public_syntract64 import living_robot_public_syntract64_html as _base_html
 
 
-PUBLIC_BUILD = "63"
+PUBLIC_BUILD = "64"
 
 
 def living_robot_public_html(*, static_mode: bool = False) -> str:
