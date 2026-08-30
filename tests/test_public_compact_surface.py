@@ -5,17 +5,27 @@ def test_public_surface_is_compact_and_has_one_current_build_label():
     html = living_robot_public_compact_html(static_mode=True)
 
     assert '<body class="publicCompact publicViewQcds">' in html
-    assert '<span class="publicBuildMark">BUILD 45</span>' in html
+    assert '<span class="publicBuildMark">BUILD 46</span>' in html
     assert 'BUILD 35 · EPHEMERAL LOGICAL SPACE SANDBOX' not in html
     assert 'BUILD 34 · CUSTOM LOGICAL SPACE' not in html
 
     # Public navigation switches mutually exclusive views instead of navigating to anchors.
     assert 'onclick="publicSelectView(\'qcds\')">TRY QCDS</button>' in html
     assert 'onclick="publicSelectView(\'legal\')">LEGAL ROBOT</button>' in html
+    assert 'onclick="publicSelectView(\'legal-details\')">LEGAL DETAILS</button>' in html
+    assert 'onclick="publicSelectView(\'legal-cases\')">ALL CASES</button>' in html
     assert 'onclick="publicSelectView(\'advanced\')">ADVANCED</button>' in html
     assert "const PUBLIC_VIEW_CLASSES=['publicViewQcds','publicViewLegal','publicViewAdvanced']" in html
+    assert "const PUBLIC_LEGAL_MODE_CLASSES=['publicLegalModeOverview','publicLegalModeDetails','publicLegalModeCases']" in html
     assert "function publicGo(" not in html
     assert "window.scrollTo({top:0,left:0,behavior:'auto'});" in html
+
+    # Legal details and all cases are real menu destinations, not invisible state toggles.
+    assert "document.body.classList.add('publicViewLegal','publicLegalModeDetails')" in html
+    assert "document.body.classList.add('publicViewLegal','publicLegalModeCases')" in html
+    assert 'body.publicCompact.publicViewLegal.publicLegalModeDetails #swedish-legal-robot .legalCaseGrid' in html
+    assert 'body.publicCompact.publicViewLegal.publicLegalModeCases #swedish-legal-robot .legalExplain' in html
+    assert 'body.publicCompact.publicViewLegal.publicLegalModeOverview #swedish-legal-robot .legalCase:nth-child(n+7)' in html
 
     # Old shortcuts are overridden at the public boundary so they cannot anchor-scroll between views.
     public_script = html.rsplit('<script>', 1)[-1]
