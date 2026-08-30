@@ -22,6 +22,7 @@ from .evidence import LegalEvidenceError
 from .emulation_projection import EmulationProjectionError
 from .execution import LegalEmulationResourceProfile, resolve_emulation_resource_profile
 from .qcds_space import LegalQCDSSpaceError
+from .question_ingress import translate_legal_question
 
 
 class SwedishHousingFullQCDSRobot:
@@ -59,13 +60,18 @@ class SwedishHousingFullQCDSRobot:
         )
 
     def run_case(self, case: Mapping[str, Any]) -> LegalAssessmentResult:
-        statutory = self.legal_robot.run_case(case).as_dict()
+        # Human question ingress is deliberately outside the QCDS core. The
+        # bounded translator may only form issue/scope terms that determine which
+        # represented legal oracle filters become relevant. It never installs an
+        # answer and never modifies the canonical four-phase QCDS loop.
+        translated_case, question_ingress = translate_legal_question(case)
+        statutory = self.legal_robot.run_case(translated_case).as_dict()
         praxis_diagnostic = _praxis_qcds_pass(
             case_id=str(statutory["case_id"]),
             resolved_terms=tuple(str(value) for value in statutory["resolved_terms"]),
             praxis=self.praxis,
         )
-        raw_evidence = case.get("qcds_evidence", ())
+        raw_evidence = translated_case.get("qcds_evidence", ())
         if raw_evidence is None:
             raw_evidence = ()
         if not isinstance(raw_evidence, Sequence) or isinstance(raw_evidence, (str, bytes, bytearray)):
@@ -86,6 +92,14 @@ class SwedishHousingFullQCDSRobot:
             grover_max_iterations=self.grover_max_iterations,
         )
 
+        question_payload = dict(question_ingress.as_dict())
+        question_payload.update({
+            "translated_case_terms": list(statutory["case_terms"]),
+            "activated_rule_ids": list(statutory["applied_rules"]),
+            "active_oracle_stack_identity": integrated_qcds.get("oracle_stack_identity"),
+            "path": "question -> translator -> Logical Space -> oracle filters -> QCDS -> TruthDistribution -> Syntract",
+        })
+
         quantum_target = _mapping(
             _mapping(integrated_qcds["execution_modes"], "execution_modes")["quantum_full_space"],
             "execution_modes.quantum_full_space",
@@ -102,11 +116,14 @@ class SwedishHousingFullQCDSRobot:
         }
         payload = {
             **statutory,
+            "question_ingress": question_payload,
             "statutory_regime_projection": statutory["qcds_core"],
             "qcds_core": integrated_qcds,
             "praxis_assessment": praxis_diagnostic,
             "swarm_packet": swarm,
             "assessment_model": {
+                "question_ingress": "human question is translated into logical issue/scope terms; it does not install truth",
+                "oracle_role": "oracles are the filters/constraints over the formed Logical Space",
                 "hard_layer": "source-attributed statute, transition, scope and procedure become QCDS constraints; they do not install the final legal outcome",
                 "assessment_layer": "open standards and evidence-sensitive propositions remain live dimensions with uncertainty-bearing oracle pressure",
                 "praxis_layer": "active precedent dimensions enter the bounded software room through statutory Syntract re-entry; if the chosen software profile cannot carry all active praxis dimensions, the projection is explicit and the native quantum target still retains the complete represented praxis universe",
