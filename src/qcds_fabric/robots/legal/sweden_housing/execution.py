@@ -27,6 +27,83 @@ class LegalExecutionProfile:
         return self.native_quantum_target and not self.semantic_projection_allowed
 
 
+@dataclass(frozen=True)
+class LegalEmulationResourceProfile:
+    """Capacity policy for software execution, never a change to QCDS semantics."""
+
+    profile_id: str
+    environment: str
+    max_unknown_dimensions: int
+    grover_max_states: int
+    grover_max_iterations: int
+    projection_allowed: bool = True
+
+    @property
+    def max_exact_candidate_states(self) -> int:
+        return 1 << self.max_unknown_dimensions
+
+    def as_dict(self) -> Mapping[str, object]:
+        return {
+            "profile_id": self.profile_id,
+            "environment": self.environment,
+            "max_unknown_dimensions": self.max_unknown_dimensions,
+            "max_exact_candidate_states": self.max_exact_candidate_states,
+            "grover_max_states": self.grover_max_states,
+            "grover_max_iterations": self.grover_max_iterations,
+            "projection_allowed": self.projection_allowed,
+            "changes_qcds_semantics": False,
+            "applies_to_quantum_full_space": False,
+        }
+
+
+def browser_emulation_resource_profile() -> LegalEmulationResourceProfile:
+    return LegalEmulationResourceProfile(
+        profile_id="browser_session",
+        environment="browser / Pyodide session",
+        max_unknown_dimensions=18,
+        grover_max_states=4096,
+        grover_max_iterations=6,
+    )
+
+
+def macbook_emulation_resource_profile() -> LegalEmulationResourceProfile:
+    return LegalEmulationResourceProfile(
+        profile_id="macbook_local",
+        environment="local MacBook-class machine",
+        max_unknown_dimensions=20,
+        grover_max_states=16384,
+        grover_max_iterations=8,
+    )
+
+
+def central_emulation_resource_profile() -> LegalEmulationResourceProfile:
+    return LegalEmulationResourceProfile(
+        profile_id="central_emulation",
+        environment="central high-capacity software fabric",
+        max_unknown_dimensions=22,
+        grover_max_states=65536,
+        grover_max_iterations=10,
+    )
+
+
+def resolve_emulation_resource_profile(profile_id: str) -> LegalEmulationResourceProfile:
+    profiles = {
+        "browser": browser_emulation_resource_profile(),
+        "browser_session": browser_emulation_resource_profile(),
+        "macbook": macbook_emulation_resource_profile(),
+        "macbook_local": macbook_emulation_resource_profile(),
+        "central": central_emulation_resource_profile(),
+        "central_emulation": central_emulation_resource_profile(),
+    }
+    key = str(profile_id).strip().lower()
+    if key not in profiles:
+        raise ValueError(
+            f"unknown legal emulation resource profile {profile_id!r}; "
+            "expected browser, macbook, or central"
+        )
+    return profiles[key]
+
+
 def classical_exact_profile(*, top_k: int = 8) -> tuple[LegalExecutionProfile, FabricLayer]:
     """Exact bounded classical reference over the already formed active room.
 
@@ -219,12 +296,17 @@ def target_profile_payload(profile: LegalExecutionProfile) -> Mapping[str, objec
 
 
 __all__ = [
+    "LegalEmulationResourceProfile",
     "LegalExecutionProfile",
+    "browser_emulation_resource_profile",
     "candidate_state_count",
+    "central_emulation_resource_profile",
     "classical_exact_profile",
     "grover_emulated_profile",
+    "macbook_emulation_resource_profile",
     "profile_payload",
     "quantum_full_space_profile",
+    "resolve_emulation_resource_profile",
     "run_profile",
     "target_profile_payload",
     "validate_execution_contract",
