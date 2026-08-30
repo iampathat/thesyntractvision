@@ -6,20 +6,20 @@ import subprocess
 
 import pytest
 
-from qcds_fabric.living_robot_public_compact import living_robot_public_compact_html
+from qcds_fabric.living_robot_public import living_robot_public_html
 
 
-def test_generated_public_inline_javascript_parses_in_node(tmp_path) -> None:
+def test_generated_deployed_public_inline_javascript_parses_in_node(tmp_path) -> None:
     node = shutil.which("node")
     if node is None:
         pytest.skip("node is unavailable")
 
-    html = living_robot_public_compact_html(static_mode=True)
+    html = living_robot_public_html(static_mode=True)
     scripts = re.findall(r"<script(?:\s[^>]*)?>(.*?)</script>", html, flags=re.IGNORECASE | re.DOTALL)
-    assert scripts, "generated public HTML contains no inline scripts"
+    assert scripts, "generated deployed public HTML contains no inline scripts"
 
     combined = "\n\n".join(scripts)
-    target = tmp_path / "public-inline.js"
+    target = tmp_path / "deployed-public-inline.js"
     target.write_text(combined, encoding="utf-8")
 
     completed = subprocess.run(

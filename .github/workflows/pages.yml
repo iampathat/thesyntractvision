@@ -34,10 +34,10 @@ jobs:
           python-version: "3.12"
       - name: Install package
         run: python -m pip install -e .
-      - name: Export the compact public Logical Robot + bounded legal question path
+      - name: Export the stable public QCDS surface
         run: |
           mkdir -p _site/legal/cases
-          python -m qcds_fabric.living_robot_public_fix49 --export _site/index.html
+          python -m qcds_fabric.living_robot_public --export _site/index.html
           cp web/session_core_worker.js _site/session_core_worker.js
           cp robots/legal/sweden_housing/cases/*.json _site/legal/cases/
           python - <<'PY'
