@@ -14,9 +14,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  architecture-smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
     steps:
       - name: Cancel stale QCDS test runs
         env:
@@ -41,4 +41,45 @@ jobs:
           python-version: "3.12"
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e '.[test]'
-      - run: pytest -q --durations=20
+      - name: Build 41-44 architecture smoke
+        run: >-
+          pytest -q
+          tests/test_build41_architecture_guardrails.py
+          tests/test_build42_oracle_space_topology.py
+          tests/test_build43_swarm_intelligence.py
+          tests/test_build44_central_fabric.py
+
+  test:
+    needs: architecture-smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e '.[test]'
+      - name: Run complete deterministic test shard
+        env:
+          SHARD: ${{ matrix.shard }}
+          SHARD_COUNT: 4
+        run: |
+          python - <<'PY' > /tmp/qcds-tests.txt
+          import os
+          from pathlib import Path
+          shard = int(os.environ["SHARD"])
+          count = int(os.environ["SHARD_COUNT"])
+          files = sorted(Path("tests").glob("test_*.py"))
+          selected = [str(path) for index, path in enumerate(files) if index % count == shard]
+          if not selected:
+              raise SystemExit("no tests selected for shard")
+          print("\n".join(selected))
+          PY
+          mapfile -t TEST_FILES < /tmp/qcds-tests.txt
+          printf 'Shard %s/%s: %s files\n' "$SHARD" "$SHARD_COUNT" "${#TEST_FILES[@]}"
+          pytest -q --durations=10 "${TEST_FILES[@]}"
