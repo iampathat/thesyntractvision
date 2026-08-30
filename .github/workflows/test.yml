@@ -5,6 +5,10 @@ on:
     branches: [main, "implementation/**"]
   pull_request:
 
+permissions:
+  contents: read
+  actions: write
+
 concurrency:
   group: qcds-tests-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -14,6 +18,23 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
+      - name: Cancel stale QCDS test runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CURRENT_RUN_ID: ${{ github.run_id }}
+        run: |
+          cutoff="$(date -u -d '2 hours ago' +%s)"
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/actions/runs?status=in_progress&per_page=100" \
+            --jq '.workflow_runs[] | select(.name == "QCDS Fabric tests") | [.id, .created_at] | @tsv' |
+          while IFS=$'\t' read -r run_id created_at; do
+            [ -z "$run_id" ] && continue
+            [ "$run_id" = "$CURRENT_RUN_ID" ] && continue
+            created_epoch="$(date -u -d "$created_at" +%s)"
+            if [ "$created_epoch" -lt "$cutoff" ]; then
+              echo "Cancelling stale QCDS test run ${run_id} (${created_at})"
+              gh api -X POST "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/cancel" || true
+            fi
+          done
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
