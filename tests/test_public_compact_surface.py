@@ -9,13 +9,19 @@ def test_public_surface_is_compact_and_has_one_current_build_label():
     assert 'BUILD 35 · EPHEMERAL LOGICAL SPACE SANDBOX' not in html
     assert 'BUILD 34 · CUSTOM LOGICAL SPACE' not in html
 
-    # Public navigation switches mutually exclusive views instead of scrolling to anchors.
-    assert "publicSelectView('qcds')" in html
-    assert "publicSelectView('legal')" in html
-    assert "publicSelectView('advanced')" in html
+    # Public navigation switches mutually exclusive views instead of navigating to anchors.
+    assert 'onclick="publicSelectView(\'qcds\')">TRY QCDS</button>' in html
+    assert 'onclick="publicSelectView(\'legal\')">LEGAL ROBOT</button>' in html
+    assert 'onclick="publicSelectView(\'advanced\')">ADVANCED</button>' in html
     assert "const PUBLIC_VIEW_CLASSES=['publicViewQcds','publicViewLegal','publicViewAdvanced']" in html
     assert "function publicGo(" not in html
-    assert "scrollIntoView({behavior:'smooth',block:'start'})" not in html
+    assert "window.scrollTo({top:0,left:0,behavior:'auto'});" in html
+
+    # Old shortcuts are overridden at the public boundary so they cannot anchor-scroll between views.
+    public_script = html.rsplit('<script>', 1)[-1]
+    assert "function openLegalRobot(){\n publicSelectView('legal');" in public_script
+    assert "function openAdvancedLab(){\n publicSelectView('advanced');" in public_script
+    assert "scrollIntoView" not in public_script
 
     # Historical/advanced surfaces remain available but only participate in layout in Advanced.
     assert 'body.publicCompact:not(.publicViewAdvanced)>.hero' in html
