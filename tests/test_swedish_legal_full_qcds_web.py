@@ -38,10 +38,12 @@ def test_full_web_exposes_real_probabilistic_jordabalk_case() -> None:
     assert "qcds_evidence" in fixture.read_text(encoding="utf-8")
 
 
-def test_pages_exports_full_qcds_surface_and_recursive_python_package() -> None:
+def test_pages_exports_compact_public_wrapper_over_full_qcds_and_recursive_python_package() -> None:
     workflow = (ROOT / ".github" / "workflows" / "pages.yml").read_text(encoding="utf-8")
+    wrapper = (ROOT / "src" / "qcds_fabric" / "living_robot_public_compact.py").read_text(encoding="utf-8")
 
-    assert "qcds_fabric.living_robot_legal_full_qcds" in workflow
+    assert "qcds_fabric.living_robot_public_compact" in workflow
+    assert "living_robot_legal_full_qcds" in wrapper
     assert "root.rglob('*')" in workflow
     assert "path.suffix in {'.py', '.json'}" in workflow
     assert "robots/legal/sweden_housing/cases/*.json" in workflow
