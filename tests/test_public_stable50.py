@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from qcds_fabric.living_robot_public import living_robot_public_html
+from qcds_fabric.living_robot_public import PUBLIC_BUILD, living_robot_public_html
 
 
 def test_stable_public_export_has_one_current_build_marker_and_expected_surfaces() -> None:
     html = living_robot_public_html(static_mode=True)
 
-    assert '<span class="publicBuildMark">BUILD 50</span>' in html
+    assert f'<span class="publicBuildMark">BUILD {PUBLIC_BUILD}</span>' in html
     assert '<div class="publicAdvancedKicker">ADVANCED</div>' in html
     assert 'data-public-view="qcds"' in html
     assert 'data-public-view="legal"' in html

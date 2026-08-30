@@ -8,22 +8,22 @@ from typing import Sequence
 from .living_robot_public_fix49 import living_robot_public_fix49_html as _base_html
 
 
-_BUILD = "50"
+PUBLIC_BUILD = "51"
 
 
 def living_robot_public_html(*, static_mode: bool = False) -> str:
     """Single stable public exporter.
 
-    UI wrappers may evolve underneath this entry point, but Pages and all public
-    regression tests must import this exact function so tested HTML equals
-    deployed HTML. This module changes presentation routing only; QCDS semantics
-    remain in the existing core and specialized bodies.
+    Pages and public regression tests import this exact function so tested HTML
+    equals deployed HTML. Wrapper evolution here is presentation/routing only;
+    the QCDS four-phase core, oracle semantics and Syntract binding are not
+    modified by the public surface.
     """
 
     html = _base_html(static_mode=static_mode)
     html, count = re.subn(
         r'<span class="publicBuildMark">BUILD\s+\d+</span>',
-        f'<span class="publicBuildMark">BUILD {_BUILD}</span>',
+        f'<span class="publicBuildMark">BUILD {PUBLIC_BUILD}</span>',
         html,
         count=1,
     )
