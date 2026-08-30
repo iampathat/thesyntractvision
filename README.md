@@ -224,6 +224,46 @@ WebAssembly is an execution substrate for the packaged Python core, not a client
 
 ---
 
+## Oracle-space topology: session, external and central
+
+Logic remains represented / manifested through **oracles or emulated oracles**. Hosting does not redefine the logic and does not create a second QCDS architecture.
+
+The same `BaseBundle + OracleStack` contract can now be hosted in an ephemeral browser/session, an external runtime or a central high-capacity fabric. Oracle spaces can be exported and imported with Logical Universe identity and provenance preserved.
+
+```mermaid
+flowchart TD
+    LOGIC[Represented logic]
+    LOGIC --> O[Oracles / emulated oracles]
+    O --> SESSION[Browser / session host]
+    O --> EXTERNAL[External robot / lab host]
+    O --> CENTRAL[Central oracle-space host]
+    SESSION -->|bounded transfer| CENTRAL
+    EXTERNAL -->|bounded transfer| CENTRAL
+    SESSION --> Q[Same QCDS Fabric]
+    EXTERNAL --> Q
+    CENTRAL --> Q
+    Q --> T[TruthDistribution]
+    T --> S[Syntract]
+```
+
+Transfer is **not truth promotion**. An imported oracle space retains source and universe provenance; it can be challenged, reconciled and re-entered through QCDS before anything is bound.
+
+Software execution is resource-aware without changing QCDS semantics. The reference defaults currently distinguish:
+
+```text
+browser / Pyodide session       up to 18 live emulation dimensions
+local MacBook-class machine     up to 20 live emulation dimensions
+central software fabric         up to 22 live emulation dimensions
+```
+
+Those are practical emulator defaults, **not QCDS limits**. They can evolve with hardware and implementation performance.
+
+When active praxis or another optional software layer exceeds a profile, the emulator may form an explicit capacity-bounded execution projection and must report what was executed and what was projected out. The projection is not a truth ranking. If the statutory/core active room itself exceeds the selected software profile, the implementation requires a larger profile or a semantics-preserving QCDS/Syntract decomposition instead of silently cutting logical dimensions.
+
+**Quantum Full Space does not inherit these browser/MacBook/central software limits.** Its represented universe remains complete by contract.
+
+---
+
 ## Specialized Logical Robots
 
 Large real-world domains should not be mixed into one implementation pile.
@@ -487,6 +527,8 @@ That projection is not the identity of QCDS. It is an implementation concession.
 
 Once an active emulation room is declared, the implementation does not silently remove states from that declared room. Grover emulation may use exact separable partitions where the Oracle Stack proves separability; coupled oversized components are not fake-chunked.
 
+The resource profile is environment-specific rather than semantic. A browser may therefore execute a smaller bounded emulation room than a MacBook or central software host while all three still use the same QCDS four-phase architecture, oracle semantics and Syntract binding.
+
 ### Quantum Full Space must not prefilter away the universe
 
 The native quantum target follows the opposite rule:
@@ -515,32 +557,49 @@ See [`GROVER_DEPTH.md`](GROVER_DEPTH.md) and [`robots/legal/sweden_housing/QCDS_
 
 ---
 
-## Browser-scale execution and Living Swarm Logical Robots
+## Browser-scale execution, QCDS-driven swarm and central fabric
 
-The same packaged core can execute inside an ephemeral browser session through WebAssembly/Pyodide.
+The same packaged core can execute inside an ephemeral browser session through WebAssembly/Pyodide, locally on a larger machine, or behind a central oracle-space host.
 
-That makes a broader experiment possible:
+The reference implementation now includes a bounded **QCDS-driven swarm loop**. Swarm intelligence is not majority voting and is not a second agent-manager intelligence layer. QCDS uncertainty identifies useful frontier work; Logical Robots gather evidence, attempt falsification, perform independent verification or test alternatives; their results return as oracle manifestations and re-enter the same QCDS Fabric.
 
 ```text
-browser A ─┐
-browser B ─┼─► bounded exchange / challenge ─► shared verified result
-browser C ─┘
-    │
-    └──────── each node still uses QCDS Core semantics
+QCDS TruthDistribution
+        │
+        ▼
+where is uncertainty / contradiction?
+        │
+   ┌────┼───────────────┐
+   ▼    ▼               ▼
+Robot A Robot B        Robot C
+observe falsify       verify / alternative
+   │    │               │
+   └────┼───────────────┘
+        ▼
+new / challenging oracles
+        │
+        ▼
+     same QCDS
+        │
+        ▼
+TruthDistribution → Syntract
+        ↺
 ```
 
-Many temporary Logical Robots could in principle cooperate as a distributed swarm while keeping raw session state local and exchanging only bounded epistemic packets, contradictions, provenance or verification results.
+Multiple temporary or specialized Logical Robots can therefore cooperate while exchanging bounded epistemic packets, contradictions, provenance, evidence and verification results rather than blindly merging private state.
 
-Specialized robots can also join that model:
+Specialized robots can join that model:
 
 ```text
 Legal Robot ───────┐
-Evidence Robot ────┼─► bounded capability packets ─► QCDS challenge / Syntract
+Evidence Robot ────┼─► oracle/evidence packets ─► QCDS challenge / re-entry
 Science Robot ─────┤
 Sensor Robot ──────┘
 ```
 
-This is intentionally an **optional side experiment**, not a replacement architecture and not a prerequisite for the main Logical Robot.
+`CentralQCDSFabric` provides the execution topology for multiple compatible oracle spaces. Independent rooms can execute in parallel; sequential stages can re-enter a prior TruthDistribution through `DistributionOracle`; hybrid execution can run sequential lanes concurrently. It does not silently merge incompatible Logical Universes or invent semantic mappings between them.
+
+This remains the **same QCDS architecture**: logic → oracles / emulated oracles → QCDS four phases → TruthDistribution → Syntract.
 
 See [`LIVING_SWARM_LOGICAL_ROBOTS.md`](LIVING_SWARM_LOGICAL_ROBOTS.md).
 
@@ -604,7 +663,12 @@ The repository contains regression and falsification tests for the architectural
 - explicit refusal to silently truncate or fake-partition an oversized coupled active room;
 - explicit **Quantum Full Space** target semantics that forbid semantic prefiltering for classical memory convenience;
 - a separate full-universe quantum manifest that retains represented rules/praxis even when the current classical case projection does not need them;
-- regression tests that fail if Quantum Full Space is given a reduced set of represented dimensions or is routed through a fake software-QPU backend.
+- regression tests that fail if Quantum Full Space is given a reduced set of represented dimensions or is routed through a fake software-QPU backend;
+- session/external/central oracle-space transport that preserves universe identity and provenance without promoting imported content to truth;
+- QCDS-driven swarm frontier selection and oracle re-entry rather than majority-vote aggregation;
+- central parallel/sequential/hybrid oracle-space execution with explicit `DistributionOracle` re-entry;
+- environment-specific emulator profiles where browser, local and central software capacities may differ without changing QCDS semantics;
+- explicit emulation-projection provenance showing which active praxis dimensions were executed or projected out while Quantum Full Space remains unaffected.
 
 GitHub Actions runs the regression/falsification suite on implementation changes.
 
@@ -685,11 +749,15 @@ The public browser sandbox is different: its user state is **session-only** and 
 | `src/qcds_fabric/logical_space.py` | shared open-ended Logical Space |
 | `src/qcds_fabric/logical_transform.py` | non-materialized governed logical transforms |
 | `src/qcds_fabric/logical_universe.py` | isolated Logical Universes + drift governance |
+| `src/qcds_fabric/oracle_space.py` | session/external/central hosting and transfer of the same oracle-manifested logical contract |
+| `src/qcds_fabric/swarm_intelligence.py` | QCDS uncertainty-driven swarm frontier work and oracle re-entry |
+| `src/qcds_fabric/central_fabric.py` | central multi-oracle-space parallel/sequential/hybrid QCDS execution |
 | `src/qcds_fabric/runtime.py` | callable intelligence runtime |
 | `src/qcds_fabric/first_logical_robot.py` | Logical Robot body/runtime bridge |
 | `src/qcds_fabric/living_robot_session.py` | advanced session sandbox |
 | `src/qcds_fabric/living_robot_builder.py` | custom Logical Space builder |
-| `src/qcds_fabric/robots/legal/sweden_housing/execution.py` | Classical Exact, Grover Emulated and Quantum Full Space execution contracts |
+| `src/qcds_fabric/robots/legal/sweden_housing/execution.py` | Classical Exact, Grover Emulated, Quantum Full Space and software resource-profile contracts |
+| `src/qcds_fabric/robots/legal/sweden_housing/emulation_projection.py` | explicit capacity-bounded software projection with provenance; never a QCDS truth layer |
 | `src/qcds_fabric/robots/legal/sweden_housing/quantum_full_space.py` | complete represented legal-universe manifest for the native quantum target |
 | `src/qcds_fabric/robots/legal/sweden_housing/` | executable Swedish legal body: QCDS space, evidence, substrates, scaling and benchmark |
 | `robots/` | substantial specialized Logical Robots and their domain material |
