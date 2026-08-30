@@ -67,7 +67,12 @@ window.addEventListener('DOMContentLoaded',()=>{
  }
  publicSelectView('qcds');
 });
-/* The old quick-start button now opens an explicit Advanced view instead of navigating down a long page. */
+/* Override old public shortcuts so they select a view instead of scrolling to a hidden section. */
+function openLegalRobot(){
+ publicSelectView('legal');
+ const result=document.getElementById('legalResult');
+ if(result&&!result.classList.contains('visible')&&typeof runLegalCase==='function')runLegalCase('jb_unauthorized_sublet_forfeiture_2026.json');
+}
 function openAdvancedLab(){
  publicSelectView('advanced');
  if(typeof openSpaceBuilder==='function')openSpaceBuilder();
