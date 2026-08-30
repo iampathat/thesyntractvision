@@ -4,30 +4,47 @@ This file tracks the implementation sequence for the Swedish Housing Law Logical
 
 ## Goal
 
-Make the legal robot a reference implementation of the same QCDS logical universe across two execution substrates:
+Make the legal robot a reference implementation of one QCDS logical architecture across three explicit execution modes:
 
-1. **CLASSICAL EXACT** — exact enumeration of the active `2^N` legal state space.
-2. **QUANTUM EMULATED** — statevector + phase-oracle marking + Grover-style amplification + rotations, using the same `BaseBundle` and `OracleStack` contract.
+1. **CLASSICAL EXACT** — exact enumeration of the active resource-bounded `2^N` legal state space.
+2. **GROVER EMULATED** — statevector + phase-oracle marking + Grover-style amplification + rotations over the same active `BaseBundle` and `OracleStack` contract.
+3. **QUANTUM FULL SPACE** — native-QPU target contract over the full represented legal universe, where semantic prefiltering for classical memory is forbidden.
 
-Both paths must bind a `TruthDistribution` into a Syntract. Neither path may precompute the legal answer outside QCDS.
+The software modes may project/decompose for finite classical resources. The Quantum Full Space target may not remove represented logical dimensions merely because they appear irrelevant or are inconvenient to emulate.
 
-The root README is **not frozen**. It should be complemented whenever these additions materially change the architecture readers need to understand. It must describe the resulting architecture, not narrate Build A/B/C history.
+Logic remains manifested through oracles / emulated oracles. All inference paths remain subordinate to the canonical QCDS four phases and bind a `TruthDistribution` into a Syntract. No preliminary legal resolver may precompute the final legal answer and install it as QCDS truth.
 
-## Build sequence
+The root README is not a build diary. It may be complemented when architecture changes materially, but existing architecture diagrams and the canonical four-phase QCDS description must not be removed or rewritten by build bookkeeping.
 
-- [~] **Build A — Dual substrate execution**: shared legal runtime, exact classical and Grover-emulated passes, substrate provenance, side-by-side result comparison.
-- [ ] **Build B — Probabilistic evidence**: case facts/evidence may carry explicit confidence; hard law stays hard; evidence becomes source-attributed probabilistic oracle pressure.
-- [ ] **Build C — Integrated final Syntract**: statutory Syntract re-entry + active praxis + probabilistic evidence in one final QCDS space.
-- [ ] **Build D — Scaling**: deterministic Condition Formation, bounded exact partitions, parallel/sequential/hybrid partition execution, Syntract re-entry across partitions; never silently truncate an active logical space.
-- [ ] **Build E — Benchmark suite**: exact vs Grover-emulated comparisons for hard-law, ambiguous, contradictory, recovery and praxis-conflict cases.
-- [ ] **Build F — Public surface + architecture documentation**: expose substrate, state-space size, Grover depth, oracle pressure, uncertainty and Syntract provenance; complement the root README with the resulting canonical architecture.
+## Completed legal full-QCDS sequence
+
+- [x] **Build A — Multi-substrate execution**: shared legal runtime, exact classical and Grover-emulated passes, substrate provenance and side-by-side comparison.
+- [x] **Build B — Probabilistic evidence**: source-attributed confidence becomes oracle pressure while hard law remains hard and disputed facts remain live dimensions.
+- [x] **Build C — Integrated final Syntract**: statutory Syntract re-entry + active praxis + probabilistic evidence in the final QCDS space.
+- [x] **Build D — Scaling**: explicit exact-state bounds, separability analysis, parallel/sequential/hybrid planning and no silent active-space truncation.
+- [x] **Build E — Benchmark suite**: Classical Exact vs Grover-emulated comparison without assuming the Grover simulator must numerically reproduce classical weighting or win.
+- [x] **Build F — Public surface + documentation**: public legal robot exposes state-space size, substrate mode, Grover depth, uncertainty, evidence, Syntract provenance and Quantum Full Space target boundaries.
+- [x] **Quantum Full Space extension**: separate full-universe manifest and complete `BaseBundle + OracleStack` target contract, no classical candidate-state materialization, no semantic prefiltering, no fake native-QPU claim.
+
+## Builds 41–44 around the same core
+
+These builds extend execution topology without modifying QCDS itself:
+
+- [x] **Build 41 — Architecture/regression hardening**: four-phase and README-diagram guardrails, stale CI cleanup, safe exact-classical rotation reuse, deterministic sharded full regression.
+- [x] **Build 42 — Oracle-space topology and transport**: the same oracle-manifested Logical Universe may be hosted in a browser/session, external runtime or central host and transferred with universe identity/provenance preserved. Transfer does not promote truth.
+- [x] **Build 43 — QCDS-driven swarm intelligence**: QCDS uncertainty selects bounded swarm frontier work; robot evidence/falsification/verification returns as oracle manifestations and re-enters the same QCDS Fabric. No majority-vote intelligence layer.
+- [x] **Build 44 — Central high-capacity QCDS Fabric**: multiple oracle spaces can execute through the same Fabric in parallel; compatible sequential stages use `DistributionOracle` re-entry; hybrid execution runs sequential lanes concurrently. No silent universe merge or invented semantic mapping.
 
 ## Non-negotiable boundaries
 
-- Do not move QCDS semantics into UI, JavaScript or the Legal Robot body.
-- Do not create a second legal reasoning core.
+- The canonical QCDS phases remain: **Condition Formation → Conditional Evolution → Recursive Inference → Truth-Alignment / Syntract Binding**.
+- Do not move QCDS semantics into UI, JavaScript, swarm coordination, host infrastructure or the Legal Robot body.
+- **Logical Robot does not contain QCDS. Logical Robot talks to QCDS.**
+- Logic is represented/manifested through **oracles or emulated oracles**; central/session/external topology does not redefine the logic.
+- Do not create a second legal reasoning core or a second swarm intelligence core.
 - Grover, rotations, `2^N`, parallel/sequential/hybrid execution and Syntract re-entry remain visible.
-- Hard structural facts may be fixed during Condition Formation; legal outcomes, assessment dimensions and precedent relevance remain live QCDS dimensions.
-- Classical exact is a reference substrate, not the definition of QCDS.
-- Quantum-emulated and future native-quantum execution consume the same logical contract.
-- Probabilities must retain provenance and must not be mislabeled as calibrated court-outcome probabilities unless empirically calibrated.
+- Hard structural case facts may be fixed during Condition Formation; legal outcomes, assessment dimensions and precedent relevance remain live QCDS dimensions where represented.
+- Classical Exact is a reference substrate, not the definition of QCDS.
+- Classical/Grover emulation may be resource-bounded; **Quantum Full Space may not semantically prefilter the represented universe for resource convenience**.
+- Probabilities retain provenance and are not labeled calibrated court-outcome probabilities unless empirically calibrated.
+- Native QPU execution and quantum advantage are not claimed by the current software build.
