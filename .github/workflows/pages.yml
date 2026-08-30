@@ -34,10 +34,10 @@ jobs:
           python-version: "3.12"
       - name: Install package
         run: python -m pip install -e .
-      - name: Export the compact public Logical Robot + full Swedish Legal QCDS Robot
+      - name: Export the compact public Logical Robot + bounded legal question path
         run: |
           mkdir -p _site/legal/cases
-          python -m qcds_fabric.living_robot_public_fix48 --export _site/index.html
+          python -m qcds_fabric.living_robot_public_fix49 --export _site/index.html
           cp web/session_core_worker.js _site/session_core_worker.js
           cp robots/legal/sweden_housing/cases/*.json _site/legal/cases/
           python - <<'PY'
@@ -65,7 +65,7 @@ jobs:
         run: |
           echo '### GitHub Pages is not enabled yet' >> "$GITHUB_STEP_SUMMARY"
           echo '' >> "$GITHUB_STEP_SUMMARY"
-          echo 'The Living Logical Robot and full Swedish Legal QCDS Robot were built and uploaded successfully.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'The Living Logical Robot site was built and uploaded successfully.' >> "$GITHUB_STEP_SUMMARY"
           echo 'Enable **Settings → Pages → Build and deployment → Source: GitHub Actions** once, then rerun this workflow.' >> "$GITHUB_STEP_SUMMARY"
 
   deploy:

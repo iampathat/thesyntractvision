@@ -50,6 +50,7 @@ jobs:
           tests/test_build44_central_fabric.py
           tests/test_legal_question_ingress.py
           tests/test_public_compact_surface.py
+          tests/test_public_legal_question49.py
           tests/test_public_javascript_syntax.py
 
   test:

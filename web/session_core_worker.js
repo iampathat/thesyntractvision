@@ -10,7 +10,7 @@ async function initializeCore(packageUrl) {
     if (!response.ok) throw new Error('Could not load qcds_fabric core package: HTTP ' + response.status);
     const archive = new Uint8Array(await response.arrayBuffer());
     pyodide.unpackArchive(archive, 'zip');
-    pyodide.runPython("import sys\nif '/' not in sys.path: sys.path.insert(0, '/')\nfrom qcds_fabric.session_sandbox_core import run_session_json\nfrom qcds_fabric.robots.legal.sweden_housing.robot import run_case_json as run_swedish_housing_case_json");
+    pyodide.runPython("import sys\nif '/' not in sys.path: sys.path.insert(0, '/')\nfrom qcds_fabric.session_sandbox_core import run_session_json\nfrom qcds_fabric.robots.legal.sweden_housing.robot import run_case_json as run_swedish_housing_case_json\nfrom qcds_fabric.robots.legal.sweden_housing.quick_question import run_public_question_json as run_swedish_housing_question_json");
     self.__qcds_pyodide = pyodide;
     self.postMessage({type: 'ready'});
     return pyodide;
@@ -25,13 +25,14 @@ self.onmessage = async (event) => {
       await initializeCore(msg.packageUrl);
       return;
     }
-    if (msg.type !== 'run' && msg.type !== 'legal_run') return;
+    if (msg.type !== 'run' && msg.type !== 'legal_run' && msg.type !== 'legal_question_run') return;
     const pyodide = await coreReady;
     if (!pyodide) throw new Error('QCDS core has not been initialized.');
     pyodide.globals.set('__payload_json', JSON.stringify(msg.payload || {}));
-    const expression = msg.type === 'legal_run'
-      ? "run_swedish_housing_case_json(__payload_json)"
-      : "run_session_json(__payload_json)";
+    let expression;
+    if (msg.type === 'legal_run') expression = "run_swedish_housing_case_json(__payload_json)";
+    else if (msg.type === 'legal_question_run') expression = "run_swedish_housing_question_json(__payload_json)";
+    else expression = "run_session_json(__payload_json)";
     const output = pyodide.runPython(expression);
     pyodide.globals.delete('__payload_json');
     self.postMessage({id: msg.id, result: JSON.parse(String(output))});
