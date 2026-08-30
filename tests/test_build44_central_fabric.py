@@ -5,6 +5,7 @@ import pytest
 from qcds_fabric.central_fabric import CentralFabricError, CentralQCDSFabric
 from qcds_fabric.models import BaseBundle
 from qcds_fabric.oracle_space import OracleSpace
+from qcds_fabric.oracle_space_transport import export_oracle_space
 from qcds_fabric.oracles import ExactOracle, OracleStack
 
 
@@ -16,6 +17,21 @@ def _space(space_id: str, universe_id: str = "u:one", target: int = 1) -> Oracle
         (ExactOracle(f"oracle:{space_id}", {"x": target}),),
     )
     return OracleSpace(space_id, universe_id, bundle, stack, host_kind="external")
+
+
+def test_central_fabric_accepts_portable_external_oracle_space_envelope() -> None:
+    fabric = CentralQCDSFabric()
+    browser_space = _space("browser-1")
+    payload = export_oracle_space(browser_space.rehost(host_kind="session"))
+
+    mounted = fabric.transfer_payload(payload, space_id="central-browser-1", note="browser to central")
+    result = fabric.run("central-browser-1")
+
+    assert mounted.host_kind == "central"
+    assert mounted.universe_id == browser_space.universe_id
+    assert mounted.oracle_stack.oracle_ids == browser_space.oracle_stack.oracle_ids
+    assert mounted.provenance["truth_promoted_by_transfer"] is False
+    assert result.suite.stabilized_return.stabilized_distribution.support
 
 
 def test_central_fabric_runs_multiple_oracle_spaces_in_parallel_through_same_core() -> None:
