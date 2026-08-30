@@ -26,7 +26,7 @@ The root README is not a build diary. It may be complemented when architecture c
 - [x] **Build F — Public surface + documentation**: public legal robot exposes state-space size, substrate mode, Grover depth, uncertainty, evidence, Syntract provenance and Quantum Full Space target boundaries.
 - [x] **Quantum Full Space extension**: separate full-universe manifest and complete `BaseBundle + OracleStack` target contract, no classical candidate-state materialization, no semantic prefiltering, no fake native-QPU claim.
 
-## Builds 41–44 around the same core
+## Builds 41–45 around the same core
 
 These builds extend execution topology without modifying QCDS itself:
 
@@ -34,6 +34,7 @@ These builds extend execution topology without modifying QCDS itself:
 - [x] **Build 42 — Oracle-space topology and transport**: the same oracle-manifested Logical Universe may be hosted in a browser/session, external runtime or central host and transferred with universe identity/provenance preserved. Transfer does not promote truth.
 - [x] **Build 43 — QCDS-driven swarm intelligence**: QCDS uncertainty selects bounded swarm frontier work; robot evidence/falsification/verification returns as oracle manifestations and re-enters the same QCDS Fabric. No majority-vote intelligence layer.
 - [x] **Build 44 — Central high-capacity QCDS Fabric**: multiple oracle spaces can execute through the same Fabric in parallel; compatible sequential stages use `DistributionOracle` re-entry; hybrid execution runs sequential lanes concurrently. No silent universe merge or invented semantic mapping.
+- [x] **Build 45 — Resource-aware software emulation**: browser, MacBook and central profiles expose different finite emulation budgets. If active praxis exceeds the chosen software budget, only the emulation view is deterministically projected and the exact projected-out precedent ids are disclosed. The original corpus/praxis/evidence universe is independently preserved in Quantum Full Space and no projection is promoted to truth.
 
 ## Non-negotiable boundaries
 
