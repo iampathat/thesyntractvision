@@ -41,12 +41,14 @@ def test_full_web_exposes_real_probabilistic_jordabalk_case() -> None:
 def test_pages_exports_stable_public_entrypoint_over_wrapper_chain_and_recursive_python_package() -> None:
     workflow = (ROOT / ".github" / "workflows" / "pages.yml").read_text(encoding="utf-8")
     stable = (ROOT / "src" / "qcds_fabric" / "living_robot_public.py").read_text(encoding="utf-8")
+    syntract = (ROOT / "src" / "qcds_fabric" / "living_robot_public_syntract63.py").read_text(encoding="utf-8")
     fix49 = (ROOT / "src" / "qcds_fabric" / "living_robot_public_fix49.py").read_text(encoding="utf-8")
     fix48 = (ROOT / "src" / "qcds_fabric" / "living_robot_public_fix48.py").read_text(encoding="utf-8")
     compact = (ROOT / "src" / "qcds_fabric" / "living_robot_public_compact.py").read_text(encoding="utf-8")
 
     assert "qcds_fabric.living_robot_public" in workflow
-    assert "living_robot_public_fix49" in stable
+    assert "living_robot_public_syntract63" in stable
+    assert "living_robot_public_fix49" in syntract
     assert "living_robot_public_fix48" in fix49
     assert "living_robot_public_compact" in fix48
     assert "living_robot_legal_full_qcds" in compact
