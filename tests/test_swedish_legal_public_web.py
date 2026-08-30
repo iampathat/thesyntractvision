@@ -101,7 +101,7 @@ def test_browser_worker_routes_legal_run_to_packaged_python_robot() -> None:
 def test_pages_packages_recursive_python_direct_qcds_and_case_fixtures() -> None:
     workflow = (ROOT / ".github" / "workflows" / "pages.yml").read_text(encoding="utf-8")
 
-    assert "python -m qcds_fabric.living_robot_legal_qcds" in workflow
+    assert "python -m qcds_fabric.living_robot_legal_full_qcds" in workflow
     assert "root.rglob('*')" in workflow
     assert "path.suffix in {'.py', '.json'}" in workflow
     assert "robots/legal/sweden_housing/cases/*.json" in workflow
