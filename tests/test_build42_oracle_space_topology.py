@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import json
+
 from qcds_fabric.models import BaseBundle
 from qcds_fabric.oracles import ExactOracle, OracleStack
 from qcds_fabric.oracle_space import OracleSpace, OracleSpaceHost, transfer_oracle_space
+from qcds_fabric.oracle_space_transport import export_oracle_space, import_oracle_space
 
 
 def _space(host_kind: str = "session") -> OracleSpace:
@@ -43,6 +46,21 @@ def test_central_host_keeps_external_universe_identity_isolated() -> None:
     assert imported.universe_id == "experiment:one"
     assert manifest[0]["universe_id"] == "experiment:one"
     assert manifest[0]["oracle_stack_identity"] == "session-stack@1"
+
+
+def test_oracle_space_roundtrips_through_json_without_semantic_promotion() -> None:
+    session = _space()
+    envelope = export_oracle_space(session)
+    serialized = json.dumps(envelope, sort_keys=True)
+    restored = import_oracle_space(json.loads(serialized), host_kind="external")
+
+    assert restored.universe_id == session.universe_id
+    assert restored.bundle.dimension_ids == session.bundle.dimension_ids
+    assert restored.bundle.values == session.bundle.values
+    assert restored.oracle_stack.oracle_ids == session.oracle_stack.oracle_ids
+    assert restored.logical_contract_identity == session.logical_contract_identity
+    assert restored.provenance["truth_promoted_by_transfer"] is False
+    assert restored.provenance["qcds_semantics_changed_by_transfer"] is False
 
 
 def test_hosting_layer_contains_no_second_qcds_engine() -> None:
