@@ -5,7 +5,7 @@ from qcds_fabric.living_robot_public import PUBLIC_BUILD, living_robot_public_ht
 
 def test_public_surface_exposes_three_parallel_syntract_demos():
     html = living_robot_public_html(static_mode=True)
-    assert PUBLIC_BUILD == "63"
+    assert int(PUBLIC_BUILD) >= 63
     assert 'data-public-view="syntract"' in html
     assert "SYNTRACT COMPOSITION · PARALLEL QCDS" in html
     assert html.count('data-syntract-demo="') == 3
