@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
-from typing import Mapping, Sequence
+from typing import Any, Mapping, Sequence
 
 from .fabric import FabricLayer, StabilizedRotationSuiteResult
-from .oracle_space import OracleSpace, OracleSpaceError, OracleSpaceHost
+from .oracle_space import OracleSpace, OracleSpaceHost
+from .oracle_space_transport import import_oracle_space
 from .oracles import DistributionOracle, OracleStack
 
 
@@ -47,6 +48,11 @@ class CentralQCDSFabric:
 
     def transfer_in(self, space: OracleSpace, *, space_id: str | None = None, note: str = "") -> OracleSpace:
         return self.host.transfer_in(space, space_id=space_id, note=note)
+
+    def transfer_payload(self, payload: Mapping[str, Any], *, space_id: str | None = None, note: str = "") -> OracleSpace:
+        """Accept a portable browser/lab/robot oracle-space envelope."""
+        external = import_oracle_space(payload, host_kind="external")
+        return self.transfer_in(external, space_id=space_id, note=note)
 
     def run(self, space_id: str, *, oracle_stack: OracleStack | None = None, reentered_from_space_id: str | None = None) -> CentralFabricRun:
         space = self.host.get(space_id)
