@@ -60,9 +60,9 @@ def browser_emulation_resource_profile() -> LegalEmulationResourceProfile:
     return LegalEmulationResourceProfile(
         profile_id="browser_session",
         environment="browser / Pyodide session",
-        max_unknown_dimensions=18,
-        grover_max_states=4096,
-        grover_max_iterations=6,
+        max_unknown_dimensions=16,
+        grover_max_states=2048,
+        grover_max_iterations=4,
     )
 
 
