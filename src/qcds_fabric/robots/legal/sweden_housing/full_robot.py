@@ -19,15 +19,17 @@ from qcds_fabric.legal_logical_robot import (
 
 from .cached_full_qcds import run_cached_full_legal_qcds
 from .evidence import LegalEvidenceError
+from .emulation_projection import EmulationProjectionError
+from .execution import LegalEmulationResourceProfile, resolve_emulation_resource_profile
 from .qcds_space import LegalQCDSSpaceError
 
 
 class SwedishHousingFullQCDSRobot:
     """Public Swedish housing robot using all defined QCDS execution modes.
 
-    Classical Exact and Grover Emulated execute the bounded active software room.
-    Quantum Full Space is exposed as a separate non-executed native-QPU target
-    contract whose manifest preserves the complete represented legal universe.
+    Classical Exact and Grover Emulated execute a resource-profile-bounded
+    software room. Quantum Full Space remains a separate non-executed native-QPU
+    target contract whose manifest preserves the complete represented universe.
     """
 
     def __init__(
@@ -35,13 +37,26 @@ class SwedishHousingFullQCDSRobot:
         *,
         legal_robot: SwedishHousingLegalRobot | None = None,
         praxis: Mapping[str, Any] | None = None,
-        grover_max_states: int = 4096,
-        grover_max_iterations: int = 8,
+        resource_profile: str = "browser",
+        max_unknown_dimensions: int | None = None,
+        grover_max_states: int | None = None,
+        grover_max_iterations: int | None = None,
     ) -> None:
         self.legal_robot = legal_robot or SwedishHousingLegalRobot()
         self.praxis = dict(praxis or load_legal_praxis())
-        self.grover_max_states = grover_max_states
-        self.grover_max_iterations = grover_max_iterations
+        self.resource_profile: LegalEmulationResourceProfile = resolve_emulation_resource_profile(resource_profile)
+        self.max_unknown_dimensions = (
+            self.resource_profile.max_unknown_dimensions
+            if max_unknown_dimensions is None else int(max_unknown_dimensions)
+        )
+        self.grover_max_states = (
+            self.resource_profile.grover_max_states
+            if grover_max_states is None else int(grover_max_states)
+        )
+        self.grover_max_iterations = (
+            self.resource_profile.grover_max_iterations
+            if grover_max_iterations is None else int(grover_max_iterations)
+        )
 
     def run_case(self, case: Mapping[str, Any]) -> LegalAssessmentResult:
         statutory = self.legal_robot.run_case(case).as_dict()
@@ -65,6 +80,8 @@ class SwedishHousingFullQCDSRobot:
             applied_rule_ids=tuple(str(value) for value in statutory["applied_rules"]),
             praxis=self.praxis,
             qcds_evidence=tuple(_mapping(value, "qcds_evidence[]") for value in raw_evidence),
+            resource_profile_id=self.resource_profile.profile_id,
+            max_unknown_dimensions=self.max_unknown_dimensions,
             grover_max_states=self.grover_max_states,
             grover_max_iterations=self.grover_max_iterations,
         )
@@ -81,6 +98,7 @@ class SwedishHousingFullQCDSRobot:
             "grover_emulation_status": integrated_qcds["dual_substrate"]["grover_emulated"]["status"],
             "quantum_full_space_status": quantum_target["status"],
             "quantum_full_space_dimension_count": quantum_target["full_universe_dimension_count"],
+            "emulation_resource_profile": self.resource_profile.profile_id,
         }
         payload = {
             **statutory,
@@ -91,11 +109,12 @@ class SwedishHousingFullQCDSRobot:
             "assessment_model": {
                 "hard_layer": "source-attributed statute, transition, scope and procedure become QCDS constraints; they do not install the final legal outcome",
                 "assessment_layer": "open standards and evidence-sensitive propositions remain live dimensions with uncertainty-bearing oracle pressure",
-                "praxis_layer": "active precedent dimensions enter the bounded final emulation room through statutory Syntract re-entry; the native quantum target manifest retains the represented praxis universe without classical relevance deletion",
-                "condition_formation": "software emulation may form a bounded active room from hard structure, evidence and source-attributed rules; Quantum Full Space may condition but not semantically delete represented dimensions for memory convenience",
-                "qcds_role": "run bounded exact-classical and Grover-statevector reference paths while preserving a separate full-universe native quantum target contract",
+                "praxis_layer": "active precedent dimensions enter the bounded software room through statutory Syntract re-entry; if the chosen software profile cannot carry all active praxis dimensions, the projection is explicit and the native quantum target still retains the complete represented praxis universe",
+                "condition_formation": "software execution may form a capacity-bounded active room according to the declared browser, MacBook or central emulation profile; Quantum Full Space may condition but not semantically delete represented dimensions for memory convenience",
+                "qcds_role": "run resource-bounded exact-classical and Grover-statevector reference paths while preserving a separate full-universe native quantum target contract",
                 "three_execution_modes": True,
                 "execution_modes": ["classical_exact", "grover_emulated", "quantum_full_space"],
+                "emulation_resource_profile": dict(self.resource_profile.as_dict()),
                 "classical_exact_is_reference": True,
                 "grover_emulation_uses_same_active_bundle_and_oracles": True,
                 "quantum_full_space_requires_complete_represented_universe": True,
@@ -114,16 +133,20 @@ class SwedishHousingFullQCDSRobot:
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Run Swedish housing law through Classical Exact and Grover-emulated QCDS, expose the full-space native quantum target manifest, and bind Legal Syntracts."
+        description="Run Swedish housing law through resource-profiled Classical Exact and Grover-emulated QCDS, expose the full-space native quantum target manifest, and bind Legal Syntracts."
     )
     parser.add_argument("case", help="Path to a housing-law case JSON")
     parser.add_argument("--praxis", help="Optional alternate praxis JSON")
-    parser.add_argument("--grover-max-states", type=int, default=4096)
-    parser.add_argument("--grover-max-iterations", type=int, default=8)
+    parser.add_argument("--resource-profile", choices=("browser", "macbook", "central"), default="macbook")
+    parser.add_argument("--max-unknown-dimensions", type=int)
+    parser.add_argument("--grover-max-states", type=int)
+    parser.add_argument("--grover-max-iterations", type=int)
     args = parser.parse_args(argv)
     try:
         robot = SwedishHousingFullQCDSRobot(
             praxis=load_legal_praxis(args.praxis) if args.praxis else None,
+            resource_profile=args.resource_profile,
+            max_unknown_dimensions=args.max_unknown_dimensions,
             grover_max_states=args.grover_max_states,
             grover_max_iterations=args.grover_max_iterations,
         )
@@ -134,6 +157,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         LegalLogicalRobotError,
         LegalPraxisError,
         LegalEvidenceError,
+        EmulationProjectionError,
         LegalQCDSSpaceError,
         ValueError,
     ) as exc:
