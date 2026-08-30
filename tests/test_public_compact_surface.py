@@ -4,19 +4,28 @@ from qcds_fabric.living_robot_public_compact import living_robot_public_compact_
 def test_public_surface_is_compact_and_has_one_current_build_label():
     html = living_robot_public_compact_html(static_mode=True)
 
-    assert '<body class="publicCompact">' in html
+    assert '<body class="publicCompact publicViewQcds">' in html
     assert '<span class="publicBuildMark">BUILD 45</span>' in html
     assert 'BUILD 35 · EPHEMERAL LOGICAL SPACE SANDBOX' not in html
     assert 'BUILD 34 · CUSTOM LOGICAL SPACE' not in html
 
-    # The long historical surfaces remain available, but are folded by default.
-    assert 'body.publicCompact:not(.publicAdvancedOpen)>.hero' in html
-    assert 'body.publicCompact:not(.publicAdvancedOpen)>.layout' in html
-    assert 'body.publicCompact:not(.publicAdvancedOpen)>.learningMoment' in html
-    assert 'body.publicCompact:not(.publicAdvancedOpen)>.understandBuild' in html
-    assert 'body.publicCompact:not(.publicAdvancedOpen)>.domainLab' in html
-    assert 'body.publicCompact:not(.publicAdvancedOpen)>.sessionSandbox' in html
-    assert 'publicToggleAdvanced()' in html
+    # Public navigation switches mutually exclusive views instead of scrolling to anchors.
+    assert "publicSelectView('qcds')" in html
+    assert "publicSelectView('legal')" in html
+    assert "publicSelectView('advanced')" in html
+    assert "const PUBLIC_VIEW_CLASSES=['publicViewQcds','publicViewLegal','publicViewAdvanced']" in html
+    assert "function publicGo(" not in html
+    assert "scrollIntoView({behavior:'smooth',block:'start'})" not in html
+
+    # Historical/advanced surfaces remain available but only participate in layout in Advanced.
+    assert 'body.publicCompact:not(.publicViewAdvanced)>.hero' in html
+    assert 'body.publicCompact:not(.publicViewAdvanced)>.layout' in html
+    assert 'body.publicCompact:not(.publicViewAdvanced)>.learningMoment' in html
+    assert 'body.publicCompact:not(.publicViewAdvanced)>.understandBuild' in html
+    assert 'body.publicCompact:not(.publicViewAdvanced)>.domainLab' in html
+    assert 'body.publicCompact:not(.publicViewAdvanced)>.sessionSandbox' in html
+    assert 'body.publicCompact:not(.publicViewQcds) #try-logical-robot' in html
+    assert 'body.publicCompact:not(.publicViewLegal) #swedish-legal-robot' in html
 
 
 def test_public_surface_exposes_current_capacity_without_changing_qcds_boundary():
