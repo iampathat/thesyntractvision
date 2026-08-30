@@ -1,11 +1,26 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
 from .central_fabric import CentralFabricRun, CentralQCDSFabric
+from .evidence_planning import (
+    ContinuationPolicy,
+    EvidenceAcquisitionResult,
+    EvidencePlan,
+    EvidencePlanningConfig,
+    IntelligenceCheckpoint,
+)
 from .fabric import FabricLayer
+from .intelligence_store import CsvIntelligenceStore, StoredMissionState
 from .models import Syntract, TruthDistribution
+from .oracle_evolution import OracleChallengeSuite, OracleEvolutionConfig
+from .oracle_genesis import (
+    OracleFailureObservation,
+    OracleGapDiscoveryConfig,
+    OracleGenesisGenerator,
+    PairwiseSemanticRuleGenesisGenerator,
+)
 from .oracle_space import OracleSpace
 from .problem import (
     ProblemCompilation,
@@ -13,9 +28,12 @@ from .problem import (
     ProblemResult,
     SemanticProblemAdapter,
     SemanticProblemFrame,
+    bind_problem_result,
     problem_to_syntract,
+    run_problem_compilation,
     run_problem_text,
 )
+from .runtime import RuntimeStepResult, SuperintelligenceRuntime
 
 
 class SyntractSystemError(ValueError):
@@ -59,12 +77,114 @@ class SyntractExecution:
         return 0 if bundle is None else bundle.width
 
 
+@dataclass(frozen=True)
+class SyntractMissionStep:
+    """Persistent intelligence step expressed through the same SyntractSystem result."""
+
+    runtime_step: RuntimeStepResult
+    execution: SyntractExecution
+
+    @property
+    def checkpoint(self) -> IntelligenceCheckpoint:
+        return self.runtime_step.cycle.checkpoint
+
+    @property
+    def plans(self) -> tuple[EvidencePlan, ...]:
+        return self.runtime_step.cycle.plans
+
+    @property
+    def state(self) -> StoredMissionState:
+        return self.runtime_step.state
+
+
+class SyntractMission:
+    """Persistent mission view over the existing SuperintelligenceRuntime.
+
+    BUILD 56 does not create a new loop. It makes BUILD 15's persistent runtime
+    callable through the same system boundary used for ordinary QCDS/Syntract
+    execution.
+    """
+
+    def __init__(
+        self,
+        system: "SyntractSystem",
+        store: CsvIntelligenceStore,
+        *,
+        universe_id: str | None = None,
+    ) -> None:
+        self.system = system
+        self.store = store
+        self.universe_id = universe_id or system.default_universe_id
+        self.runtime = SuperintelligenceRuntime(
+            store=store,
+            fabric_layer=system.fabric_layer,
+            max_width=system.max_width,
+        )
+
+    def state(self, mission_id: str) -> StoredMissionState:
+        return self.runtime.state(mission_id)
+
+    def create(self, frame: SemanticProblemFrame) -> SyntractExecution:
+        self.runtime.create_mission(frame)
+        return self.current(frame.mission_id)
+
+    def current(self, mission_id: str) -> SyntractExecution:
+        compilation = self.runtime.compilation(mission_id)
+        return self.system.run_compilation(
+            compilation,
+            universe_id=self.universe_id,
+            space_id=f"space:{mission_id}",
+            syntract_id=f"syntract:mission:{mission_id}:current",
+        )
+
+    def advance(
+        self,
+        mission_id: str,
+        challenge_suite: OracleChallengeSuite,
+        *,
+        observations: Sequence[OracleFailureObservation] = (),
+        genesis_generators: Sequence[OracleGenesisGenerator] = (PairwiseSemanticRuleGenesisGenerator(),),
+        discovery_config: OracleGapDiscoveryConfig | None = None,
+        evolution_config: OracleEvolutionConfig | None = None,
+        planning_config: EvidencePlanningConfig | None = None,
+        continuation_policy: ContinuationPolicy | None = None,
+        explicit_terminal: bool = False,
+    ) -> SyntractMissionStep:
+        step = self.runtime.step(
+            mission_id,
+            challenge_suite,
+            observations=observations,
+            genesis_generators=genesis_generators,
+            discovery_config=discovery_config,
+            evolution_config=evolution_config,
+            planning_config=planning_config,
+            continuation_policy=continuation_policy,
+            explicit_terminal=explicit_terminal,
+        )
+        execution = self.system.run_compilation(
+            step.compilation,
+            universe_id=self.universe_id,
+            space_id=f"space:{mission_id}",
+            syntract_id=f"syntract:mission:{mission_id}:cycle:{step.state.cycle_index}",
+        )
+        return SyntractMissionStep(runtime_step=step, execution=execution)
+
+    def observe(
+        self,
+        mission_id: str,
+        results: Sequence[EvidenceAcquisitionResult],
+    ) -> SyntractExecution:
+        self.runtime.observe(mission_id, results)
+        return self.current(mission_id)
+
+
 class SyntractSystem:
     """One public composition boundary for the existing QCDS/Syntract machine.
 
     The system deliberately delegates inference to the already-existing public
     QCDS functions. It does not reimplement the four phases, oracle semantics,
-    stabilization, Syntract binding, Logical Space, or central execution.
+    stabilization, Syntract binding, Logical Space, persistence, or central
+    execution.
     """
 
     def __init__(
@@ -128,6 +248,28 @@ class SyntractSystem:
             },
         )
 
+    def run_compilation(
+        self,
+        compilation: ProblemCompilation,
+        *,
+        universe_id: str | None = None,
+        space_id: str | None = None,
+        include_positional: bool = False,
+        include_oracle_exposure: bool = False,
+        include_crossed: bool = False,
+        syntract_id: str | None = None,
+    ) -> SyntractExecution:
+        inference = run_problem_compilation(
+            compilation,
+            fabric_layer=self.fabric_layer,
+            include_positional=include_positional,
+            include_oracle_exposure=include_oracle_exposure,
+            include_crossed=include_crossed,
+        )
+        syntract = bind_problem_result(inference, syntract_id=syntract_id)
+        result = ProblemResult(compilation.frame, compilation, inference, syntract)
+        return self._wrap(result, universe_id=universe_id, space_id=space_id)
+
     def run_frame(
         self,
         frame: SemanticProblemFrame,
@@ -176,6 +318,9 @@ class SyntractSystem:
         )
         return self._wrap(result, universe_id=universe_id, space_id=space_id)
 
+    def mission(self, store: CsvIntelligenceStore, *, universe_id: str | None = None) -> SyntractMission:
+        return SyntractMission(self, store, universe_id=universe_id)
+
     def mount(self, execution: SyntractExecution, *, replace: bool = False) -> OracleSpace:
         """Mount the exact same logical contract on the central QCDS host."""
         return self.central_fabric.mount(execution.oracle_space, replace=replace)
@@ -191,5 +336,7 @@ class SyntractSystem:
 __all__ = [
     "SyntractSystemError",
     "SyntractExecution",
+    "SyntractMissionStep",
+    "SyntractMission",
     "SyntractSystem",
 ]
