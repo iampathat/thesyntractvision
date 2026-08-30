@@ -80,13 +80,14 @@ class FabricLayer:
     ) -> TruthDistribution:
         """Bind an exact classical distribution to an equivalent rotation view.
 
-        The classical reference kernel enumerates candidate states in canonical
-        coordinates. ``position_map`` never changes those states or the logical
-        dimension mapping, and ``OracleStack.score`` combines the same oracle set
-        with order-independent multiplication/agreement. Therefore position-only
-        and oracle-exposure-only rotations are mathematically identical for this
-        reference kernel. Reusing the already computed distribution preserves
-        every view and every 2^N state while avoiding redundant enumeration.
+        The unbiased ClassicalInferenceKernel enumerates candidate states in
+        canonical coordinates. ``position_map`` never changes those states or
+        the logical dimension mapping, and ``OracleStack.score`` combines the
+        same oracle set with order-independent multiplication/agreement.
+
+        This optimization is intentionally restricted to the *exact* reference
+        kernel type. Benchmark/fault-injection subclasses must execute every
+        rotation so implementation bias remains observable.
         """
         return replace(
             distribution,
@@ -132,10 +133,9 @@ class FabricLayer:
             raise ValueError("rotation bank cannot be empty")
 
         # Position-only and oracle-order-only rotations are exact invariances of
-        # ClassicalInferenceKernel. Compute the full support once, then retain all
-        # requested views with view-specific provenance. Other substrates still
-        # execute every view so substrate-specific bias remains observable.
-        if isinstance(self.kernel, ClassicalInferenceKernel) and family in {"position", "oracle_exposure"}:
+        # the unbiased reference kernel only. Diagnostic/fault-injection kernels
+        # and every other substrate still execute each requested view.
+        if type(self.kernel) is ClassicalInferenceKernel and family in {"position", "oracle_exposure"}:
             seed = self.kernel.run(resolved[0], oracle_stack)
             distributions = (seed,) + tuple(
                 self._reuse_equivalent_classical_distribution(
@@ -256,7 +256,7 @@ class FabricLayer:
             )
         }
         if include_positional:
-            if isinstance(self.kernel, ClassicalInferenceKernel):
+            if type(self.kernel) is ClassicalInferenceKernel:
                 families["position"] = self._rotation_bank_from_distribution(
                     "position",
                     positional_views(bundle, oracle_stack),
@@ -266,7 +266,7 @@ class FabricLayer:
             else:
                 families["position"] = self.run_positional_bank(bundle, oracle_stack)
         if include_oracle_exposure:
-            if isinstance(self.kernel, ClassicalInferenceKernel):
+            if type(self.kernel) is ClassicalInferenceKernel:
                 families["oracle_exposure"] = self._rotation_bank_from_distribution(
                     "oracle_exposure",
                     oracle_exposure_views(bundle, oracle_stack),
