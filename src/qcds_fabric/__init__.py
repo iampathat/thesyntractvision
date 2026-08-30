@@ -98,6 +98,10 @@ from .substrate_benchmark import (
     SubstrateVariant, run_substrate_benchmark,
 )
 from .substrates import InferenceSubstrate, StatevectorGroverSubstrate
+from .syntract_system import (
+    SyntractExecution, SyntractMission, SyntractMissionStep, SyntractRobotCycle,
+    SyntractSystem, SyntractSystemError,
+)
 
 __all__ = [
     "BaseBundle", "ChannelView", "TruthDistribution", "StabilizedReturn", "Syntract",
@@ -167,4 +171,6 @@ __all__ = [
     "DEFAULT_SUBSTRATES", "run_substrate_benchmark", "LogicalSpaceAccounting",
     "logical_space_accounting", "circular_position_maps", "circular_oracle_maps",
     "positional_views", "oracle_exposure_views", "crossed_views",
+    "SyntractSystemError", "SyntractExecution", "SyntractMissionStep",
+    "SyntractRobotCycle", "SyntractMission", "SyntractSystem",
 ]
