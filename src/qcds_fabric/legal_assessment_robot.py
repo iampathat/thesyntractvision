@@ -275,6 +275,11 @@ class SwedishHousingAssessmentRobot:
             corpus=self.legal_robot.corpus,
             applied_rule_ids=tuple(str(value) for value in statutory["applied_rules"]),
             praxis=self.praxis,
+            # Legacy Build-40 compatibility path only. The current full robot has
+            # explicit execution profiles and a separate unpruned Quantum Full
+            # Space contract. Allow this exact classical compatibility runner one
+            # additional live bit as the represented praxis corpus has expanded.
+            max_unknown_dimensions=19,
         )
         swarm = {
             **dict(_mapping(statutory["swarm_packet"], "swarm_packet")),
