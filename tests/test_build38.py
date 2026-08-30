@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import re
+
 from qcds_fabric.living_robot_invite38 import living_robot_invite38_html
 from qcds_fabric.session_sandbox_core import run_session
 
@@ -70,15 +72,32 @@ def test_four_candidate_quick_space_has_visible_nonuniform_stabilized_result() -
     assert baseline != stabilized
 
 
-def test_quick_ui_explains_inference_journey_without_replacing_advanced_lab() -> None:
+def test_quick_ui_shows_question_to_oracle_to_qcds_path_without_replacing_advanced_lab() -> None:
     html = living_robot_invite38_html(static_mode=True)
 
     assert "BUILD38_SEEDS" in html
-    assert "adaptive | stressed | dormant | apoptotic" in html
-    assert "evidence pull" in html
-    assert "STABILIZED LEADER" in html
-    assert "NULL CHALLENGE" in html
+    assert "q38Compile(seed)" in html
+    assert "QUESTION / MATERIAL" in html
+    assert "TRANSLATOR" in html
+    assert "LOGICAL SPACE" in html
+    assert "ORACLE FILTERS" in html
+    assert "QCDS four phases remain unchanged" in html
+    assert "TruthDistribution" in html
+    assert "Syntract" in html
+    assert "question/material → translator → Logical Space → emulated oracle filters → QCDS four phases → TruthDistribution → Syntract" in html
+    assert "STABILIZED LEADER" not in html
+    assert "NULL CHALLENGE" not in html
     assert "OPEN ADVANCED LOGICAL SPACE LAB" in html
     assert "RUN QCDS CORE" in html
     assert "Reality effect" in html
     assert "qcds_fabric.zip" in html
+
+
+def test_every_seed_world_has_real_multi_parameter_logic() -> None:
+    html = living_robot_invite38_html(static_mode=True)
+    world_param_blocks = re.findall(r"\{name:'[^']+',params:\{([^}]*)\}\}", html)
+
+    assert len(world_param_blocks) == 16
+    assert all(block.count(":") >= 6 for block in world_param_blocks)
+    assert "Pick a World seeds require at least six logical parameters per world." in html
+    assert "Pick a World needs multiple translated oracle constraints." in html
