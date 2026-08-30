@@ -34,6 +34,22 @@ jobs:
           python-version: "3.12"
       - name: Install package
         run: python -m pip install -e .
+      - name: Validate real Pick a World QCDS spaces
+        run: |
+          python - <<'PY'
+          from qcds_fabric.pick_a_world_core import CASES, run_pick_world_case
+
+          results = {case_id: run_pick_world_case(case_id) for case_id in CASES}
+          for case_id, result in results.items():
+              assert result["logical_width"] == 12, (case_id, result["logical_width"])
+              assert result["candidate_binary_space"] == "2^12", (case_id, result["candidate_binary_space"])
+              assert result["browser_pre_scoring"] is False
+          robotics = results["robotics"]
+          assert set(robotics["leading_candidates"]) == {"direct", "cautious"}
+          assert robotics["world_binding"] is None
+          assert robotics["binding_status"] == "unresolved_tie"
+          print({case_id: {"leaders": result["leading_candidates"], "binding": result["binding_status"], "space": result["candidate_binary_space"]} for case_id, result in results.items()})
+          PY
       - name: Export the stable public QCDS surface
         run: |
           mkdir -p _site/legal/cases
