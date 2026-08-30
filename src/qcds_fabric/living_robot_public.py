@@ -8,7 +8,7 @@ from typing import Sequence
 from .living_robot_public_fix49 import living_robot_public_fix49_html as _base_html
 
 
-PUBLIC_BUILD = "52"
+PUBLIC_BUILD = "53"
 
 
 def living_robot_public_html(*, static_mode: bool = False) -> str:

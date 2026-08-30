@@ -51,6 +51,8 @@ jobs:
                       archive.write(path, path.relative_to('src'))
           PY
           touch _site/.nojekyll
+      - name: Validate exact public release artifact
+        run: python -m qcds_fabric.public_release_guard --site _site
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
