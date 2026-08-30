@@ -37,7 +37,7 @@ jobs:
       - name: Export the compact public Logical Robot + full Swedish Legal QCDS Robot
         run: |
           mkdir -p _site/legal/cases
-          python -m qcds_fabric.living_robot_public_compact --export _site/index.html
+          python -m qcds_fabric.living_robot_public_fix48 --export _site/index.html
           cp web/session_core_worker.js _site/session_core_worker.js
           cp robots/legal/sweden_housing/cases/*.json _site/legal/cases/
           python - <<'PY'
