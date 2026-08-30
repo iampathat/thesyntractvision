@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
-from .central_fabric import CentralFabricRun, CentralQCDSFabric
+from .central_fabric import CentralFabricRun, CentralQCDSFabric, HybridLaneResult
 from .evidence_planning import (
     ContinuationPolicy,
     EvidenceAcquisitionResult,
@@ -34,6 +34,13 @@ from .problem import (
     run_problem_text,
 )
 from .runtime import RuntimeStepResult, SuperintelligenceRuntime
+from .swarm_intelligence import (
+    SwarmFrontierTask,
+    SwarmOraclePacket,
+    SwarmReentryResult,
+    plan_swarm_frontier,
+    run_swarm_reentry,
+)
 
 
 class SyntractSystemError(ValueError):
@@ -183,8 +190,8 @@ class SyntractSystem:
 
     The system deliberately delegates inference to the already-existing public
     QCDS functions. It does not reimplement the four phases, oracle semantics,
-    stabilization, Syntract binding, Logical Space, persistence, or central
-    execution.
+    stabilization, Syntract binding, Logical Space, persistence, swarm logic, or
+    central execution.
     """
 
     def __init__(
@@ -325,9 +332,73 @@ class SyntractSystem:
         """Mount the exact same logical contract on the central QCDS host."""
         return self.central_fabric.mount(execution.oracle_space, replace=replace)
 
+    def _ensure_mounted(self, execution: SyntractExecution) -> OracleSpace:
+        existing = self.central_fabric.host.spaces.get(execution.oracle_space.space_id)
+        if existing is None:
+            return self.mount(execution)
+        if existing.universe_id != execution.oracle_space.universe_id:
+            raise SyntractSystemError("mounted space id collides with another Logical Universe")
+        if existing.logical_contract_identity != execution.oracle_space.logical_contract_identity:
+            raise SyntractSystemError("mounted space id collides with a different logical contract")
+        return existing
+
     def run_mounted(self, space_id: str) -> CentralFabricRun:
         """Run a mounted Oracle Space through the existing CentralQCDSFabric."""
         return self.central_fabric.run(space_id)
+
+    def run_parallel(
+        self,
+        executions: Sequence[SyntractExecution],
+        *,
+        max_workers: int | None = None,
+    ) -> Mapping[str, CentralFabricRun]:
+        mounted = tuple(self._ensure_mounted(execution) for execution in executions)
+        return self.central_fabric.run_parallel(
+            tuple(space.space_id for space in mounted),
+            max_workers=max_workers,
+        )
+
+    def run_sequence(self, executions: Sequence[SyntractExecution]) -> tuple[CentralFabricRun, ...]:
+        mounted = tuple(self._ensure_mounted(execution) for execution in executions)
+        return self.central_fabric.run_sequence(tuple(space.space_id for space in mounted))
+
+    def run_hybrid(
+        self,
+        lanes: Mapping[str, Sequence[SyntractExecution]],
+        *,
+        max_workers: int | None = None,
+    ) -> Mapping[str, HybridLaneResult]:
+        mounted_lanes: dict[str, tuple[str, ...]] = {}
+        for lane_id, executions in lanes.items():
+            mounted_lanes[lane_id] = tuple(
+                self._ensure_mounted(execution).space_id for execution in executions
+            )
+        return self.central_fabric.run_hybrid(mounted_lanes, max_workers=max_workers)
+
+    def plan_swarm(
+        self,
+        execution: SyntractExecution,
+        *,
+        max_tasks: int = 4,
+    ) -> tuple[SwarmFrontierTask, ...]:
+        """Let the current QCDS TruthDistribution choose bounded robot work."""
+        return plan_swarm_frontier(
+            execution.oracle_space,
+            execution.truth_distribution,
+            max_tasks=max_tasks,
+        )
+
+    def reenter_swarm(
+        self,
+        execution: SyntractExecution,
+        packets: Sequence[SwarmOraclePacket],
+    ) -> SwarmReentryResult:
+        """Return robot oracle manifestations through the same QCDS Fabric."""
+        return run_swarm_reentry(
+            execution.oracle_space,
+            packets,
+            fabric=self.fabric_layer,
+        )
 
     def mounted_manifest(self) -> tuple[Mapping[str, object], ...]:
         return self.central_fabric.mounted_manifest()
