@@ -226,7 +226,7 @@ WebAssembly is an execution substrate for the packaged Python core, not a client
 
 ## Oracle-space topology: session, external and central
 
-Logic remains represented / manifested through **oracles or emulated oracles**. Hosting does not redefine the logic and does not create a second QCDS architecture.
+Questions, material and observations are translated into a **Logical Space**. **Oracles or emulated oracles act as filters / constraints over that Logical Space.** Hosting does not redefine the logic and does not create a second QCDS architecture.
 
 The same `BaseBundle + OracleStack` contract can now be hosted in an ephemeral browser/session, an external runtime or a central high-capacity fabric. Oracle spaces can be exported and imported with Logical Universe identity and provenance preserved.
 
@@ -251,7 +251,7 @@ Transfer is **not truth promotion**. An imported oracle space retains source and
 Software execution is resource-aware without changing QCDS semantics. The reference defaults currently distinguish:
 
 ```text
-browser / Pyodide session       up to 18 live emulation dimensions
+browser / Pyodide session       up to 16 live emulation dimensions
 local MacBook-class machine     up to 20 live emulation dimensions
 central software fabric         up to 22 live emulation dimensions
 ```
@@ -599,7 +599,7 @@ Sensor Robot ──────┘
 
 `CentralQCDSFabric` provides the execution topology for multiple compatible oracle spaces. Independent rooms can execute in parallel; sequential stages can re-enter a prior TruthDistribution through `DistributionOracle`; hybrid execution can run sequential lanes concurrently. It does not silently merge incompatible Logical Universes or invent semantic mappings between them.
 
-This remains the **same QCDS architecture**: logic → oracles / emulated oracles → QCDS four phases → TruthDistribution → Syntract.
+This remains the **same QCDS architecture**: question / material → translator → Logical Space → oracle filters / emulated oracle filters → QCDS four phases → TruthDistribution → Syntract.
 
 See [`LIVING_SWARM_LOGICAL_ROBOTS.md`](LIVING_SWARM_LOGICAL_ROBOTS.md).
 
