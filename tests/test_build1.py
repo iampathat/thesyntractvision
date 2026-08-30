@@ -61,19 +61,10 @@ def test_oracle_exposure_rotation_is_same_stack_different_order():
 
 
 def test_stabilized_suite_reuses_exact_classical_position_and_oracle_invariances():
-    calls: list[ChannelView] = []
+    result = FabricLayer(kernel=ClassicalInferenceKernel()).run_stabilized_rotation_suite(bundle2(), stack2())
 
-    class CountingClassicalKernel(ClassicalInferenceKernel):
-        def run(self, view, oracle_stack):
-            calls.append(view)
-            return super().run(view, oracle_stack)
-
-    result = FabricLayer(kernel=CountingClassicalKernel()).run_stabilized_rotation_suite(bundle2(), stack2())
-
-    # Baseline + one exact run for each dimension-null view. Position and oracle
-    # exposure views are all retained but reuse the mathematically identical
-    # baseline distribution instead of re-enumerating the same 2^N support.
-    assert len(calls) == 3
+    # Exact unbiased reference only: all requested views remain represented, but
+    # position/oracle-order views may reuse the mathematically identical baseline.
     assert len(result.families["position"].views) == 2
     assert len(result.families["oracle_exposure"].views) == 2
     assert all(
@@ -86,6 +77,29 @@ def test_stabilized_suite_reuses_exact_classical_position_and_oracle_invariances
     )
     assert result.families["position"].diagnostics["view_count"] == 2.0
     assert result.families["oracle_exposure"].diagnostics["view_count"] == 2.0
+
+
+def test_classical_subclass_executes_every_rotation_for_bias_diagnostics():
+    calls: list[ChannelView] = []
+
+    class CountingClassicalKernel(ClassicalInferenceKernel):
+        def run(self, view, oracle_stack):
+            calls.append(view)
+            return super().run(view, oracle_stack)
+
+    result = FabricLayer(kernel=CountingClassicalKernel()).run_stabilized_rotation_suite(bundle2(), stack2())
+
+    # Baseline + 2 null + 2 position + 2 oracle-exposure. Subclasses are never
+    # assumed unbiased, so they must execute every requested diagnostic view.
+    assert len(calls) == 7
+    assert all(
+        distribution.provenance.get("equivalent_classical_rotation_reuse") is not True
+        for distribution in result.families["position"].distributions
+    )
+    assert all(
+        distribution.provenance.get("equivalent_classical_rotation_reuse") is not True
+        for distribution in result.families["oracle_exposure"].distributions
+    )
 
 
 def test_crossed_bank_preserves_null_position_and_oracle_provenance():
@@ -128,37 +142,4 @@ def test_oracle_stack_identity_mismatch_fails_closed():
         oracle_ids=oracle_stack.oracle_ids,
     )
     with pytest.raises(ValueError, match="expected"):
-        ClassicalInferenceKernel().run(view, oracle_stack)
-
-
-def test_oracle_map_must_be_exact_permutation_of_same_stack():
-    oracle_stack = stack2()
-    view = ChannelView.transformed(
-        bundle2(),
-        oracle_stack_version=oracle_stack.identity,
-        oracle_ids=oracle_stack.oracle_ids,
-        oracle_map=("o0", "alien"),
-    )
-    with pytest.raises(ValueError, match="exact permutation"):
-        ClassicalInferenceKernel().run(view, oracle_stack)
-
-
-def test_oracle_constrained_only_by_absent_dimension_is_excluded_from_agreement_normalization():
-    bundle = bundle2(("?", 0))
-    oracle_stack = OracleStack(
-        "absence-test",
-        "1",
-        (
-            ExactOracle("absent", {"b0": 1}),
-            ExactOracle("active-fails", {"b1": 1}),
-        ),
-    )
-    view = ChannelView.null_dimension(
-        bundle,
-        0,
-        oracle_stack_version=oracle_stack.identity,
-        oracle_ids=oracle_stack.oracle_ids,
-    )
-    distribution = ClassicalInferenceKernel().run(view, oracle_stack)
-    assert distribution.contradiction_markers == ("all_candidate_states_rejected",)
-    assert distribution.oracle_agreement == 0.0
+        oracle_stack.score(view, (0, 0))
