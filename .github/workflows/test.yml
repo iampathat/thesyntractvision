@@ -56,6 +56,7 @@ jobs:
           tests/test_build61_parallel_syntracts.py
           tests/test_build62_syntract_parallel_demos.py
           tests/test_build63_public_syntracts.py
+          tests/test_build67_pick_a_world_logical_space.py
           tests/test_legal_question_ingress.py
           tests/test_public_compact_surface.py
           tests/test_public_legal_question49.py
