@@ -10,6 +10,7 @@ from .living_robot_public import PUBLIC_BUILD
 
 CRITICAL_IDS = (
     "public-overview",
+    "public-syntract-teaser",
     "try-logical-robot",
     "public-legal-question",
     "public-syntracts",
@@ -83,7 +84,9 @@ def validate_public_site(site: str | Path) -> None:
         "RUN QUESTION →",
         "TRY QCDS",
         "LEGAL ROBOT",
-        "SYNTRACTS",
+        "SYNTRACTS · NEW",
+        "OPEN SYNTRACT DEMOS →",
+        "NEW CAPABILITY · PARALLEL SYNTRACTS",
         "ADVANCED",
         "No voting. No hard collapse. No separate fusion engine.",
     ):
