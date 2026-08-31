@@ -50,27 +50,35 @@ jobs:
           assert robotics["binding_status"] == "unresolved_tie"
           print({case_id: {"leaders": result["leading_candidates"], "binding": result["binding_status"], "space": result["candidate_binary_space"]} for case_id, result in results.items()})
           PY
-      - name: Validate Robotics Playground oracle rerouting
+      - name: Validate Robotics Playground through SyntractSystem
         run: |
           python - <<'PY'
-          from qcds_fabric.robotics_playground import run_robotics_playground
+          import json
+          from qcds_fabric.robotics_playground_system import run_robotics_playground_system_json
 
-          clear = run_robotics_playground({"width":20,"height":12,"start":[1,6],"goal":[18,6],"blocked":[]})
+          def run(payload):
+              return json.loads(run_robotics_playground_system_json(json.dumps(payload)))
+
+          clear = run({"width":20,"height":12,"start":[1,6],"goal":[18,6],"blocked":[]})
           assert clear["reachable"] is True
           assert clear["shortest_steps"] == 17
           assert clear["shortest_path_count"] == 1
-          assert clear["oracle_summary"]["drawn_obstacles"] == 0
+          assert clear["logical_width"] == 8
+          assert clear["candidate_binary_space"] == "2^8"
+          assert clear["system_boundary"] == "SyntractSystem"
+          assert clear["qcds_core_execution"] is True
+          assert clear["separate_pathfinder"] is False
 
-          changed = run_robotics_playground({"width":20,"height":12,"start":[1,6],"goal":[18,6],"blocked":[[9,6]]})
+          changed = run({"width":20,"height":12,"start":[1,6],"goal":[18,6],"blocked":[[9,6]]})
           assert changed["reachable"] is True
           assert changed["shortest_steps"] == 19
           assert changed["shortest_path_count"] > 1
           assert changed["oracle_summary"]["drawn_obstacles"] == 1
 
-          wall = run_robotics_playground({"width":20,"height":12,"start":[1,6],"goal":[18,6],"blocked":[[9,y] for y in range(12)]})
+          wall = run({"width":20,"height":12,"start":[1,6],"goal":[18,6],"blocked":[[9,y] for y in range(12)]})
           assert wall["reachable"] is False
           assert wall["shortest_path_count"] == 0
-          print({"clear": clear["shortest_steps"], "one_oracle": changed["shortest_steps"], "wall_reachable": wall["reachable"]})
+          print({"core": clear["execution"], "space": clear["candidate_binary_space"], "clear": clear["shortest_steps"], "one_oracle": changed["shortest_steps"], "wall_reachable": wall["reachable"]})
           PY
       - name: Export the stable public QCDS surface
         run: |
