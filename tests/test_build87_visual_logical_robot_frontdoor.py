@@ -6,7 +6,7 @@ from qcds_fabric.living_robot_public import PUBLIC_BUILD, living_robot_public_ht
 def test_visual_logical_robot_is_the_public_front_door() -> None:
     html = living_robot_public_html(static_mode=True)
 
-    assert int(PUBLIC_BUILD) >= 88
+    assert int(PUBLIC_BUILD) >= 90
     assert "THE SYNTRACT VISION · ONE QCDS · MANY BODIES" in html
     assert "VISUAL LOGICAL ROBOT · QCDS / SYNTRACT" in html
     assert "Draw reality. Watch QCDS find the shortest coherent route." in html
@@ -49,6 +49,21 @@ def test_robotics_controls_are_docked_directly_below_the_route_grid() -> None:
     assert 'grid-template-areas:"canvas" "tools" "panel"' in html
     assert 'overflow-x:auto' in html
     assert '-webkit-overflow-scrolling:touch' in html
+
+
+def test_reset_control_signals_ready_only_when_qcds_world_is_settled_at_b() -> None:
+    html = living_robot_public_html(static_mode=True)
+
+    assert 'id="q75Reset" data-ready="0"' in html
+    assert "#q75Reset.q90ReadyCue" in html
+    assert "button.textContent='READY'" in html
+    assert "button.textContent=Q75.resetCuePhase?'READY':'RESET A → B'" in html
+    assert "!!Q75.result?.reachable" in html
+    assert "q75Key(...Q75.robot)===q75Key(...Q75.goal)" in html
+    assert "!Q75.planning && !Q75.editing && !Q75.editSettleTimer" in html
+    assert "const baseReset=q75ResetRobot" in html
+    assert "const baseEmulating=q79SetEmulating" in html
+    assert "const baseBeginEdit=q80BeginEdit" in html
 
 
 def test_visual_robot_explains_reality_oracles_qcds_syntract_and_body() -> None:
