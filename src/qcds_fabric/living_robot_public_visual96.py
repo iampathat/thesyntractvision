@@ -27,279 +27,270 @@ _CSS = r'''
   }
 }
 
-/* BUILD 99: Try QCDS stages are independent local accordions.
-   Opening a later stage never collapses content above the clicked control. */
-body.publicCompact.publicViewQcds #try-logical-robot .q69Trace{align-items:start!important}
-body.publicCompact.publicViewQcds #try-logical-robot .q98Stage{min-width:0;display:flex;flex-direction:column}
-body.publicCompact.publicViewQcds #try-logical-robot .q98Stage>button.q69Step,
-body.publicCompact.publicViewQcds #try-logical-robot .q98Stage>button.q69Step:focus,
-body.publicCompact.publicViewQcds #try-logical-robot .q98Stage>button.q69Step:hover{
-  appearance:none!important;
-  -webkit-appearance:none!important;
-  background:#061923!important;
-  color:#d6f6df!important;
-  border-color:#294b5e!important;
-  box-shadow:none!important;
-  transform:none!important;
-  -webkit-tap-highlight-color:transparent!important;
+/* BUILD 100: Try QCDS is a stable sales/demo surface.
+   Equal actions, immediate run feedback, and six independent native accordions. */
+body.publicCompact.publicViewQcds #try-logical-robot .seedGrid .seed>button{
+  inline-size:190px!important;
+  min-inline-size:190px!important;
+  max-inline-size:190px!important;
+  box-sizing:border-box!important;
+  text-align:center!important;
+  justify-self:end!important;
+  white-space:nowrap!important;
 }
-body.publicCompact.publicViewQcds #try-logical-robot .q98Stage>button.q69Step .q69StepNo,
-body.publicCompact.publicViewQcds #try-logical-robot .q98Stage>button.q69Step .q69Open{color:#6fcf98!important}
-body.publicCompact.publicViewQcds #try-logical-robot .q98Stage>button.q69Step .q69StepTitle{color:#d6f6df!important}
-body.publicCompact.publicViewQcds #try-logical-robot .q98Stage>button.q69Step .q69StepSummary{color:#86a7b7!important}
-body.publicCompact.publicViewQcds #try-logical-robot .q98Stage>button.q69Step:focus-visible{
-  outline:2px solid #76dba2!important;
-  outline-offset:2px!important;
+body.publicCompact.publicViewQcds #try-logical-robot .seedGrid .seed>button.q100Running{
+  border-color:#7ce1a5!important;
+  background:#103528!important;
+  color:#edfff3!important;
+  cursor:wait!important;
+  box-shadow:0 0 0 1px #7ce1a522,0 0 18px #7ce1a51c!important;
 }
-body.publicCompact.publicViewQcds #try-logical-robot .q98Stage.open>button.q69Step,
-body.publicCompact.publicViewQcds #try-logical-robot .q98Stage.open>button.q69Step:focus,
-body.publicCompact.publicViewQcds #try-logical-robot .q98Stage.open>button.q69Step:hover{
-  border-color:#69c893!important;
-  border-bottom-color:#31584d!important;
-  background:#09281f!important;
-  color:#d6f6df!important;
-  box-shadow:inset 3px 0 0 #82e5ac!important;
-  border-radius:14px 14px 0 0!important;
+body.publicCompact.publicViewQcds #try-logical-robot .seedGrid .seed>button.q100Running::before{
+  content:"";
+  display:inline-block;
+  width:9px;
+  height:9px;
+  margin-right:7px;
+  vertical-align:-1px;
+  border:2px solid #4f7e66;
+  border-top-color:#a4f0bf;
+  border-radius:50%;
+  animation:q100Spin .7s linear infinite;
 }
-body.publicCompact.publicViewQcds #try-logical-robot .q98Detail{
-  display:none;
-  border:1px solid #31584d;
-  border-top:0;
-  background:#071914;
-  border-radius:0 0 14px 14px;
-  padding:14px 15px;
+@keyframes q100Spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){
+  body.publicCompact.publicViewQcds #try-logical-robot .seedGrid .seed>button.q100Running::before{animation:none;border-color:#a4f0bf}
+}
+
+/* Native details: every QCDS stage owns its detail tree. Nothing is moved later. */
+body.publicCompact.publicViewQcds #try-logical-robot .q100Trace{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  margin-top:12px;
+  align-items:start;
+}
+body.publicCompact.publicViewQcds #try-logical-robot details.q100Stage{
+  min-width:0;
+  border:1px solid #294b5e;
+  background:#061923;
+  border-radius:14px;
+  overflow:hidden;
+}
+body.publicCompact.publicViewQcds #try-logical-robot details.q100Stage[open]{
+  border-color:#5fab83;
+  background:#071b18;
+  box-shadow:inset 3px 0 0 #82e5ac;
+}
+body.publicCompact.publicViewQcds #try-logical-robot .q100Stage>summary{
+  list-style:none;
+  cursor:pointer;
+  padding:14px 16px;
+  color:#d6f6df;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+}
+body.publicCompact.publicViewQcds #try-logical-robot .q100Stage>summary::-webkit-details-marker{display:none}
+body.publicCompact.publicViewQcds #try-logical-robot .q100Stage>summary::marker{content:""}
+body.publicCompact.publicViewQcds #try-logical-robot .q100Stage>summary:focus{outline:none}
+body.publicCompact.publicViewQcds #try-logical-robot .q100Stage>summary:focus-visible{
+  outline:2px solid #76dba2;
+  outline-offset:-3px;
+  border-radius:12px;
+}
+body.publicCompact.publicViewQcds #try-logical-robot .q100Stage[open]>summary{
+  background:#09281f;
+  border-bottom:1px solid #31584d;
+}
+body.publicCompact.publicViewQcds #try-logical-robot .q100StageNo{
+  display:block;
+  font-size:7px;
+  letter-spacing:.13em;
+  color:#76dba2;
+  text-transform:uppercase;
+}
+body.publicCompact.publicViewQcds #try-logical-robot .q100StageTitle{
+  display:block;
+  margin-top:4px;
+  font-size:12px;
+  line-height:1.2;
+  color:#d6f6df;
+  font-weight:800;
+}
+body.publicCompact.publicViewQcds #try-logical-robot .q100StageSummary{
+  display:block;
+  margin-top:6px;
+  font-size:8px;
+  line-height:1.45;
+  color:#86a7b7;
+}
+body.publicCompact.publicViewQcds #try-logical-robot .q100StageToggle{
+  display:block;
+  margin-top:9px;
+  font-size:6.5px;
+  letter-spacing:.12em;
+  color:#6fcf98;
+  text-transform:uppercase;
+}
+body.publicCompact.publicViewQcds #try-logical-robot .q100StageToggle::after{content:"OPEN ↓"}
+body.publicCompact.publicViewQcds #try-logical-robot .q100Stage[open] .q100StageToggle::after{content:"CLOSE ↑"}
+body.publicCompact.publicViewQcds #try-logical-robot .q100StageBody{
+  padding:14px 15px 15px;
   color:#d8f6df;
   min-width:0;
   overflow:hidden;
 }
-body.publicCompact.publicViewQcds #try-logical-robot .q98Stage.open>.q98Detail{display:block}
-body.publicCompact.publicViewQcds #try-logical-robot .q98Detail .q69InspectHead{margin:0;padding-bottom:10px}
-body.publicCompact.publicViewQcds #try-logical-robot .q98Detail .q69InspectBody{margin-top:11px}
-body.publicCompact.publicViewQcds #try-logical-robot .q98SourcePanel{display:none!important}
+body.publicCompact.publicViewQcds #try-logical-robot .q100StageBody .q69InspectHead{margin:0;padding-bottom:10px}
+body.publicCompact.publicViewQcds #try-logical-robot .q100StageBody .q69InspectBody{margin-top:11px}
 
-/* Immediate local feedback while the real browser QCDS/Pyodide run is working. */
-body.publicCompact.publicViewQcds #try-logical-robot .seed.q99BusyCard{
-  border-color:#67cf92!important;
-  box-shadow:0 0 0 1px #77dfa322,0 12px 30px #0003!important;
-}
-body.publicCompact.publicViewQcds #try-logical-robot .q99Busy{
-  display:flex;
-  align-items:center;
-  gap:9px;
-  width:100%;
-  box-sizing:border-box;
-  margin-top:9px;
-  border:1px solid #3f745b;
-  background:linear-gradient(135deg,#082019,#07171b);
-  border-radius:10px;
-  padding:9px 10px;
-  color:#c9f3d6;
-}
-body.publicCompact.publicViewQcds #try-logical-robot .q99BusyDot{
-  flex:0 0 auto;
-  width:11px;
-  height:11px;
-  border:2px solid #315c49;
-  border-top-color:#8ce3b2;
-  border-radius:50%;
-  animation:q99Spin .72s linear infinite;
-}
-body.publicCompact.publicViewQcds #try-logical-robot .q99BusyText{min-width:0}
-body.publicCompact.publicViewQcds #try-logical-robot .q99BusyText b{
-  display:block;
-  font-size:7px;
-  letter-spacing:.12em;
-  color:#9aefb7;
-}
-body.publicCompact.publicViewQcds #try-logical-robot .q99BusyText span{
-  display:block;
-  margin-top:3px;
-  font-size:7px;
-  line-height:1.4;
-  color:#86a99a;
-}
-body.publicCompact.publicViewQcds #try-logical-robot .q99Busy.q99Error{
-  border-color:#7a5a37;
-  background:#21180d;
-}
-body.publicCompact.publicViewQcds #try-logical-robot .q99Busy.q99Error .q99BusyDot{display:none}
-body.publicCompact.publicViewQcds #try-logical-robot .q99Busy.q99Error .q99BusyText b{color:#efc98d}
-@keyframes q99Spin{to{transform:rotate(360deg)}}
-@media(prefers-reduced-motion:reduce){body.publicCompact.publicViewQcds #try-logical-robot .q99BusyDot{animation:none;border-color:#8ce3b2}}
-@media(max-width:680px){
-  body.publicCompact.publicViewQcds #try-logical-robot .q98Detail{padding:11px 10px}
-  body.publicCompact.publicViewQcds #try-logical-robot .q98Stage>button.q69Step,
-  body.publicCompact.publicViewQcds #try-logical-robot .q98Stage.open>button.q69Step{min-height:0!important}
-  body.publicCompact.publicViewQcds #try-logical-robot .q99Busy{padding:8px 9px}
+@media(max-width:700px){
+  body.publicCompact.publicViewQcds #try-logical-robot .seedGrid .seed>button{
+    inline-size:146px!important;
+    min-inline-size:146px!important;
+    max-inline-size:146px!important;
+  }
+  body.publicCompact.publicViewQcds #try-logical-robot .seed.q95Active>button{align-self:flex-start!important}
+  body.publicCompact.publicViewQcds #try-logical-robot .q100Trace{grid-template-columns:1fr;gap:7px;margin-top:9px}
+  body.publicCompact.publicViewQcds #try-logical-robot .q100Stage>summary{padding:11px 12px}
+  body.publicCompact.publicViewQcds #try-logical-robot .q100StageBody{padding:11px 10px 12px}
 }
 '''
 
 _SCRIPT = r'''
 <script>
-/* BUILD 99: stable Try QCDS UX.
-   - stages do not auto-open
-   - stages expand independently, so content above never collapses unexpectedly
-   - legacy quick-result auto-scroll is disabled
-   - a local busy indicator appears immediately while the existing QCDS run executes */
+/* BUILD 100: clean Try QCDS presentation.
+   q67Render is presentation only and consumes the exact result returned by the
+   existing QCDS run. It does not score, infer, vote, collapse, or re-run data. */
 (function(){
-  if(typeof window.q69Open!=='function')return;
-  const baseOpen=window.q69Open;
-  let clickedButton=null;
-  let busyCard=null;
-  let busyBox=null;
+  let runningButton=null;
+  let runningLabel='';
+
+  function q100Text(tag,text,cls){
+    const node=document.createElement(tag);
+    if(cls)node.className=cls;
+    node.textContent=text;
+    return node;
+  }
+
+  function q100StopRunning(){
+    if(!runningButton)return;
+    runningButton.classList.remove('q100Running');
+    runningButton.textContent=runningLabel||runningButton.dataset.q100Label||'TRY →';
+    runningButton=null;
+    runningLabel='';
+  }
+
+  function q100StartRunning(button){
+    q100StopRunning();
+    runningButton=button;
+    runningLabel=button.textContent;
+    button.dataset.q100Label=runningLabel;
+    button.classList.add('q100Running');
+    button.textContent='QCDS EMULATING…';
+  }
 
   document.addEventListener('click',event=>{
-    const step=event.target?.closest?.('#try-logical-robot .q69Step');
-    if(step)clickedButton=step;
-    const run=event.target?.closest?.('#try-logical-robot .seed button');
-    const onclick=run?.getAttribute?.('onclick')||'';
-    if(run && onclick.includes('trySeed('))q99StartBusy(run);
+    const button=event.target?.closest?.('#try-logical-robot .seed button');
+    const onclick=button?.getAttribute?.('onclick')||'';
+    if(button && onclick.includes('trySeed('))q100StartRunning(button);
   },true);
-  document.addEventListener('click',()=>{setTimeout(()=>{clickedButton=null},0)},false);
 
-  function q98EnsureStages(){
-    const trace=document.querySelector('#try-logical-robot .q69Trace');
-    const source=document.getElementById('q69Inspect');
-    if(!trace||!source)return null;
-
-    const directButtons=Array.from(trace.children).filter(node=>node.classList?.contains('q69Step'));
-    directButtons.forEach((button,index)=>{
-      const stage=document.createElement('div');
-      stage.className='q98Stage';
-      stage.dataset.step=String(index+1);
-      button.insertAdjacentElement('beforebegin',stage);
-      stage.appendChild(button);
-      const detail=document.createElement('div');
-      detail.className='q98Detail';
-      detail.setAttribute('role','region');
-      detail.setAttribute('aria-label','QCDS step '+String(index+1)+' details');
-      stage.appendChild(detail);
-    });
-    source.classList.add('q98SourcePanel');
-    return {trace,source,stages:Array.from(trace.querySelectorAll(':scope > .q98Stage'))};
+  function q100StageMeta(result){
+    const sum=result.oracle_summary||{};
+    return [
+      ['WORLD CONDITIONS',(result.represented_worlds||[]).length+' complete worlds','The complete candidate worlds represented in this run.'],
+      ['PROPERTY SPACE',(result.property_dimensions||[]).length+' named properties · '+((result.logical_dimensions||[]).length-(result.represented_worlds||[]).length)+' property bits','How named properties expand into binary Conditions.'],
+      ['LOGICAL SPACE',result.logical_width+' bits · '+result.candidate_binary_space+' = '+result.raw_state_count+' raw states','The actual joint possibility space before oracle constraints.'],
+      ['ORACLE SPACE',(sum.total||0)+' active · '+(sum.structural||0)+' structural · '+(sum.evidence||0)+' evidence · '+(sum.logical||0)+' logical','The active structural, evidence and implication logic shaping this run.'],
+      ['QCDS','Four canonical phases · this exact run','What the canonical four QCDS phases did to this exact Logical Space.'],
+      ['SYNTRACT',result.binding_status==='unresolved_tie'?'TruthDistribution bound · single world unbound':'TruthDistribution bound · '+result.world_binding+' leads','What survived inference and what was, or was not, bound.']
+    ];
   }
 
-  function q99SyncLabels(stages){
-    stages.forEach(stage=>{
-      const label=stage.querySelector('.q69Open');
-      if(label)label.textContent=stage.classList.contains('open')?'CLOSE ↑':'OPEN ↓';
-      const button=stage.querySelector('.q69Step');
-      if(button)button.classList.toggle('active',stage.classList.contains('open'));
-    });
+  function q100PopulateStage(index,result,body,plain){
+    const content=q100Text('div','','q69InspectBody');
+    body.appendChild(content);
+    if(index===0)q69Worlds(result,content);
+    else if(index===1)q69Properties(result,content);
+    else if(index===2)q69Space(result,content);
+    else if(index===3)q69Oracles(result,content);
+    else if(index===4)q69Phases(result,content);
+    else q69Syntract(result,content);
   }
 
-  window.q69Open=function(step,result){
-    const state=q98EnsureStages();
-    if(!state)return baseOpen(step,result);
-    const index=Number(step)-1;
-    const target=state.stages[index];
-    const button=target?.querySelector('.q69Step');
-    if(!target||!button)return baseOpen(step,result);
+  function q100BuildStage(index,item,result){
+    const details=document.createElement('details');
+    details.className='q100Stage';
+    details.dataset.step=String(index+1);
 
-    /* q67Render historically auto-opened STEP 1. Do not do that anymore. */
-    if(!clickedButton){
-      state.stages.forEach(stage=>stage.querySelector('.q69Step')?.classList.remove('active'));
-      state.source.replaceChildren();
-      q99SyncLabels(state.stages);
-      return;
-    }
+    const summary=document.createElement('summary');
+    summary.appendChild(q100Text('span','STEP '+String(index+1),'q100StageNo'));
+    summary.appendChild(q100Text('span',item[0],'q100StageTitle'));
+    summary.appendChild(q100Text('span',item[1],'q100StageSummary'));
+    summary.appendChild(q100Text('span','', 'q100StageToggle'));
+    details.appendChild(summary);
 
-    if(target.classList.contains('open')){
-      target.classList.remove('open');
-      target.querySelector('.q98Detail')?.replaceChildren();
-      q99SyncLabels(state.stages);
-      return;
-    }
+    const body=q100Text('div','','q100StageBody');
+    body.hidden=true;
+    details.appendChild(body);
 
-    /* Render through the existing inspector, then move only this step's rendered
-       nodes into its own detail area. Other open stages remain untouched. */
-    const value=baseOpen(step,result);
-    const detail=target.querySelector('.q98Detail');
-    detail.replaceChildren();
-    while(state.source.firstChild)detail.appendChild(state.source.firstChild);
-    target.classList.add('open');
-    q99SyncLabels(state.stages);
-    return value;
+    let populated=false;
+    details.addEventListener('toggle',()=>{
+      body.hidden=!details.open;
+      if(!details.open || populated)return;
+      const head=q100Text('div','','q69InspectHead');
+      const left=q100Text('div','');
+      left.appendChild(q100Text('div','INSIDE STEP '+String(index+1),'q69InspectKicker'));
+      left.appendChild(q100Text('div',item[0],'q69InspectTitle'));
+      head.append(left,q100Text('div',item[2],'q69InspectPlain'));
+      body.appendChild(head);
+      q100PopulateStage(index,result,body,item[2]);
+      populated=true;
+    });
+    return details;
+  }
+
+  window.q67Render=function(result){
+    const box=document.getElementById('quickResult');
+    if(!box)return;
+    q69Clear(box);
+    box.appendChild(q100Text('div','QCDS CORE · OPEN THE LOGICAL SPACE','quickResultTitle'));
+    box.appendChild(q100Text('div','This is the machine that just ran. Open any stage below. Each stage expands here and stays open until you close it.','q38Summary'));
+
+    const trace=q100Text('div','','q100Trace');
+    q100StageMeta(result).forEach((item,index)=>trace.appendChild(q100BuildStage(index,item,result)));
+    box.appendChild(trace);
+
+    const leaders=result.leading_candidates||[];
+    const resultSummary=result.binding_status==='unresolved_tie'
+      ? 'Result: '+leaders.join(' + ')+' remain tied. That uncertainty is preserved, not hidden.'
+      : 'Result: '+String(result.world_binding||'unresolved')+' is the single leading represented world. The complete distribution is still retained.';
+    box.appendChild(q100Text('div',resultSummary,'q38Summary'));
+
+    const obs=q100Text('div','','q67Obs');
+    (result.observations||[]).forEach(item=>obs.appendChild(q100Text('span',item.predicate+'='+item.value+' · '+Math.round(100*Number(item.confidence))+'% evidence')));
+    box.appendChild(obs);
+    box.classList.add('visible');
+    q100StopRunning();
   };
 
-  function q99NoResultScroll(){
-    const box=document.getElementById('quickResult');
-    if(!box||box.dataset.q99NoScroll==='1')return;
-    box.dataset.q99NoScroll='1';
-    box.scrollIntoView=()=>{};
-  }
-
-  function q99StartBusy(button){
-    q99StopBusy();
-    const card=button.closest('.seed');
-    if(!card)return;
-    busyCard=card;
-    card.classList.add('q99BusyCard');
-    card.setAttribute('aria-busy','true');
-    const box=document.createElement('div');
-    box.className='q99Busy';
-    box.setAttribute('role','status');
-    box.setAttribute('aria-live','polite');
-    const dot=document.createElement('span');dot.className='q99BusyDot';
-    const text=document.createElement('span');text.className='q99BusyText';
-    const title=document.createElement('b');title.textContent='QCDS EMULATING…';
-    const detail=document.createElement('span');detail.textContent='Forming the Logical Space and oracle constraints…';
-    text.append(title,detail);box.append(dot,text);
-    button.insertAdjacentElement('afterend',box);
-    busyBox=box;
-  }
-
-  function q99UpdateBusy(message,kind=''){
-    if(!busyBox)return;
-    const title=busyBox.querySelector('.q99BusyText b');
-    const detail=busyBox.querySelector('.q99BusyText span');
-    if(kind==='warn'){
-      busyBox.classList.add('q99Error');
-      if(title)title.textContent='QCDS STOPPED';
-      if(detail)detail.textContent=String(message||'The run could not complete.');
-      if(busyCard)busyCard.setAttribute('aria-busy','false');
-      return;
-    }
-    if(title)title.textContent='QCDS EMULATING…';
-    if(detail)detail.textContent=String(message||'Working through the represented Logical Space…');
-  }
-
-  function q99StopBusy(){
-    if(busyCard){busyCard.classList.remove('q99BusyCard');busyCard.removeAttribute('aria-busy')}
-    if(busyBox)busyBox.remove();
-    busyCard=null;busyBox=null;
-  }
-
+  /* Keep error/status feedback immediate and local, but never scroll the page. */
   window.addEventListener('DOMContentLoaded',()=>{
-    q99NoResultScroll();
+    const box=document.getElementById('quickResult');
+    if(box)box.scrollIntoView=()=>{};
 
-    /* BUILD 95 installs its status/render wrappers earlier in DOMContentLoaded.
-       Wrap those final functions so all status remains local and no legacy
-       scrollIntoView can move the visitor away from the clicked example. */
     if(typeof window.q48QuickStatus==='function'){
-      const baseStatus=window.q48QuickStatus;
+      const status=window.q48QuickStatus;
       window.q48QuickStatus=function(message,kind=''){
-        q99NoResultScroll();
-        if(busyBox){
-          q99UpdateBusy(message,kind);
-          if(kind!=='warn')return;
-        }
-        return baseStatus(message,kind);
-      };
-    }
-    if(typeof window.q67Render==='function'){
-      const baseRender=window.q67Render;
-      window.q67Render=function(result){
-        q99NoResultScroll();
-        const value=baseRender(result);
-        q99StopBusy();
-        return value;
+        if(kind==='warn')q100StopRunning();
+        if(box)box.scrollIntoView=()=>{};
+        return status(message,kind);
       };
     }
   });
 
   const buildMark=document.querySelector('.publicBuildMark');
-  if(buildMark)buildMark.textContent='BUILD 99';
+  if(buildMark)buildMark.textContent='BUILD 100';
 })();
 </script>
 '''
@@ -309,7 +300,7 @@ def living_robot_public_visual96_html(*, static_mode: bool = False) -> str:
     """Presentation-fit layer only; QCDS/Robotics inference is unchanged."""
     html = _base_html(static_mode=static_mode)
     if "</style>" not in html or "</body>" not in html:
-        raise RuntimeError("public shell changed; BUILD 99 cannot attach safely")
+        raise RuntimeError("public shell changed; BUILD 100 cannot attach safely")
     html = html.replace("</style>", _CSS + "\n</style>", 1)
     return html.replace("</body>", _SCRIPT + "\n</body>", 1)
 
