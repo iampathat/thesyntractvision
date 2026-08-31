@@ -5,9 +5,10 @@ import re
 def test_readme_keeps_easy_entry_and_full_architecture_depth() -> None:
     readme = Path("README.md").read_text(encoding="utf-8")
 
-    # The easy door must remain.
+    # The easy door must remain, while the current public naming may evolve.
     assert "## Start in 60 seconds" in readme
-    assert "Advanced Logical Space Lab" in readme
+    assert "**Advanced**" in readme
+    assert "full builder, probes, explicit evidence" in readme
     assert "START_HERE.md" in readme
 
     # The README describes the architecture, not the development diary.
@@ -17,13 +18,16 @@ def test_readme_keeps_easy_entry_and_full_architecture_depth() -> None:
 
     # The easy door must never replace the architecture behind it.
     required_sections = (
+        "## Visual Logical Robot — see the architecture before reading it",
         "## One intelligence, many bodies",
+        "### Unified composition boundary: `SyntractSystem`",
         "## Oracle-space topology: session, external and central",
         "## How QCDS works",
         "## An expanding Logical Space",
         "## Logical Universes and rule drift",
         "## Syntractfilter and the superintelligence direction",
         "## Quantum execution target",
+        "## Parallel Syntract composition",
         "## Browser-scale execution, QCDS-driven swarm and central fabric",
         "## Research status and claim boundary",
     )
