@@ -37,6 +37,20 @@ def test_build_badge_is_small_and_fixed_in_the_upper_right_corner() -> None:
     assert "pointer-events:none!important" in html
 
 
+def test_robotics_controls_are_docked_directly_below_the_route_grid() -> None:
+    html = living_robot_public_html(static_mode=True)
+    stage = html.split('<div class="publicRoboticsStage">', 1)[1].split('</aside>', 1)[0]
+
+    canvas_pos = stage.index('id="q75Canvas"')
+    tools_pos = stage.index('<div class="publicRoboticsTools">')
+    panel_pos = stage.index('<aside class="publicRobotPanel">')
+    assert canvas_pos < tools_pos < panel_pos
+    assert 'grid-template-areas:"canvas panel" "tools panel"' in html
+    assert 'grid-template-areas:"canvas" "tools" "panel"' in html
+    assert 'overflow-x:auto' in html
+    assert '-webkit-overflow-scrolling:touch' in html
+
+
 def test_visual_robot_explains_reality_oracles_qcds_syntract_and_body() -> None:
     html = living_robot_public_html(static_mode=True)
 
