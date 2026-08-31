@@ -8,7 +8,7 @@ def test_public_surface_exposes_three_parallel_syntract_demos():
     assert int(PUBLIC_BUILD) >= 63
     assert 'data-public-view="syntract"' in html
     assert "SYNTRACT COMPOSITION · PARALLEL QCDS" in html
-    assert html.count('data-syntract-demo="') == 3
+    assert html.count('<button type="button" data-syntract-demo="') == 3
     assert "DNA + protein + cell + patient + drug" in html
     assert "person + phone data + car + camera + timeline + witness" in html
     assert "robot + environment + mission + safety rules + people" in html
