@@ -1,0 +1,209 @@
+name: One-time README refresh
+
+on:
+  push:
+    paths:
+      - '.github/workflows/readme_refresh_20260831.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  refresh-readme:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update README additively
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('README.md')
+          text = path.read_text(encoding='utf-8')
+
+          def replace_once(old: str, new: str, label: str) -> None:
+              global text
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected exactly one anchor, found {count}')
+              text = text.replace(old, new, 1)
+
+          old_public = '''The public playground gives you several doors into the same architecture:
+
+- **Quick experiments** — Biology, Robotics, Materials, Software or Surprise Me.
+- **Swedish Law** — a substantial specialized Logical Robot over a source-attributed housing-law Logical Universe.
+- **Advanced Logical Space Lab** — the full builder, probes, explicit evidence, observations, guardrails and session sandbox.
+
+The quick experiments are not a separate demo engine. They prefill the same Logical Space fields and call the same `qcds_fabric` core path used by the advanced lab.
+'''
+          new_public = '''The public playground now opens with a **Visual Logical Robot** and gives you five doors into the same QCDS / Syntract architecture:
+
+- **Visual Logical Robot** — draw or erase obstacles and watch the same QCDS/Syntract system re-infer a shortest coherent route as the represented world changes.
+- **Try QCDS** — Biology, Robotics, Materials, Software or Surprise Me as small inspectable Logical Spaces.
+- **Syntracts** — run several complete bound Syntracts as parallel QCDS branches, re-enter their full TruthDistributions into one joint Logical Space, and bind a higher-order Syntract.
+- **Legal Robot** — a substantial specialized Logical Robot over a source-attributed Swedish housing-law Logical Universe.
+- **Advanced** — the full builder, probes, explicit evidence, observations, guardrails and session sandbox.
+
+These are capability surfaces around the same system, not separate intelligences. Quick QCDS experiments prefill the same Logical Space fields and call the same `qcds_fabric` core path used by the advanced lab. The Visual Logical Robot enters through `SyntractSystem` and its existing `FabricLayer`; it does not use a separate browser pathfinder or a second JavaScript QCDS implementation.
+'''
+          replace_once(old_public, new_public, 'public surface')
+
+          visual_anchor = '''See [`LIVING_LOGICAL_ROBOT.md`](LIVING_LOGICAL_ROBOT.md).
+
+---
+
+## The Living Logical Space
+'''
+          visual_section = '''See [`LIVING_LOGICAL_ROBOT.md`](LIVING_LOGICAL_ROBOT.md).
+
+---
+
+## Visual Logical Robot — see the architecture before reading it
+
+The public front door is deliberately concrete: a small robot moves from **A** to **B** while you change the represented world by drawing or erasing obstacle cells.
+
+```text
+finger / mouse changes the world
+        ↓
+drawn cells become explicit obstacle oracles
+        ↓
+8 binary QCDS Conditions represent up to 2^8 = 256 position states
+        ↓
+QCDS re-infers the viable route space
+        ↓
+TruthDistribution / shortest surviving route family
+        ↓
+route Syntract
+        ↓
+one representative route is manifested by the visual robot body
+```
+
+The default 20 × 12 world contains **240 represented cells**, encoded in an **8-bit QCDS position space** rather than pretending that every cell is an independent QCDS dimension. A drawn obstacle such as `(9,6)` becomes explicit oracle logic equivalent to `position != (9,6)`.
+
+The implementation enters through the same `SyntractSystem` boundary and `FabricLayer` used by the rest of the architecture. It preserves multiple equal shortest routes when they survive and binds the route family without claiming that one representative path is uniquely true. The faint alternative route preview is presentation of that already-inferred route family, not a second pathfinder.
+
+The browser version is a **classical emulation** of the represented/oracle-driven route-space idea. It does not claim that the browser is a physical quantum computer or that the current demonstration establishes quantum speedup.
+
+This makes the body boundary visible:
+
+```text
+VISUAL BODY                         PHYSICAL BODY
+finger / mouse → canvas             camera / lidar → motors
+                 \                 /
+                  SAME QCDS / SYNTRACT SYSTEM
+```
+
+Replacing the visual body with sensors and actuators changes input/output and oracle formation; it does not create a second intelligence architecture.
+
+---
+
+## The Living Logical Space
+'''
+          replace_once(visual_anchor, visual_section, 'visual logical robot section')
+
+          system_anchor = '''WebAssembly is an execution substrate for the packaged Python core, not a client-side rewrite of QCDS.
+
+---
+
+## Oracle-space topology: session, external and central
+'''
+          system_section = '''WebAssembly is an execution substrate for the packaged Python core, not a client-side rewrite of QCDS.
+
+### Unified composition boundary: `SyntractSystem`
+
+New integrations should normally enter through one system boundary:
+
+```python
+from qcds_fabric import SyntractSystem
+
+system = SyntractSystem()
+```
+
+`SyntractSystem` does **not** replace the QCDS core, redefine Syntract, or create a manager intelligence above QCDS. It is the composition boundary that connects the existing problem-to-Syntract path, `FabricLayer`, central topology, mission/runtime, swarm/evidence loops and replaceable Logical Robot bodies while fundamental inference remains in QCDS.
+
+The engineering rule is simple:
+
+> A new capability may add representations, oracles, tools, bodies, sensors, actions or I/O — but it must not quietly introduce a second inference engine beside QCDS.
+
+---
+
+## Oracle-space topology: session, external and central
+'''
+          replace_once(system_anchor, system_section, 'SyntractSystem section')
+
+          parallel_anchor = '''## Browser-scale execution, QCDS-driven swarm and central fabric
+'''
+          parallel_section = '''## Parallel Syntract composition
+
+A complete Syntract can re-enter QCDS without being collapsed to one answer. Parallel composition uses the existing QCDS topology rather than a voting or fusion engine:
+
+```text
+bound Syntract A ─► full TruthDistribution ─┐
+bound Syntract B ─► full TruthDistribution ─┼─► parallel QCDS branches
+bound Syntract C ─► full TruthDistribution ─┘
+                                            ↓
+                                   joint Logical Space
+                                            +
+                                  explicit cross-oracles
+                                            ↓
+                                           QCDS
+                                            ↓
+                                  higher-order Syntract
+```
+
+Each source branch retains its own uncertainty. Cross-domain relationships enter only through explicit cross-oracles. The implementation records that parallel execution and joint QCDS re-entry occurred, while **hard collapse remains false** and **no new inference/fusion engine is introduced**.
+
+The public **Syntracts** surface includes synthetic biomedicine, investigation and robotics examples. On mobile, the execution status and result are mounted directly beneath the example that was run so the user does not have to scroll past unrelated examples to find the higher-order result.
+
+---
+
+## Browser-scale execution, QCDS-driven swarm and central fabric
+'''
+          replace_once(parallel_anchor, parallel_section, 'parallel Syntract section')
+
+          old_central = '''`CentralQCDSFabric` provides the execution topology for multiple compatible oracle spaces. Independent rooms can execute in parallel; sequential stages can re-enter a prior TruthDistribution through `DistributionOracle`; hybrid execution can run sequential lanes concurrently. It does not silently merge incompatible Logical Universes or invent semantic mappings between them.
+'''
+          new_central = '''`CentralQCDSFabric` provides the execution topology for multiple compatible oracle spaces. Independent rooms can execute in parallel; sequential stages can re-enter a prior TruthDistribution through `DistributionOracle`; hybrid execution can run sequential lanes concurrently. It does not silently merge incompatible Logical Universes or invent semantic mappings between them.
+
+Here **parallel topology is semantic, while transport is substrate-dependent**. Native Python may execute independent branches concurrently with worker threads. Standard Pyodide/WebAssembly cannot normally create those OS threads, so the browser executes the same independent branch contracts deterministically on one thread. The Logical Spaces, oracle regimes, QCDS passes and resulting TruthDistributions are unchanged by that scheduling choice. A runtime thread failure also falls back to the same semantics-preserving transport rather than changing the inference model.
+'''
+          replace_once(old_central, new_central, 'threadless central fabric')
+
+          verifiable_anchor = '''- explicit emulation-projection provenance showing which active praxis dimensions were executed or projected out while Quantum Full Space remains unaffected.
+'''
+          verifiable_new = '''- explicit emulation-projection provenance showing which active praxis dimensions were executed or projected out while Quantum Full Space remains unaffected;
+- Visual Logical Robot routing through `SyntractSystem` / the existing `FabricLayer`, with a 20 × 12 grid represented inside an 8-bit (`2^8`) position space and drawn obstacles expressed as explicit oracles rather than browser pre-scoring;
+- shortest-route-family binding that can preserve several equal shortest routes while manifesting only one representative route through the visual body;
+- complete Syntract-to-Syntract parallel composition through existing QCDS branches, full TruthDistribution re-entry, explicit cross-oracles and higher-order Syntract binding — with no voting, hard collapse or separate fusion engine;
+- threadless Pyodide/WASM execution of logically parallel Central Fabric branches without constructing `ThreadPoolExecutor`, while native Python retains concurrent transport when available.
+'''
+          replace_once(verifiable_anchor, verifiable_new, 'verifiable list')
+
+          guide_anchor = '''| `src/qcds_fabric/problem.py` | problem → QCDS → Syntract path |
+| `src/qcds_fabric/fabric.py` | Fabric layer and rotation/stabilization boundary |
+'''
+          guide_new = '''| `src/qcds_fabric/problem.py` | problem → QCDS → Syntract path |
+| `src/qcds_fabric/syntract_system.py` | unified composition boundary for the same QCDS/Syntract system |
+| `src/qcds_fabric/fabric.py` | Fabric layer and rotation/stabilization boundary |
+| `src/qcds_fabric/robotics_route_qcds.py` | QCDS route-space capability used by the Visual Logical Robot |
+| `src/qcds_fabric/robotics_playground_system.py` | thin Visual Logical Robot / `SyntractSystem` bridge; not a second pathfinder |
+| `src/qcds_fabric/parallel_syntracts.py` | complete Syntract TruthDistributions → parallel QCDS → joint re-entry → higher-order Syntract |
+| `src/qcds_fabric/syntract_parallel_demos.py` | public synthetic demonstrations of parallel Syntract composition |
+'''
+          replace_once(guide_anchor, guide_new, 'repository guide')
+
+          path.write_text(text, encoding='utf-8')
+          PY
+
+          git diff --check
+          if git diff --quiet -- README.md; then
+            echo 'README already current; nothing to commit.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add README.md
+          git commit -m 'Update README for Visual Logical Robot and current Syntract system'
+          git push
