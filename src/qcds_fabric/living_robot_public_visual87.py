@@ -24,6 +24,29 @@ _CSS = r'''
 #q75Reset{inline-size:13.5em!important;min-inline-size:13.5em!important;max-inline-size:13.5em!important;box-sizing:border-box!important;text-align:center!important}
 #q75Reset.q90ReadyCue{transform:none!important;animation:q91ReadyGlow 1.15s ease-in-out infinite!important}
 @keyframes q91ReadyGlow{0%,100%{box-shadow:0 0 0 0 #8ce3b222}50%{box-shadow:0 0 0 7px #8ce3b226}}
+
+/* BUILD 95: Try QCDS is one local mobile interaction, not a long catalogue plus a remote result. */
+@media(max-width:700px){
+  body.publicViewQcds #try-logical-robot .inviteInner{padding:13px!important}
+  body.publicViewQcds #try-logical-robot .seedGrid{grid-template-columns:1fr!important;gap:6px!important;margin-top:11px!important}
+  body.publicViewQcds #try-logical-robot .seed{min-height:0!important;transform:none!important}
+  body.publicViewQcds #try-logical-robot .seed:not(.q95Active){display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"tag action" "title action"!important;align-items:center!important;padding:9px 10px!important;border-radius:11px!important;background:#071823!important}
+  body.publicViewQcds #try-logical-robot .seed:not(.q95Active) .seedTag{grid-area:tag!important;font-size:6.2px!important}
+  body.publicViewQcds #try-logical-robot .seed:not(.q95Active) h3{grid-area:title!important;margin:3px 10px 0 0!important;font-size:12px!important;line-height:1.22!important}
+  body.publicViewQcds #try-logical-robot .seed:not(.q95Active) p{display:none!important}
+  body.publicViewQcds #try-logical-robot .seed:not(.q95Active) button{grid-area:action!important;align-self:center!important;margin:0!important;padding:7px 9px!important;font-size:6.8px!important;white-space:nowrap!important}
+  body.publicViewQcds #try-logical-robot .seed.q95Active{display:flex!important;flex-direction:column!important;padding:13px!important;border-color:#72d8a0!important;background:linear-gradient(150deg,#0a241e,#071923)!important;box-shadow:0 0 0 1px #77dfa31c,0 12px 28px #0003!important}
+  body.publicViewQcds #try-logical-robot .seed.q95Active h3{font-size:15px!important;margin:5px 0!important}
+  body.publicViewQcds #try-logical-robot .seed.q95Active p{display:block!important;margin:0 0 9px!important}
+  body.publicViewQcds #try-logical-robot .seed.q95Active>button{align-self:flex-start!important;margin:0!important}
+  body.publicViewQcds #try-logical-robot .quickResult.q95Docked{width:100%!important;box-sizing:border-box!important;margin:10px 0 0!important;padding:10px!important;border-color:#41695b!important;background:#061712!important}
+  body.publicViewQcds #try-logical-robot .quickResult.q95Docked .q69Trace{gap:6px!important;margin-top:8px!important}
+  body.publicViewQcds #try-logical-robot .quickResult.q95Docked .q69Step{padding:10px 11px!important;border-radius:10px!important}
+  body.publicViewQcds #try-logical-robot .quickResult.q95Docked .q69Inspect{padding:11px!important;margin-top:8px!important}
+  body.publicViewQcds #try-logical-robot .inviteBottom{gap:5px!important;margin-top:8px!important}
+  body.publicViewQcds #try-logical-robot .inviteBottom button{padding:7px 8px!important;font-size:6.7px!important}
+  body.publicViewQcds #try-logical-robot .inviteBottom span{width:100%;font-size:6.5px!important;line-height:1.4!important}
+}
 @media(max-width:850px){.visualBodyCompare{grid-template-columns:1fr}.visualBodyCore{order:-1;text-align:left}}
 @media(max-width:560px){.visualNextSteps button{flex:1}.publicBuildMark{top:4px!important;right:5px!important;font-size:5px!important;padding:2px 4px!important;opacity:.56!important}}
 '''
@@ -44,6 +67,83 @@ document.addEventListener('click',event=>{
   const trigger=event.target?.closest?.('[data-public-view="qcds"],[data-qcds-top="1"]');
   if(!trigger)return;
   requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:'auto'}));
+});
+
+/* BUILD 95: keep the selected Try QCDS example and its real QCDS result together on mobile.
+   This is presentation only: runSeed38/q67Render still execute and render the existing QCDS result. */
+window.addEventListener('DOMContentLoaded',()=>{
+  const root=document.getElementById('try-logical-robot');
+  const grid=root?.querySelector('.seedGrid');
+  const result=document.getElementById('quickResult');
+  if(!root||!grid||!result||typeof window.trySeed!=='function')return;
+
+  const home=document.createComment('BUILD95 quickResult home');
+  result.parentNode.insertBefore(home,result);
+  const mobile=()=>window.matchMedia('(max-width:700px)').matches;
+  const seedButtons=()=>Array.from(root.querySelectorAll('.seed button'));
+  let activeName=null;
+
+  function q95CardFor(name){
+    const needle="trySeed('"+name+"')";
+    const button=seedButtons().find(btn=>(btn.getAttribute('onclick')||'').includes(needle));
+    return button?.closest('.seed')||null;
+  }
+  function q95RestoreHome(){
+    if(home.parentNode&&result.parentNode!==home.parentNode)home.parentNode.insertBefore(result,home.nextSibling);
+    result.classList.remove('q95Docked');
+  }
+  function q95Dock(name){
+    activeName=name;
+    const card=q95CardFor(name);
+    root.querySelectorAll('.seed').forEach(seed=>seed.classList.toggle('q95Active',seed===card));
+    if(!mobile()||!card){q95RestoreHome();return}
+    const button=card.querySelector('button');
+    if(button){button.insertAdjacentElement('afterend',result);result.classList.add('q95Docked')}
+  }
+  function q95QuietBoxScroll(fn){
+    const own=result.scrollIntoView;
+    try{result.scrollIntoView=()=>{};return fn()}
+    finally{
+      if(own)result.scrollIntoView=own;
+      else delete result.scrollIntoView;
+    }
+  }
+  function q95Status(message,kind=''){
+    result.textContent='';
+    const title=document.createElement('div');title.className='quickResultTitle';title.textContent='QCDS CORE · WORKING';
+    const text=document.createElement('div');text.className='quickResultText';text.id='quickResultText';text.textContent=message;
+    const bars=document.createElement('div');bars.className='quickResultBars';bars.id='quickResultBars';
+    result.append(title,text,bars);
+    result.classList.add('visible');
+    if(kind==='warn')result.setAttribute('data-status','warn');else result.removeAttribute('data-status');
+  }
+
+  /* Remove the old repeated result-scrolls. The result now appears where the tap happened. */
+  if(typeof window.q48QuickStatus==='function')window.q48QuickStatus=q95Status;
+  if(typeof window.q67Render==='function'){
+    const baseRender=window.q67Render;
+    window.q67Render=function(data){return q95QuietBoxScroll(()=>baseRender(data))};
+  }
+
+  const baseTry=window.trySeed;
+  window.trySeed=function(name){
+    let selected=name;
+    if(name==='surprise' && typeof BUILD38_SEEDS!=='undefined'){
+      const keys=Object.keys(BUILD38_SEEDS);
+      selected=keys[Math.floor(Math.random()*keys.length)];
+    }
+    q95Dock(selected);
+    if(mobile()){
+      result.classList.remove('visible');
+      result.textContent='';
+    }
+    return baseTry(selected);
+  };
+
+  window.addEventListener('resize',()=>{
+    if(mobile()&&activeName)q95Dock(activeName);
+    else q95RestoreHome();
+  });
 });
 
 /* READY cue semantics: a changed obstacle world is ready to replay from A.
