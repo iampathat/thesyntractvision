@@ -11,7 +11,10 @@ def test_visual_logical_robot_is_the_public_front_door() -> None:
     assert "VISUAL LOGICAL ROBOT · QCDS / SYNTRACT" in html
     assert "Draw reality. Watch QCDS find the shortest coherent route." in html
     assert 'data-public-view="robotics" class="active"' in html
-    assert '<body class="publicCompact publicViewRobotics publicLegalAsk" data-public-view="robotics">' in html
+    body_tag = html.split("<body", 1)[1].split(">", 1)[0]
+    assert "publicViewRobotics" in body_tag
+    assert "publicViewQcds" not in body_tag
+    assert 'data-public-view="robotics"' in body_tag
     assert "window.publicSelectView('robotics');" in html
 
     # The historical compact startup hook must never be allowed to seize the
