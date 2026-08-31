@@ -94,6 +94,15 @@ def validate_public_site(site: str | Path) -> None:
     if marker not in html:
         errors.append(f"current public build marker missing: BUILD {PUBLIC_BUILD}")
 
+    if '<body class="publicCompact publicViewRobotics publicLegalAsk" data-public-view="robotics">' not in html:
+        errors.append("Visual Logical Robot is not the first-paint public view")
+    if "window.publicSelectView('robotics');" not in html:
+        errors.append("final public router does not explicitly start Visual Logical Robot")
+    if "publicSetLegalContext('jb_unauthorized_sublet_forfeiture_2026.json');publicSelectView('qcds')" in html:
+        errors.append("legacy TRY QCDS DOMContentLoaded startup hook survived into public artifact")
+    if "active?.dataset.publicView||'robotics'" in html:
+        errors.append("public startup still depends on inherited active-button state")
+
     for element_id in CRITICAL_IDS:
         count = len(re.findall(rf'id="{re.escape(element_id)}"', html))
         if count != 1:
@@ -130,6 +139,7 @@ def validate_public_site(site: str | Path) -> None:
         "publicTechnicalDetailsOpen",
         "header.publicTechnicalDetailsOpen{z-index:160!important}",
         "same route run; never infer anything in the presentation layer",
+        "one startup source. Visual Logical Robot is always the public front door",
     ):
         if phrase not in html:
             errors.append(f"public HTML missing contract phrase: {phrase}")
@@ -165,7 +175,7 @@ def validate_public_site(site: str | Path) -> None:
             errors.append(f"public Python package missing: {path}")
 
     if errors:
-        raise RuntimeError("public release guard failed:\n- " + "\n- ".join(errors))
+        raise RuntimeError("public release guard failed:\n- " + "; ".join(errors))
 
 
 def main() -> int:
