@@ -41,7 +41,7 @@ jobs:
           python-version: "3.12"
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e '.[test]'
-      - name: QCDS architecture, unified system, parallel Syntracts, Robotics Playground and public ingress smoke
+      - name: QCDS architecture, unified system, Visual Logical Robot and public ingress smoke
         run: >-
           pytest -q
           tests/test_build41_architecture_guardrails.py
@@ -65,6 +65,7 @@ jobs:
           tests/test_build80_robotics_gesture_batching.py
           tests/test_build81_robotics_route_family_preview.py
           tests/test_build82_technical_details_layering.py
+          tests/test_build87_visual_logical_robot_frontdoor.py
           tests/test_legal_question_ingress.py
           tests/test_public_compact_surface.py
           tests/test_public_legal_question49.py
