@@ -4,15 +4,16 @@ from .living_robot_public_robotics79 import living_robot_public_robotics79_html 
 
 
 _CSS = r'''
-/* BUILD 80: let the human finish a gesture before showing the emulation overlay. */
+/* BUILD 80: let the human finish drawing before showing the emulation overlay. */
 .publicRobotCanvasWrap.qcdsEditing canvas{opacity:1}.publicRobotCanvasWrap.qcdsEditing .publicRobotHint{opacity:1}.publicRobotCanvasWrap.qcdsPlanning .publicRobotEmulating{pointer-events:auto}
 '''
 
 _SCRIPT = r'''
 <script>
-/* BUILD 80: one drawing gesture = one world edit = one QCDS re-inference. */
+/* BUILD 80: one settled drawing edit = one QCDS re-inference. */
 Q75.editing=false;
 Q75.editDirty=false;
+Q75.editSettleTimer=null;
 
 function q80SetEditing(active){
   Q75.editing=!!active;
@@ -20,6 +21,8 @@ function q80SetEditing(active){
 }
 function q80BeginEdit(){
   if(Q75.planning)return false;
+  clearTimeout(Q75.editSettleTimer);
+  Q75.editSettleTimer=null;
   Q75.editDirty=false;
   q80SetEditing(true);
   return true;
@@ -32,14 +35,20 @@ function q80MarkWorldDirty(){
     clearTimeout(Q75.planTimer);
     q79InvalidateRoute();
   }
-  q75Status('EDITING WORLD · release to run QCDS on the new oracle space…');
+  q75Status('EDITING WORLD · keep drawing · QCDS waits until you finish…');
   q75DrawWorld();
 }
 function q80EndEdit(){
   const changed=Q75.editDirty;
   q80SetEditing(false);
   Q75.editDirty=false;
-  if(changed)q75SchedulePlan();
+  if(!changed)return;
+  q75Status('WORLD EDIT READY · waiting briefly for another stroke…');
+  clearTimeout(Q75.editSettleTimer);
+  Q75.editSettleTimer=setTimeout(()=>{
+    Q75.editSettleTimer=null;
+    q75SchedulePlan();
+  },220);
 }
 
 q75ApplyCell=function(x,y){
@@ -80,7 +89,7 @@ q75BindCanvas=function(){
 };
 
 q75Tick=function(){
-  if(Q75.editing||Q75.planning||!Q75.running||!Q75.result?.reachable||Q75.path.length<2)return;
+  if(Q75.editing||Q75.editSettleTimer||Q75.planning||!Q75.running||!Q75.result?.reachable||Q75.path.length<2)return;
   const currentKey=q75Key(...Q75.robot);
   let idx=Q75.path.findIndex(c=>q75Key(...c)===currentKey);
   if(idx<0){q75SchedulePlan();return}
