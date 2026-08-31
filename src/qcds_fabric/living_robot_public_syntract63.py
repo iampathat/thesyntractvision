@@ -7,7 +7,10 @@ _CSS = r'''
 /* Parallel Syntract capability surface. */
 body.publicCompact:not(.publicViewSyntract) #public-syntracts{display:none!important}
 .publicSyntracts{max-width:1800px;margin:10px auto 0;padding:0 14px}.publicSyntractInner{border:1px solid #3b5d72;background:linear-gradient(145deg,#081a25,#071820);border-radius:16px;padding:15px;box-shadow:0 14px 40px #0003}.publicSyntractHead{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}.publicSyntractKicker{font-size:7px;letter-spacing:.14em;text-transform:uppercase;color:#9cc9ff}.publicSyntractHead h2{font-size:21px;margin:4px 0 6px}.publicSyntractHead p{font-size:8px;line-height:1.55;color:#8ca7b6;max-width:1100px;margin:0}.publicSyntractFlow{margin-top:10px;border:1px solid #29495d;background:#06141d;border-radius:10px;padding:9px;font-size:7.5px;line-height:1.55;color:#7896a6}.publicSyntractFlow strong{color:#dceef8}.publicSyntractGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:11px}.publicSyntractCard{border:1px solid #29495d;background:#06131c;border-radius:12px;padding:11px;display:flex;flex-direction:column;min-height:220px}.publicSyntractCard .k{font-size:6.5px;letter-spacing:.12em;text-transform:uppercase;color:#88b9d8}.publicSyntractCard h3{font-size:14px;line-height:1.28;margin:5px 0 6px}.publicSyntractCard p{font-size:7.5px;line-height:1.5;color:#819eae;margin:0}.publicSyntractInputs{display:flex;flex-wrap:wrap;gap:5px;margin:10px 0}.publicSyntractChip{border:1px solid #31536b;background:#0a1c28;border-radius:999px;padding:5px 7px;font-size:6.5px;color:#b9d9e9}.publicSyntractCard button{margin-top:auto;padding:9px 10px;font-size:8px;background:#d9f8e4;color:#082117;border-color:#d9f8e4}.publicSyntractCard button:disabled{opacity:.55;cursor:wait}.publicSyntractStatus{margin-top:10px;border:1px solid #29495d;background:#071722;border-radius:10px;padding:9px 10px;font-size:8px;line-height:1.5;color:#8faab8}.publicSyntractStatus.good{border-color:#35694b;color:#b7ecc8;background:#081d15}.publicSyntractStatus.warn{border-color:#765f32;color:#efc986;background:#211b0d}.publicSyntractResult{display:none;margin-top:10px;border:1px solid #3c6078;background:linear-gradient(150deg,#0b2130,#071720);border-radius:13px;padding:12px}.publicSyntractResult.visible{display:block}.publicSyntractResultHead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.publicSyntractResultHead h3{font-size:18px;margin:3px 0 4px}.publicSyntractResultHead p{font-size:7.5px;color:#84a0af;line-height:1.5;margin:0}.publicSyntractBadge{border:1px solid #3c6750;background:#0b2118;color:#b7ecc8;border-radius:999px;padding:6px 8px;font-size:6.5px;white-space:nowrap}.publicSyntractMetrics{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:10px}.publicSyntractMetric{border:1px solid #29495d;background:#06141d;border-radius:9px;padding:8px}.publicSyntractMetric b{display:block;font-size:6px;letter-spacing:.1em;text-transform:uppercase;color:#7fa5ba}.publicSyntractMetric strong{display:block;font-size:11px;color:#e4f4fb;margin-top:4px}.publicSyntractStages{display:grid;grid-template-columns:1fr auto 1fr auto 1.15fr;gap:7px;align-items:stretch;margin-top:10px}.publicSyntractStage{border:1px solid #29495d;background:#06131c;border-radius:10px;padding:9px}.publicSyntractStage b{font-size:6.5px;letter-spacing:.1em;text-transform:uppercase;color:#8fc5e8}.publicSyntractStage .rows{margin-top:6px;font-size:7px;line-height:1.5;color:#90a9b7}.publicSyntractStage .rows div{border-top:1px solid #183142;padding:4px 0}.publicSyntractStage .rows div:first-child{border-top:0}.publicSyntractArrow{display:flex;align-items:center;justify-content:center;color:#7fa6bb;font-size:16px}.publicSyntractHigher{border-color:#42694f;background:#071b13}.publicSyntractHigher b{color:#9fdbb4}.publicSyntractLinks{margin-top:9px;border-top:1px solid #214052;padding-top:8px;font-size:7px;line-height:1.5;color:#7896a6}.publicSyntractLinks strong{color:#dceef8}.publicSyntractNotice{margin-top:7px;font-size:6.8px;line-height:1.45;color:#6f8d9e}
-@media(max-width:1000px){.publicSyntractGrid{grid-template-columns:1fr}.publicSyntractStages{grid-template-columns:1fr}.publicSyntractArrow{transform:rotate(90deg)}.publicSyntractMetrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:700px){.publicSyntracts{padding:0 8px}.publicSyntractResultHead{display:block}.publicSyntractBadge{display:inline-block;margin-top:7px}}
+/* BUILD 94: on touch/mobile, the result belongs to the card/action that created it. */
+.publicSyntractMobileResultSlot{display:none}
+@media(max-width:1000px){.publicSyntractGrid{grid-template-columns:1fr}.publicSyntractStages{grid-template-columns:1fr}.publicSyntractArrow{transform:rotate(90deg)}.publicSyntractMetrics{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.publicSyntracts{padding:0 8px}.publicSyntractResultHead{display:block}.publicSyntractBadge{display:inline-block;margin-top:7px}.publicSyntractCard{min-height:0}.publicSyntractCard.q94ActiveRun{border-color:#579178;background:linear-gradient(155deg,#0a211d,#07161c);box-shadow:0 0 0 1px #83deb11c}.publicSyntractMobileResultSlot{display:block;margin-top:8px}.publicSyntractMobileResultSlot .publicSyntractStatus{margin-top:0}.publicSyntractMobileResultSlot .publicSyntractResult{margin-top:8px;scroll-margin-top:150px}.publicSyntractStatus.q94Working{border-color:#4d786d;background:#0a211c;color:#c4ecd3}.publicSyntractStatus.q94Working:before{content:'QCDS';display:inline-block;margin-right:7px;border:1px solid #5f9477;border-radius:999px;padding:2px 5px;font-size:5.5px;letter-spacing:.1em;color:#9ee2b5}.publicSyntractCard.q94ActiveRun>button{border-color:#9ce6b6;box-shadow:0 0 0 3px #8ce3b212}}
 '''
 
 _SECTION = r'''
@@ -66,6 +69,31 @@ function q63Metric(label,value){
  const box=document.createElement('div');box.className='publicSyntractMetric';
  const b=document.createElement('b');b.textContent=label;const s=document.createElement('strong');s.textContent=String(value);box.append(b,s);return box;
 }
+function q94Mobile(){return window.matchMedia('(max-width:700px)').matches}
+function q94RestoreResultHome(){
+ if(q94Mobile())return;
+ const grid=document.querySelector('.publicSyntractGrid'),status=document.getElementById('publicSyntractStatus'),result=document.getElementById('publicSyntractResult');
+ if(grid&&status&&result){grid.after(status,result)}
+ document.querySelectorAll('.publicSyntractCard').forEach(card=>card.classList.remove('q94ActiveRun'));
+}
+function q94PrepareMobileResult(demoId){
+ const button=document.querySelector('[data-syntract-demo="'+demoId+'"]'),card=button?.closest('.publicSyntractCard');
+ const status=document.getElementById('publicSyntractStatus'),result=document.getElementById('publicSyntractResult');
+ document.querySelectorAll('.publicSyntractCard').forEach(item=>item.classList.toggle('q94ActiveRun',item===card));
+ if(!q94Mobile()||!button||!card||!status||!result)return;
+ let slot=card.querySelector('.publicSyntractMobileResultSlot');
+ if(!slot){slot=document.createElement('div');slot.className='publicSyntractMobileResultSlot';button.insertAdjacentElement('afterend',slot)}
+ result.classList.remove('visible');result.textContent='';slot.append(status,result);
+ status.className='publicSyntractStatus q94Working';status.textContent='COMPOSING SYNTRACTS… Binding the selected Syntracts through QCDS.';
+ requestAnimationFrame(()=>slot.scrollIntoView({behavior:'smooth',block:'nearest'}));
+}
+function q94RevealMobileResult(){
+ if(!q94Mobile())return;
+ const result=document.getElementById('publicSyntractResult'),status=document.getElementById('publicSyntractStatus');
+ const target=result?.classList.contains('visible')?result:status;
+ if(target)requestAnimationFrame(()=>target.scrollIntoView({behavior:'smooth',block:'start'}));
+}
+window.addEventListener('resize',q94RestoreResultHome);
 function q63Render(result){
  const root=document.getElementById('publicSyntractResult');if(!root)return;root.textContent='';
  const head=document.createElement('div');head.className='publicSyntractResultHead';
@@ -93,13 +121,14 @@ function q63Render(result){
  root.classList.add('visible');
 }
 window.publicRunSyntractDemo=async function(demoId){
+ q94PrepareMobileResult(demoId);
  document.querySelectorAll('[data-syntract-demo]').forEach(btn=>btn.disabled=true);
- q63Status('Binding component Syntracts and entering them into parallel QCDS…');
+ q63Status('Binding component Syntracts and entering them into parallel QCDS…',q94Mobile()?'q94Working':'');
  try{
    const result=await q63WorkerRun({demo_id:demoId});
    q63Status('Complete · '+result.parallel_branch_count+' Syntracts → parallel QCDS → '+result.candidate_binary_space+' joint space → higher-order Syntract.','good');
-   q63Render(result);
- }catch(e){q63Status('Syntract composition failed: '+(e.message||String(e)),'warn')}
+   q63Render(result);q94RevealMobileResult();
+ }catch(e){q63Status('Syntract composition failed: '+(e.message||String(e)),'warn');q94RevealMobileResult()}
  finally{document.querySelectorAll('[data-syntract-demo]').forEach(btn=>btn.disabled=false)}
 };
 </script>
