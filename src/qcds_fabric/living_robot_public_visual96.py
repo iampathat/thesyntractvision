@@ -3,6 +3,25 @@ from __future__ import annotations
 from .living_robot_public_visual87 import living_robot_public_visual87_html as _base_html
 
 
+_BAD_QCDS_INGRESS = r'''/* BUILD 92: TRY QCDS and UNDERSTAND QCDS are true view ingress points.
+   Never preserve a deep scroll position from the previous public view. */
+document.addEventListener('click',event=>{
+  const trigger=event.target?.closest?.('[data-public-view="qcds"],[data-qcds-top="1"]');
+  if(!trigger)return;
+  requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:'auto'}));
+});'''
+
+_FIXED_QCDS_INGRESS = r'''/* BUILD 101: only explicit QCDS ingress buttons reset the view to the top.
+   The body carries data-public-view="qcds" while this view is active, so a broad
+   closest([data-public-view=qcds]) selector would incorrectly catch every click
+   inside TRY QCDS, including native accordion summaries. */
+document.addEventListener('click',event=>{
+  const trigger=event.target?.closest?.('button[data-public-view="qcds"],button[data-qcds-top="1"]');
+  if(!trigger)return;
+  requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:'auto'}));
+});'''
+
+
 _CSS = r'''
 /* BUILD 96: presentation-fit desktop Robotics. Keep the whole demo moment visible. */
 @media(min-width:1051px){
@@ -290,7 +309,7 @@ _SCRIPT = r'''
   });
 
   const buildMark=document.querySelector('.publicBuildMark');
-  if(buildMark)buildMark.textContent='BUILD 100';
+  if(buildMark)buildMark.textContent='BUILD 101';
 })();
 </script>
 '''
@@ -299,8 +318,11 @@ _SCRIPT = r'''
 def living_robot_public_visual96_html(*, static_mode: bool = False) -> str:
     """Presentation-fit layer only; QCDS/Robotics inference is unchanged."""
     html = _base_html(static_mode=static_mode)
+    if _BAD_QCDS_INGRESS not in html:
+        raise RuntimeError("QCDS ingress listener changed; BUILD 101 cannot scope top-scroll safely")
+    html = html.replace(_BAD_QCDS_INGRESS, _FIXED_QCDS_INGRESS, 1)
     if "</style>" not in html or "</body>" not in html:
-        raise RuntimeError("public shell changed; BUILD 100 cannot attach safely")
+        raise RuntimeError("public shell changed; BUILD 101 cannot attach safely")
     html = html.replace("</style>", _CSS + "\n</style>", 1)
     return html.replace("</body>", _SCRIPT + "\n</body>", 1)
 
