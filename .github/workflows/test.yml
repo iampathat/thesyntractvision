@@ -61,6 +61,7 @@ jobs:
           tests/test_build72_inspectable_qcds_surface.py
           tests/test_build75_robotics_playground.py
           tests/test_build78_public_router.py
+          tests/test_build79_robotics_replan_lock.py
           tests/test_legal_question_ingress.py
           tests/test_public_compact_surface.py
           tests/test_public_legal_question49.py
