@@ -8,7 +8,7 @@ from typing import Sequence
 from .living_robot_public_robotics77 import living_robot_public_robotics77_html as _base_html
 
 
-PUBLIC_BUILD = "77"
+PUBLIC_BUILD = "78"
 
 _FACTS_CSS = r'''
 /* BUILD 65: playground facts are metadata, not action cards. */
@@ -20,6 +20,67 @@ _FACTS_CSS = r'''
 .invitePromise span{display:block;color:#89a99a!important;font-size:7.5px!important;line-height:1.45;margin-top:4px!important}
 @media(max-width:1050px){.invitePromise{min-width:0;margin-top:14px}}
 @media(max-width:620px){.invitePromise{display:flex;flex-direction:column;border-bottom:0}.invitePromise div,.invitePromise div:first-child{border-left:0!important;border-top:1px solid #31584d!important;padding:10px 6px 10px 22px!important}.invitePromise div:first-child{border-top:0!important}.invitePromise div:before{left:7px;top:15px}.invitePromise b{font-size:7px!important}.invitePromise span{font-size:7.5px!important}}
+'''
+
+_ROUTER_CSS = r'''
+/* BUILD 78: one top menu, one visible work surface. */
+body.publicCompact #public-syntract-teaser,
+body.publicCompact .publicCapabilityStrip{display:none!important}
+body.publicCompact #try-logical-robot,
+body.publicCompact #public-legal-question,
+body.publicCompact #swedish-legal-robot,
+body.publicCompact #public-robotics,
+body.publicCompact #public-syntracts,
+body.publicCompact>.hero,
+body.publicCompact>.layout,
+body.publicCompact>.learningMoment,
+body.publicCompact>.understandBuild,
+body.publicCompact>.domainLab,
+body.publicCompact>.spaceBuilderWrap,
+body.publicCompact>.sessionSandbox{display:none!important}
+body.publicCompact.publicViewQcds #try-logical-robot{display:block!important}
+body.publicCompact.publicViewLegal #public-legal-question,
+body.publicCompact.publicViewLegal #swedish-legal-robot{display:block!important}
+body.publicCompact.publicViewRobotics #public-robotics{display:block!important}
+body.publicCompact.publicViewSyntract #public-syntracts{display:block!important}
+body.publicCompact.publicViewAdvanced>.hero{display:block!important}
+body.publicCompact.publicViewAdvanced>.layout{display:grid!important}
+body.publicCompact.publicViewAdvanced>.learningMoment,
+body.publicCompact.publicViewAdvanced>.understandBuild,
+body.publicCompact.publicViewAdvanced>.domainLab,
+body.publicCompact.publicViewAdvanced>.spaceBuilderWrap,
+body.publicCompact.publicViewAdvanced>.sessionSandbox{display:block!important}
+.publicCompactBar{position:sticky;top:0;z-index:80;background:#06131dcc;padding-top:7px;padding-bottom:7px;backdrop-filter:blur(10px)}
+'''
+
+_ROUTER_SCRIPT = r'''
+<script>
+/* BUILD 78: final router. Older feature wrappers may add surfaces, but they do not own navigation. */
+(function(){
+  const VIEW_CLASS={
+    qcds:'publicViewQcds',
+    legal:'publicViewLegal',
+    robotics:'publicViewRobotics',
+    syntract:'publicViewSyntract',
+    advanced:'publicViewAdvanced'
+  };
+  const ALL=Object.values(VIEW_CLASS);
+  window.publicSelectView=function(requested){
+    const view=Object.prototype.hasOwnProperty.call(VIEW_CLASS,requested)?requested:'qcds';
+    ALL.forEach(name=>document.body.classList.remove(name));
+    document.body.classList.add(VIEW_CLASS[view]);
+    document.body.dataset.publicView=view;
+    document.querySelectorAll('[data-public-view]').forEach(btn=>btn.classList.toggle('active',btn.dataset.publicView===view));
+    if(view==='legal' && typeof window.publicSelectLegalMode==='function'){
+      const hasLegalMode=document.body.classList.contains('publicLegalAsk')||document.body.classList.contains('publicLegalExamples')||document.body.classList.contains('publicLegalDetails');
+      if(!hasLegalMode)window.publicSelectLegalMode('ask',false);
+    }
+    if(view==='robotics' && typeof window.q75Activate==='function')window.setTimeout(window.q75Activate,0);
+  };
+  const active=document.querySelector('[data-public-view].active');
+  window.publicSelectView(active?.dataset.publicView||'qcds');
+})();
+</script>
 '''
 
 
@@ -56,9 +117,10 @@ def living_robot_public_html(*, static_mode: bool = False) -> str:
         if old not in html:
             raise RuntimeError(f"playground fact changed; BUILD {PUBLIC_BUILD} cannot restyle it safely")
         html = html.replace(old, new, 1)
-    if "</style>" not in html:
-        raise RuntimeError("public style block missing; playground facts cannot be restyled")
-    html = html.replace("</style>", _FACTS_CSS + "\n</style>", 1)
+    if "</style>" not in html or "</body>" not in html:
+        raise RuntimeError("public shell missing; stable router cannot attach")
+    html = html.replace("</style>", _FACTS_CSS + "\n" + _ROUTER_CSS + "\n</style>", 1)
+    html = html.replace("</body>", _ROUTER_SCRIPT + "\n</body>", 1)
     return html
 
 
