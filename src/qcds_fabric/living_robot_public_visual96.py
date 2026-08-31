@@ -3,6 +3,7 @@ from __future__ import annotations
 from .living_robot_public_visual87 import living_robot_public_visual87_html as _base_html
 
 
+# Stable public presentation layer: viewport-fit only, no inference changes.
 _CSS = r'''
 /* BUILD 96: presentation-fit desktop Robotics. Keep the whole demo moment visible. */
 @media(min-width:1051px){
