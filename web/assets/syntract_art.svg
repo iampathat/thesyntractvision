@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Syntract artwork</title>
+  <desc id="desc">Geometric Syntract artwork formed as an interlinked isometric logical structure.</desc>
+  <g fill="none" stroke="#8CE3B2" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M32 6.5 53 18.5v27L32 57.5 11 45.5v-27Z"/>
+    <path d="M11 18.5 32 30.5 53 18.5"/>
+    <path d="M32 6.5v24"/>
+    <path d="M32 57.5v-27"/>
+    <path d="M11 45.5 23 38.6v-12.2"/>
+    <path d="M53 45.5 41 38.6v-12.2"/>
+    <path d="M23 38.6 32 43.8 41 38.6"/>
+  </g>
+</svg>
