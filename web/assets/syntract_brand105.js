@@ -1,4 +1,4 @@
-/* BUILD 105: presentation only. No QCDS execution is touched. */
+/* BUILD 106: presentation only. No QCDS execution is touched. */
 (function(){
   function img(cls){
     const node=document.createElement('img');
@@ -36,7 +36,7 @@
     }
 
     const build=document.querySelector('.publicBuildMark');
-    if(build)build.textContent='BUILD 105';
+    if(build)build.textContent='BUILD 106';
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});
