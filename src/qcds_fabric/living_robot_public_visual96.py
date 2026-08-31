@@ -46,6 +46,28 @@ _CSS = r'''
   }
 }
 
+/* BUILD 104: the two quiet header controls belong to the same control row. */
+header .visionDocs>summary,
+header .clarityDetails>summary{
+  box-sizing:border-box!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  height:34px!important;
+  min-height:34px!important;
+  padding:0 10px!important;
+  line-height:1!important;
+  margin:0!important;
+}
+@media(max-width:560px){
+  header .visionDocs>summary,
+  header .clarityDetails>summary{
+    height:32px!important;
+    min-height:32px!important;
+    padding:0 9px!important;
+  }
+}
+
 /* BUILD 100: Try QCDS is a stable sales/demo surface.
    Equal actions, immediate run feedback, and six independent native accordions. */
 body.publicCompact.publicViewQcds #try-logical-robot .seedGrid .seed>button{
@@ -308,8 +330,11 @@ _SCRIPT = r'''
     }
   });
 
-  const buildMark=document.querySelector('.publicBuildMark');
-  if(buildMark)buildMark.textContent='BUILD 101';
+  const q104Mark=()=>{
+    const buildMark=document.querySelector('.publicBuildMark');
+    if(buildMark)buildMark.textContent='BUILD 104';
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',q104Mark);else q104Mark();
 })();
 </script>
 '''
@@ -322,7 +347,7 @@ def living_robot_public_visual96_html(*, static_mode: bool = False) -> str:
         raise RuntimeError("QCDS ingress listener changed; BUILD 101 cannot scope top-scroll safely")
     html = html.replace(_BAD_QCDS_INGRESS, _FIXED_QCDS_INGRESS, 1)
     if "</style>" not in html or "</body>" not in html:
-        raise RuntimeError("public shell changed; BUILD 101 cannot attach safely")
+        raise RuntimeError("public shell changed; BUILD 104 cannot attach safely")
     html = html.replace("</style>", _CSS + "\n</style>", 1)
     return html.replace("</body>", _SCRIPT + "\n</body>", 1)
 
