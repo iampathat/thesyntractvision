@@ -11,11 +11,23 @@ def test_visual_logical_robot_is_the_public_front_door() -> None:
     assert "VISUAL LOGICAL ROBOT · QCDS / SYNTRACT" in html
     assert "Draw reality. Watch QCDS find the shortest coherent route." in html
     assert 'data-public-view="robotics" class="active"' in html
+    assert '<body class="publicCompact publicViewRobotics publicLegalAsk">' in html
+    assert "btn.dataset.publicView==='robotics'" in html
     assert "active?.dataset.publicView||'robotics'" in html
 
     nav = html.split('<div class="publicCompactActions">', 1)[1].split("</div>", 1)[0]
     assert nav.index("VISUAL LOGICAL ROBOT") < nav.index("TRY QCDS")
     assert nav.index("TRY QCDS") < nav.index("SYNTRACTS")
+
+
+def test_build_badge_is_small_and_fixed_in_the_upper_right_corner() -> None:
+    html = living_robot_public_html(static_mode=True)
+
+    assert ".publicBuildMark{position:fixed!important" in html
+    assert "top:6px!important" in html
+    assert "right:8px!important" in html
+    assert "font-size:5.5px!important" in html
+    assert "pointer-events:none!important" in html
 
 
 def test_visual_robot_explains_reality_oracles_qcds_syntract_and_body() -> None:
