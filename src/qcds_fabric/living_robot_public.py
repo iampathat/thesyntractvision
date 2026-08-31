@@ -5,10 +5,10 @@ import re
 from pathlib import Path
 from typing import Sequence
 
-from .living_robot_public_robotics81 import living_robot_public_robotics81_html as _base_html
+from .living_robot_public_visual87 import living_robot_public_visual87_html as _base_html
 
 
-PUBLIC_BUILD = "82"
+PUBLIC_BUILD = "87"
 
 _FACTS_CSS = r'''
 /* BUILD 65: playground facts are metadata, not action cards. */
@@ -63,7 +63,7 @@ header.publicTechnicalDetailsOpen .clarityPanel{z-index:180!important}
 
 _ROUTER_SCRIPT = r'''
 <script>
-/* BUILD 78: final router. Older feature wrappers may add surfaces, but they do not own navigation. */
+/* BUILD 87: final router. Visual Logical Robot is the public front door. */
 (function(){
   const VIEW_CLASS={
     qcds:'publicViewQcds',
@@ -74,7 +74,7 @@ _ROUTER_SCRIPT = r'''
   };
   const ALL=Object.values(VIEW_CLASS);
   window.publicSelectView=function(requested){
-    const view=Object.prototype.hasOwnProperty.call(VIEW_CLASS,requested)?requested:'qcds';
+    const view=Object.prototype.hasOwnProperty.call(VIEW_CLASS,requested)?requested:'robotics';
     ALL.forEach(name=>document.body.classList.remove(name));
     document.body.classList.add(VIEW_CLASS[view]);
     document.body.dataset.publicView=view;
@@ -86,7 +86,7 @@ _ROUTER_SCRIPT = r'''
     if(view==='robotics' && typeof window.q75Activate==='function')window.setTimeout(window.q75Activate,0);
   };
   const active=document.querySelector('[data-public-view].active');
-  window.publicSelectView(active?.dataset.publicView||'qcds');
+  window.publicSelectView(active?.dataset.publicView||'robotics');
 })();
 </script>
 '''
