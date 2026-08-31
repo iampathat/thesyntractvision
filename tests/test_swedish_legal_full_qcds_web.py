@@ -41,6 +41,10 @@ def test_full_web_exposes_real_probabilistic_jordabalk_case() -> None:
 def test_pages_exports_stable_public_entrypoint_over_wrapper_chain_and_recursive_python_package() -> None:
     workflow = (ROOT / ".github" / "workflows" / "pages.yml").read_text(encoding="utf-8")
     stable = (ROOT / "src" / "qcds_fabric" / "living_robot_public.py").read_text(encoding="utf-8")
+    trace72 = (ROOT / "src" / "qcds_fabric" / "living_robot_public_trace72.py").read_text(encoding="utf-8")
+    oracles71 = (ROOT / "src" / "qcds_fabric" / "living_robot_public_oracles71.py").read_text(encoding="utf-8")
+    space70 = (ROOT / "src" / "qcds_fabric" / "living_robot_public_space70.py").read_text(encoding="utf-8")
+    inspect69 = (ROOT / "src" / "qcds_fabric" / "living_robot_public_inspect69.py").read_text(encoding="utf-8")
     pick67 = (ROOT / "src" / "qcds_fabric" / "living_robot_public_pick67.py").read_text(encoding="utf-8")
     casefix66 = (ROOT / "src" / "qcds_fabric" / "living_robot_public_casefix66.py").read_text(encoding="utf-8")
     syntract64 = (ROOT / "src" / "qcds_fabric" / "living_robot_public_syntract64.py").read_text(encoding="utf-8")
@@ -50,7 +54,11 @@ def test_pages_exports_stable_public_entrypoint_over_wrapper_chain_and_recursive
     compact = (ROOT / "src" / "qcds_fabric" / "living_robot_public_compact.py").read_text(encoding="utf-8")
 
     assert "qcds_fabric.living_robot_public" in workflow
-    assert "living_robot_public_pick67" in stable
+    assert "living_robot_public_trace72" in stable
+    assert "living_robot_public_oracles71" in trace72
+    assert "living_robot_public_space70" in oracles71
+    assert "living_robot_public_inspect69" in space70
+    assert "living_robot_public_pick67" in inspect69
     assert "living_robot_public_casefix66" in pick67
     assert "living_robot_public_syntract64" in casefix66
     assert "living_robot_public_syntract63" in syntract64
