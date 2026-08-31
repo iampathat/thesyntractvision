@@ -51,19 +51,31 @@ def test_robotics_controls_are_docked_directly_below_the_route_grid() -> None:
     assert '-webkit-overflow-scrolling:touch' in html
 
 
-def test_reset_control_signals_ready_only_when_qcds_world_is_settled_at_b() -> None:
+def test_reset_control_signals_ready_after_a_changed_world_not_merely_at_b() -> None:
     html = living_robot_public_html(static_mode=True)
 
     assert 'id="q75Reset" data-ready="0"' in html
-    assert "#q75Reset.q90ReadyCue" in html
-    assert "button.textContent='READY'" in html
-    assert "button.textContent=Q75.resetCuePhase?'READY':'RESET A → B'" in html
+    assert "Q75.worldChangedSinceReset=false" in html
+    assert "Q75.worldChangedSinceReset=true" in html
+    assert "!!Q75.worldChangedSinceReset" in html
     assert "!!Q75.result?.reachable" in html
-    assert "q75Key(...Q75.robot)===q75Key(...Q75.goal)" in html
     assert "!Q75.planning && !Q75.editing && !Q75.editSettleTimer" in html
-    assert "const baseReset=q75ResetRobot" in html
-    assert "const baseEmulating=q79SetEmulating" in html
-    assert "const baseBeginEdit=q80BeginEdit" in html
+    assert "window.q90SyncResetCue=()=>canCue()?startCue():stopCue()" in html
+    assert "q75Key(...Q75.robot)===q75Key(...Q75.goal)" in html  # historical BUILD 90 script may remain, but is overridden after DOMContentLoaded
+    assert "Reaching B alone must not cue" in html
+    assert "Q75.worldChangedSinceReset=false;\n    stopCue();\n    return baseReset" in html
+
+
+def test_reset_ready_button_keeps_one_fixed_width_while_text_alternates() -> None:
+    html = living_robot_public_html(static_mode=True)
+
+    assert "#q75Reset{inline-size:13.5em!important" in html
+    assert "min-inline-size:13.5em!important" in html
+    assert "max-inline-size:13.5em!important" in html
+    assert "box-sizing:border-box!important" in html
+    assert "button.textContent=Q75.resetCuePhase?'READY':'RESET A → B'" in html
+    assert "transform:none!important" in html
+    assert "@keyframes q91ReadyGlow" in html
 
 
 def test_visual_robot_explains_reality_oracles_qcds_syntract_and_body() -> None:
