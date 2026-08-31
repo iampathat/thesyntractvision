@@ -30,10 +30,12 @@ def test_visual_logical_robot_is_the_public_front_door() -> None:
 def test_qcds_ingress_always_opens_at_the_top_of_the_public_view() -> None:
     html = living_robot_public_html(static_mode=True)
 
-    # Both the top-menu action and the Visual Logical Robot bridge use the same
-    # top-ingress contract. View switching must not preserve a deep scroll offset.
+    # Only the actual top-menu action and Visual Logical Robot bridge may reset
+    # the QCDS view to the top. BODY carries data-public-view=qcds while active,
+    # so an unscoped closest selector would incorrectly catch every QCDS click.
     assert 'data-qcds-top="1"' in html
-    assert '[data-public-view="qcds"],[data-qcds-top="1"]' in html
+    assert 'button[data-public-view="qcds"],button[data-qcds-top="1"]' in html
+    assert "closest?.('[data-public-view=\"qcds\"],[data-qcds-top=\"1\"]')" not in html
     assert "requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:'auto'}))" in html
     assert "UNDERSTAND QCDS →" in html
     assert "TRY QCDS" in html
