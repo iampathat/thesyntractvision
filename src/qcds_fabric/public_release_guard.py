@@ -47,6 +47,10 @@ REQUIRED_PACKAGE_FILES = (
     "qcds_fabric/parallel_syntracts.py",
     "qcds_fabric/syntract_parallel_demos.py",
     "qcds_fabric/robotics_playground.py",
+    "qcds_fabric/robotics_playground_system.py",
+    "qcds_fabric/syntract_system.py",
+    "qcds_fabric/fabric.py",
+    "qcds_fabric/oracles.py",
     "qcds_fabric/robots/legal/sweden_housing/quick_question.py",
     "qcds_fabric/robots/legal/sweden_housing/question_ingress.py",
 )
@@ -93,6 +97,8 @@ def validate_public_site(site: str | Path) -> None:
         "ROBOTICS PLAYGROUND",
         "Draw reality. Watch the robot re-infer the route.",
         "Every drawn cell becomes an explicit obstacle oracle",
+        "8 binary QCDS Conditions",
+        "SyntractSystem",
         "SYNTRACTS · NEW",
         "OPEN SYNTRACT DEMOS →",
         "NEW CAPABILITY · PARALLEL SYNTRACTS",
@@ -112,6 +118,7 @@ def validate_public_site(site: str | Path) -> None:
         "run_swedish_housing_case_json",
         "run_syntract_demo_json",
         "run_robotics_playground_json",
+        "robotics_playground_system",
     ):
         if symbol not in worker:
             errors.append(f"worker missing Python bridge: {symbol}")
