@@ -113,6 +113,8 @@ def validate_public_site(site: str | Path) -> None:
         "NEW CAPABILITY · PARALLEL SYNTRACTS",
         "ADVANCED",
         "No voting. No hard collapse. No separate fusion engine.",
+        "publicTechnicalDetailsOpen",
+        "header.publicTechnicalDetailsOpen{z-index:160!important}",
     ):
         if phrase not in html:
             errors.append(f"public HTML missing contract phrase: {phrase}")
