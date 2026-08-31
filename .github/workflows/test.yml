@@ -64,6 +64,7 @@ jobs:
           tests/test_build79_robotics_replan_lock.py
           tests/test_build80_robotics_gesture_batching.py
           tests/test_build81_robotics_route_family_preview.py
+          tests/test_build82_technical_details_layering.py
           tests/test_legal_question_ingress.py
           tests/test_public_compact_surface.py
           tests/test_public_legal_question49.py
