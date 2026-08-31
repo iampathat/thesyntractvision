@@ -41,6 +41,7 @@ def test_full_web_exposes_real_probabilistic_jordabalk_case() -> None:
 def test_pages_exports_stable_public_entrypoint_over_wrapper_chain_and_recursive_python_package() -> None:
     workflow = (ROOT / ".github" / "workflows" / "pages.yml").read_text(encoding="utf-8")
     stable = (ROOT / "src" / "qcds_fabric" / "living_robot_public.py").read_text(encoding="utf-8")
+    robotics81 = (ROOT / "src" / "qcds_fabric" / "living_robot_public_robotics81.py").read_text(encoding="utf-8")
     robotics80 = (ROOT / "src" / "qcds_fabric" / "living_robot_public_robotics80.py").read_text(encoding="utf-8")
     robotics79 = (ROOT / "src" / "qcds_fabric" / "living_robot_public_robotics79.py").read_text(encoding="utf-8")
     robotics77 = (ROOT / "src" / "qcds_fabric" / "living_robot_public_robotics77.py").read_text(encoding="utf-8")
@@ -58,7 +59,8 @@ def test_pages_exports_stable_public_entrypoint_over_wrapper_chain_and_recursive
     compact = (ROOT / "src" / "qcds_fabric" / "living_robot_public_compact.py").read_text(encoding="utf-8")
 
     assert "qcds_fabric.living_robot_public" in workflow
-    assert "living_robot_public_robotics80" in stable
+    assert "living_robot_public_robotics81" in stable
+    assert "living_robot_public_robotics80" in robotics81
     assert "living_robot_public_robotics79" in robotics80
     assert "living_robot_public_robotics77" in robotics79
     assert "living_robot_public_robotics75" in robotics77
