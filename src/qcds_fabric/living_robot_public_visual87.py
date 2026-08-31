@@ -11,7 +11,7 @@ _BRIDGE = r'''
     <div class="visualBodyCore"><b>SAME INTELLIGENCE</b><strong>Logical Space → Oracles → QCDS → TruthDistribution → Syntract</strong><span>Sense → infer → bind → act → sense again ↺</span></div>
     <div class="visualBodyCard"><b>PHYSICAL BODY</b><strong>Camera / lidar → motors</strong><span>Sensors provide the changing world. Observations become oracle logic. Wheels, arms or other actuators manifest action.</span></div>
   </div>
-  <div class="visualNextSteps"><span>Now that you have seen it:</span><button type="button" onclick="publicSelectView('qcds')">UNDERSTAND QCDS →</button><button type="button" onclick="publicSelectView('syntract')">SEE SYNTRACTS →</button></div>
+  <div class="visualNextSteps"><span>Now that you have seen it:</span><button type="button" data-qcds-top="1" onclick="publicSelectView('qcds')">UNDERSTAND QCDS →</button><button type="button" onclick="publicSelectView('syntract')">SEE SYNTRACTS →</button></div>
 </div>
 '''
 
@@ -37,6 +37,14 @@ _STARTUP_SCRIPT = r'''
   document.body.dataset.publicView='robotics';
   document.querySelectorAll('[data-public-view]').forEach(btn=>btn.classList.toggle('active',btn.dataset.publicView==='robotics'));
 })();
+
+/* BUILD 92: TRY QCDS and UNDERSTAND QCDS are true view ingress points.
+   Never preserve a deep scroll position from the previous public view. */
+document.addEventListener('click',event=>{
+  const trigger=event.target?.closest?.('[data-public-view="qcds"],[data-qcds-top="1"]');
+  if(!trigger)return;
+  requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:'auto'}));
+});
 
 /* READY cue semantics: a changed obstacle world is ready to replay from A.
    This listener runs after the stable BUILD 90 scripts have been parsed, so it
