@@ -1,0 +1,3 @@
+/* BUILD 105: Syntract artwork is identity, not decoration. */
+.brand h1{display:flex;align-items:center;gap:9px}.brand h1>.pulse{display:none!important}.syntractArtHeader{display:block;width:25px;height:25px;flex:0 0 25px;opacity:.96}.visionDocsTitleLine{display:flex;align-items:center;gap:9px}.visionDocsArt{display:block;width:27px;height:27px;flex:0 0 27px;opacity:.94}.visionDocsTitleCopy{min-width:0}.visionDocsTitleCopy b{margin-top:0!important}
+@media(max-width:560px){.brand h1{gap:7px}.syntractArtHeader{width:22px;height:22px;flex-basis:22px}.visionDocsArt{width:24px;height:24px;flex-basis:24px}}
