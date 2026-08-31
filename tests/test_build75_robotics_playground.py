@@ -63,11 +63,11 @@ def test_public_surface_has_top_level_robotics_playground_and_python_worker_rout
     bridge = Path("src/qcds_fabric/robotics_playground_system.py").read_text(encoding="utf-8")
     assert int(PUBLIC_BUILD) >= 77
     assert 'data-public-view="robotics"' in html
-    assert "ROBOTICS PLAYGROUND" in html
+    assert "VISUAL LOGICAL ROBOT" in html
     assert 'id="public-robotics"' in html
     assert 'id="q75Canvas"' in html
-    assert "Draw reality. Watch the robot re-infer the route." in html
-    assert "Every drawn cell becomes an explicit obstacle oracle" in html
+    assert "Draw reality. Watch QCDS find the shortest coherent route." in html
+    assert "Your stroke becomes explicit oracle logic" in html
     assert "8 binary QCDS Conditions" in html
     assert "robotics_playground_run" in html
     assert "robotics_playground_run" in worker
