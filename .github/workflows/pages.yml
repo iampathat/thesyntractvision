@@ -7,6 +7,7 @@ on:
       - "src/qcds_fabric/**"
       - "robots/legal/sweden_housing/**"
       - "web/session_core_worker.js"
+      - "web/assets/**"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -82,10 +83,14 @@ jobs:
           PY
       - name: Export the stable public QCDS surface
         run: |
-          mkdir -p _site/legal/cases
+          mkdir -p _site/legal/cases _site/assets
           python -m qcds_fabric.living_robot_public --export _site/index.html
           cp web/session_core_worker.js _site/session_core_worker.js
           cp robots/legal/sweden_housing/cases/*.json _site/legal/cases/
+          cp web/assets/syntract_art.svg _site/assets/syntract_art.svg
+          cp web/assets/syntract_art_lockup.svg _site/assets/syntract_art_lockup.svg
+          cp web/assets/syntract_brand105.css _site/assets/syntract_brand105.css
+          cp web/assets/syntract_brand105.js _site/assets/syntract_brand105.js
           python - <<'PY'
           from pathlib import Path
           from zipfile import ZIP_DEFLATED, ZipFile
@@ -95,8 +100,25 @@ jobs:
               for path in sorted(root.rglob('*')):
                   if path.is_file() and path.suffix in {'.py', '.json'}:
                       archive.write(path, path.relative_to('src'))
+
+          page = Path('_site/index.html')
+          html = page.read_text(encoding='utf-8')
+          css = '<link rel="stylesheet" href="assets/syntract_brand105.css">'
+          js = '<script defer src="assets/syntract_brand105.js"></script>'
+          if css not in html:
+              html = html.replace('</head>', css + '\n</head>', 1)
+          if js not in html:
+              html = html.replace('</body>', js + '\n</body>', 1)
+          page.write_text(html, encoding='utf-8')
           PY
           touch _site/.nojekyll
+      - name: Validate Syntract artwork public identity
+        run: |
+          test -s _site/assets/syntract_art.svg
+          test -s _site/assets/syntract_art_lockup.svg
+          grep -F 'assets/syntract_brand105.css' _site/index.html
+          grep -F 'assets/syntract_brand105.js' _site/index.html
+          grep -F 'syntract_art.svg' _site/assets/syntract_brand105.js
       - name: Validate exact public release artifact
         run: python -m qcds_fabric.public_release_guard --site _site
       - name: Upload Pages artifact
