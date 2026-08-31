@@ -5,10 +5,10 @@ import re
 from pathlib import Path
 from typing import Sequence
 
-from .living_robot_public_trace72 import living_robot_public_trace72_html as _base_html
+from .living_robot_public_robotics75 import living_robot_public_robotics75_html as _base_html
 
 
-PUBLIC_BUILD = "72"
+PUBLIC_BUILD = "75"
 
 _FACTS_CSS = r'''
 /* BUILD 65: playground facts are metadata, not action cards. */
@@ -27,9 +27,9 @@ def living_robot_public_html(*, static_mode: bool = False) -> str:
     """Single stable public exporter used by both Pages and regression tests.
 
     Presentation/routing only. The QCDS four phases, oracle semantics, Logical
-    Space inference, parallel Syntract composition and Syntract binding remain
-    defined by their existing Python modules and are deliberately not
-    reimplemented here.
+    Space inference, parallel Syntract composition, Robotics Playground and
+    Syntract binding remain defined by their existing Python modules and are
+    deliberately not reimplemented in this stable exporter.
     """
 
     html = _base_html(static_mode=static_mode)
