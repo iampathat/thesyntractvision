@@ -8,7 +8,7 @@ from typing import Sequence
 from .living_robot_public_visual87 import living_robot_public_visual87_html as _base_html
 
 
-PUBLIC_BUILD = "88"
+PUBLIC_BUILD = "89"
 
 _FACTS_CSS = r'''
 /* BUILD 65: playground facts are metadata, not action cards. */
@@ -67,6 +67,13 @@ _STARTUP_CSS = r'''
 @media(max-width:700px){.publicBuildMark{top:4px!important;right:5px!important;font-size:5px!important;padding:2px 4px!important}}
 '''
 
+_ROBOTICS_CONTROLS_CSS = r'''
+/* BUILD 89: controls belong to the route grid, especially on touch screens. */
+.publicRoboticsStage{grid-template-areas:"canvas panel" "tools panel"!important;grid-template-rows:auto auto;column-gap:13px!important;row-gap:4px!important}
+.publicRobotCanvasWrap{grid-area:canvas}.publicRoboticsStage>.publicRoboticsTools{grid-area:tools;margin:0!important;padding:2px 1px 0;align-self:start}.publicRobotPanel{grid-area:panel;grid-row:1 / span 2}
+@media(max-width:1050px){.publicRoboticsStage{grid-template-columns:1fr!important;grid-template-areas:"canvas" "tools" "panel"!important;grid-template-rows:auto auto auto;row-gap:5px!important}.publicRobotPanel{grid-area:panel;grid-row:auto}.publicRoboticsStage>.publicRoboticsTools{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto;overscroll-behavior-x:contain;gap:6px!important;margin:0!important;padding:4px 1px 3px!important;scrollbar-width:none;-webkit-overflow-scrolling:touch}.publicRoboticsStage>.publicRoboticsTools::-webkit-scrollbar{display:none}.publicRoboticsStage>.publicRoboticsTools button{flex:0 0 auto;white-space:nowrap;padding:8px 11px!important}}
+'''
+
 _ROUTER_SCRIPT = r'''
 <script>
 /* BUILD 88: one startup source. Visual Logical Robot is always the public front door. */
@@ -123,6 +130,18 @@ def _robotics_first_paint(match: re.Match[str]) -> str:
     return f'<body class="{" ".join(classes)}" data-public-view="robotics">'
 
 
+def _dock_robotics_controls(html: str) -> str:
+    tools_match = re.search(r'\n\s*(<div class="publicRoboticsTools">.*?</div>)\s*\n', html, flags=re.S)
+    if tools_match is None:
+        raise RuntimeError("Robotics controls changed; BUILD 89 cannot dock them safely")
+    tools = tools_match.group(1)
+    html = html[:tools_match.start()] + "\n" + html[tools_match.end():]
+    panel_anchor = '<aside class="publicRobotPanel">'
+    if html.count(panel_anchor) != 1:
+        raise RuntimeError("Robotics stage changed; BUILD 89 cannot place controls beside the route grid safely")
+    return html.replace(panel_anchor, tools + "\n      " + panel_anchor, 1)
+
+
 def living_robot_public_html(*, static_mode: bool = False) -> str:
     """Single stable public exporter used by both Pages and regression tests.
 
@@ -151,6 +170,10 @@ def living_robot_public_html(*, static_mode: bool = False) -> str:
     if body_count != 1:
         raise RuntimeError("public body markup changed; BUILD 88 cannot establish Robotics first paint safely")
 
+    # The route controls are part of the route stage, not the explanatory hero.
+    # This keeps draw/erase/run/reset immediately adjacent to the canvas on mobile.
+    html = _dock_robotics_controls(html)
+
     html, count = re.subn(
         r'<span class="publicBuildMark">BUILD\s+\d+</span>',
         f'<span class="publicBuildMark">BUILD {PUBLIC_BUILD}</span>',
@@ -176,7 +199,7 @@ def living_robot_public_html(*, static_mode: bool = False) -> str:
         html = html.replace(old, new, 1)
     if "</style>" not in html or "</body>" not in html:
         raise RuntimeError("public shell missing; stable router cannot attach")
-    html = html.replace("</style>", _FACTS_CSS + "\n" + _ROUTER_CSS + "\n" + _DETAILS_CSS + "\n" + _STARTUP_CSS + "\n</style>", 1)
+    html = html.replace("</style>", _FACTS_CSS + "\n" + _ROUTER_CSS + "\n" + _DETAILS_CSS + "\n" + _STARTUP_CSS + "\n" + _ROBOTICS_CONTROLS_CSS + "\n</style>", 1)
     html = html.replace("</body>", _ROUTER_SCRIPT + "\n" + _DETAILS_SCRIPT + "\n</body>", 1)
     return html
 
