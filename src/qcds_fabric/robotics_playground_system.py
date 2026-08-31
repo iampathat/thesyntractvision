@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from typing import Mapping
 
+from .robotics_route_family_view import add_route_family_preview
 from .robotics_route_qcds import run_robotics_route_qcds
 from .syntract_system import SyntractSystem
 
@@ -21,6 +22,7 @@ def run_robotics_playground_system_json(payload_json: str) -> str:
 
     system = SyntractSystem()
     result = run_robotics_route_qcds(payload, fabric_layer=system.fabric_layer)
+    result = add_route_family_preview(result, limit=8)
     result["system_boundary"] = "SyntractSystem"
     result["single_qcds_architecture"] = True
     result["execution"] = "SyntractSystem.fabric_layer -> QCDS inference substrate -> TruthDistribution re-entry -> Syntract"
