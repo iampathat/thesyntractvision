@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+import qcds_fabric.central_fabric as central_fabric_module
 from qcds_fabric.central_fabric import CentralFabricError, CentralQCDSFabric
 from qcds_fabric.models import BaseBundle
 from qcds_fabric.oracle_space import OracleSpace
@@ -46,6 +47,24 @@ def test_central_fabric_runs_multiple_oracle_spaces_in_parallel_through_same_cor
     assert {row["space_id"] for row in fabric.mounted_manifest()} == {"a", "b"}
 
 
+def test_parallel_topology_uses_threadless_transport_on_pyodide(monkeypatch: pytest.MonkeyPatch) -> None:
+    fabric = CentralQCDSFabric()
+    fabric.transfer_in(_space("browser-a"))
+    fabric.transfer_in(_space("browser-b", target=0))
+
+    monkeypatch.setattr(central_fabric_module.sys, "platform", "emscripten")
+
+    class ThreadsMustNotStart:
+        def __init__(self, *args: object, **kwargs: object) -> None:
+            raise AssertionError("ThreadPoolExecutor must not be constructed on Pyodide")
+
+    monkeypatch.setattr(central_fabric_module, "ThreadPoolExecutor", ThreadsMustNotStart)
+    results = fabric.run_parallel(("browser-a", "browser-b"), max_workers=2)
+
+    assert set(results) == {"browser-a", "browser-b"}
+    assert all(result.suite.stabilized_return.stabilized_distribution.support for result in results.values())
+
+
 def test_sequence_uses_distribution_oracle_reentry_not_answer_copying() -> None:
     fabric = CentralQCDSFabric()
     fabric.transfer_in(_space("stage-1"))
@@ -78,3 +97,21 @@ def test_hybrid_executes_parallel_lanes_with_explicit_sequence_inside_each_lane(
     assert all(len(lane.runs) == 2 for lane in result.values())
     assert result["lane-a"].runs[1].reentered_from_space_id == "a1"
     assert result["lane-b"].runs[1].reentered_from_space_id == "b1"
+
+
+def test_hybrid_topology_uses_threadless_transport_on_pyodide(monkeypatch: pytest.MonkeyPatch) -> None:
+    fabric = CentralQCDSFabric()
+    for space_id in ("a1", "a2", "b1", "b2"):
+        fabric.transfer_in(_space(space_id))
+
+    monkeypatch.setattr(central_fabric_module.sys, "platform", "emscripten")
+
+    class ThreadsMustNotStart:
+        def __init__(self, *args: object, **kwargs: object) -> None:
+            raise AssertionError("ThreadPoolExecutor must not be constructed on Pyodide")
+
+    monkeypatch.setattr(central_fabric_module, "ThreadPoolExecutor", ThreadsMustNotStart)
+    result = fabric.run_hybrid({"lane-a": ("a1", "a2"), "lane-b": ("b1", "b2")}, max_workers=2)
+
+    assert set(result) == {"lane-a", "lane-b"}
+    assert all(len(lane.runs) == 2 for lane in result.values())
