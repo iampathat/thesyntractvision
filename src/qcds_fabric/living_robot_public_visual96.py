@@ -27,75 +27,131 @@ _CSS = r'''
   }
 }
 
-/* BUILD 97: QCDS stage details belong beside the selected stage, not at the
-   bottom of all six cards. The selected button must remain visually anchored. */
-body.publicViewQcds #try-logical-robot .q69Trace>.q69Inspect.q97Inline{
-  grid-column:1 / -1!important;
-  width:100%!important;
-  box-sizing:border-box!important;
-  margin:0 0 2px!important;
+/* BUILD 98: Try QCDS stages are true local accordions.
+   No shared detail panel is moved around the DOM and no scroll correction runs. */
+body.publicViewQcds #try-logical-robot .q69Trace{align-items:start!important}
+body.publicViewQcds #try-logical-robot .q98Stage{min-width:0;display:flex;flex-direction:column}
+body.publicViewQcds #try-logical-robot .q98Stage>.q69Step,
+body.publicViewQcds #try-logical-robot .q98Stage>.q69Step:focus,
+body.publicViewQcds #try-logical-robot .q98Stage>.q69Step:hover{
+  background:#061923!important;
+  color:inherit!important;
+  border-color:#294b5e!important;
+  box-shadow:none!important;
+  transform:none!important;
 }
-body.publicViewQcds #try-logical-robot .q69Step.active{
-  position:relative;
-  z-index:1;
+body.publicViewQcds #try-logical-robot .q98Stage>.q69Step:focus-visible{
+  outline:2px solid #76dba2!important;
+  outline-offset:2px!important;
 }
+body.publicViewQcds #try-logical-robot .q98Stage.open>.q69Step,
+body.publicViewQcds #try-logical-robot .q98Stage.open>.q69Step:focus,
+body.publicViewQcds #try-logical-robot .q98Stage.open>.q69Step:hover{
+  border-color:#69c893!important;
+  border-bottom-color:#31584d!important;
+  background:#09281f!important;
+  color:#d6f6df!important;
+  box-shadow:inset 3px 0 0 #82e5ac!important;
+  border-radius:14px 14px 0 0!important;
+}
+body.publicViewQcds #try-logical-robot .q98Detail{
+  display:none;
+  border:1px solid #31584d;
+  border-top:0;
+  background:#071914;
+  border-radius:0 0 14px 14px;
+  padding:14px 15px;
+  color:#d8f6df;
+  min-width:0;
+  overflow:hidden;
+}
+body.publicViewQcds #try-logical-robot .q98Stage.open>.q98Detail{display:block}
+body.publicViewQcds #try-logical-robot .q98Detail .q69InspectHead{margin:0;padding-bottom:10px}
+body.publicViewQcds #try-logical-robot .q98Detail .q69InspectBody{margin-top:11px}
+body.publicViewQcds #try-logical-robot .q98SourcePanel{display:none!important}
 @media(max-width:680px){
-  body.publicViewQcds #try-logical-robot .q69Trace>.q69Inspect.q97Inline{
-    grid-column:1!important;
-  }
+  body.publicViewQcds #try-logical-robot .q98Detail{padding:11px 10px}
+  body.publicViewQcds #try-logical-robot .q98Stage>.q69Step,
+  body.publicViewQcds #try-logical-robot .q98Stage.open>.q69Step{min-height:0!important}
 }
 '''
 
 _SCRIPT = r'''
 <script>
-/* BUILD 97: keep QCDS stage inspection local to the clicked stage.
-   q69Open still renders the exact same real QCDS inspection data. */
+/* BUILD 98: each QCDS stage owns its own detail area.
+   The existing q69Open still renders the exact inspection data from the real run;
+   this layer only moves the rendered child nodes into the selected accordion. */
 (function(){
   if(typeof window.q69Open!=='function')return;
   const baseOpen=window.q69Open;
-  let q97UserStepClick=false;
+  let clickedButton=null;
 
   document.addEventListener('click',event=>{
-    if(event.target?.closest?.('#try-logical-robot .q69Step'))q97UserStepClick=true;
+    const button=event.target?.closest?.('#try-logical-robot .q69Step');
+    if(button)clickedButton=button;
   },true);
-  document.addEventListener('click',()=>{setTimeout(()=>{q97UserStepClick=false},0)},false);
+  document.addEventListener('click',()=>{setTimeout(()=>{clickedButton=null},0)},false);
 
-  function q97PlaceInspect(step, preserveViewport){
+  function q98EnsureStages(){
     const trace=document.querySelector('#try-logical-robot .q69Trace');
-    const panel=document.getElementById('q69Inspect');
-    if(!trace||!panel)return;
-    const steps=Array.from(trace.querySelectorAll(':scope > .q69Step'));
-    const button=steps[step-1];
-    if(!button)return;
+    const source=document.getElementById('q69Inspect');
+    if(!trace||!source)return null;
 
-    const beforeTop=preserveViewport?button.getBoundingClientRect().top:null;
-    const mobile=window.matchMedia('(max-width:680px)').matches;
-    const anchorIndex=mobile ? step-1 : Math.min(steps.length-1, Math.ceil(step/2)*2-1);
-    const anchor=steps[anchorIndex];
-    anchor.insertAdjacentElement('afterend',panel);
-    panel.classList.add('q97Inline');
+    const directButtons=Array.from(trace.children).filter(node=>node.classList?.contains('q69Step'));
+    directButtons.forEach((button,index)=>{
+      const stage=document.createElement('div');
+      stage.className='q98Stage';
+      stage.dataset.step=String(index+1);
+      button.insertAdjacentElement('beforebegin',stage);
+      stage.appendChild(button);
+      const detail=document.createElement('div');
+      detail.className='q98Detail';
+      detail.setAttribute('role','region');
+      detail.setAttribute('aria-label','QCDS step '+String(index+1)+' details');
+      stage.appendChild(detail);
+    });
+    source.classList.add('q98SourcePanel');
+    return {trace,source,stages:Array.from(trace.querySelectorAll(':scope > .q98Stage'))};
+  }
 
-    if(beforeTop!==null){
-      requestAnimationFrame(()=>{
-        const delta=button.getBoundingClientRect().top-beforeTop;
-        if(Math.abs(delta)>.5)window.scrollBy({top:delta,left:0,behavior:'auto'});
-      });
-    }
+  function q98SetLabels(stages,openIndex){
+    stages.forEach((stage,index)=>{
+      const label=stage.querySelector('.q69Open');
+      if(label)label.textContent=index===openIndex?'CLOSE ↑':'OPEN ↓';
+    });
   }
 
   window.q69Open=function(step,result){
+    const state=q98EnsureStages();
+    if(!state)return baseOpen(step,result);
+    const index=Number(step)-1;
+    const target=state.stages[index];
+    const button=target?.querySelector('.q69Step');
+    if(!target||!button)return baseOpen(step,result);
+
+    /* A second click on the already-open stage simply closes it. */
+    if(clickedButton===button && target.classList.contains('open')){
+      target.classList.remove('open');
+      button.classList.remove('active');
+      target.querySelector('.q98Detail')?.replaceChildren();
+      q98SetLabels(state.stages,-1);
+      return;
+    }
+
     const value=baseOpen(step,result);
-    q97PlaceInspect(step,q97UserStepClick);
+    const detail=target.querySelector('.q98Detail');
+    state.stages.forEach(stage=>{
+      stage.classList.remove('open');
+      stage.querySelector('.q98Detail')?.replaceChildren();
+    });
+    while(state.source.firstChild)detail.appendChild(state.source.firstChild);
+    target.classList.add('open');
+    q98SetLabels(state.stages,index);
     return value;
   };
 
-  window.addEventListener('resize',()=>{
-    const active=Array.from(document.querySelectorAll('#try-logical-robot .q69Step')).findIndex(b=>b.classList.contains('active'));
-    if(active>=0)q97PlaceInspect(active+1,false);
-  });
-
   const buildMark=document.querySelector('.publicBuildMark');
-  if(buildMark)buildMark.textContent='BUILD 97';
+  if(buildMark)buildMark.textContent='BUILD 98';
 })();
 </script>
 '''
@@ -105,7 +161,7 @@ def living_robot_public_visual96_html(*, static_mode: bool = False) -> str:
     """Presentation-fit layer only; QCDS/Robotics inference is unchanged."""
     html = _base_html(static_mode=static_mode)
     if "</style>" not in html or "</body>" not in html:
-        raise RuntimeError("public shell changed; BUILD 97 cannot attach safely")
+        raise RuntimeError("public shell changed; BUILD 98 cannot attach safely")
     html = html.replace("</style>", _CSS + "\n</style>", 1)
     return html.replace("</body>", _SCRIPT + "\n</body>", 1)
 
