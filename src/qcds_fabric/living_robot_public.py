@@ -114,6 +114,15 @@ _OLD_QCDS_START = "window.addEventListener('DOMContentLoaded',()=>{publicSetLega
 _NEUTRAL_LEGAL_START = "window.addEventListener('DOMContentLoaded',()=>{publicSetLegalContext('jb_unauthorized_sublet_forfeiture_2026.json')});"
 
 
+def _robotics_first_paint(match: re.Match[str]) -> str:
+    classes = match.group(1).split()
+    classes = [name for name in classes if not name.startswith("publicView")]
+    if "publicCompact" not in classes:
+        classes.insert(0, "publicCompact")
+    classes.append("publicViewRobotics")
+    return f'<body class="{" ".join(classes)}" data-public-view="robotics">'
+
+
 def living_robot_public_html(*, static_mode: bool = False) -> str:
     """Single stable public exporter used by both Pages and regression tests.
 
@@ -131,12 +140,16 @@ def living_robot_public_html(*, static_mode: bool = False) -> str:
         raise RuntimeError("legacy QCDS startup hook changed; BUILD 88 cannot neutralize it safely")
     html = html.replace(_OLD_QCDS_START, _NEUTRAL_LEGAL_START, 1)
 
-    # Avoid even a first-paint flash of TRY QCDS before JavaScript runs.
-    html = html.replace(
-        '<body class="publicCompact publicViewQcds publicLegalAsk">',
-        '<body class="publicCompact publicViewRobotics publicLegalAsk" data-public-view="robotics">',
-        1,
+    # Normalize whichever historical publicView* class survived the wrapper
+    # chain. Robotics must be correct before JS executes, avoiding a QCDS flash.
+    html, body_count = re.subn(
+        r'<body class="([^"]*)"(?:\s+data-public-view="[^"]*")?>',
+        _robotics_first_paint,
+        html,
+        count=1,
     )
+    if body_count != 1:
+        raise RuntimeError("public body markup changed; BUILD 88 cannot establish Robotics first paint safely")
 
     html, count = re.subn(
         r'<span class="publicBuildMark">BUILD\s+\d+</span>',
