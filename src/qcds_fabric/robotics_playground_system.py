@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from typing import Mapping
 
-from .robotics_playground import run_robotics_playground
+from .robotics_route_qcds import run_robotics_route_qcds
 from .syntract_system import SyntractSystem
 
 
@@ -20,7 +20,7 @@ def run_robotics_playground_system_json(payload_json: str) -> str:
         raise ValueError("robotics playground payload must be an object")
 
     system = SyntractSystem()
-    result = run_robotics_playground(payload, fabric_layer=system.fabric_layer)
+    result = run_robotics_route_qcds(payload, fabric_layer=system.fabric_layer)
     result["system_boundary"] = "SyntractSystem"
     result["single_qcds_architecture"] = True
     result["execution"] = "SyntractSystem.fabric_layer -> QCDS inference substrate -> TruthDistribution re-entry -> Syntract"
