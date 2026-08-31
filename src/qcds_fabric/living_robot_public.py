@@ -8,7 +8,7 @@ from typing import Sequence
 from .living_robot_public_robotics81 import living_robot_public_robotics81_html as _base_html
 
 
-PUBLIC_BUILD = "81"
+PUBLIC_BUILD = "82"
 
 _FACTS_CSS = r'''
 /* BUILD 65: playground facts are metadata, not action cards. */
@@ -53,6 +53,14 @@ body.publicCompact.publicViewAdvanced>.sessionSandbox{display:block!important}
 .publicCompactBar{position:sticky;top:0;z-index:80;background:#06131dcc;padding-top:7px;padding-bottom:7px;backdrop-filter:blur(10px)}
 '''
 
+_DETAILS_CSS = r'''
+/* BUILD 82: Technical details must sit above the sticky public menu while open. */
+header.publicTechnicalDetailsOpen{z-index:160!important}
+header.publicTechnicalDetailsOpen .clarityDetails{z-index:170!important}
+header.publicTechnicalDetailsOpen .clarityPanel{z-index:180!important}
+@media(max-width:560px){header.publicTechnicalDetailsOpen .clarityPanel{max-height:calc(100vh - 110px);overflow:auto}}
+'''
+
 _ROUTER_SCRIPT = r'''
 <script>
 /* BUILD 78: final router. Older feature wrappers may add surfaces, but they do not own navigation. */
@@ -79,6 +87,20 @@ _ROUTER_SCRIPT = r'''
   };
   const active=document.querySelector('[data-public-view].active');
   window.publicSelectView(active?.dataset.publicView||'qcds');
+})();
+</script>
+'''
+
+_DETAILS_SCRIPT = r'''
+<script>
+/* BUILD 82: raise the header stacking context only while Technical details is open. */
+(function(){
+  const details=document.getElementById('clarityDetails');
+  const header=details?.closest('header');
+  if(!details||!header)return;
+  const sync=()=>header.classList.toggle('publicTechnicalDetailsOpen',details.open);
+  details.addEventListener('toggle',sync);
+  sync();
 })();
 </script>
 '''
@@ -119,8 +141,8 @@ def living_robot_public_html(*, static_mode: bool = False) -> str:
         html = html.replace(old, new, 1)
     if "</style>" not in html or "</body>" not in html:
         raise RuntimeError("public shell missing; stable router cannot attach")
-    html = html.replace("</style>", _FACTS_CSS + "\n" + _ROUTER_CSS + "\n</style>", 1)
-    html = html.replace("</body>", _ROUTER_SCRIPT + "\n</body>", 1)
+    html = html.replace("</style>", _FACTS_CSS + "\n" + _ROUTER_CSS + "\n" + _DETAILS_CSS + "\n</style>", 1)
+    html = html.replace("</body>", _ROUTER_SCRIPT + "\n" + _DETAILS_SCRIPT + "\n</body>", 1)
     return html
 
 
