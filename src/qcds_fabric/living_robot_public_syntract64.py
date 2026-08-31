@@ -6,6 +6,33 @@ from .living_robot_public_syntract63 import living_robot_public_syntract63_html 
 _CSS = r'''
 /* BUILD 64: keep the new Syntract capability unmistakably visible on landing. */
 .publicSyntractTeaser{max-width:1800px;margin:8px auto 0;padding:0 14px}.publicSyntractTeaserInner{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px solid #416a54;background:linear-gradient(135deg,#0a2118,#0a1c26);border-radius:13px;padding:10px 11px;box-shadow:0 10px 35px #0003}.publicSyntractTeaserCopy{flex:1;min-width:250px}.publicSyntractTeaserKicker{font-size:6.5px;letter-spacing:.14em;text-transform:uppercase;color:#9fdbb4}.publicSyntractTeaserCopy b{display:block;font-size:10px;color:#e4f6ea;margin-top:3px}.publicSyntractTeaserCopy span{display:block;font-size:7.5px;line-height:1.45;color:#8eb6a0;margin-top:2px}.publicSyntractTeaser button{padding:8px 10px;font-size:7.5px;background:#d9f8e4;color:#082117;border-color:#d9f8e4}@media(max-width:700px){.publicSyntractTeaser{padding:0 8px}.publicSyntractTeaser button{width:100%}}
+
+/* BUILD 102: Syntract demo actions should read as actions, not illuminated panels. */
+.publicSyntractCard button{
+  background:#173a2c;
+  color:#d9f6e4;
+  border-color:#4f8c6b;
+  box-shadow:none;
+}
+.publicSyntractCard button:hover,
+.publicSyntractCard button:focus-visible{
+  background:#1d4736;
+  color:#effff4;
+  border-color:#6caf86;
+  box-shadow:0 0 0 2px #75d79a14;
+}
+.publicSyntractCard button:disabled{
+  background:#132c23;
+  color:#8db7a0;
+  border-color:#355f49;
+  box-shadow:none;
+}
+@media(max-width:700px){
+  .publicSyntractCard.q94ActiveRun>button{
+    border-color:#6caf86;
+    box-shadow:0 0 0 2px #75d79a10;
+  }
+}
 '''
 
 _TEASER = r'''
