@@ -8,7 +8,7 @@ from typing import Sequence
 from .living_robot_public_visual87 import living_robot_public_visual87_html as _base_html
 
 
-PUBLIC_BUILD = "89"
+PUBLIC_BUILD = "90"
 
 _FACTS_CSS = r'''
 /* BUILD 65: playground facts are metadata, not action cards. */
@@ -74,6 +74,13 @@ _ROBOTICS_CONTROLS_CSS = r'''
 @media(max-width:1050px){.publicRoboticsStage{grid-template-columns:1fr!important;grid-template-areas:"canvas" "tools" "panel"!important;grid-template-rows:auto auto auto;row-gap:5px!important}.publicRobotPanel{grid-area:panel;grid-row:auto}.publicRoboticsStage>.publicRoboticsTools{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto;overscroll-behavior-x:contain;gap:6px!important;margin:0!important;padding:4px 1px 3px!important;scrollbar-width:none;-webkit-overflow-scrolling:touch}.publicRoboticsStage>.publicRoboticsTools::-webkit-scrollbar{display:none}.publicRoboticsStage>.publicRoboticsTools button{flex:0 0 auto;white-space:nowrap;padding:8px 11px!important}}
 '''
 
+_ROBOTICS_READY_CSS = r'''
+/* BUILD 90: when the body is at B and a valid route world is ready, make the next action obvious. */
+#q75Reset.q90ReadyCue{border-color:#9aefb7!important;background:#123b28!important;color:#effff4!important;box-shadow:0 0 0 0 #8ce3b255;animation:q90ReadyPulse 1.15s ease-in-out infinite}
+@keyframes q90ReadyPulse{0%,100%{box-shadow:0 0 0 0 #8ce3b222;transform:translateY(0)}50%{box-shadow:0 0 0 7px #8ce3b21f;transform:translateY(-1px)}}
+@media(prefers-reduced-motion:reduce){#q75Reset.q90ReadyCue{animation:none}}
+'''
+
 _ROUTER_SCRIPT = r'''
 <script>
 /* BUILD 88: one startup source. Visual Logical Robot is always the public front door. */
@@ -117,6 +124,71 @@ _DETAILS_SCRIPT = r'''
 </script>
 '''
 
+_ROBOTICS_READY_SCRIPT = r'''
+<script>
+/* BUILD 90: READY means exactly one thing — QCDS is settled and the body can be reset from B to A for a new run. */
+(function(){
+  Q75.resetCueTimer=null;
+  Q75.resetCuePhase=false;
+
+  function q90ResetButton(){return document.getElementById('q75Reset')}
+  function q90CanCue(){
+    return !Q75.planning && !Q75.editing && !Q75.editSettleTimer && !!Q75.result?.reachable && q75Key(...Q75.robot)===q75Key(...Q75.goal);
+  }
+  function q90StopResetCue(){
+    if(Q75.resetCueTimer){clearInterval(Q75.resetCueTimer);Q75.resetCueTimer=null}
+    Q75.resetCuePhase=false;
+    const button=q90ResetButton();
+    if(!button)return;
+    button.classList.remove('q90ReadyCue');
+    button.dataset.ready='0';
+    button.textContent='RESET A → B';
+    button.removeAttribute('title');
+  }
+  function q90StartResetCue(){
+    if(!q90CanCue()){q90StopResetCue();return}
+    const button=q90ResetButton();
+    if(!button)return;
+    button.classList.add('q90ReadyCue');
+    button.dataset.ready='1';
+    button.title='Route world ready — reset the robot to A for another A → B run';
+    if(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches){
+      button.textContent='READY · RESET A → B';
+      return;
+    }
+    if(Q75.resetCueTimer)return;
+    Q75.resetCuePhase=true;
+    button.textContent='READY';
+    Q75.resetCueTimer=setInterval(()=>{
+      if(!q90CanCue()){q90StopResetCue();return}
+      Q75.resetCuePhase=!Q75.resetCuePhase;
+      button.textContent=Q75.resetCuePhase?'READY':'RESET A → B';
+    },820);
+  }
+  window.q90SyncResetCue=function(){q90CanCue()?q90StartResetCue():q90StopResetCue()};
+
+  const baseReset=q75ResetRobot;
+  q75ResetRobot=function(){q90StopResetCue();return baseReset.apply(this,arguments)};
+
+  const baseTick=q75Tick;
+  q75Tick=function(){const value=baseTick.apply(this,arguments);q90SyncResetCue();return value};
+
+  const baseEmulating=q79SetEmulating;
+  q79SetEmulating=function(active){
+    if(active)q90StopResetCue();
+    const value=baseEmulating.apply(this,arguments);
+    if(!active)setTimeout(q90SyncResetCue,0);
+    return value;
+  };
+
+  const baseBeginEdit=q80BeginEdit;
+  q80BeginEdit=function(){q90StopResetCue();return baseBeginEdit.apply(this,arguments)};
+
+  setTimeout(q90SyncResetCue,0);
+})();
+</script>
+'''
+
 _OLD_QCDS_START = "window.addEventListener('DOMContentLoaded',()=>{publicSetLegalContext('jb_unauthorized_sublet_forfeiture_2026.json');publicSelectView('qcds')});"
 _NEUTRAL_LEGAL_START = "window.addEventListener('DOMContentLoaded',()=>{publicSetLegalContext('jb_unauthorized_sublet_forfeiture_2026.json')});"
 
@@ -140,6 +212,14 @@ def _dock_robotics_controls(html: str) -> str:
     if html.count(panel_anchor) != 1:
         raise RuntimeError("Robotics stage changed; BUILD 89 cannot place controls beside the route grid safely")
     return html.replace(panel_anchor, tools + "\n      " + panel_anchor, 1)
+
+
+def _mark_reset_control(html: str) -> str:
+    old = '<button type="button" onclick="q75ResetRobot()">RESET A → B</button>'
+    new = '<button type="button" id="q75Reset" data-ready="0" onclick="q75ResetRobot()">RESET A → B</button>'
+    if html.count(old) != 1:
+        raise RuntimeError("Robotics reset control changed; BUILD 90 cannot attach READY cue safely")
+    return html.replace(old, new, 1)
 
 
 def living_robot_public_html(*, static_mode: bool = False) -> str:
@@ -173,6 +253,7 @@ def living_robot_public_html(*, static_mode: bool = False) -> str:
     # The route controls are part of the route stage, not the explanatory hero.
     # This keeps draw/erase/run/reset immediately adjacent to the canvas on mobile.
     html = _dock_robotics_controls(html)
+    html = _mark_reset_control(html)
 
     html, count = re.subn(
         r'<span class="publicBuildMark">BUILD\s+\d+</span>',
@@ -199,8 +280,8 @@ def living_robot_public_html(*, static_mode: bool = False) -> str:
         html = html.replace(old, new, 1)
     if "</style>" not in html or "</body>" not in html:
         raise RuntimeError("public shell missing; stable router cannot attach")
-    html = html.replace("</style>", _FACTS_CSS + "\n" + _ROUTER_CSS + "\n" + _DETAILS_CSS + "\n" + _STARTUP_CSS + "\n" + _ROBOTICS_CONTROLS_CSS + "\n</style>", 1)
-    html = html.replace("</body>", _ROUTER_SCRIPT + "\n" + _DETAILS_SCRIPT + "\n</body>", 1)
+    html = html.replace("</style>", _FACTS_CSS + "\n" + _ROUTER_CSS + "\n" + _DETAILS_CSS + "\n" + _STARTUP_CSS + "\n" + _ROBOTICS_CONTROLS_CSS + "\n" + _ROBOTICS_READY_CSS + "\n</style>", 1)
+    html = html.replace("</body>", _ROBOTICS_READY_SCRIPT + "\n" + _ROUTER_SCRIPT + "\n" + _DETAILS_SCRIPT + "\n</body>", 1)
     return html
 
 
