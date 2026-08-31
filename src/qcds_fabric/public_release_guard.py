@@ -94,8 +94,16 @@ def validate_public_site(site: str | Path) -> None:
     if marker not in html:
         errors.append(f"current public build marker missing: BUILD {PUBLIC_BUILD}")
 
-    if '<body class="publicCompact publicViewRobotics publicLegalAsk" data-public-view="robotics">' not in html:
-        errors.append("Visual Logical Robot is not the first-paint public view")
+    body_match = re.search(r'<body\s+class="([^"]*)"([^>]*)>', html)
+    if body_match is None:
+        errors.append("public body tag missing")
+    else:
+        body_classes = set(body_match.group(1).split())
+        body_attrs = body_match.group(2)
+        if "publicViewRobotics" not in body_classes or "publicViewQcds" in body_classes:
+            errors.append("Visual Logical Robot is not the first-paint public view")
+        if 'data-public-view="robotics"' not in body_attrs:
+            errors.append("public body does not identify Robotics as the initial view")
     if "window.publicSelectView('robotics');" not in html:
         errors.append("final public router does not explicitly start Visual Logical Robot")
     if "publicSetLegalContext('jb_unauthorized_sublet_forfeiture_2026.json');publicSelectView('qcds')" in html:
