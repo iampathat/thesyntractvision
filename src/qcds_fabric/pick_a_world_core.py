@@ -190,6 +190,122 @@ def _rows(items: tuple[Any, ...]) -> list[dict[str, Any]]:
     return [{"value": str(item.value), "probability": float(item.probability)} for item in items]
 
 
+def _inspection(case: PickWorldCase, frame: SemanticProblemFrame, width: int, baseline: list[dict[str, Any]], stabilized: list[dict[str, Any]], leaders: tuple[str, ...], binding_status: str, entropy: float) -> dict[str, Any]:
+    predicates = tuple(next(iter(case.worlds.values())).keys())
+    world_values = tuple(case.worlds.keys())
+    property_values = {predicate: _property_values(case, predicate) for predicate in predicates}
+
+    dimension_groups = [
+        {
+            "group": "world",
+            "meaning": "Which complete represented world is active?",
+            "values": list(world_values),
+            "bits": [f"world={value}" for value in world_values],
+            "bit_count": len(world_values),
+        }
+    ]
+    dimension_groups.extend(
+        {
+            "group": predicate,
+            "meaning": f"Which represented {predicate} value is active?",
+            "values": list(values),
+            "bits": [f"{predicate}={value}" for value in values],
+            "bit_count": len(values),
+        }
+        for predicate, values in property_values.items()
+    )
+    logical_dimensions = [bit for group in dimension_groups for bit in group["bits"]]
+
+    structural_oracles = [
+        {
+            "oracle_id": "onehot:world",
+            "type": "structural",
+            "logic": "Exactly one represented world may be active.",
+            "members": [f"world={value}" for value in world_values],
+        }
+    ]
+    structural_oracles.extend(
+        {
+            "oracle_id": f"onehot:{predicate}",
+            "type": "structural",
+            "logic": f"Exactly one {predicate} value may be active.",
+            "members": [f"{predicate}={value}" for value in values],
+        }
+        for predicate, values in property_values.items()
+    )
+
+    evidence_oracles = [
+        {
+            "oracle_id": f"evidence:{index}:{predicate}",
+            "type": "evidence",
+            "logic": f"Observed {predicate}={value}.",
+            "dimension": f"{predicate}={value}",
+            "confidence": confidence,
+        }
+        for index, (predicate, value, confidence) in enumerate(case.observations, start=1)
+    ]
+
+    logical_oracles = [
+        {
+            "oracle_id": rule.rule_id,
+            "type": "logical",
+            "logic": rule.original_text,
+            "antecedent": f"{rule.antecedent.predicate}={rule.antecedent.value}",
+            "consequent": f"{rule.consequent.predicate}={rule.consequent.value}",
+            "confidence": rule.confidence,
+        }
+        for rule in frame.rules
+    ]
+    oracle_total = len(structural_oracles) + len(evidence_oracles) + len(logical_oracles)
+
+    phases = [
+        {
+            "number": 1,
+            "name": "Condition Formation",
+            "plain": "Create the represented possibility space.",
+            "detail": f"{width} binary Conditions form a raw 2^{width} state space before oracle constraints.",
+        },
+        {
+            "number": 2,
+            "name": "Conditional Evolution",
+            "plain": "Apply the question and evidence as oracle logic.",
+            "detail": f"{oracle_total} active oracles: {len(structural_oracles)} structural, {len(evidence_oracles)} evidence, {len(logical_oracles)} logical.",
+        },
+        {
+            "number": 3,
+            "name": "Recursive Inference",
+            "plain": "Concentrate the distribution around states that remain coherent.",
+            "detail": f"World projection moves from baseline to stabilized TruthDistribution; leaders: {', '.join(leaders) if leaders else 'none'}.",
+        },
+        {
+            "number": 4,
+            "name": "Truth-Alignment Verification",
+            "plain": "Check what can actually be bound without forcing a false certainty.",
+            "detail": f"Binding status: {binding_status}. Distribution entropy: {entropy:.4f}.",
+        },
+    ]
+
+    return {
+        "dimension_groups": dimension_groups,
+        "logical_dimensions": logical_dimensions,
+        "raw_state_count": 2**width,
+        "oracle_summary": {
+            "total": oracle_total,
+            "structural": len(structural_oracles),
+            "evidence": len(evidence_oracles),
+            "logical": len(logical_oracles),
+        },
+        "oracle_groups": {
+            "structural": structural_oracles,
+            "evidence": evidence_oracles,
+            "logical": logical_oracles,
+        },
+        "qcds_phases": phases,
+        "baseline_world_distribution": baseline,
+        "stabilized_world_distribution": stabilized,
+    }
+
+
 def run_pick_world_case(case_id: str) -> dict[str, Any]:
     case = CASES.get(case_id)
     if case is None:
@@ -197,13 +313,17 @@ def run_pick_world_case(case_id: str) -> dict[str, Any]:
 
     frame = build_pick_world_frame(case_id)
     result = problem_to_syntract(frame, max_width=20)
-    baseline = result.inference.baseline_queries.get("world", ())
-    stabilized = result.inference.stabilized_queries.get("world", ())
+    baseline_items = result.inference.baseline_queries.get("world", ())
+    stabilized_items = result.inference.stabilized_queries.get("world", ())
+    baseline = _rows(baseline_items)
+    stabilized = _rows(stabilized_items)
     leaders = result.inference.leading_candidates("world")
     width = int(result.compilation.provenance.get("logical_width") or 0)
 
     world_binding = leaders[0] if len(leaders) == 1 else None
     binding_status = "bound_single_world" if world_binding is not None else "unresolved_tie"
+    entropy = float(result.syntract.bound_distribution.entropy)
+    inspection = _inspection(case, frame, width, baseline, stabilized, leaders, binding_status, entropy)
 
     return {
         "status": "ok",
@@ -216,6 +336,7 @@ def run_pick_world_case(case_id: str) -> dict[str, Any]:
         "worlds_are_logical_conditions": True,
         "logical_width": width,
         "candidate_binary_space": f"2^{width}",
+        "raw_state_count": inspection["raw_state_count"],
         "represented_worlds": list(case.worlds.keys()),
         "property_dimensions": list(next(iter(case.worlds.values())).keys()),
         "world_definitions": {name: dict(values) for name, values in case.worlds.items()},
@@ -224,17 +345,18 @@ def run_pick_world_case(case_id: str) -> dict[str, Any]:
             for predicate, value, confidence in case.observations
         ],
         "rule_count": len(frame.rules),
-        "baseline": _rows(baseline),
-        "stabilized": _rows(stabilized),
+        "baseline": baseline,
+        "stabilized": stabilized,
         "leading_candidates": list(leaders),
         "world_binding": world_binding,
         "binding_status": binding_status,
         "syntract_id": result.syntract.syntract_id,
         "syntract_binds_distribution": True,
         "single_world_forced_on_tie": False,
-        "entropy": float(result.syntract.bound_distribution.entropy),
+        "entropy": entropy,
         "conflict_markers": list(result.inference.conflict_markers),
         "canonical_spec_modified": False,
+        **inspection,
     }
 
 
