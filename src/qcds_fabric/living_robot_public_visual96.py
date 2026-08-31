@@ -53,6 +53,12 @@ _SCRIPT = r'''
 (function(){
   if(typeof window.q69Open!=='function')return;
   const baseOpen=window.q69Open;
+  let q97UserStepClick=false;
+
+  document.addEventListener('click',event=>{
+    if(event.target?.closest?.('#try-logical-robot .q69Step'))q97UserStepClick=true;
+  },true);
+  document.addEventListener('click',()=>{setTimeout(()=>{q97UserStepClick=false},0)},false);
 
   function q97PlaceInspect(step, preserveViewport){
     const trace=document.querySelector('#try-logical-robot .q69Trace');
@@ -78,10 +84,8 @@ _SCRIPT = r'''
   }
 
   window.q69Open=function(step,result){
-    const active=document.activeElement;
-    const preserve=!!active?.classList?.contains('q69Step');
     const value=baseOpen(step,result);
-    q97PlaceInspect(step,preserve);
+    q97PlaceInspect(step,q97UserStepClick);
     return value;
   };
 
@@ -89,6 +93,9 @@ _SCRIPT = r'''
     const active=Array.from(document.querySelectorAll('#try-logical-robot .q69Step')).findIndex(b=>b.classList.contains('active'));
     if(active>=0)q97PlaceInspect(active+1,false);
   });
+
+  const buildMark=document.querySelector('.publicBuildMark');
+  if(buildMark)buildMark.textContent='BUILD 97';
 })();
 </script>
 '''
