@@ -8,7 +8,7 @@ from typing import Sequence
 from .living_robot_public_visual87 import living_robot_public_visual87_html as _base_html
 
 
-PUBLIC_BUILD = "93"
+PUBLIC_BUILD = "95"
 
 _FACTS_CSS = r'''
 /* BUILD 65: playground facts are metadata, not action cards. */
