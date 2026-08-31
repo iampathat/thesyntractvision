@@ -8,7 +8,7 @@ from typing import Sequence
 from .living_robot_public_visual87 import living_robot_public_visual87_html as _base_html
 
 
-PUBLIC_BUILD = "87"
+PUBLIC_BUILD = "88"
 
 _FACTS_CSS = r'''
 /* BUILD 65: playground facts are metadata, not action cards. */
@@ -61,9 +61,15 @@ header.publicTechnicalDetailsOpen .clarityPanel{z-index:180!important}
 @media(max-width:560px){header.publicTechnicalDetailsOpen .clarityPanel{max-height:calc(100vh - 110px);overflow:auto}}
 '''
 
+_STARTUP_CSS = r'''
+/* BUILD 88: the build marker is diagnostic metadata, not part of the main menu. */
+.publicBuildMark{position:fixed!important;top:5px!important;right:8px!important;z-index:95!important;order:initial!important;font-size:5.5px!important;letter-spacing:.12em!important;padding:3px 5px!important;opacity:.58!important;pointer-events:none!important;background:#06131de8!important;border-color:#29495d99!important}
+@media(max-width:700px){.publicBuildMark{top:4px!important;right:5px!important;font-size:5px!important;padding:2px 4px!important}}
+'''
+
 _ROUTER_SCRIPT = r'''
 <script>
-/* BUILD 87: final router. Visual Logical Robot is the public front door. */
+/* BUILD 88: one startup source. Visual Logical Robot is always the public front door. */
 (function(){
   const VIEW_CLASS={
     qcds:'publicViewQcds',
@@ -85,8 +91,7 @@ _ROUTER_SCRIPT = r'''
     }
     if(view==='robotics' && typeof window.q75Activate==='function')window.setTimeout(window.q75Activate,0);
   };
-  const active=document.querySelector('[data-public-view].active');
-  window.publicSelectView(active?.dataset.publicView||'robotics');
+  window.publicSelectView('robotics');
 })();
 </script>
 '''
@@ -105,6 +110,9 @@ _DETAILS_SCRIPT = r'''
 </script>
 '''
 
+_OLD_QCDS_START = "window.addEventListener('DOMContentLoaded',()=>{publicSetLegalContext('jb_unauthorized_sublet_forfeiture_2026.json');publicSelectView('qcds')});"
+_NEUTRAL_LEGAL_START = "window.addEventListener('DOMContentLoaded',()=>{publicSetLegalContext('jb_unauthorized_sublet_forfeiture_2026.json')});"
+
 
 def living_robot_public_html(*, static_mode: bool = False) -> str:
     """Single stable public exporter used by both Pages and regression tests.
@@ -116,6 +124,20 @@ def living_robot_public_html(*, static_mode: bool = False) -> str:
     """
 
     html = _base_html(static_mode=static_mode)
+
+    # Historical compact UI used to force TRY QCDS on DOMContentLoaded. The
+    # stable public artifact has one startup owner now: the final router below.
+    if _OLD_QCDS_START not in html:
+        raise RuntimeError("legacy QCDS startup hook changed; BUILD 88 cannot neutralize it safely")
+    html = html.replace(_OLD_QCDS_START, _NEUTRAL_LEGAL_START, 1)
+
+    # Avoid even a first-paint flash of TRY QCDS before JavaScript runs.
+    html = html.replace(
+        '<body class="publicCompact publicViewQcds publicLegalAsk">',
+        '<body class="publicCompact publicViewRobotics publicLegalAsk" data-public-view="robotics">',
+        1,
+    )
+
     html, count = re.subn(
         r'<span class="publicBuildMark">BUILD\s+\d+</span>',
         f'<span class="publicBuildMark">BUILD {PUBLIC_BUILD}</span>',
@@ -141,7 +163,7 @@ def living_robot_public_html(*, static_mode: bool = False) -> str:
         html = html.replace(old, new, 1)
     if "</style>" not in html or "</body>" not in html:
         raise RuntimeError("public shell missing; stable router cannot attach")
-    html = html.replace("</style>", _FACTS_CSS + "\n" + _ROUTER_CSS + "\n" + _DETAILS_CSS + "\n</style>", 1)
+    html = html.replace("</style>", _FACTS_CSS + "\n" + _ROUTER_CSS + "\n" + _DETAILS_CSS + "\n" + _STARTUP_CSS + "\n</style>", 1)
     html = html.replace("</body>", _ROUTER_SCRIPT + "\n" + _DETAILS_SCRIPT + "\n</body>", 1)
     return html
 
