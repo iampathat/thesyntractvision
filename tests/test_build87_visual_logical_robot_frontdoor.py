@@ -6,14 +6,18 @@ from qcds_fabric.living_robot_public import PUBLIC_BUILD, living_robot_public_ht
 def test_visual_logical_robot_is_the_public_front_door() -> None:
     html = living_robot_public_html(static_mode=True)
 
-    assert PUBLIC_BUILD == "87"
+    assert int(PUBLIC_BUILD) >= 88
     assert "THE SYNTRACT VISION · ONE QCDS · MANY BODIES" in html
     assert "VISUAL LOGICAL ROBOT · QCDS / SYNTRACT" in html
     assert "Draw reality. Watch QCDS find the shortest coherent route." in html
     assert 'data-public-view="robotics" class="active"' in html
-    assert '<body class="publicCompact publicViewRobotics publicLegalAsk">' in html
-    assert "btn.dataset.publicView==='robotics'" in html
-    assert "active?.dataset.publicView||'robotics'" in html
+    assert '<body class="publicCompact publicViewRobotics publicLegalAsk" data-public-view="robotics">' in html
+    assert "window.publicSelectView('robotics');" in html
+
+    # The historical compact startup hook must never be allowed to seize the
+    # public page back for TRY QCDS on first load or browser reload.
+    assert "publicSetLegalContext('jb_unauthorized_sublet_forfeiture_2026.json');publicSelectView('qcds')" not in html
+    assert "active?.dataset.publicView||'robotics'" not in html
 
     nav = html.split('<div class="publicCompactActions">', 1)[1].split("</div>", 1)[0]
     assert nav.index("VISUAL LOGICAL ROBOT") < nav.index("TRY QCDS")
@@ -24,7 +28,7 @@ def test_build_badge_is_small_and_fixed_in_the_upper_right_corner() -> None:
     html = living_robot_public_html(static_mode=True)
 
     assert ".publicBuildMark{position:fixed!important" in html
-    assert "top:6px!important" in html
+    assert "top:5px!important" in html
     assert "right:8px!important" in html
     assert "font-size:5.5px!important" in html
     assert "pointer-events:none!important" in html
