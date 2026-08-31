@@ -5,10 +5,10 @@ import re
 from pathlib import Path
 from typing import Sequence
 
-from .living_robot_public_pick67 import living_robot_public_pick67_html as _base_html
+from .living_robot_public_trace72 import living_robot_public_trace72_html as _base_html
 
 
-PUBLIC_BUILD = "67"
+PUBLIC_BUILD = "72"
 
 _FACTS_CSS = r'''
 /* BUILD 65: playground facts are metadata, not action cards. */
