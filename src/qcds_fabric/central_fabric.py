@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
@@ -29,12 +30,36 @@ class HybridLaneResult:
     runs: tuple[CentralFabricRun, ...]
 
 
+def _native_threads_available() -> bool:
+    """Return whether this Python substrate can create ordinary OS threads.
+
+    Standard Pyodide/WebAssembly runs with ``sys.platform == 'emscripten'`` and
+    cannot start ``threading.Thread``/``ThreadPoolExecutor`` workers unless a
+    specialised threaded build and browser headers are used. QCDS parallelism
+    is semantic independence between Logical Spaces; it must not depend on that
+    transport capability.
+    """
+
+    return sys.platform not in {"emscripten", "wasi"}
+
+
+def _thread_start_failed(exc: RuntimeError) -> bool:
+    message = str(exc).lower()
+    return "start new thread" in message or "start a new thread" in message
+
+
 class CentralQCDSFabric:
     """Central high-capacity host/router around the unchanged QCDS Fabric.
 
     Centralization changes execution capacity and enables many Logical Robots to
     share mounted oracle-space contracts. It does not create a second inference
     engine. Every run delegates to FabricLayer over a BaseBundle + OracleStack.
+
+    Parallel/hybrid topology is semantic. A native substrate may execute
+    independent branches concurrently; a threadless WASM/Pyodide substrate
+    executes those same independent branch contracts deterministically in one
+    thread. The Logical Spaces, QCDS runs and resulting distributions are not
+    changed by that transport choice.
     """
 
     def __init__(self, host: OracleSpaceHost | None = None, fabric: FabricLayer | None = None) -> None:
@@ -66,17 +91,37 @@ class CentralQCDSFabric:
             reentered_from_space_id=reentered_from_space_id,
         )
 
+    def _run_parallel_serial_transport(self, resolved: Sequence[str]) -> Mapping[str, CentralFabricRun]:
+        return {space_id: self.run(space_id) for space_id in resolved}
+
     def run_parallel(self, space_ids: Sequence[str], *, max_workers: int | None = None) -> Mapping[str, CentralFabricRun]:
-        """Run independent mounted oracle spaces concurrently through QCDS."""
+        """Run independent mounted oracle spaces through the same QCDS core.
+
+        Native Python uses concurrent workers. Threadless WebAssembly/Pyodide
+        preserves the exact parallel topology and branch contracts while using
+        deterministic single-thread transport.
+        """
+
         resolved = tuple(space_ids)
         if len(set(resolved)) != len(resolved):
             raise CentralFabricError("parallel space ids must be unique")
         if not resolved:
             return {}
+        if not _native_threads_available():
+            return self._run_parallel_serial_transport(resolved)
+
         worker_count = max_workers or min(32, len(resolved))
-        with ThreadPoolExecutor(max_workers=worker_count) as executor:
-            futures = {space_id: executor.submit(self.run, space_id) for space_id in resolved}
-            return {space_id: future.result() for space_id, future in futures.items()}
+        try:
+            with ThreadPoolExecutor(max_workers=worker_count) as executor:
+                futures = {space_id: executor.submit(self.run, space_id) for space_id in resolved}
+                return {space_id: future.result() for space_id, future in futures.items()}
+        except RuntimeError as exc:
+            # Some constrained Python hosts report themselves as native but deny
+            # thread creation at runtime. Falling back changes only scheduling,
+            # never QCDS/OracleSpace semantics.
+            if not _thread_start_failed(exc):
+                raise
+            return self._run_parallel_serial_transport(resolved)
 
     @staticmethod
     def _reentry_stack(previous: CentralFabricRun, previous_space: OracleSpace, next_space: OracleSpace) -> OracleStack:
@@ -117,17 +162,32 @@ class CentralQCDSFabric:
             runs.append(self.run(next_id, oracle_stack=stack, reentered_from_space_id=previous_id))
         return tuple(runs)
 
+    def _run_hybrid_serial_transport(self, lanes: Mapping[str, Sequence[str]]) -> Mapping[str, HybridLaneResult]:
+        return {
+            lane_id: HybridLaneResult(lane_id=lane_id, runs=self.run_sequence(tuple(space_ids)))
+            for lane_id, space_ids in lanes.items()
+        }
+
     def run_hybrid(self, lanes: Mapping[str, Sequence[str]], *, max_workers: int | None = None) -> Mapping[str, HybridLaneResult]:
-        """Execute sequential QCDS lanes concurrently; no semantic chunking is invented."""
+        """Execute sequential QCDS lanes with substrate-appropriate transport."""
+
         if not lanes:
             return {}
+        if not _native_threads_available():
+            return self._run_hybrid_serial_transport(lanes)
+
         worker_count = max_workers or min(32, len(lanes))
-        with ThreadPoolExecutor(max_workers=worker_count) as executor:
-            futures = {lane_id: executor.submit(self.run_sequence, tuple(space_ids)) for lane_id, space_ids in lanes.items()}
-            return {
-                lane_id: HybridLaneResult(lane_id=lane_id, runs=future.result())
-                for lane_id, future in futures.items()
-            }
+        try:
+            with ThreadPoolExecutor(max_workers=worker_count) as executor:
+                futures = {lane_id: executor.submit(self.run_sequence, tuple(space_ids)) for lane_id, space_ids in lanes.items()}
+                return {
+                    lane_id: HybridLaneResult(lane_id=lane_id, runs=future.result())
+                    for lane_id, future in futures.items()
+                }
+        except RuntimeError as exc:
+            if not _thread_start_failed(exc):
+                raise
+            return self._run_hybrid_serial_transport(lanes)
 
     def mounted_manifest(self) -> tuple[Mapping[str, object], ...]:
         return self.host.manifest()
