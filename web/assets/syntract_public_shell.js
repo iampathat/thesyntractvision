@@ -38,6 +38,11 @@
   if(header && header.parentNode)header.insertAdjacentElement('afterend',navStack);
   else document.body.prepend(navStack);
 
+  /* Fixed navigation needs a layout spacer so page content always starts below it. */
+  const navSpacer=document.createElement('div');
+  navSpacer.id='publicNavSpacer';
+  navStack.insertAdjacentElement('afterend',navSpacer);
+
   const chapterDefinitions=[
     ['s120-space','POSSIBILITY SPACE'],
     ['s120-bias','TEST THE VIEW'],
@@ -51,11 +56,33 @@
   ];
 
   const journey=root.querySelector('.s120Journey');
+  let topicRail=null;
+  let topicPrev=null;
+  let topicNext=null;
+
   if(journey){
     journey.id='visionTopicNav';
     journey.setAttribute('aria-label','Vision topics');
     journey.innerHTML=chapterDefinitions.map(([id,label])=>`<button type="button" data-s120-page="${id}">${label}</button>`).join('');
-    navStack.appendChild(journey);
+
+    topicRail=document.createElement('div');
+    topicRail.id='visionTopicRail';
+    topicRail.setAttribute('aria-label','Scrollable Vision topic navigation');
+
+    topicPrev=document.createElement('button');
+    topicPrev.type='button';
+    topicPrev.className='publicTopicArrow publicTopicArrowPrev';
+    topicPrev.setAttribute('aria-label','Scroll Vision topics left');
+    topicPrev.innerHTML='<span aria-hidden="true">‹</span>';
+
+    topicNext=document.createElement('button');
+    topicNext.type='button';
+    topicNext.className='publicTopicArrow publicTopicArrowNext';
+    topicNext.setAttribute('aria-label','Scroll Vision topics right');
+    topicNext.innerHTML='<span aria-hidden="true">›</span>';
+
+    topicRail.append(topicPrev,journey,topicNext);
+    navStack.appendChild(topicRail);
   }
 
   /* The old release/launch card repeated navigation that now lives permanently above.
@@ -65,11 +92,47 @@
 
   function syncNavStackHeight(){
     const height=Math.ceil(navStack.getBoundingClientRect().height || 0);
-    if(height>0)document.documentElement.style.setProperty('--public-nav-stack-height',`${height}px`);
+    if(height>0){
+      document.documentElement.style.setProperty('--public-nav-stack-height',`${height}px`);
+      navSpacer.style.height=`${height}px`;
+    }
   }
-  syncNavStackHeight();
-  if('ResizeObserver' in window)new ResizeObserver(syncNavStackHeight).observe(navStack);
-  else window.addEventListener('resize',syncNavStackHeight,{passive:true});
+
+  function updateTopicArrows(){
+    if(!journey || !topicPrev || !topicNext)return;
+    const overflow=journey.scrollWidth>journey.clientWidth+2;
+    const atStart=journey.scrollLeft<=2;
+    const atEnd=journey.scrollLeft+journey.clientWidth>=journey.scrollWidth-2;
+    topicPrev.hidden=!overflow;
+    topicNext.hidden=!overflow;
+    topicPrev.disabled=!overflow || atStart;
+    topicNext.disabled=!overflow || atEnd;
+    topicPrev.setAttribute('aria-hidden',overflow?'false':'true');
+    topicNext.setAttribute('aria-hidden',overflow?'false':'true');
+  }
+
+  function scrollTopics(direction){
+    if(!journey)return;
+    const amount=Math.max(220,Math.round(journey.clientWidth*.72));
+    journey.scrollBy({left:direction*amount,behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+  }
+
+  if(topicPrev)topicPrev.addEventListener('click',()=>scrollTopics(-1));
+  if(topicNext)topicNext.addEventListener('click',()=>scrollTopics(1));
+  if(journey)journey.addEventListener('scroll',updateTopicArrows,{passive:true});
+
+  function syncNavigationGeometry(){
+    syncNavStackHeight();
+    updateTopicArrows();
+  }
+
+  syncNavigationGeometry();
+  if('ResizeObserver' in window){
+    new ResizeObserver(syncNavigationGeometry).observe(navStack);
+    if(journey)new ResizeObserver(updateTopicArrows).observe(journey);
+  }else{
+    window.addEventListener('resize',syncNavigationGeometry,{passive:true});
+  }
 
   function stripInternalBuildLabels(scope){
     if(!scope)return;
@@ -107,6 +170,7 @@
         if(active)button.setAttribute('aria-current','page'); else button.removeAttribute('aria-current');
       });
     }
+    syncNavigationGeometry();
     if(scroll){
       const target=document.getElementById(selected);
       if(target)target.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
@@ -123,7 +187,7 @@
   ];
 
   function parkElement(element){
-    if(!element || element===navStack || element===root || navStack.contains(element) || parked.has(element))return;
+    if(!element || element===navStack || element===navSpacer || element===root || navStack.contains(element) || parked.has(element))return;
     parked.set(element,{
       display:element.style.getPropertyValue('display'),
       priority:element.style.getPropertyPriority('display'),
@@ -148,7 +212,7 @@
     if(!active){restoreParked();return}
 
     Array.from(body.children).forEach(element=>{
-      if(element===navStack || element===root || element.tagName==='SCRIPT' || element.tagName==='STYLE')return;
+      if(element===navStack || element===navSpacer || element===root || element.tagName==='SCRIPT' || element.tagName==='STYLE')return;
       parkElement(element);
     });
 
@@ -159,7 +223,7 @@
   }
 
   function scrollToSurface(){
-    navStack.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+    window.scrollTo({top:0,behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
   }
 
   function selectSurface(requested,scroll){
@@ -177,7 +241,8 @@
       if(baseSelectView)baseSelectView(surface);
       setPrimaryActive(surface);
     }
-    syncNavStackHeight();
+    syncNavigationGeometry();
+    requestAnimationFrame(syncNavigationGeometry);
     if(scroll)scrollToSurface();
   }
 
