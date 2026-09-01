@@ -53,11 +53,12 @@
   ];
 
   const journey=root.querySelector('.s120Journey');
-  const hero=root.querySelector('.s120Hero');
   if(journey){
+    journey.id='visionTopicNav';
+    journey.setAttribute('aria-label','Vision topics');
     journey.innerHTML=chapterDefinitions.map(([id,label])=>`<button type="button" data-s120-page="${id}">${label}</button>`).join('');
-    /* The two navigation levels must be visually consecutive: main menu, then Vision topics, then content. */
-    if(hero && hero.parentNode)hero.parentNode.insertBefore(journey,hero);
+    /* A real second menu level: outside the content tree, directly after the primary menu. */
+    nav.insertAdjacentElement('afterend',journey);
   }
 
   function stripInternalBuildLabels(scope){
@@ -92,15 +93,66 @@
     let selected=id;
     if(!chapterDefinitions.some(([candidate])=>candidate===selected))selected='s120-space';
     root.querySelectorAll('.s120Chapter').forEach(chapter=>chapter.classList.toggle('s120ActiveChapter',chapter.id===selected));
-    root.querySelectorAll('[data-s120-page]').forEach(button=>{
-      const active=button.dataset.s120Page===selected;
-      button.classList.toggle('active',active);
-      if(active)button.setAttribute('aria-current','page'); else button.removeAttribute('aria-current');
-    });
+    if(journey){
+      journey.querySelectorAll('[data-s120-page]').forEach(button=>{
+        const active=button.dataset.s120Page===selected;
+        button.classList.toggle('active',active);
+        if(active)button.setAttribute('aria-current','page'); else button.removeAttribute('aria-current');
+      });
+    }
     if(scroll){
       const target=document.getElementById(selected);
       if(target)target.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
     }
+  }
+
+  /* Old public surfaces contain historical !important display rules. Vision therefore
+     parks them explicitly instead of hoping selector precedence hides every wrapper. */
+  const parked=new Map();
+  const legacySelectors=[
+    '#public-syntract-teaser','.publicCapabilityStrip','#try-logical-robot',
+    '#public-legal-question','#swedish-legal-robot','#public-robotics','#public-syntracts',
+    '.hero','.layout','.learningMoment','.understandBuild','.domainLab','.spaceBuilderWrap','.sessionSandbox'
+  ];
+
+  function parkElement(element){
+    if(!element || element===nav || element===journey || element===root || parked.has(element))return;
+    parked.set(element,{
+      display:element.style.getPropertyValue('display'),
+      priority:element.style.getPropertyPriority('display'),
+      ariaHidden:element.getAttribute('aria-hidden')
+    });
+    element.style.setProperty('display','none','important');
+    element.setAttribute('aria-hidden','true');
+  }
+
+  function restoreParked(){
+    parked.forEach((state,element)=>{
+      if(!element || !element.style)return;
+      if(state.display)element.style.setProperty('display',state.display,state.priority||'');
+      else element.style.removeProperty('display');
+      if(state.ariaHidden===null)element.removeAttribute('aria-hidden');
+      else element.setAttribute('aria-hidden',state.ariaHidden);
+    });
+    parked.clear();
+  }
+
+  function isolateVision(active){
+    if(!active){restoreParked();return}
+
+    /* First park every other top-level body. This catches historical wrappers whose
+       nesting has changed between public builds. */
+    Array.from(body.children).forEach(element=>{
+      if(element===nav || element===journey || element===root || element.tagName==='SCRIPT' || element.tagName==='STYLE')return;
+      parkElement(element);
+    });
+
+    /* Then park the actual legacy surfaces as a second boundary. Inline !important
+       wins even if an older route rule tries to force one of them visible. */
+    document.querySelectorAll(legacySelectors.join(',')).forEach(element=>{
+      if(!root.contains(element))parkElement(element);
+      else if(element.id==='public-robotics' || element.id==='try-logical-robot' || element.id==='public-syntracts' || element.id==='public-legal-question' || element.id==='swedish-legal-robot')parkElement(element);
+    });
   }
 
   function scrollToSurface(){
@@ -112,9 +164,11 @@
     if(surface==='overview'){
       body.classList.add('publicShellOverview');
       body.dataset.publicSurface='overview';
+      isolateVision(true);
       setPrimaryActive('overview');
       selectChapter(root.querySelector('.s120Chapter.s120ActiveChapter')?.id || 's120-space',false);
     }else{
+      isolateVision(false);
       body.classList.remove('publicShellOverview');
       body.dataset.publicSurface=surface;
       if(baseSelectView)baseSelectView(surface);
@@ -124,7 +178,7 @@
   }
 
   nav.querySelectorAll('[data-public-surface]').forEach(button=>button.addEventListener('click',()=>selectSurface(button.dataset.publicSurface,true)));
-  root.querySelectorAll('[data-s120-page]').forEach(button=>button.addEventListener('click',()=>selectChapter(button.dataset.s120Page,true)));
+  if(journey)journey.querySelectorAll('[data-s120-page]').forEach(button=>button.addEventListener('click',()=>selectChapter(button.dataset.s120Page,true)));
 
   window.publicSelectView=function(requested){
     if(legacyViews.has(requested))return selectSurface(requested,false);
