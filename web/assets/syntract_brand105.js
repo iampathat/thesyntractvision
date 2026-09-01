@@ -1,4 +1,4 @@
-/* BUILD 106: presentation only. No QCDS execution is touched. */
+/* BUILD 120: presentation identity only. No QCDS execution is touched. */
 (function(){
   function img(cls){
     const node=document.createElement('img');
@@ -36,7 +36,7 @@
     }
 
     const build=document.querySelector('.publicBuildMark');
-    if(build)build.textContent='BUILD 106';
+    if(build)build.textContent='BUILD 120';
   }
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount,{once:true});
