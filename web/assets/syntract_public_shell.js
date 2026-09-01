@@ -9,6 +9,11 @@
   const baseSelectView=typeof window.publicSelectView==='function' ? window.publicSelectView.bind(window) : null;
   const legacyViews=new Set(['robotics','qcds','syntract','legal','advanced']);
 
+  /* One physical navigation stack. Keeping both menu levels in the same DOM wrapper
+     prevents Vision content from ever appearing between the primary and topic rows. */
+  const navStack=document.createElement('div');
+  navStack.id='publicNavStack';
+
   const nav=document.createElement('nav');
   nav.id='publicSurfaceNav';
   nav.setAttribute('aria-label','The Syntract Vision public surfaces');
@@ -27,18 +32,11 @@
         <button type="button" data-public-surface="advanced">ADVANCED</button>
       </div>
     </div>`;
+  navStack.appendChild(nav);
 
   const header=document.querySelector('body > header, header');
-  if(header && header.parentNode)header.insertAdjacentElement('afterend',nav);
-  else document.body.prepend(nav);
-
-  function syncNavHeight(){
-    const height=Math.ceil(nav.getBoundingClientRect().height || 0);
-    if(height>0)document.documentElement.style.setProperty('--public-nav-height',`${height}px`);
-  }
-  syncNavHeight();
-  if('ResizeObserver' in window)new ResizeObserver(syncNavHeight).observe(nav);
-  else window.addEventListener('resize',syncNavHeight,{passive:true});
+  if(header && header.parentNode)header.insertAdjacentElement('afterend',navStack);
+  else document.body.prepend(navStack);
 
   const chapterDefinitions=[
     ['s120-space','POSSIBILITY SPACE'],
@@ -57,9 +55,21 @@
     journey.id='visionTopicNav';
     journey.setAttribute('aria-label','Vision topics');
     journey.innerHTML=chapterDefinitions.map(([id,label])=>`<button type="button" data-s120-page="${id}">${label}</button>`).join('');
-    /* A real second menu level: outside the content tree, directly after the primary menu. */
-    nav.insertAdjacentElement('afterend',journey);
+    navStack.appendChild(journey);
   }
+
+  /* The old release/launch card repeated navigation that now lives permanently above.
+     Remove it from the public Vision surface; this is presentation-only. */
+  const release=root.querySelector('#s120-release');
+  if(release)release.remove();
+
+  function syncNavStackHeight(){
+    const height=Math.ceil(navStack.getBoundingClientRect().height || 0);
+    if(height>0)document.documentElement.style.setProperty('--public-nav-stack-height',`${height}px`);
+  }
+  syncNavStackHeight();
+  if('ResizeObserver' in window)new ResizeObserver(syncNavStackHeight).observe(navStack);
+  else window.addEventListener('resize',syncNavStackHeight,{passive:true});
 
   function stripInternalBuildLabels(scope){
     if(!scope)return;
@@ -77,9 +87,6 @@
 
   document.querySelectorAll('.publicBuildMark').forEach(node=>node.remove());
   stripInternalBuildLabels(document.body);
-
-  const releaseTitle=root.querySelector('#s120-release .s120Launch b');
-  if(releaseTitle)releaseTitle.textContent='THE LIVING SUPERINTELLIGENCE';
 
   function setPrimaryActive(surface){
     nav.querySelectorAll('[data-public-surface]').forEach(button=>{
@@ -116,7 +123,7 @@
   ];
 
   function parkElement(element){
-    if(!element || element===nav || element===journey || element===root || parked.has(element))return;
+    if(!element || element===navStack || element===root || navStack.contains(element) || parked.has(element))return;
     parked.set(element,{
       display:element.style.getPropertyValue('display'),
       priority:element.style.getPropertyPriority('display'),
@@ -140,15 +147,11 @@
   function isolateVision(active){
     if(!active){restoreParked();return}
 
-    /* First park every other top-level body. This catches historical wrappers whose
-       nesting has changed between public builds. */
     Array.from(body.children).forEach(element=>{
-      if(element===nav || element===journey || element===root || element.tagName==='SCRIPT' || element.tagName==='STYLE')return;
+      if(element===navStack || element===root || element.tagName==='SCRIPT' || element.tagName==='STYLE')return;
       parkElement(element);
     });
 
-    /* Then park the actual legacy surfaces as a second boundary. Inline !important
-       wins even if an older route rule tries to force one of them visible. */
     document.querySelectorAll(legacySelectors.join(',')).forEach(element=>{
       if(!root.contains(element))parkElement(element);
       else if(element.id==='public-robotics' || element.id==='try-logical-robot' || element.id==='public-syntracts' || element.id==='public-legal-question' || element.id==='swedish-legal-robot')parkElement(element);
@@ -156,7 +159,7 @@
   }
 
   function scrollToSurface(){
-    nav.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+    navStack.scrollIntoView({behavior:window.matchMedia?.('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
   }
 
   function selectSurface(requested,scroll){
@@ -174,6 +177,7 @@
       if(baseSelectView)baseSelectView(surface);
       setPrimaryActive(surface);
     }
+    syncNavStackHeight();
     if(scroll)scrollToSurface();
   }
 
