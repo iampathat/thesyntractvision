@@ -18,7 +18,7 @@ def test_readme_keeps_easy_entry_and_full_architecture_depth() -> None:
 
     # The easy door must never replace the architecture behind it.
     required_sections = (
-        "## Visual Logical Robot — see the architecture before reading it",
+        "## Visual Logical Robot — see one body before reading the architecture",
         "## One intelligence, many bodies",
         "### Unified composition boundary: `SyntractSystem`",
         "## Oracle-space topology: session, external and central",
@@ -36,14 +36,15 @@ def test_readme_keeps_easy_entry_and_full_architecture_depth() -> None:
 
     # Visual architecture is part of the README, not expendable decoration.
     assert readme.count("```mermaid") >= 4
-    assert "QCDS / Syntract Intelligence" in readme
+    assert "One QCDS / Syntract Core" in readme
     assert "Oracle Stack" in readme
     assert "Superposition / represented state" in readme
     assert "Oracles / emulated oracles" in readme
 
     # Keep the ambition visible while keeping the implementation claim bounded.
-    assert "blueprint / research architecture for superintelligence" in readme
-    assert "not a claim that the current MVP has already reached superintelligence" in readme
+    assert "**The Living Superintelligence** is the system-level architectural identity used by the public interface." in readme
+    assert "The current implementation remains research software" in readme
+    assert "the name is not used as evidence that demonstrated ASI performance has already been achieved" in readme
 
     # Canonical four-phase identity must remain visible in the front-door document.
     assert "Condition Formation" in readme
