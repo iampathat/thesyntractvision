@@ -29,7 +29,10 @@ body.publicShellOverview #visionTopicRail{display:grid}
 #visionTopicViewport.canScrollRight::after{opacity:1}
 #visionTopicNav{box-sizing:border-box;width:100%;display:flex!important;gap:7px;overflow-x:auto;scrollbar-width:none;margin:0!important;padding:10px 8px 12px!important;background:#06131d!important;border:0!important;position:relative!important;top:auto!important;z-index:1;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
 #visionTopicNav::-webkit-scrollbar{display:none}
-#visionTopicNav button{flex:0 0 auto;padding:8px 12px}
+#visionTopicNav button{flex:0 0 auto;padding:8px 12px;display:inline-flex;align-items:center;gap:7px}
+.publicTopicNumber{font-size:.78em;letter-spacing:.08em;color:#70bd92;font-weight:900;opacity:.9}
+.publicTopicLabel{display:inline-block}
+#visionTopicNav button.active .publicTopicNumber{color:#a8f2c2;opacity:1}
 .publicTopicArrow{position:relative;z-index:5;width:30px;height:30px;margin:auto;padding:0;border:1px solid #3b6373;border-radius:999px;background:#0b2230;color:#dff7e7;display:grid;place-items:center;box-shadow:0 4px 14px #0005;cursor:pointer}
 .publicTopicArrow span{font-size:24px;line-height:1;transform:translateY(-1px)}
 .publicTopicArrow:hover:not(:disabled){border-color:#73d69c;background:#123124;color:#effff4}
@@ -49,12 +52,22 @@ body.publicShellOverview #superintelligenceStory #s120-release{display:none!impo
 body.publicShellOverview #superintelligenceStory .s120Chapter{min-height:0;scroll-margin-top:calc(var(--public-chrome-height,150px) + 8px)}
 body.publicShellOverview #superintelligenceStory .s120Hero{padding-top:22px}
 
+/* The first chapter-title line deliberately mirrors level 2. Existing chapter-specific
+   language remains as a smaller facet only when it adds information (e.g. REPRESENT). */
+body.publicShellOverview #superintelligenceStory .s120ChapterHead{grid-template-columns:minmax(190px,230px) minmax(0,1fr)}
+body.publicShellOverview #superintelligenceStory .s120ChapterNo[data-public-chapter-label]{display:flex;flex-direction:column;gap:5px;align-items:flex-start;line-height:1.2}
+.publicChapterTopicTitle{display:block;color:#8ce3b2;font-size:11px;letter-spacing:.16em;font-weight:850;text-transform:uppercase}
+.publicChapterFacet{display:block;color:#708e84;font-size:8px;letter-spacing:.14em;font-weight:750;text-transform:uppercase}
+
 @media(max-width:980px){
   .publicSurfaceNavInner{padding-top:7px;padding-bottom:7px}.publicSurfaceActions{width:100%}
+  body.publicShellOverview #superintelligenceStory .s120ChapterHead{grid-template-columns:minmax(165px,200px) minmax(0,1fr)}
 }
 @media(max-width:620px){
   .publicSurfaceNavInner{padding-left:9px;padding-right:9px}.publicSurfaceActions button{font-size:8px;padding:7px 9px}
   #visionTopicRail.hasOverflow{grid-template-columns:36px minmax(0,1fr) 36px}
   #visionTopicViewport::before,#visionTopicViewport::after{width:36px}
   .publicTopicArrow{width:27px;height:27px}.publicTopicArrow span{font-size:22px}
+  body.publicShellOverview #superintelligenceStory .s120ChapterHead{grid-template-columns:1fr}
+  .publicChapterTopicTitle{font-size:10px}.publicChapterFacet{font-size:7.5px}
 }
