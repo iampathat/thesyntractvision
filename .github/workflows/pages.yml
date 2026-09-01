@@ -96,6 +96,7 @@ jobs:
           cp web/assets/syntract_public_shell.css _site/assets/syntract_public_shell.css
           cp web/assets/syntract_public_shell.js _site/assets/syntract_public_shell.js
           python - <<'PY'
+          import os
           from pathlib import Path
           from zipfile import ZIP_DEFLATED, ZipFile
 
@@ -107,10 +108,11 @@ jobs:
 
           page = Path('_site/index.html')
           html = page.read_text(encoding='utf-8')
+          cache_tag = (os.environ.get('GITHUB_SHA') or 'dev')[:12]
           styles = (
               '<link rel="stylesheet" href="assets/syntract_brand105.css">',
               '<link rel="stylesheet" href="assets/syntract_super120.css">',
-              '<link rel="stylesheet" href="assets/syntract_public_shell.css">',
+              f'<link rel="stylesheet" href="assets/syntract_public_shell.css?v={cache_tag}">',
           )
           scripts = (
               '<script defer src="assets/syntract_brand105.js"></script>',
@@ -127,7 +129,7 @@ jobs:
               '<script defer src="assets/syntract_super118.js"></script>',
               '<script defer src="assets/syntract_super119.js"></script>',
               '<script defer src="assets/syntract_super120.js"></script>',
-              '<script defer src="assets/syntract_public_shell.js"></script>',
+              f'<script defer src="assets/syntract_public_shell.js?v={cache_tag}"></script>',
           )
           for css in styles:
               if css not in html:
@@ -154,8 +156,8 @@ jobs:
           done
           test -s _site/assets/syntract_public_shell.css
           test -s _site/assets/syntract_public_shell.js
-          grep -F 'assets/syntract_public_shell.css' _site/index.html
-          grep -F 'assets/syntract_public_shell.js' _site/index.html
+          grep -F 'assets/syntract_public_shell.css?v=' _site/index.html
+          grep -F 'assets/syntract_public_shell.js?v=' _site/index.html
           grep -F 'qcdsCoreReimplemented:false' _site/assets/syntract_public_shell.js
       - name: Validate exact public release artifact
         run: python -m qcds_fabric.public_release_guard --site _site
