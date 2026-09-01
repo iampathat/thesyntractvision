@@ -32,6 +32,14 @@
   if(header && header.parentNode)header.insertAdjacentElement('afterend',nav);
   else document.body.prepend(nav);
 
+  function syncNavHeight(){
+    const height=Math.ceil(nav.getBoundingClientRect().height || 0);
+    if(height>0)document.documentElement.style.setProperty('--public-nav-height',`${height}px`);
+  }
+  syncNavHeight();
+  if('ResizeObserver' in window)new ResizeObserver(syncNavHeight).observe(nav);
+  else window.addEventListener('resize',syncNavHeight,{passive:true});
+
   const chapterDefinitions=[
     ['s120-space','POSSIBILITY SPACE'],
     ['s120-bias','TEST THE VIEW'],
@@ -45,8 +53,11 @@
   ];
 
   const journey=root.querySelector('.s120Journey');
+  const hero=root.querySelector('.s120Hero');
   if(journey){
     journey.innerHTML=chapterDefinitions.map(([id,label])=>`<button type="button" data-s120-page="${id}">${label}</button>`).join('');
+    /* The two navigation levels must be visually consecutive: main menu, then Vision topics, then content. */
+    if(hero && hero.parentNode)hero.parentNode.insertBefore(journey,hero);
   }
 
   function stripInternalBuildLabels(scope){
