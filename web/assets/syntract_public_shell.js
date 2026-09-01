@@ -6,6 +6,7 @@
   if(!root || document.getElementById('publicSurfaceNav'))return;
 
   const body=document.body;
+  const baseDocumentTitle=document.title;
   const baseSelectView=typeof window.publicSelectView==='function' ? window.publicSelectView.bind(window) : null;
   const legacyViews=new Set(['robotics','qcds','syntract','legal','advanced']);
   const header=document.querySelector('body > header, header');
@@ -47,16 +48,18 @@
   navSpacer.id='publicNavSpacer';
   chrome.insertAdjacentElement('afterend',navSpacer);
 
+  /* Numbering is public chapter structure, not an internal build identifier. The same
+     number + label is mirrored into each chapter heading so level 2 and content read as one. */
   const chapterDefinitions=[
-    ['s120-space','POSSIBILITY SPACE'],
-    ['s120-bias','TEST THE VIEW'],
-    ['s120-holds','WHAT HOLDS'],
-    ['s120-next','WHAT NEXT'],
-    ['s120-growth','GROW'],
-    ['s120-bodies','MANY BODIES'],
-    ['s120-recursion','RECURSIVE SYNTRACTS'],
-    ['s120-scale','SCALE'],
-    ['s120-claims','NOW / NEXT / HORIZON']
+    ['s120-space','01','POSSIBILITY SPACE'],
+    ['s120-bias','02','TEST THE VIEW'],
+    ['s120-holds','03','WHAT HOLDS'],
+    ['s120-next','04','WHAT NEXT'],
+    ['s120-growth','05','GROW'],
+    ['s120-bodies','06','MANY BODIES'],
+    ['s120-recursion','07','RECURSIVE SYNTRACTS'],
+    ['s120-scale','08','SCALE'],
+    ['s120-claims','09','NOW / NEXT / HORIZON']
   ];
 
   const journey=root.querySelector('.s120Journey');
@@ -68,7 +71,7 @@
   if(journey){
     journey.id='visionTopicNav';
     journey.setAttribute('aria-label','Vision topics');
-    journey.innerHTML=chapterDefinitions.map(([id,label])=>`<button type="button" data-s120-page="${id}">${label}</button>`).join('');
+    journey.innerHTML=chapterDefinitions.map(([id,number,label])=>`<button type="button" data-s120-page="${id}"><span class="publicTopicNumber">${number}</span><span class="publicTopicLabel">${label}</span></button>`).join('');
 
     topicRail=document.createElement('div');
     topicRail.id='visionTopicRail';
@@ -164,6 +167,42 @@
   document.querySelectorAll('.publicBuildMark').forEach(node=>node.remove());
   stripInternalBuildLabels(document.body);
 
+  function normalizedLabel(value){
+    return String(value||'').toUpperCase().replace(/[^A-Z0-9]+/g,' ').trim();
+  }
+
+  function decorateChapterHeadings(){
+    chapterDefinitions.forEach(([id,number,label])=>{
+      const chapter=document.getElementById(id);
+      const marker=chapter?.querySelector('.s120ChapterNo');
+      if(!marker)return;
+
+      if(!marker.dataset.publicOriginalFacet){
+        const raw=(marker.textContent||'').trim();
+        marker.dataset.publicOriginalFacet=raw.replace(/^\s*\d+\s*[·.\-:]*\s*/,'').trim();
+      }
+
+      const facet=marker.dataset.publicOriginalFacet||'';
+      const showFacet=facet && normalizedLabel(facet)!==normalizedLabel(label);
+      marker.replaceChildren();
+
+      const title=document.createElement('span');
+      title.className='publicChapterTopicTitle';
+      title.textContent=`${number} · ${label}`;
+      marker.appendChild(title);
+
+      if(showFacet){
+        const detail=document.createElement('span');
+        detail.className='publicChapterFacet';
+        detail.textContent=facet;
+        marker.appendChild(detail);
+      }
+      marker.dataset.publicChapterLabel=label;
+    });
+  }
+
+  decorateChapterHeadings();
+
   function setPrimaryActive(surface){
     nav.querySelectorAll('[data-public-surface]').forEach(button=>{
       const active=button.dataset.publicSurface===surface;
@@ -175,13 +214,23 @@
   function selectChapter(id,scroll){
     let selected=id;
     if(!chapterDefinitions.some(([candidate])=>candidate===selected))selected='s120-space';
+    const selectedDefinition=chapterDefinitions.find(([candidate])=>candidate===selected);
+
+    decorateChapterHeadings();
     root.querySelectorAll('.s120Chapter').forEach(chapter=>chapter.classList.toggle('s120ActiveChapter',chapter.id===selected));
     if(journey){
       journey.querySelectorAll('[data-s120-page]').forEach(button=>{
         const active=button.dataset.s120Page===selected;
         button.classList.toggle('active',active);
-        if(active)button.setAttribute('aria-current','page'); else button.removeAttribute('aria-current');
+        if(active){
+          button.setAttribute('aria-current','page');
+          if(scroll)button.scrollIntoView({behavior:'smooth',block:'nearest',inline:'nearest'});
+        }else button.removeAttribute('aria-current');
       });
+    }
+    if(body.classList.contains('publicShellOverview') && selectedDefinition){
+      const [,number,label]=selectedDefinition;
+      document.title=`${number} · ${label} — The Syntract Vision`;
     }
     syncNavigationGeometry();
     if(scroll){
@@ -251,6 +300,7 @@
       isolateVision(false);
       body.classList.remove('publicShellOverview');
       body.dataset.publicSurface=surface;
+      document.title=baseDocumentTitle;
       if(baseSelectView)baseSelectView(surface);
       setPrimaryActive(surface);
     }
