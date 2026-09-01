@@ -67,9 +67,11 @@ def test_run_controls_have_visible_feedback_and_result_targets() -> None:
     assert 'id="publicLegalQuickResult"' in html
     assert 'onclick="publicToggleRunDetails()"' in html
 
-    assert "trySeed('robot')" in html
+    # Current public seed ids are the explicit domain names used by the
+    # Build 38+ seed registry. Keep this contract synced with the deployed UI.
+    assert "trySeed('robotics')" in html
     assert "trySeed('biology')" in html
-    assert "trySeed('material')" in html
+    assert "trySeed('materials')" in html
     assert "trySeed('software')" in html
     assert 'id="quickResult"' in html
     assert 'id="quickResultText"' in html
@@ -94,11 +96,15 @@ def test_critical_public_ids_are_unique() -> None:
         assert len(re.findall(rf'id="{re.escape(element_id)}"', html)) == 1, element_id
 
 
-def test_advanced_defaults_to_compact_summary_not_the_legacy_wall() -> None:
+def test_advanced_routes_to_current_full_advanced_surface_with_compact_modes_available() -> None:
     html = living_robot_public_html(static_mode=True)
 
-    assert "body.publicCompact.publicViewAdvanced>.hero{display:none!important}" in html
-    assert "body.publicCompact.publicViewAdvanced>.layout" in html
+    # Build 78+ deliberately routes ADVANCED to the existing full advanced
+    # surface. The compact summary/manual/raw controls remain available inside
+    # that surface; the stale Build 51 expectation that the hero must be hidden
+    # no longer describes the public router.
+    assert "body.publicCompact.publicViewAdvanced>.hero{display:block!important}" in html
+    assert "body.publicCompact.publicViewAdvanced>.layout{display:grid!important}" in html
     assert "publicAdvancedMode('summary')" in html
     assert "publicAdvancedManual" in html
     assert "publicAdvancedRaw" in html
