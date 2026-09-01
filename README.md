@@ -2,7 +2,9 @@
 
 > **From uncertainty toward truth. From truth toward action.**
 
-**The Syntract Vision** is an experimental architecture for inference-driven intelligence built around **QCDS — Quantum Condition-Driven Synthesis**, **Logical Spaces**, **Syntracts** and the **Logical Robot**.
+**The Syntract Vision** is an experimental architecture for inference-driven intelligence built around **QCDS — Quantum Condition-Driven Synthesis**, **Logical Spaces** and **Syntracts**.
+
+At the system level, the public architecture is presented as **The Living Superintelligence**: **one QCDS / Syntract core manifested through many logical, simulated and physical bodies**. A Logical Robot is one such replaceable manifestation/body around the same core — it is not a second intelligence and it is not the layer above QCDS.
 
 Instead of treating intelligence as a trained model that produces one answer, QCDS works over explicit logical possibility space, applies logical and evidential constraints as **oracles**, preserves uncertainty, tests competing views, and recursively binds what remains coherent.
 
@@ -18,30 +20,33 @@ You do **not** need to understand the whole architecture before trying it or bui
 
 ## Start in 60 seconds
 
-### Try the Logical Robot in your browser
+### Enter The Living Superintelligence in your browser
 
 **https://iampathat.github.io/thesyntractvision/**
 
-The public playground now opens with a **Visual Logical Robot** and gives you five doors into the same QCDS / Syntract architecture:
+The public site now opens on **VISION / THE LIVING SUPERINTELLIGENCE**, not on an individual robot body. The top-level navigation exposes six surfaces around the same QCDS / Syntract core:
 
-- **Visual Logical Robot** — draw or erase obstacles and watch the same QCDS/Syntract system re-infer a shortest coherent route as the represented world changes.
-- **Try QCDS** — Biology, Robotics, Materials, Software or Surprise Me as small inspectable Logical Spaces.
+- **Vision** — the system-level introduction to The Living Superintelligence, organized as numbered chapters from **01 Possibility Space** through **09 Now / Next / Horizon**.
+- **Visual Robot** — **The Logical Robot** as a visual manifestation: draw or erase obstacles and watch the same QCDS/Syntract system re-infer a shortest coherent route as the represented world changes.
+- **QCDS** — Biology, Robotics, Materials, Software or Surprise Me as small inspectable Logical Spaces.
 - **Syntracts** — run several complete bound Syntracts as parallel QCDS branches, re-enter their full TruthDistributions into one joint Logical Space, and bind a higher-order Syntract.
-- **Legal Robot** — a substantial specialized Logical Robot over a source-attributed Swedish housing-law Logical Universe.
+- **Legal** — a substantial specialized Logical Robot over a source-attributed Swedish housing-law Logical Universe.
 - **Advanced** — the full builder, probes, explicit evidence, observations, guardrails and session sandbox.
 
-These are capability surfaces around the same system, not separate intelligences. Quick QCDS experiments prefill the same Logical Space fields and call the same `qcds_fabric` core path used by the advanced lab. The Visual Logical Robot enters through `SyntractSystem` and its existing `FabricLayer`; it does not use a separate browser pathfinder or a second JavaScript QCDS implementation.
+These are capability surfaces and manifested bodies around the same system, not separate intelligences. Quick QCDS experiments prefill the same Logical Space fields and call the same `qcds_fabric` core path used by the advanced lab. The Visual Logical Robot enters through `SyntractSystem` and its existing `FabricLayer`; it does not use a separate browser pathfinder or a second JavaScript QCDS implementation.
 
 The Swedish Law surface is deeper: it forms an active legal `2^N` problem, runs the shared QCDS Fabric, exposes **Classical Exact** and **Grover-emulated statevector** executions, and separately exposes the **Quantum Full Space** native-QPU target contract where semantic prefiltering is forbidden.
 
 ```text
-browser session
-      ↓
-Logical Robot / specialized body
-      ↓
-QCDS Core
-      ↓
-truth distribution / Syntract / result
+THE SYNTRACT VISION
+        ↓
+THE LIVING SUPERINTELLIGENCE
+        ↓
+ONE QCDS / SYNTRACT CORE
+        ↓
+logical / simulated / physical bodies
+        ↓
+TruthDistribution / Syntract / manifested result
 ```
 
 The browser does not contain a second JavaScript implementation of QCDS. The Python core is packaged and executed through WebAssembly/Pyodide. Browser state is session-only, there is no user database, and the public sandbox has **Reality effect = 0**.
@@ -110,17 +115,17 @@ The architecture is built around several strong ideas:
 - relevant coherent structure can emerge from an open Logical Space rather than requiring one permanent ontology;
 - the same intelligence can sit behind a browser, API, simulation, sensor, specialized domain robot or physical robot body.
 
-The current implementation is research software. It does **not** claim that the present Python MVP has already achieved AGI or ASI. The architecture explicitly explores a path toward increasingly general and potentially **superintelligent capability**.
+**The Living Superintelligence** is the system-level architectural identity used by the public interface. That name does not, by itself, assert that the present Python reference implementation has empirically demonstrated AGI or ASI. The current implementation remains research software while the architecture explicitly explores a path toward increasingly general and potentially **superintelligent capability**.
 
 ---
 
-## Watch the Logical Robot work
+## Logical Robot — one manifested body
 
-The repository includes a **Living Logical Robot**: a visible, controllable manifestation of the QCDS / Syntract intelligence architecture.
+The repository includes a **Living Logical Robot**: a visible, controllable manifestation of The Living Superintelligence / QCDS / Syntract architecture.
 
 It can expose represented Reality Logical Space growth, governed rules, frontier work, contradictions, evidence events, domain exploration and discovery while the robot operates.
 
-The page is **not a second intelligence**. It is a replaceable body/window around the same Logical Robot.
+The Logical Robot is **not a second intelligence** and it is not the parent of QCDS. It is a replaceable body/window that talks to the same QCDS / Syntract core.
 
 The public version is intentionally ephemeral. The local runtime can additionally operate with persistent inspectable stores.
 
@@ -128,9 +133,9 @@ See [`LIVING_LOGICAL_ROBOT.md`](LIVING_LOGICAL_ROBOT.md).
 
 ---
 
-## Visual Logical Robot — see the architecture before reading it
+## Visual Logical Robot — see one body before reading the architecture
 
-The public front door is deliberately concrete: a small robot moves from **A** to **B** while you change the represented world by drawing or erasing obstacle cells.
+From the public **VISUAL ROBOT** surface, a small robot moves from **A** to **B** while you change the represented world by drawing or erasing obstacle cells.
 
 ```text
 finger / mouse changes the world
@@ -240,24 +245,22 @@ This is not presented as unrestricted autonomous curiosity. Frontier growth is g
 
 ```mermaid
 flowchart TD
-    Q[QCDS / Syntract Intelligence]
+    V[The Syntract Vision] --> SI[The Living Superintelligence]
+    SI --> Q[One QCDS / Syntract Core]
     Q <--> L[Reality / Logical Spaces]
-    Q --> LR[Logical Robot]
+    Q <--> LR[Logical Robot]
+    Q <--> VR[Visual Robot Body]
+    Q <--> SR[Specialized Logical Robots]
+    Q <--> PR[Physical Robot Body — optional]
     LR --> WEB[Web / APIs / files / simulations]
     LR --> UI[Living web manifestation + I/O]
-    LR --> SR[Specialized Logical Robots]
-    LR --> PR[Physical Robot Body — optional]
     SR --> LEGAL[Legal]
     SR --> SCIENCE[Science]
     SR --> MED[Medicine]
     PR --> WORLD[Physical world / sensors / motors]
-    WEB --> LR
-    WORLD --> PR
-    PR --> LR
-    LR --> L
 ```
 
-A browser page, terminal, API, specialized domain robot or future physical robot body is a manifestation/capability surface around the **same Logical Robot architecture**. Replacing or adding a body does not redefine the intelligence.
+A browser page, terminal, API, Logical Robot, specialized domain robot or future physical robot body is a manifestation/capability surface around **The Living Superintelligence and the same QCDS / Syntract core**. Replacing or adding a body does not redefine the intelligence.
 
 **Logical Robot does not contain QCDS. Logical Robot talks to QCDS.**
 
@@ -531,7 +534,7 @@ superintelligent capability
 
 The ambition is therefore larger than a conventional application stack. The project investigates whether intelligence can be built as a **coherence-driven, inference-first architecture** whose logical working space can expand, whose candidate logic can be challenged, and whose execution substrate can evolve without redefining the intelligence itself.
 
-That is the sense in which this repository acts as a **blueprint / research architecture for superintelligence**. It is a direction and falsifiable architecture — **not a claim that the current MVP has already reached superintelligence**.
+**The Living Superintelligence** is the architectural name for that system-level whole in the public hierarchy. The current reference implementation remains an experimental and falsifiable implementation of that direction; the name is not used as evidence that demonstrated ASI performance has already been achieved.
 
 ---
 
@@ -894,7 +897,7 @@ This repository is an experimental, falsifiable reference implementation. A cohe
 
 The current legal substrate-parity experiment establishes that the same active represented problem can be executed through exact-classical and Grover-emulated QCDS paths. It also defines a separate **Quantum Full Space** native-target contract and records the complete represented legal-universe manifest for that target. It does **not** establish that the full universe has been executed on physical quantum hardware, that the Grover emulator reproduces a QPU, that quantum speed advantage exists, that its probabilities are calibrated court-outcome forecasts, or that the represented Swedish legal corpus is complete.
 
-The project is explicitly aimed at exploring a route toward **superintelligent capability**, but the current software does not by itself establish AGI/ASI, unrestricted natural-language understanding, complete world knowledge, unrestricted self-modification, production browser security, native quantum advantage, legal correctness or correctness on arbitrary real-world problems.
+The public system-level name **The Living Superintelligence** describes the architecture and hierarchy of the project. The current software does not by itself establish AGI/ASI, unrestricted natural-language understanding, complete world knowledge, unrestricted self-modification, production browser security, native quantum advantage, legal correctness or correctness on arbitrary real-world problems.
 
 The distinction matters: the ambition is large, while the implementation remains inspectable and falsifiable.
 
