@@ -1,10 +1,11 @@
 /* Public navigation shell. Presentation only: no QCDS inference lives here. */
 .publicBuildMark{display:none!important}
 
-/* Primary + Vision topic navigation are one opaque sticky stack. No page content can
-   sit between the two rows or show through their background. */
-#publicNavStack{position:sticky;top:0;z-index:145;width:100%;background:#06131d;border-bottom:1px solid #254858;box-shadow:0 8px 24px #0004}
-#publicSurfaceNav{position:relative;z-index:2;border-bottom:1px solid #254858;background:#06131d}
+/* Primary + Vision topic navigation are one opaque fixed stack. It remains visible
+   while content scrolls and the spacer keeps page content from sitting underneath it. */
+#publicNavStack{position:fixed;top:0;left:0;right:0;z-index:145;width:100%;background:#06131d;border-bottom:1px solid #254858;box-shadow:0 8px 24px #0004}
+#publicNavSpacer{display:block;width:100%;height:var(--public-nav-stack-height,72px);pointer-events:none}
+#publicSurfaceNav{position:relative;z-index:3;border-bottom:1px solid #254858;background:#06131d}
 .publicSurfaceNavInner{max-width:1800px;margin:0 auto;padding:9px 14px;display:flex;align-items:center;gap:14px;min-width:0}
 .publicSurfaceBrand{flex:1 1 auto;min-width:190px}.publicSurfaceBrand b{display:block;color:#eafff1;font-size:10px;line-height:1.15;letter-spacing:.13em}.publicSurfaceBrand span{display:block;margin-top:3px;color:#789c8d;font-size:7.5px;line-height:1.25;letter-spacing:.08em;text-transform:uppercase}
 .publicSurfaceActions{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:1px 0}.publicSurfaceActions::-webkit-scrollbar{display:none}.publicSurfaceActions button{flex:0 0 auto;border:1px solid #2e5060;background:#091b26;color:#91ada1;border-radius:999px;padding:8px 11px;font-size:8.5px;font-weight:800;letter-spacing:.055em;white-space:nowrap;cursor:pointer}.publicSurfaceActions button:hover{border-color:#56806c;color:#dff6e7}.publicSurfaceActions button.active{border-color:#73d69c;background:#123124;color:#effff4;box-shadow:0 0 0 1px #73d69c22 inset}
@@ -13,15 +14,26 @@ body.publicShellReady .publicCompactBar{display:none!important}
 body.publicShellReady:not(.publicShellOverview) #superintelligenceStory{display:none!important}
 body.publicShellOverview #superintelligenceStory{display:block!important}
 
-#visionTopicNav{display:none!important;box-sizing:border-box;width:100%;gap:7px;overflow-x:auto;scrollbar-width:none;margin:0!important;padding:10px max(14px,calc((100vw - 1800px)/2 + 14px)) 12px!important;background:#06131d!important;border:0!important;position:relative!important;top:auto!important;z-index:1}
+/* Level 2 has its own rail with explicit left/right affordances. Touch/mouse drag still
+   works normally; the arrow buttons become visible only when horizontal overflow exists. */
+#visionTopicRail{display:none;position:relative;width:100%;background:#06131d;z-index:2}
+body.publicShellOverview #visionTopicRail{display:block}
+#visionTopicNav{box-sizing:border-box;width:100%;display:flex!important;gap:7px;overflow-x:auto;scrollbar-width:none;margin:0!important;padding:10px max(52px,calc((100vw - 1800px)/2 + 52px)) 12px!important;background:#06131d!important;border:0!important;position:relative!important;top:auto!important;z-index:1;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
 #visionTopicNav::-webkit-scrollbar{display:none}
-body.publicShellOverview #visionTopicNav{display:flex!important}
 #visionTopicNav button{flex:0 0 auto;padding:8px 12px}
+.publicTopicArrow{position:absolute;top:50%;transform:translateY(-50%);z-index:4;width:32px;height:32px;padding:0;border:1px solid #3b6373;border-radius:999px;background:#0b2230f2;color:#dff7e7;display:grid;place-items:center;box-shadow:0 4px 14px #0006;cursor:pointer;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.publicTopicArrow span{font-size:25px;line-height:1;transform:translateY(-1px)}
+.publicTopicArrowPrev{left:max(8px,calc((100vw - 1800px)/2 + 8px))}
+.publicTopicArrowNext{right:max(8px,calc((100vw - 1800px)/2 + 8px))}
+.publicTopicArrow:hover:not(:disabled){border-color:#73d69c;background:#123124;color:#effff4}
+.publicTopicArrow:disabled{opacity:.28;cursor:default}
+.publicTopicArrow[hidden]{display:none!important}
 
 /* CSS fallback for Vision isolation. JavaScript also parks legacy surfaces inline so
    historical !important route rules cannot force them back on screen. */
-body.publicShellOverview > *:not(#publicNavStack):not(#superintelligenceStory):not(script):not(style){display:none!important}
+body.publicShellOverview > *:not(#publicNavStack):not(#publicNavSpacer):not(#superintelligenceStory):not(script):not(style){display:none!important}
 body.publicShellOverview > #publicNavStack,
+body.publicShellOverview > #publicNavSpacer,
 body.publicShellOverview > #superintelligenceStory{display:block!important}
 
 /* Vision content is paged by topic instead of rendered as one enormous scroll. */
@@ -36,5 +48,6 @@ body.publicShellOverview #superintelligenceStory .s120Hero{padding-top:22px}
 }
 @media(max-width:620px){
   .publicSurfaceNavInner{padding-left:9px;padding-right:9px}.publicSurfaceBrand b{font-size:9px}.publicSurfaceBrand span{font-size:7px}.publicSurfaceActions button{font-size:8px;padding:7px 9px}
-  #visionTopicNav{padding-left:9px!important;padding-right:9px!important}
+  #visionTopicNav{padding-left:45px!important;padding-right:45px!important}
+  .publicTopicArrow{width:29px;height:29px}.publicTopicArrowPrev{left:7px}.publicTopicArrowNext{right:7px}.publicTopicArrow span{font-size:23px}
 }
