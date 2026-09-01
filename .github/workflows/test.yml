@@ -96,7 +96,13 @@ jobs:
           from pathlib import Path
           shard = int(os.environ["SHARD"])
           count = int(os.environ["SHARD_COUNT"])
-          files = sorted(Path("tests").glob("test_*.py"))
+          heavy = {
+              "test_build40_legal_praxis_assessment.py",
+              "test_swedish_housing_growth.py",
+              "test_build5.py",
+              "test_swedish_legal_public_web.py",
+          }
+          files = [path for path in sorted(Path("tests").glob("test_*.py")) if path.name not in heavy]
           selected = [str(path) for index, path in enumerate(files) if index % count == shard]
           if not selected:
               raise SystemExit("no tests selected for shard")
@@ -106,3 +112,25 @@ jobs:
           printf 'Shard %s/%s: %s files\n' "$SHARD" "$SHARD_COUNT" "${#TEST_FILES[@]}"
           printf '  %s\n' "${TEST_FILES[@]}"
           pytest -q --durations=10 "${TEST_FILES[@]}"
+
+  heavy-regression:
+    needs: architecture-smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        test_file:
+          - tests/test_build40_legal_praxis_assessment.py
+          - tests/test_swedish_housing_growth.py
+          - tests/test_build5.py
+          - tests/test_swedish_legal_public_web.py
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e '.[test]'
+      - name: Run isolated heavy regression
+        run: pytest -q --durations=10 "${{ matrix.test_file }}"
