@@ -1,0 +1,43 @@
+/* Public navigation shell. Presentation only: no QCDS inference lives here. */
+.publicBuildMark{display:none!important}
+
+#publicSurfaceNav{position:sticky;top:0;z-index:145;border-bottom:1px solid #254858;background:#06131df2;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.publicSurfaceNavInner{max-width:1800px;margin:0 auto;padding:9px 14px;display:flex;align-items:center;gap:14px;min-width:0}
+.publicSurfaceBrand{flex:1 1 auto;min-width:190px}.publicSurfaceBrand b{display:block;color:#eafff1;font-size:10px;line-height:1.15;letter-spacing:.13em}.publicSurfaceBrand span{display:block;margin-top:3px;color:#789c8d;font-size:7.5px;line-height:1.25;letter-spacing:.08em;text-transform:uppercase}
+.publicSurfaceActions{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:1px 0}.publicSurfaceActions::-webkit-scrollbar{display:none}.publicSurfaceActions button{flex:0 0 auto;border:1px solid #2e5060;background:#091b26;color:#91ada1;border-radius:999px;padding:8px 11px;font-size:8.5px;font-weight:800;letter-spacing:.055em;white-space:nowrap;cursor:pointer}.publicSurfaceActions button:hover{border-color:#56806c;color:#dff6e7}.publicSurfaceActions button.active{border-color:#73d69c;background:#123124;color:#effff4;box-shadow:0 0 0 1px #73d69c22 inset}
+
+body.publicShellReady .publicCompactBar{display:none!important}
+body.publicShellReady:not(.publicShellOverview) #superintelligenceStory{display:none!important}
+body.publicShellOverview #superintelligenceStory{display:block!important}
+
+/* Overview is its own surface. Existing public bodies remain untouched and are only hidden while this surface is active. */
+body.publicShellOverview #try-logical-robot,
+body.publicShellOverview #public-legal-question,
+body.publicShellOverview #swedish-legal-robot,
+body.publicShellOverview #public-robotics,
+body.publicShellOverview #public-syntracts,
+body.publicShellOverview > .hero,
+body.publicShellOverview > .layout,
+body.publicShellOverview > .learningMoment,
+body.publicShellOverview > .understandBuild,
+body.publicShellOverview > .domainLab,
+body.publicShellOverview > .spaceBuilderWrap,
+body.publicShellOverview > .sessionSandbox{display:none!important}
+
+/* The new material is paged by topic instead of rendered as one enormous scroll. */
+body.publicShellOverview #superintelligenceStory .s120Chapter{display:none!important}
+body.publicShellOverview #superintelligenceStory .s120Chapter.s120ActiveChapter{display:block!important}
+body.publicShellOverview #superintelligenceStory #s120-release{display:block!important}
+body.publicShellOverview #superintelligenceStory .s120Journey{position:sticky;top:56px;z-index:35;margin:0 -8px;padding:9px 8px 11px;background:linear-gradient(180deg,#06121bf5 0,#06121bea 80%,#06121b00 100%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+body.publicShellOverview #superintelligenceStory .s120Journey button{padding:8px 12px}
+body.publicShellOverview #superintelligenceStory .s120Chapter{min-height:0;scroll-margin-top:115px}
+body.publicShellOverview #superintelligenceStory .s120Launch{margin-top:8px}
+
+@media(max-width:980px){
+  .publicSurfaceNavInner{align-items:flex-start;flex-direction:column;gap:7px;padding-top:8px;padding-bottom:8px}.publicSurfaceBrand{min-width:0}.publicSurfaceActions{width:100%}
+  body.publicShellOverview #superintelligenceStory .s120Journey{top:82px}
+}
+@media(max-width:620px){
+  .publicSurfaceNavInner{padding-left:9px;padding-right:9px}.publicSurfaceBrand b{font-size:9px}.publicSurfaceBrand span{font-size:7px}.publicSurfaceActions button{font-size:8px;padding:7px 9px}
+  body.publicShellOverview #superintelligenceStory .s120Journey{top:78px;margin-left:-4px;margin-right:-4px;padding-left:4px;padding-right:4px}
+}
