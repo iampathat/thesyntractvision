@@ -91,6 +91,8 @@ jobs:
           cp web/assets/syntract_art_lockup.svg _site/assets/syntract_art_lockup.svg
           cp web/assets/syntract_brand105.css _site/assets/syntract_brand105.css
           cp web/assets/syntract_brand105.js _site/assets/syntract_brand105.js
+          cp web/assets/syntract_super120.css _site/assets/syntract_super120.css
+          cp web/assets/syntract_super*.js _site/assets/
           python - <<'PY'
           from pathlib import Path
           from zipfile import ZIP_DEFLATED, ZipFile
@@ -103,12 +105,32 @@ jobs:
 
           page = Path('_site/index.html')
           html = page.read_text(encoding='utf-8')
-          css = '<link rel="stylesheet" href="assets/syntract_brand105.css">'
-          js = '<script defer src="assets/syntract_brand105.js"></script>'
-          if css not in html:
-              html = html.replace('</head>', css + '\n</head>', 1)
-          if js not in html:
-              html = html.replace('</body>', js + '\n</body>', 1)
+          styles = (
+              '<link rel="stylesheet" href="assets/syntract_brand105.css">',
+              '<link rel="stylesheet" href="assets/syntract_super120.css">',
+          )
+          scripts = (
+              '<script defer src="assets/syntract_brand105.js"></script>',
+              '<script defer src="assets/syntract_super108.js"></script>',
+              '<script defer src="assets/syntract_super109.js"></script>',
+              '<script defer src="assets/syntract_super110.js"></script>',
+              '<script defer src="assets/syntract_super111.js"></script>',
+              '<script defer src="assets/syntract_super112.js"></script>',
+              '<script defer src="assets/syntract_super113.js"></script>',
+              '<script defer src="assets/syntract_super114.js"></script>',
+              '<script defer src="assets/syntract_super115.js"></script>',
+              '<script defer src="assets/syntract_super116.js"></script>',
+              '<script defer src="assets/syntract_super117.js"></script>',
+              '<script defer src="assets/syntract_super118.js"></script>',
+              '<script defer src="assets/syntract_super119.js"></script>',
+              '<script defer src="assets/syntract_super120.js"></script>',
+          )
+          for css in styles:
+              if css not in html:
+                  html = html.replace('</head>', css + '\n</head>', 1)
+          for js in scripts:
+              if js not in html:
+                  html = html.replace('</body>', js + '\n</body>', 1)
           page.write_text(html, encoding='utf-8')
           PY
           touch _site/.nojekyll
@@ -119,8 +141,17 @@ jobs:
           grep -F 'assets/syntract_brand105.css' _site/index.html
           grep -F 'assets/syntract_brand105.js' _site/index.html
           grep -F 'syntract_art.svg' _site/assets/syntract_brand105.js
+      - name: Validate Superbuild 107-120 assets
+        run: |
+          test -s _site/assets/syntract_super120.css
+          for n in 108 109 110 111 112 113 114 115 116 117 118 119 120; do
+            test -s "_site/assets/syntract_super${n}.js"
+            grep -F "assets/syntract_super${n}.js" _site/index.html
+          done
       - name: Validate exact public release artifact
         run: python -m qcds_fabric.public_release_guard --site _site
+      - name: Validate Superbuild architecture boundary
+        run: python -m qcds_fabric.superbuild_release_guard --site _site
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
