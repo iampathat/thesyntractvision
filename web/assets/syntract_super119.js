@@ -1,0 +1,13 @@
+/* BUILD 119 — explicit claim boundary. */
+(function(){
+  'use strict';
+  const host=document.getElementById('s120-claims'); if(!host)return;
+  host.innerHTML=`
+    <div class="s120ChapterHead"><div class="s120ChapterNo">09 · CLAIM BOUNDARY</div><div><h3>What exists now. What the architecture supports next. What remains the horizon.</h3><p class="s120ChapterIntro">The Syntract Vision is strongest when the demonstrated software, the architectural direction and the long-range superintelligence target are never blurred together.</p></div></div>
+    <div class="s120Claims">
+      <div class="s120Claim now"><div class="s120Meta">DEMONSTRATED NOW</div><h4>Executable research software</h4><ul><li>One QCDS/Fabric core and SyntractSystem boundary</li><li>explicit Conditions, mask/exact/evidence/distribution oracles</li><li>TruthDistribution + Syntract binding and re-entry</li><li>null / positional / oracle-view diagnostics and stabilization</li><li>parallel, sequential and hybrid Central Fabric paths</li><li>bounded oracle genesis, challenge and evidence planning</li><li>bounded continuous Reality/frontier loops</li><li>Visual Logical Robot, Legal Robot and web observation bodies</li></ul></div>
+      <div class="s120Claim next"><div class="s120Meta">NEXT</div><h4>Broader real capability</h4><ul><li>richer scientific Logical Universes and falsification suites</li><li>more sensor, simulator and governed external-executor bodies</li><li>larger central execution profiles and semantics-preserving decomposition</li><li>better automated evidence acquisition under explicit authorization</li><li>measured bias-damping, robustness and substrate-parity benchmarks</li><li>recursive composition across more complete domain Syntracts</li></ul></div>
+      <div class="s120Claim horizon"><div class="s120Meta">HORIZON</div><h4>Superintelligence direction</h4><ul><li>massively larger represented logical spaces</li><li>native-QPU / hybrid substrates where they preserve QCDS semantics</li><li>many simultaneous logical and physical bodies around one intelligence</li><li>continual oracle improvement under challenge and governance</li><li>deep recursive Syntract formation across domains</li><li>increasingly general capability beyond present human-scale analysis</li></ul></div>
+    </div>
+    <div class="s120Callout" style="margin-top:12px"><strong>Present claim:</strong> this repository is research software exploring and implementing the QCDS / Syntract architecture. It does not claim that the current Python/browser system has already achieved AGI, ASI, native quantum advantage or automatic external truth.</div>`;
+})();
