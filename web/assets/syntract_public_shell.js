@@ -54,9 +54,11 @@
     const walker=document.createTreeWalker(scope,NodeFilter.SHOW_TEXT);
     const nodes=[];
     while(walker.nextNode())nodes.push(walker.currentNode);
-    const pattern=/\b(?:SUPER)?BUILD\s+\d+(?:\s*[–-]\s*\d+)?\s*(?:·|:)??\s*/gi;
+    const pattern=/\b(?:SUPER)?BUILD\s+\d+(?:\s*[–-]\s*\d+)?\s*(?:·|:)?\s*/gi;
     nodes.forEach(node=>{
-      if(pattern.test(node.nodeValue||''))node.nodeValue=(node.nodeValue||'').replace(pattern,'');
+      const original=node.nodeValue||'';
+      const cleaned=original.replace(pattern,'');
+      if(cleaned!==original)node.nodeValue=cleaned;
       pattern.lastIndex=0;
     });
   }
