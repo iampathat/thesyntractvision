@@ -1,7 +1,10 @@
 /* Public navigation shell. Presentation only: no QCDS inference lives here. */
 .publicBuildMark{display:none!important}
 
-#publicSurfaceNav{position:sticky;top:0;z-index:145;border-bottom:1px solid #254858;background:#06131df2;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+/* Primary + Vision topic navigation are one opaque sticky stack. No page content can
+   sit between the two rows or show through their background. */
+#publicNavStack{position:sticky;top:0;z-index:145;width:100%;background:#06131d;border-bottom:1px solid #254858;box-shadow:0 8px 24px #0004}
+#publicSurfaceNav{position:relative;z-index:2;border-bottom:1px solid #254858;background:#06131d}
 .publicSurfaceNavInner{max-width:1800px;margin:0 auto;padding:9px 14px;display:flex;align-items:center;gap:14px;min-width:0}
 .publicSurfaceBrand{flex:1 1 auto;min-width:190px}.publicSurfaceBrand b{display:block;color:#eafff1;font-size:10px;line-height:1.15;letter-spacing:.13em}.publicSurfaceBrand span{display:block;margin-top:3px;color:#789c8d;font-size:7.5px;line-height:1.25;letter-spacing:.08em;text-transform:uppercase}
 .publicSurfaceActions{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:1px 0}.publicSurfaceActions::-webkit-scrollbar{display:none}.publicSurfaceActions button{flex:0 0 auto;border:1px solid #2e5060;background:#091b26;color:#91ada1;border-radius:999px;padding:8px 11px;font-size:8.5px;font-weight:800;letter-spacing:.055em;white-space:nowrap;cursor:pointer}.publicSurfaceActions button:hover{border-color:#56806c;color:#dff6e7}.publicSurfaceActions button.active{border-color:#73d69c;background:#123124;color:#effff4;box-shadow:0 0 0 1px #73d69c22 inset}
@@ -10,32 +13,28 @@ body.publicShellReady .publicCompactBar{display:none!important}
 body.publicShellReady:not(.publicShellOverview) #superintelligenceStory{display:none!important}
 body.publicShellOverview #superintelligenceStory{display:block!important}
 
-/* The Vision topic menu is a genuine second navigation row, outside the content tree. */
-#visionTopicNav{display:none!important;box-sizing:border-box;width:100%;gap:7px;overflow-x:auto;scrollbar-width:none;background:#06121bf7;border-bottom:1px solid #203f4d;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+#visionTopicNav{display:none!important;box-sizing:border-box;width:100%;gap:7px;overflow-x:auto;scrollbar-width:none;margin:0!important;padding:10px max(14px,calc((100vw - 1800px)/2 + 14px)) 12px!important;background:#06131d!important;border:0!important;position:relative!important;top:auto!important;z-index:1}
 #visionTopicNav::-webkit-scrollbar{display:none}
-body.publicShellOverview #visionTopicNav{display:flex!important;position:sticky;top:var(--public-nav-height,56px);z-index:140;margin:0;padding:10px max(14px,calc((100vw - 1800px)/2 + 14px)) 12px}
+body.publicShellOverview #visionTopicNav{display:flex!important}
 #visionTopicNav button{flex:0 0 auto;padding:8px 12px}
 
 /* CSS fallback for Vision isolation. JavaScript also parks legacy surfaces inline so
    historical !important route rules cannot force them back on screen. */
-body.publicShellOverview > *:not(#publicSurfaceNav):not(#visionTopicNav):not(#superintelligenceStory):not(script):not(style){display:none!important}
-body.publicShellOverview > #publicSurfaceNav,
-body.publicShellOverview > #visionTopicNav,
+body.publicShellOverview > *:not(#publicNavStack):not(#superintelligenceStory):not(script):not(style){display:none!important}
+body.publicShellOverview > #publicNavStack,
 body.publicShellOverview > #superintelligenceStory{display:block!important}
-body.publicShellOverview > #visionTopicNav{display:flex!important}
 
 /* Vision content is paged by topic instead of rendered as one enormous scroll. */
 body.publicShellOverview #superintelligenceStory .s120Chapter{display:none!important}
 body.publicShellOverview #superintelligenceStory .s120Chapter.s120ActiveChapter{display:block!important}
-body.publicShellOverview #superintelligenceStory #s120-release{display:block!important}
-body.publicShellOverview #superintelligenceStory .s120Chapter{min-height:0;scroll-margin-top:calc(var(--public-nav-height,56px) + 58px)}
+body.publicShellOverview #superintelligenceStory #s120-release{display:none!important}
+body.publicShellOverview #superintelligenceStory .s120Chapter{min-height:0;scroll-margin-top:calc(var(--public-nav-stack-height,110px) + 8px)}
 body.publicShellOverview #superintelligenceStory .s120Hero{padding-top:22px}
-body.publicShellOverview #superintelligenceStory .s120Launch{margin-top:8px}
 
 @media(max-width:980px){
   .publicSurfaceNavInner{align-items:flex-start;flex-direction:column;gap:7px;padding-top:8px;padding-bottom:8px}.publicSurfaceBrand{min-width:0}.publicSurfaceActions{width:100%}
 }
 @media(max-width:620px){
   .publicSurfaceNavInner{padding-left:9px;padding-right:9px}.publicSurfaceBrand b{font-size:9px}.publicSurfaceBrand span{font-size:7px}.publicSurfaceActions button{font-size:8px;padding:7px 9px}
-  body.publicShellOverview #visionTopicNav{padding-left:9px;padding-right:9px}
+  #visionTopicNav{padding-left:9px!important;padding-right:9px!important}
 }
