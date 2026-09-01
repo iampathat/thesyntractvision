@@ -74,11 +74,11 @@ jobs:
   test:
     needs: architecture-smoke
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
-        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -89,7 +89,7 @@ jobs:
       - name: Run complete deterministic test shard
         env:
           SHARD: ${{ matrix.shard }}
-          SHARD_COUNT: 12
+          SHARD_COUNT: 24
         run: |
           python - <<'PY' > /tmp/qcds-tests.txt
           import os
