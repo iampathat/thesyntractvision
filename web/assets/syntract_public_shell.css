@@ -10,16 +10,19 @@ body.publicShellReady .publicCompactBar{display:none!important}
 body.publicShellReady:not(.publicShellOverview) #superintelligenceStory{display:none!important}
 body.publicShellOverview #superintelligenceStory{display:block!important}
 
-/* VISION is a real peer surface, not a preface above all the older surfaces.
-   While it is selected, no other direct public body is allowed to leak below it. */
-body.publicShellOverview > *:not(#publicSurfaceNav):not(#superintelligenceStory):not(script):not(style){display:none!important}
-body.publicShellOverview > #publicSurfaceNav,
-body.publicShellOverview > #superintelligenceStory{display:block!important}
+/* The Vision topic menu is a genuine second navigation row, outside the content tree. */
+#visionTopicNav{display:none!important;box-sizing:border-box;width:100%;gap:7px;overflow-x:auto;scrollbar-width:none;background:#06121bf7;border-bottom:1px solid #203f4d;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+#visionTopicNav::-webkit-scrollbar{display:none}
+body.publicShellOverview #visionTopicNav{display:flex!important;position:sticky;top:var(--public-nav-height,56px);z-index:140;margin:0;padding:10px max(14px,calc((100vw - 1800px)/2 + 14px)) 12px}
+#visionTopicNav button{flex:0 0 auto;padding:8px 12px}
 
-/* The Vision topic menu is the second navigation level and therefore sits directly
-   below the primary menu. Content starts only after both menu levels. */
-body.publicShellOverview #superintelligenceStory .s120Journey{display:flex!important;position:sticky;top:var(--public-nav-height,56px);z-index:135;margin:0;padding:10px 0 12px;background:#06121bf7;border-bottom:1px solid #203f4d;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
-body.publicShellOverview #superintelligenceStory .s120Journey button{padding:8px 12px}
+/* CSS fallback for Vision isolation. JavaScript also parks legacy surfaces inline so
+   historical !important route rules cannot force them back on screen. */
+body.publicShellOverview > *:not(#publicSurfaceNav):not(#visionTopicNav):not(#superintelligenceStory):not(script):not(style){display:none!important}
+body.publicShellOverview > #publicSurfaceNav,
+body.publicShellOverview > #visionTopicNav,
+body.publicShellOverview > #superintelligenceStory{display:block!important}
+body.publicShellOverview > #visionTopicNav{display:flex!important}
 
 /* Vision content is paged by topic instead of rendered as one enormous scroll. */
 body.publicShellOverview #superintelligenceStory .s120Chapter{display:none!important}
@@ -34,5 +37,5 @@ body.publicShellOverview #superintelligenceStory .s120Launch{margin-top:8px}
 }
 @media(max-width:620px){
   .publicSurfaceNavInner{padding-left:9px;padding-right:9px}.publicSurfaceBrand b{font-size:9px}.publicSurfaceBrand span{font-size:7px}.publicSurfaceActions button{font-size:8px;padding:7px 9px}
-  body.publicShellOverview #superintelligenceStory .s120Journey{padding-left:0;padding-right:0}
+  body.publicShellOverview #visionTopicNav{padding-left:9px;padding-right:9px}
 }
