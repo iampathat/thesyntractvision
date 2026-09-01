@@ -21,9 +21,11 @@ def test_build103_documentation_drawer_is_discreet_and_read_only() -> None:
     assert 'QCDS FABRIC v1.0' in html
     assert 'START HERE' in html
 
-    # Documentation is a presentation-only surface. It must never create an
-    # alternate inference path or touch the QCDS worker/runtime.
-    docs_script = html.split('/* BUILD 103: documentation is a reading surface only.', 1)[1]
+    # Documentation is a presentation-only surface. Scope this assertion to
+    # the BUILD 103 script itself: later scripts in the same generated HTML are
+    # legitimate QCDS/Robotics surfaces and are not part of the docs drawer.
+    docs_tail = html.split('/* BUILD 103: documentation is a reading surface only.', 1)[1]
+    docs_script = docs_tail.split('</script>', 1)[0]
     assert 'robotics_playground_run' not in docs_script
     assert 'syntract_demo_run' not in docs_script
     assert 'q75WorkerRun' not in docs_script
