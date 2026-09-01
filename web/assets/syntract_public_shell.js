@@ -8,9 +8,13 @@
   const body=document.body;
   const baseSelectView=typeof window.publicSelectView==='function' ? window.publicSelectView.bind(window) : null;
   const legacyViews=new Set(['robotics','qcds','syntract','legal','advanced']);
+  const header=document.querySelector('body > header, header');
 
-  /* One physical navigation stack. Keeping both menu levels in the same DOM wrapper
-     prevents Vision content from ever appearing between the primary and topic rows. */
+  /* The original public header is global identity and controls. Move that exact node
+     into one fixed chrome with the new navigation instead of hiding or duplicating it. */
+  const chrome=document.createElement('div');
+  chrome.id='publicChrome';
+
   const navStack=document.createElement('div');
   navStack.id='publicNavStack';
 
@@ -19,10 +23,6 @@
   nav.setAttribute('aria-label','The Syntract Vision public surfaces');
   nav.innerHTML=`
     <div class="publicSurfaceNavInner">
-      <div class="publicSurfaceBrand">
-        <b>THE SYNTRACT VISION</b>
-        <span>One QCDS core · many logical, simulated and physical bodies</span>
-      </div>
       <div class="publicSurfaceActions">
         <button type="button" data-public-surface="overview">VISION</button>
         <button type="button" data-public-surface="robotics">VISUAL ROBOT</button>
@@ -34,14 +34,18 @@
     </div>`;
   navStack.appendChild(nav);
 
-  const header=document.querySelector('body > header, header');
-  if(header && header.parentNode)header.insertAdjacentElement('afterend',navStack);
-  else document.body.prepend(navStack);
+  if(header && header.parentNode){
+    header.parentNode.insertBefore(chrome,header);
+    chrome.appendChild(header);
+  }else{
+    document.body.prepend(chrome);
+  }
+  chrome.appendChild(navStack);
 
-  /* Fixed navigation needs a layout spacer so page content always starts below it. */
+  /* Fixed chrome needs a measured spacer so every surface begins below it. */
   const navSpacer=document.createElement('div');
   navSpacer.id='publicNavSpacer';
-  navStack.insertAdjacentElement('afterend',navSpacer);
+  chrome.insertAdjacentElement('afterend',navSpacer);
 
   const chapterDefinitions=[
     ['s120-space','POSSIBILITY SPACE'],
@@ -57,6 +61,7 @@
 
   const journey=root.querySelector('.s120Journey');
   let topicRail=null;
+  let topicViewport=null;
   let topicPrev=null;
   let topicNext=null;
 
@@ -68,6 +73,9 @@
     topicRail=document.createElement('div');
     topicRail.id='visionTopicRail';
     topicRail.setAttribute('aria-label','Scrollable Vision topic navigation');
+
+    topicViewport=document.createElement('div');
+    topicViewport.id='visionTopicViewport';
 
     topicPrev=document.createElement('button');
     topicPrev.type='button';
@@ -81,28 +89,33 @@
     topicNext.setAttribute('aria-label','Scroll Vision topics right');
     topicNext.innerHTML='<span aria-hidden="true">›</span>';
 
-    topicRail.append(topicPrev,journey,topicNext);
+    topicViewport.appendChild(journey);
+    topicRail.append(topicPrev,topicViewport,topicNext);
     navStack.appendChild(topicRail);
   }
 
-  /* The old release/launch card repeated navigation that now lives permanently above.
-     Remove it from the public Vision surface; this is presentation-only. */
+  /* The old release/launch card repeated navigation that now lives permanently above. */
   const release=root.querySelector('#s120-release');
   if(release)release.remove();
 
-  function syncNavStackHeight(){
-    const height=Math.ceil(navStack.getBoundingClientRect().height || 0);
+  function syncChromeHeight(){
+    const height=Math.ceil(chrome.getBoundingClientRect().height || 0);
     if(height>0){
-      document.documentElement.style.setProperty('--public-nav-stack-height',`${height}px`);
+      document.documentElement.style.setProperty('--public-chrome-height',`${height}px`);
       navSpacer.style.height=`${height}px`;
     }
   }
 
   function updateTopicArrows(){
-    if(!journey || !topicPrev || !topicNext)return;
+    if(!journey || !topicViewport || !topicRail || !topicPrev || !topicNext)return;
     const overflow=journey.scrollWidth>journey.clientWidth+2;
     const atStart=journey.scrollLeft<=2;
     const atEnd=journey.scrollLeft+journey.clientWidth>=journey.scrollWidth-2;
+
+    topicRail.classList.toggle('hasOverflow',overflow);
+    topicViewport.classList.toggle('canScrollLeft',overflow && !atStart);
+    topicViewport.classList.toggle('canScrollRight',overflow && !atEnd);
+
     topicPrev.hidden=!overflow;
     topicNext.hidden=!overflow;
     topicPrev.disabled=!overflow || atStart;
@@ -122,13 +135,13 @@
   if(journey)journey.addEventListener('scroll',updateTopicArrows,{passive:true});
 
   function syncNavigationGeometry(){
-    syncNavStackHeight();
+    syncChromeHeight();
     updateTopicArrows();
   }
 
   syncNavigationGeometry();
   if('ResizeObserver' in window){
-    new ResizeObserver(syncNavigationGeometry).observe(navStack);
+    new ResizeObserver(syncNavigationGeometry).observe(chrome);
     if(journey)new ResizeObserver(updateTopicArrows).observe(journey);
   }else{
     window.addEventListener('resize',syncNavigationGeometry,{passive:true});
@@ -177,8 +190,8 @@
     }
   }
 
-  /* Old public surfaces contain historical !important display rules. Vision therefore
-     parks them explicitly instead of hoping selector precedence hides every wrapper. */
+  /* Old public surfaces contain historical !important display rules. Vision parks
+     them explicitly, but never the shared global chrome/header. */
   const parked=new Map();
   const legacySelectors=[
     '#public-syntract-teaser','.publicCapabilityStrip','#try-logical-robot',
@@ -187,7 +200,7 @@
   ];
 
   function parkElement(element){
-    if(!element || element===navStack || element===navSpacer || element===root || navStack.contains(element) || parked.has(element))return;
+    if(!element || element===chrome || element===navSpacer || element===root || chrome.contains(element) || parked.has(element))return;
     parked.set(element,{
       display:element.style.getPropertyValue('display'),
       priority:element.style.getPropertyPriority('display'),
@@ -212,7 +225,7 @@
     if(!active){restoreParked();return}
 
     Array.from(body.children).forEach(element=>{
-      if(element===navStack || element===navSpacer || element===root || element.tagName==='SCRIPT' || element.tagName==='STYLE')return;
+      if(element===chrome || element===navSpacer || element===root || element.tagName==='SCRIPT' || element.tagName==='STYLE')return;
       parkElement(element);
     });
 
