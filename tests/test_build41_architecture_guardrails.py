@@ -23,8 +23,9 @@ def test_root_readme_keeps_architecture_diagrams_and_robot_boundary() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     assert readme.count("```mermaid") >= 3
     assert "Logical Robot does not contain QCDS. Logical Robot talks to QCDS." in readme
-    assert "blueprint / research architecture for superintelligence" in readme
-    assert "not a claim that the current MVP has already reached superintelligence" in readme
+    assert "The Living Superintelligence" in readme
+    assert "current reference implementation remains an experimental and falsifiable implementation" in readme
+    assert "the name is not used as evidence that demonstrated ASI performance has already been achieved" in readme
 
 
 def test_new_topology_is_additive_not_a_second_qcds_core() -> None:
