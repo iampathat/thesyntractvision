@@ -18,6 +18,12 @@ def _asset(name: str) -> str:
 
 def cally_one_html(*, static_mode: bool = False) -> str:
     html = _base_cally_one_html(static_mode=static_mode)
+    if static_mode:
+        old = "else if (path === '/api/infer') action = 'infer';\n    else if (path !== '/api/state')"
+        new = "else if (path === '/api/infer') action = 'infer';\n    else if (path === '/api/entity') action = 'entity';\n    else if (path === '/api/relation') action = 'relation';\n    else if (path !== '/api/state')"
+        if old not in html:
+            raise RuntimeError("Cally.One static API bridge marker not found")
+        html = html.replace(old, new, 1)
     css = _asset("enhancements.css")
     js = _asset("enhancements.js")
     html = html.replace("</head>", f"<style data-cally-enhancements>\n{css}\n</style>\n</head>", 1)
