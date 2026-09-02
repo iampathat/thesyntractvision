@@ -37,7 +37,7 @@ def _make_today_view_aware(html: str) -> str:
     html = _replace_once(
         html,
         old_jump,
-        "function jumpToday(){state.anchor=startOfDay(new Date());render()}",
+        "function jumpToday(){state.anchor=startOfDay(new Date());state.activeSavedView=null;render()}",
         "Today navigation",
     )
     return html
@@ -134,8 +134,20 @@ def _stable_interaction_js() -> str:
     )
 
     controller_js = _asset("interaction_controller.js")
+    layout_js = _asset("calendar_layout_hotfix.js")
+    display_js = _asset("calendar_display.js")
     return "\n".join(
-        [event_js, management_js, result_js, scale_js, manual_js, dimension_filter_js, controller_js]
+        [
+            event_js,
+            management_js,
+            result_js,
+            scale_js,
+            manual_js,
+            dimension_filter_js,
+            controller_js,
+            layout_js,
+            display_js,
+        ]
     )
 
 
@@ -267,6 +279,8 @@ def cally_one_html(*, static_mode: bool = False) -> str:
             _asset("qcds_result_ui.css"),
             _asset("scale_conflict_ui.css"),
             _asset("interaction_controller.css"),
+            _asset("calendar_layout_hotfix.css"),
+            _asset("calendar_display.css"),
         ]
     )
     js = _stable_interaction_js()
