@@ -25,7 +25,7 @@ def create_calendar_server(
     service = CallyOneService(store_root)
 
     class Handler(BaseHTTPRequestHandler):
-        server_version = "QCDSCallyOne/0.3"
+        server_version = "QCDSCallyOne/0.4"
 
         def _json(self, payload: Mapping[str, Any], status: int = 200) -> None:
             body = json.dumps(dict(payload), ensure_ascii=False, sort_keys=True).encode("utf-8")
@@ -59,6 +59,13 @@ def create_calendar_server(
             self.send_header("Cache-Control", "no-store")
             self.end_headers()
             self.wfile.write(body)
+
+        def _event_payload(self, event_id: str) -> dict[str, Any]:
+            return {
+                "conflicts": service.conflicts_for_event(event_id),
+                "planning_states": service.planning_for_event(event_id),
+                "state": service.state(),
+            }
 
         def do_GET(self) -> None:  # noqa: N802
             path = urlparse(self.path).path
@@ -120,34 +127,22 @@ def create_calendar_server(
                     return
                 if path == "/api/event":
                     event = service.upsert_event(payload)
-                    self._json(
-                        {
-                            "event": event.as_dict(),
-                            "conflicts": [item.as_dict() for item in service.space.conflicts()],
-                            "state": service.state(),
-                        },
-                        201,
-                    )
+                    body = {"event": event.as_dict(), **self._event_payload(event.event_id)}
+                    self._json(body, 201)
                     return
                 if path == "/api/event/move":
                     event_id = str(payload.get("event_id") or "")
                     people = payload.get("people")
                     if people is not None and not isinstance(people, (list, tuple)):
                         raise CalendarRobotError("people must be an array")
-                    event = service.space.move_event(
+                    event = service.move_event(
                         event_id,
                         start=str(payload.get("start") or ""),
                         end=None if payload.get("end") is None else str(payload.get("end")),
                         people=None if people is None else tuple(str(item) for item in people),
                     )
-                    self._json(
-                        {
-                            "event": event.as_dict(),
-                            "conflicts": [item.as_dict() for item in service.space.conflicts()],
-                            "state": service.state(),
-                        },
-                        202,
-                    )
+                    body = {"event": event.as_dict(), **self._event_payload(event.event_id)}
+                    self._json(body, 202)
                     return
                 if path == "/api/event/delete":
                     event_id = str(payload.get("event_id") or "")
