@@ -60,6 +60,22 @@ jobs:
           assert 'qcds_fabric.robots.cally_one.robot' in worker
           assert (out / 'qcds_fabric.zip').stat().st_size > 0
           PY
+      - name: Validate Cally.One browser JavaScript syntax
+        run: |
+          python - <<'PY'
+          import re
+          from pathlib import Path
+
+          html = Path('_cally_preview/cally/index.html').read_text(encoding='utf-8')
+          scripts = re.findall(r'<script>(.*?)</script>', html, flags=re.S)
+          assert len(scripts) >= 2, len(scripts)
+          out = Path('_cally_preview/js-check')
+          out.mkdir(parents=True, exist_ok=True)
+          for index, script in enumerate(scripts):
+              (out / f'inline-{index}.js').write_text(script, encoding='utf-8')
+          PY
+          for file in _cally_preview/js-check/*.js; do node --check "$file"; done
+          node --check _cally_preview/session_core_worker.js
       - name: Upload Cally.One preview artifact
         uses: actions/upload-artifact@v4
         with:
