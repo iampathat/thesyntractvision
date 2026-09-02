@@ -78,10 +78,20 @@ def test_large_resource_sets_can_filter_by_state_dimensions() -> None:
 
 def test_today_keeps_the_current_view_and_only_moves_the_date_anchor() -> None:
     html = cally_one_html()
-    assert "function jumpToday(){state.anchor=startOfDay(new Date());render()}" in html
+    assert "function jumpToday(){state.anchor=startOfDay(new Date());state.activeSavedView=null;render()}" in html
     assert "if(state.view==='year')state.view='month'" not in html
     assert "else if(state.view==='month')state.view='day'" not in html
     assert "$('#todayBtn').textContent='Today'" in html
+
+
+def test_today_also_reveals_today_inside_year_month_and_timeline() -> None:
+    html = cally_one_html()
+    assert 'function focusTodayInCurrentProjection()' in html
+    assert "stage.querySelector('.miniDay.today')" in html
+    assert "stage.querySelector('.dayCell.today')" in html
+    assert "stage.querySelector('.nowline')" in html
+    assert "month.offsetTop" in html
+    assert "behavior: 'smooth'" in html
 
 
 def test_all_primary_modal_layers_blur_the_calendar_behind_them() -> None:
@@ -96,3 +106,54 @@ def test_event_editor_people_are_compact_selectors_not_giant_raw_checkboxes() ->
     assert '.peopleChecks{display:grid!important' in html
     assert '.peopleChecks input[type="checkbox"]{appearance:none' in html
     assert '.peopleChecks input[type="checkbox"]:checked::after{content:"✓"' in html
+
+
+def test_calendar_surface_has_no_transparent_seam_and_time_rail_is_sticky() -> None:
+    html = cally_one_html()
+    assert '.stage{padding:0 12px 12px!important}' in html
+    assert '.timeHead{position:sticky!important;top:0!important;left:0!important' in html
+    assert '.timeRail{position:sticky!important;left:0!important' in html
+    assert '.hour{background:#faf8f2}' in html
+
+
+def test_mobile_perspective_button_can_reveal_the_side_panel() -> None:
+    html = cally_one_html()
+    assert '.rightSide{display:block!important}' in html
+    assert "$('#perspectiveBtn').onclick=()=>$('#rightSide').classList.add('open')" in html
+    assert '.rightSide.open{transform:translateX(0)}' in html
+
+
+def test_week_numbers_are_first_class_across_calendar_views() -> None:
+    html = cally_one_html()
+    assert 'function isoWeekNumber(date)' in html
+    assert 'class="callyWeekNumber"' in html
+    assert 'class="callyMonthWeek"' in html
+    assert 'class="miniWeekRange"' in html
+    assert 'Veckonummer visas enligt ISO 8601' in html
+
+
+def test_calendar_system_is_a_switchable_display_dimension() -> None:
+    html = cally_one_html()
+    for calendar in ('gregory', 'iso8601', 'islamic', 'islamic-umalqura', 'chinese', 'hebrew', 'persian', 'indian', 'buddhist', 'japanese'):
+        assert f"['{calendar}'" in html or f"['{calendar}'," in html
+    assert 'KALENDERDIMENSION' in html
+    assert 'calendar:prefs.calendar' in html
+    assert 'Händelsernas underliggande tid ändras inte' in html
+
+
+def test_timezone_and_12_24_hour_projection_are_explicit() -> None:
+    html = cally_one_html()
+    assert "Intl.supportedValuesOf('timeZone')" in html
+    assert "timeZoneName:'short'" in html
+    assert "prefs.hourCycle === 'h12'" in html
+    assert "prefs.hourCycle === 'h23'" in html
+    assert "12 h · 6:30 PM" in html
+    assert "24 h · 18:30" in html
+    assert 'cally.one.display.v1' in html
+
+
+def test_calendar_display_changes_do_not_call_qcds_inference() -> None:
+    html = cally_one_html(static_mode=True)
+    display = html.split('/* Cally.One calendar/time display dimension — projection only; no QCDS startup. */', 1)[1]
+    assert "fetch('/api/infer'" not in display
+    assert "action:'infer'" not in display
