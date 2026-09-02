@@ -40,7 +40,7 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           from zipfile import ZIP_DEFLATED, ZipFile
-          from qcds_fabric.robots.cally_one.ui import cally_one_html
+          from qcds_fabric.robots.cally_one.enhanced_ui import cally_one_html
 
           out = Path('_cally_preview')
           (out / 'cally' / 'index.html').write_text(cally_one_html(static_mode=True), encoding='utf-8')
@@ -57,6 +57,11 @@ jobs:
           assert "new URL('../qcds_fabric.zip'" in html
           assert 'Cally.One' in html
           assert 'cally_one_run' in html
+          assert 'data-cally-enhancements' in html
+          assert 'eventMove' in html
+          assert 'resizeHandle' in html
+          assert 'eventEdit' in html
+          assert 'timeline[style*="--days:1"]' in html
           assert 'qcds_fabric.robots.cally_one.robot' in worker
           assert (out / 'qcds_fabric.zip').stat().st_size > 0
           PY
@@ -67,8 +72,8 @@ jobs:
           from pathlib import Path
 
           html = Path('_cally_preview/cally/index.html').read_text(encoding='utf-8')
-          scripts = re.findall(r'<script>(.*?)</script>', html, flags=re.S)
-          assert len(scripts) >= 2, len(scripts)
+          scripts = re.findall(r'<script(?:\s[^>]*)?>(.*?)</script>', html, flags=re.S)
+          assert len(scripts) >= 3, len(scripts)
           out = Path('_cally_preview/js-check')
           out.mkdir(parents=True, exist_ok=True)
           for index, script in enumerate(scripts):
