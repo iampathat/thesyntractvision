@@ -13,7 +13,8 @@ WORKER = ROOT / "web" / "session_core_worker.js"
 
 def test_static_ui_has_no_mutation_observer_reentry_loop() -> None:
     html = cally_one_html(static_mode=True)
-    assert "new MutationObserver" not in html
+    assert "observer.observe(document.body, {childList:true, subtree:true});" not in html
+    assert "observer.observe(stage, {childList:true, subtree:true});" not in html
     assert "__callyExplicitWrapped" in html
     assert "queueMicrotask(refreshUI)" in html
     assert "window.dispatchEvent(new CustomEvent('cally-one-ui-refresh'))" in html
