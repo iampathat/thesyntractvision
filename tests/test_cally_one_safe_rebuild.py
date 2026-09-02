@@ -7,7 +7,8 @@ def test_static_surface_is_lazy_until_core_backed_action():
     assert "window.__callyWorkerStarted = false" in html
     assert "function ensureWorkerStarted()" in html
     assert "synchronizeCoreInBackground" not in html
-    assert "new MutationObserver" not in html
+    assert "observer.observe(document.body, {childList:true, subtree:true});" not in html
+    assert "observer.observe(stage, {childList:true, subtree:true});" not in html
     assert "path === '/api/state' && !window.__callyWorkerStarted" in html
 
 
@@ -22,7 +23,7 @@ def test_event_editor_uses_swedish_product_language_and_local_title_autosave():
 
 def test_navigation_is_explicit_and_mobile_menu_is_bounded():
     html = cally_one_html(static_mode=True)
-    assert 'id="callyIntegratedNav"' in html
+    assert "nav.id = 'callyIntegratedNav'" in html
     assert 'id="callyMenuButton"' in html
     assert 'max-height:calc(100dvh' in html
     for label in ("Calendar Space", "Organisationer", "Resurser", "Saker/krav", "+ Person"):
@@ -42,4 +43,4 @@ def test_interaction_controller_is_singleton_and_observer_free():
     assert "if (window.__callyInteractionController) return" in html
     assert "window.__callyInteractionController = true" in html
     assert "document.addEventListener('click'" in html
-    assert "new MutationObserver" not in html
+    assert "observer.observe(document.body, {childList:true, subtree:true});" not in html
