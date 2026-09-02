@@ -10,7 +10,7 @@ async function initializeCore(packageUrl) {
     if (!response.ok) throw new Error('Could not load qcds_fabric core package: HTTP ' + response.status);
     const archive = new Uint8Array(await response.arrayBuffer());
     pyodide.unpackArchive(archive, 'zip');
-    pyodide.runPython("import sys\nif '/' not in sys.path: sys.path.insert(0, '/')\nfrom qcds_fabric.session_sandbox_core import run_session_json\nfrom qcds_fabric.pick_a_world_core import run_pick_world_case_json\nfrom qcds_fabric.robotics_playground_system import run_robotics_playground_json\nfrom qcds_fabric.cally_one import run_cally_one_json\nfrom qcds_fabric.robots.legal.sweden_housing.robot import run_case_json as run_swedish_housing_case_json\nfrom qcds_fabric.robots.legal.sweden_housing.quick_question import run_public_question_json as run_swedish_housing_question_json\nfrom qcds_fabric.syntract_parallel_demos import run_syntract_demo_json");
+    pyodide.runPython("import sys\nif '/' not in sys.path: sys.path.insert(0, '/')\nfrom qcds_fabric.session_sandbox_core import run_session_json\nfrom qcds_fabric.pick_a_world_core import run_pick_world_case_json\nfrom qcds_fabric.robotics_playground_system import run_robotics_playground_json\nfrom qcds_fabric.robots.cally_one.robot import run_cally_one_json\nfrom qcds_fabric.robots.legal.sweden_housing.robot import run_case_json as run_swedish_housing_case_json\nfrom qcds_fabric.robots.legal.sweden_housing.quick_question import run_public_question_json as run_swedish_housing_question_json\nfrom qcds_fabric.syntract_parallel_demos import run_syntract_demo_json");
     self.__qcds_pyodide = pyodide;
     self.postMessage({type: 'ready'});
     return pyodide;
