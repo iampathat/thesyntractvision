@@ -25,7 +25,7 @@ def create_calendar_server(
     service = CallyOneService(store_root)
 
     class Handler(BaseHTTPRequestHandler):
-        server_version = "QCDSCallyOne/0.2"
+        server_version = "QCDSCallyOne/0.3"
 
         def _json(self, payload: Mapping[str, Any], status: int = 200) -> None:
             body = json.dumps(dict(payload), ensure_ascii=False, sort_keys=True).encode("utf-8")
@@ -74,6 +74,7 @@ def create_calendar_server(
                         "system_boundary": "SyntractSystem",
                         "single_qcds_architecture": True,
                         "everything_is_state": True,
+                        "dimensions_are_state": True,
                         "store": str(service.space.store_root),
                     }
                 )
@@ -91,6 +92,13 @@ def create_calendar_server(
                     person = service.upsert_person(payload)
                     self._json({"person": person.as_dict(), "state": service.state()}, 201)
                     return
+                if path == "/api/person/archive":
+                    person = service.archive_person(
+                        str(payload.get("person_id") or ""),
+                        archived=bool(payload.get("archived", True)),
+                    )
+                    self._json({"person": person.as_dict(), "state": service.state()}, 202)
+                    return
                 if path == "/api/entity":
                     entity = service.upsert_entity(payload)
                     self._json({"entity": entity.as_dict(), "state": service.state()}, 201)
@@ -99,9 +107,27 @@ def create_calendar_server(
                     relation = service.upsert_relation(payload)
                     self._json({"relation": relation.as_dict(), "state": service.state()}, 201)
                     return
+                if path == "/api/dimension":
+                    dimension = service.upsert_dimension(payload)
+                    self._json({"dimension": dimension.as_dict(), "state": service.state()}, 201)
+                    return
+                if path == "/api/dimension/retire":
+                    dimension = service.retire_dimension(
+                        str(payload.get("key") or ""),
+                        retired=bool(payload.get("retired", True)),
+                    )
+                    self._json({"dimension": dimension.as_dict(), "state": service.state()}, 202)
+                    return
                 if path == "/api/event":
                     event = service.upsert_event(payload)
-                    self._json({"event": event.as_dict(), "conflicts": [item.as_dict() for item in service.space.conflicts()], "state": service.state()}, 201)
+                    self._json(
+                        {
+                            "event": event.as_dict(),
+                            "conflicts": [item.as_dict() for item in service.space.conflicts()],
+                            "state": service.state(),
+                        },
+                        201,
+                    )
                     return
                 if path == "/api/event/move":
                     event_id = str(payload.get("event_id") or "")
@@ -114,12 +140,19 @@ def create_calendar_server(
                         end=None if payload.get("end") is None else str(payload.get("end")),
                         people=None if people is None else tuple(str(item) for item in people),
                     )
-                    self._json({"event": event.as_dict(), "conflicts": [item.as_dict() for item in service.space.conflicts()]}, 202)
+                    self._json(
+                        {
+                            "event": event.as_dict(),
+                            "conflicts": [item.as_dict() for item in service.space.conflicts()],
+                            "state": service.state(),
+                        },
+                        202,
+                    )
                     return
                 if path == "/api/event/delete":
                     event_id = str(payload.get("event_id") or "")
                     service.delete_event(event_id)
-                    self._json({"deleted": event_id}, 202)
+                    self._json({"deleted": event_id, "state": service.state()}, 202)
                     return
                 if path == "/api/infer":
                     event_id = str(payload.get("event_id") or "")
