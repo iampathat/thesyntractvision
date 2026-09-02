@@ -3,7 +3,7 @@ from __future__ import annotations
 from tempfile import TemporaryDirectory
 
 from qcds_fabric.robots.cally_one.enhanced_ui import cally_one_html
-from qcds_fabric.robots.cally_one.robot import CallyOneService
+from qcds_fabric.robots.cally_one.runtime_v3 import CallyOneService
 
 
 def test_everything_is_state_with_rich_person_organization_resource_and_thing() -> None:
@@ -25,7 +25,7 @@ def test_everything_is_state_with_rich_person_organization_resource_and_thing() 
             {
                 "kind": "resource",
                 "label": "Mötesrum 1",
-                "dimensions": {"type": "room", "exclusive": True, "location": "Stockholm"},
+                "dimensions": {"type": "room", "mobility": "stationary", "capacity": 1, "capacity_dimension": "booking", "location": "Stockholm"},
             }
         )
         bag = service.upsert_entity(
@@ -48,6 +48,7 @@ def test_everything_is_state_with_rich_person_organization_resource_and_thing() 
         assert state["everything_is_state"] is True
         assert state["state_model"]["people_is_projection"] is True
         assert state["state_model"]["linked_state_time_intersection"] is True
+        assert state["state_model"]["planning_can_be_resolved_by_human_or_qcds"] is True
         entities = {item["entity_id"]: item for item in state["entities"]}
         assert entities[person.person_id]["kind"] == "person"
         assert entities[organization.entity_id]["kind"] == "organization"
@@ -64,26 +65,30 @@ def test_everything_is_state_with_rich_person_organization_resource_and_thing() 
         assert use["dimensions"]["temporal_scope"] == "event"
 
 
-def test_same_exclusive_state_plus_overlapping_time_becomes_qcds_constraint() -> None:
+def test_stationary_capacity_overlap_becomes_qcds_constraint() -> None:
     with TemporaryDirectory() as root:
         service = CallyOneService(root)
-        car = service.upsert_entity(
-            {"kind": "resource", "label": "Familjebilen", "dimensions": {"type": "vehicle", "exclusive": True}}
+        room = service.upsert_entity(
+            {
+                "kind": "resource",
+                "label": "Rum 1",
+                "dimensions": {"type": "room", "mobility": "stationary", "capacity": 1, "capacity_dimension": "booking"},
+            }
         )
         first = service.upsert_event(
             {
-                "title": "Skjuts A",
+                "title": "Möte A",
                 "start": "2026-09-03T10:00",
                 "end": "2026-09-03T11:00",
-                "links": [{"predicate": "uses", "object_id": car.entity_id, "dimensions": {"state": "active"}}],
+                "links": [{"predicate": "uses", "object_id": room.entity_id, "dimensions": {"load": 1}}],
             }
         )
         second = service.upsert_event(
             {
-                "title": "Skjuts B",
+                "title": "Möte B",
                 "start": "2026-09-03T10:00",
                 "end": "2026-09-03T11:00",
-                "links": [{"predicate": "uses", "object_id": car.entity_id, "dimensions": {"state": "active"}}],
+                "links": [{"predicate": "uses", "object_id": room.entity_id, "dimensions": {"load": 1}}],
             }
         )
 
@@ -91,21 +96,20 @@ def test_same_exclusive_state_plus_overlapping_time_becomes_qcds_constraint() ->
         current = result["candidate_worlds"]["shift-zero"]
         assert result["mode"] == "qcds-resolve"
         assert current["coherence"] == "blocked"
-        assert f"state:{car.entity_id}:time_overlap:{first.event_id}" in current["reasons"]
-        assert result["provenance"]["linked_states_are_temporal"] is True
-        assert result["provenance"]["state_time_intersections_are_constraints"] is True
+        assert any(reason.startswith(f"state:{room.entity_id}:capacity:2/1") for reason in current["reasons"])
         assert result["provenance"]["system_boundary"] == "SyntractSystem"
         assert result["provenance"]["qcds_core_replaced"] is False
 
         service.move_event(second.event_id, start="2026-09-03T12:00", end="2026-09-03T13:00")
         link = next(
             r for r in service.graph.relations.values()
-            if r.subject_id == second.event_id and r.object_id == car.entity_id and r.predicate == "uses"
+            if r.subject_id == second.event_id and r.object_id == room.entity_id and r.predicate == "uses"
         )
         assert link.dimensions["time_start"] == "2026-09-03T12:00"
         assert link.dimensions["time_end"] == "2026-09-03T13:00"
         moved = service.infer_placement(second.event_id)["candidate_worlds"]["shift-zero"]
-        assert f"state:{car.entity_id}:time_overlap:{first.event_id}" not in moved["reasons"]
+        assert not any(reason.startswith(f"state:{room.entity_id}:capacity:") for reason in moved["reasons"])
+        assert first.event_id in service.space.events
 
 
 def test_dimensions_are_first_class_states_and_retirement_preserves_values() -> None:
@@ -202,6 +206,9 @@ def test_cally_ui_keeps_qcds_technical_detail_but_speaks_calendar_language() -> 
     assert "PERSON DIMENSION" in html
     assert "Resources · uses / reserves" in html
     assert "Things · requires" in html
+    assert "Åker med" in html
+    assert "Ändra själv" in html
+    assert "callyNeedsResolution" in html
     assert "'/api/entity'" in html
     assert "'/api/relation'" in html
     assert "'/api/dimension'" in html
