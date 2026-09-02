@@ -87,7 +87,7 @@ jobs:
         run: |
           python - <<'PY'
           from qcds_fabric.robots.cally_one.robot import CallyOneService
-          from qcds_fabric.robots.cally_one.ui import cally_one_html
+          from qcds_fabric.robots.cally_one.enhanced_ui import cally_one_html
           from tempfile import TemporaryDirectory
 
           with TemporaryDirectory() as root:
@@ -101,6 +101,10 @@ jobs:
           assert "Cally.One" in html
           assert "cally_one_run" in html
           assert "qcds_fabric.zip" in html
+          assert "data-cally-enhancements" in html
+          assert "eventMove" in html
+          assert "resizeHandle" in html
+          assert "eventEdit" in html
           print("Cally.One Logical Robot boundary verified")
           PY
       - name: Export public QCDS surfaces
@@ -121,7 +125,7 @@ jobs:
           import os
           from pathlib import Path
           from zipfile import ZIP_DEFLATED, ZipFile
-          from qcds_fabric.robots.cally_one.ui import cally_one_html
+          from qcds_fabric.robots.cally_one.enhanced_ui import cally_one_html
 
           root = Path('src/qcds_fabric')
           with ZipFile('_site/qcds_fabric.zip', 'w', compression=ZIP_DEFLATED) as archive:
@@ -173,6 +177,10 @@ jobs:
           grep -F 'Cally.One' _site/cally/index.html
           grep -F 'cally_one_run' _site/cally/index.html
           grep -F 'localStorage' _site/cally/index.html
+          grep -F 'data-cally-enhancements' _site/cally/index.html
+          grep -F 'eventMove' _site/cally/index.html
+          grep -F 'resizeHandle' _site/cally/index.html
+          grep -F 'eventEdit' _site/cally/index.html
           grep -F 'qcds_fabric.robots.cally_one.robot' _site/session_core_worker.js
           grep -F "msg.type === 'cally_one_run'" _site/session_core_worker.js
       - name: Validate Syntract artwork public identity
