@@ -1,7 +1,272 @@
-"""Cally.One UI surface for touch, desktop and presentation displays."""
+"""Cally.One product UI.
+
+Cally.One Tribute License 1.0 — see LICENSE.md in this package.
+The browser is a projection/interaction surface. QCDS inference remains in the
+shared packaged Python core through SyntractSystem.
+"""
 
 from __future__ import annotations
 
-from ...cally_one_ui import cally_one_html
+
+_STATIC_BRIDGE = r'''<script>
+/* Cally.One GitHub Pages bridge. Transport/state shell only; QCDS inference stays in packaged Python via Pyodide. */
+(() => {
+  const nativeFetch = window.fetch.bind(window);
+  const worker = new Worker('../session_core_worker.js');
+  const packageUrl = new URL('../qcds_fabric.zip', window.location.href).href;
+  const pending = new Map();
+  let nextId = 1;
+  let readyResolve, readyReject;
+  const ready = new Promise((resolve, reject) => { readyResolve = resolve; readyReject = reject; });
+  let hydratePromise = null;
+
+  worker.onmessage = (event) => {
+    const msg = event.data || {};
+    if (msg.type === 'ready') { readyResolve(); return; }
+    if (!msg.id || !pending.has(msg.id)) return;
+    const item = pending.get(msg.id);
+    pending.delete(msg.id);
+    if (msg.error) item.reject(new Error(msg.error));
+    else item.resolve(msg.result);
+  };
+  worker.onerror = (event) => readyReject(new Error(event.message || 'Cally.One QCDS worker failed'));
+  worker.postMessage({type: 'init', packageUrl});
+
+  async function callCore(payload) {
+    await ready;
+    const id = nextId++;
+    return new Promise((resolve, reject) => {
+      pending.set(id, {resolve, reject});
+      worker.postMessage({type: 'cally_one_run', id, payload});
+    });
+  }
+  function loadSavedState() {
+    try { const raw = localStorage.getItem('cally.one.state.v1'); return raw ? JSON.parse(raw) : null; }
+    catch (_) { return null; }
+  }
+  function saveState(state) {
+    try { localStorage.setItem('cally.one.state.v1', JSON.stringify(state)); }
+    catch (_) { /* active Pyodide session still works */ }
+  }
+  async function ensureHydrated() {
+    if (!hydratePromise) hydratePromise = (async () => { const stored = loadSavedState(); if (stored) await callCore({action:'hydrate', state:stored}); })();
+    await hydratePromise;
+  }
+  function jsonResponse(body, status=200) {
+    return new Response(JSON.stringify(body), {status, headers:{'Content-Type':'application/json; charset=utf-8'}});
+  }
+  async function apiResponse(path, options) {
+    await ensureHydrated();
+    let payload = {};
+    if (options && options.body) payload = JSON.parse(String(options.body));
+    let action = 'state';
+    if (path === '/api/person') action = 'person';
+    else if (path === '/api/event') action = 'event';
+    else if (path === '/api/event/move') action = 'move';
+    else if (path === '/api/event/delete') action = 'delete';
+    else if (path === '/api/infer') action = 'infer';
+    else if (path !== '/api/state') return jsonResponse({error:'not found'},404);
+    try {
+      const output = await callCore({action,payload});
+      if (output && output.state) saveState(output.state);
+      if (action === 'state') return jsonResponse(output.state || {});
+      return jsonResponse(output.result || {}, action === 'person' || action === 'event' ? 201 : 202);
+    } catch (error) {
+      return jsonResponse({error:String(error && error.message ? error.message : error)},400);
+    }
+  }
+  window.fetch = (input, options={}) => {
+    const url = new URL(typeof input === 'string' ? input : input.url, window.location.href);
+    if (url.origin === window.location.origin && url.pathname.startsWith('/api/')) return apiResponse(url.pathname, options);
+    return nativeFetch(input, options);
+  };
+})();
+</script>'''
+
+
+_HTML = r'''<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f5f1e8">
+<title>Cally.One · Logical Robot</title>
+<style>
+:root{--bg:#f5f1e8;--paper:#fffdf8;--ink:#14261e;--muted:#6c776f;--line:#d8ddd4;--soft:#edf1ea;--green:#087b58;--green2:#dcefe6;--red:#a44747;--shadow:0 16px 48px #24362b14;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink)}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink)}body{overflow-x:hidden}button,input,select,textarea{font:inherit}button{touch-action:manipulation}.shell{min-height:100vh;display:grid;grid-template-rows:auto 1fr}
+.top{position:sticky;top:0;z-index:50;background:#fffdf8f2;backdrop-filter:blur(18px);border-bottom:1px solid var(--line);padding:max(9px,env(safe-area-inset-top)) 14px 9px}.topline{display:flex;align-items:center;gap:10px}.brand{min-width:205px}.brand h1{font-size:clamp(18px,2vw,25px);margin:0;line-height:1}.brand small{display:block;color:var(--muted);font-size:10px;margin-top:5px}.mark{display:inline-grid;place-items:center;width:29px;height:29px;border-radius:10px;background:var(--green);color:#fff;margin-right:7px}.nav{display:flex;gap:6px;align-items:center;flex:1}.spacer{flex:1}.btn,.view{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:13px;min-height:43px;padding:8px 13px;font-weight:760;cursor:pointer}.btn:hover,.view:hover{background:#f0f4ec}.btn.primary{background:var(--green);border-color:var(--green);color:#fff}.btn.icon{min-width:43px;padding:7px}.btn.ghost{background:transparent}.viewbar{display:flex;gap:6px;overflow-x:auto;padding-top:9px;scrollbar-width:none}.viewbar::-webkit-scrollbar{display:none}.view{white-space:nowrap;min-height:39px;font-size:11px}.view.active{background:var(--ink);border-color:var(--ink);color:#fff}.dateTitle{font-weight:820;font-size:13px;white-space:nowrap}
+.main{display:grid;grid-template-columns:215px minmax(0,1fr) 290px;min-height:0}.side{background:#faf8f2;padding:14px;overflow:auto}.leftSide{border-right:1px solid var(--line)}.rightSide{border-left:1px solid var(--line)}.side h3{font-size:10px;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);margin:15px 0 8px}.side h3:first-child{margin-top:0}.person{display:flex;align-items:center;gap:8px;padding:9px;border-radius:11px;cursor:pointer}.person:hover{background:var(--soft)}.dot{width:12px;height:12px;border-radius:50%;background:var(--green);box-shadow:inset 0 0 0 2px #fff}.person span{font-size:12px;font-weight:730}.tiny{font-size:9px;color:var(--muted);line-height:1.5}.license{margin-top:18px;border-top:1px solid var(--line);padding-top:11px;color:var(--muted);font-size:8.5px;line-height:1.5}.license strong{color:var(--ink)}
+.stage{position:relative;min-width:0;overflow:auto;padding:12px}.card{background:var(--paper);border:1px solid var(--line);border-radius:17px;box-shadow:var(--shadow)}.empty{display:grid;place-items:center;min-height:50vh;text-align:center;color:var(--muted);padding:30px}.empty b{display:block;color:var(--ink);font-size:20px;margin-bottom:7px}.empty .btn{margin-top:13px}
+.timeline{display:grid;grid-template-columns:54px repeat(var(--days),minmax(145px,1fr));min-width:700px}.timeHead{height:52px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--paper);z-index:10}.dayHead{height:52px;border-left:1px solid var(--line);border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--paper);z-index:10;padding:9px 10px}.dayHead b{display:block;font-size:12px}.dayHead span{font-size:9px;color:var(--muted)}.timeRail{position:relative;height:952px;background:#faf8f2}.hour{position:absolute;left:0;right:0;height:1px;border-top:1px solid #e7e8e2;font-size:9px;color:var(--muted);padding-left:4px}.dayCol{position:relative;height:952px;border-left:1px solid var(--line);background:repeating-linear-gradient(to bottom,transparent 0,transparent 58.5px,#eef0ea 59px,#eef0ea 59.5px)}.dayCol.today{background-color:#f3f8f3}.event{position:absolute;left:5px;right:5px;min-height:34px;border:1px solid #8eb29f;background:#deeee4;border-radius:10px;padding:7px 8px;overflow:hidden;cursor:grab;touch-action:none;z-index:5;box-shadow:0 4px 12px #23452e16}.event:active{cursor:grabbing}.event.dragging{opacity:.62;transform:scale(1.02);z-index:30}.event.conflict{border-color:#cc8c8c;background:#f5dddd}.event b{font-size:10.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.event small{font-size:8.5px;color:#4d695a}.chips{margin-top:4px;display:flex;gap:4px;flex-wrap:wrap}.chip{font-size:8px;padding:3px 6px;border-radius:999px;background:#fff9;border:1px solid #9fb6a9}.nowline{position:absolute;left:0;right:0;border-top:2px solid #d56161;z-index:8;pointer-events:none}
+.month{display:grid;grid-template-columns:repeat(7,minmax(118px,1fr));min-width:760px;overflow:hidden}.monthDow{padding:10px;font-size:9px;color:var(--muted);font-weight:800;text-transform:uppercase;border-bottom:1px solid var(--line)}.dayCell{min-height:128px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:7px;background:var(--paper)}.dayCell.out{opacity:.45}.dayCell.today{background:#f1f7f1}.dayNum{border:0;background:transparent;padding:2px 4px;font-size:10px;font-weight:800;cursor:pointer;border-radius:7px}.dayNum:hover{background:var(--soft)}.monthEvent{font-size:8.5px;padding:5px 6px;border-radius:7px;background:var(--green2);margin:3px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:grab;touch-action:none}.monthEvent.conflict{background:#f4dada}
+.year{display:grid;grid-template-columns:repeat(4,minmax(190px,1fr));gap:10px}.miniMonth{padding:11px}.miniMonth h3{margin:0 0 8px;font-size:12px}.monthJump{border:0;background:transparent;color:var(--ink);font-weight:820;padding:2px 4px;border-radius:7px;cursor:pointer}.monthJump:hover{background:var(--soft)}.miniGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}.miniDay{aspect-ratio:1;display:grid;place-items:center;border:0;background:transparent;border-radius:7px;font-size:8px;position:relative;cursor:pointer}.miniDay.has{background:var(--green2);font-weight:800}.miniDay.today{box-shadow:inset 0 0 0 1px var(--green)}.miniDay:hover{background:var(--soft)}
+.personLanes{display:grid;gap:9px}.lane{display:grid;grid-template-columns:150px 1fr;min-height:92px;overflow:hidden}.laneName{padding:14px;border-right:1px solid var(--line);font-weight:800}.laneEvents{display:flex;align-items:stretch;gap:7px;padding:9px;overflow-x:auto;min-width:0}.laneCard{min-width:180px;max-width:260px;border:1px solid #b7c9bc;background:#edf5ef;border-radius:11px;padding:10px;cursor:grab;touch-action:none}.laneCard b{font-size:11px}.laneCard small{display:block;color:var(--muted);font-size:8.5px;margin-top:4px}.eventList{display:grid;gap:8px}.eventRow{display:grid;grid-template-columns:120px minmax(180px,1fr) 1fr auto;gap:10px;align-items:center;padding:12px}.eventRow .when{font-size:10px;font-weight:800}.eventRow .title{font-weight:800}.eventRow .meta{font-size:9px;color:var(--muted)}
+.perspective{display:grid;gap:10px}.perspectiveIntro{padding:16px}.perspectiveIntro h2{margin:0 0 5px;font-size:19px}.perspectiveIntro p{margin:0;color:var(--muted);font-size:10px}.perspectiveGroup{border:1px solid var(--line);border-radius:15px;background:#fffdf8;padding:10px;margin-top:8px}.groupHead{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:820}.groupHead em{font-style:normal;color:var(--green);font-size:9px;text-transform:uppercase;letter-spacing:.08em}.perspectiveEvents{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px;margin-top:9px}.pEvent{padding:11px;border:1px solid #cbd8cf;border-radius:12px;background:#f6faf6}.pEvent b{font-size:11px}.pEvent small{display:block;font-size:8.5px;color:var(--muted);margin-top:5px}
+.finder{display:grid;gap:7px}.search{width:100%;border:1px solid var(--line);border-radius:11px;background:#fff;min-height:42px;padding:8px 10px}.suggestions{display:flex;gap:5px;flex-wrap:wrap}.suggestion{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 8px;font-size:9px;cursor:pointer}.suggestion:hover{background:var(--soft)}.toolActions{display:grid;grid-template-columns:1fr 1fr;gap:6px}.toolActions .btn{font-size:9px;min-height:38px;padding:6px}.stack{display:grid;gap:6px}.stackRow,.filterRow{border:1px solid var(--line);background:#fff;border-radius:11px;padding:8px}.stackRow{display:grid;grid-template-columns:1fr auto auto auto;gap:4px;align-items:center}.stackRow b{font-size:10px}.miniBtn{border:0;background:var(--soft);border-radius:8px;min-width:28px;min-height:28px;cursor:pointer}.filterRow{display:grid;gap:6px}.filterTop{display:flex;align-items:center;justify-content:space-between;gap:6px}.filterTop b{font-size:10px}.filterValue{width:100%;border:1px solid var(--line);border-radius:9px;background:#fff;padding:7px;font-size:9px}.filterSummary{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.filterBadge{font-size:8px;padding:4px 6px;border-radius:999px;background:var(--green2);border:1px solid #bad1c1}.rightTop{display:flex;align-items:center;justify-content:space-between}.closePanel{display:none}.count{font-size:9px;color:var(--muted);margin-top:7px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#17231de9;color:#fff;border-radius:12px;padding:10px 14px;font-size:10px;z-index:120;display:none}.modalBack{position:fixed;inset:0;background:#17231d55;z-index:90;display:none;align-items:flex-end;justify-content:center;padding:12px}.modal{width:min(680px,100%);background:var(--paper);border-radius:20px;padding:18px;box-shadow:0 30px 90px #17231d55;max-height:92vh;overflow:auto}.modal h2{margin:0 0 12px;font-size:20px}.formGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:grid;gap:5px}.field.full{grid-column:1/-1}.field label{font-size:9px;color:var(--muted);font-weight:800}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:11px;min-height:44px;padding:9px;color:var(--ink)}.peopleChecks{display:flex;gap:6px;flex-wrap:wrap}.peopleChecks label{border:1px solid var(--line);border-radius:999px;padding:8px 10px;font-size:10px}.dimensionEditors{display:grid;gap:7px}.dimEdit{display:grid;grid-template-columns:1fr 1fr auto;gap:6px}.dimEdit input{min-width:0}.dimEdit .miniBtn{align-self:stretch}.modalActions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}.qcds{margin-top:10px;border:1px solid #bdd0c2;background:#edf6ef;border-radius:12px;padding:10px;font-size:9px}.qcds b{font-size:10px}.qcdsRows{display:grid;gap:4px;margin-top:6px}.qrow{display:grid;grid-template-columns:90px 1fr 44px;align-items:center;gap:7px}.bar{height:7px;background:#d7e3d9;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:var(--green)}
+@media(max-width:1180px){.main{grid-template-columns:1fr}.leftSide{display:none}.rightSide{position:fixed;z-index:80;right:10px;top:112px;bottom:10px;width:min(330px,calc(100vw - 20px));border:1px solid var(--line);border-radius:18px;box-shadow:0 22px 70px #17231d35;transform:translateX(calc(100% + 24px));transition:transform .2s ease}.rightSide.open{transform:translateX(0)}.closePanel{display:block}.brand small{display:none}}
+@media(min-width:1181px){#perspectiveBtn{display:none}}
+@media(max-width:700px){.top{padding-left:9px;padding-right:9px}.topline{flex-wrap:wrap}.brand{min-width:0;flex:1}.brand h1{font-size:18px}.nav{order:3;width:100%;overflow-x:auto}.dateTitle{flex:1;text-align:center;min-width:140px}.stage{padding:7px}.timeline{min-width:640px}.year{grid-template-columns:1fr}.month{min-width:700px}.eventRow{grid-template-columns:92px 1fr auto}.eventRow .meta{grid-column:1/-1}.formGrid{grid-template-columns:1fr}.field.full{grid-column:auto}.modalBack{padding:0}.modal{border-radius:20px 20px 0 0}.view{min-height:42px}.btn{min-height:44px}.dimEdit{grid-template-columns:1fr}.dimEdit .miniBtn{min-height:38px}.rightSide{top:154px}.toolActions{grid-template-columns:1fr 1fr}}
+@media(min-width:1700px){:root{font-size:18px}.main{grid-template-columns:260px 1fr 340px}.timeline{grid-template-columns:70px repeat(var(--days),minmax(190px,1fr))}.dayCol,.timeRail{height:1120px}.event b{font-size:12px}.month{grid-template-columns:repeat(7,1fr)}.dayCell{min-height:170px}}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="top">
+  <div class="topline">
+    <div class="brand"><h1><span class="mark">◇</span>Cally.One</h1><small>Logical Robot · one Calendar Space · QCDS / Syntract</small></div>
+    <div class="nav">
+      <button class="btn icon" id="prevBtn" aria-label="Previous">‹</button>
+      <button class="btn" id="todayBtn">Today</button>
+      <button class="btn icon" id="nextBtn" aria-label="Next">›</button>
+      <div class="dateTitle" id="dateTitle">Calendar Space</div>
+      <div class="spacer"></div>
+      <button class="btn" id="perspectiveBtn">Perspectives</button>
+      <button class="btn" id="personBtn">+ Person</button>
+      <button class="btn primary" id="eventBtn">+ Event</button>
+    </div>
+  </div>
+  <div class="viewbar" id="viewbar">
+    <button class="view" data-view="day">Day</button><button class="view active" data-view="week">Week</button><button class="view" data-view="month">Month</button><button class="view" data-view="year">Year</button><button class="view" data-view="person">Person</button><button class="view" data-view="event">Event</button><button class="view" data-view="dimension">Perspective</button>
+  </div>
+</header>
+<div class="main">
+  <aside class="side leftSide">
+    <h3>People in this space</h3><div id="peopleList"></div>
+    <div class="tiny">People, events, time, place and arbitrary properties are states in the same Calendar Space.</div>
+    <div class="license"><strong>Cally.One Tribute License 1.0</strong><br>Personal / household use free. Academic use free with Tribute. Organizational use EUR 99/month or EUR 990/year.</div>
+  </aside>
+  <main class="stage" id="stage"></main>
+  <aside class="side rightSide" id="rightSide">
+    <div class="rightTop"><h3>Calendar perspectives</h3><button class="miniBtn closePanel" id="closePanel">×</button></div>
+    <div class="finder">
+      <input class="search" id="dimensionSearch" list="dimensionChoices" placeholder="Search dimension…">
+      <datalist id="dimensionChoices"></datalist>
+      <div class="suggestions" id="dimensionSuggestions"></div>
+      <div class="toolActions"><button class="btn" id="addPerspective">+ Perspective</button><button class="btn" id="addFilter">+ Filter</button></div>
+    </div>
+    <h3>Perspective stack</h3><div class="stack" id="perspectiveStack"></div>
+    <div class="tiny">Order matters: e.g. Location/Plats → Person → Activity. These are projections of one state space, never separate calendars.</div>
+    <h3>Filters</h3><div class="stack" id="filterList"></div><div class="filterSummary" id="filterSummary"></div>
+    <div class="count" id="visibleCount"></div>
+    <h3>Language state</h3>
+    <div class="tiny">A semantic dimension keeps one canonical identity while its word can be represented in different language states. For example <b>Location</b> and <b>Plats</b> resolve to the same dimension.</div>
+  </aside>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="modalBack" id="modalBack"><div class="modal" role="dialog" aria-modal="true">
+  <h2 id="modalTitle">New event</h2>
+  <div class="formGrid">
+    <div class="field full"><label>Title</label><input id="fTitle" placeholder="Football, dinner, school…"></div>
+    <div class="field"><label>Starts</label><input id="fStart" type="datetime-local"></div>
+    <div class="field"><label>Ends</label><input id="fEnd" type="datetime-local"></div>
+    <div class="field"><label>Location / Plats</label><input id="fLocation" placeholder="Optional"></div>
+    <div class="field"><label>Language state</label><input id="fLanguage" list="languageChoices" placeholder="sv, en, de…"><datalist id="languageChoices"><option value="sv"><option value="en"><option value="de"><option value="fr"><option value="es"><option value="fi"><option value="no"><option value="da"></datalist></div>
+    <div class="field full"><label>People</label><div class="peopleChecks" id="fPeople"></div></div>
+    <div class="field full"><label>Additional dimensions — add as many as the event needs</label><div class="dimensionEditors" id="fDimensions"></div><div class="suggestions" id="eventDimSuggestions" style="margin-top:7px"></div><button class="btn ghost" id="addDimensionRow" type="button" style="margin-top:7px">+ Dimension</button></div>
+  </div>
+  <div id="qcdsBox"></div>
+  <div class="modalActions"><button class="btn" id="closeModal">Cancel</button><button class="btn" id="inferBtn">QCDS fit</button><button class="btn primary" id="saveEvent">Save</button></div>
+</div></div>
+<script>
+const CORE_DIMS={
+ person:{labels:{en:'Person',sv:'Person'},aliases:['people','personer','vem'],suggested:true,virtual:true},
+ location:{labels:{en:'Location',sv:'Plats'},aliases:['place','plats','ort','where','var'],suggested:true,virtual:true},
+ event:{labels:{en:'Event',sv:'Händelse'},aliases:['event','händelse','aktivitet'],virtual:true},
+ day:{labels:{en:'Day',sv:'Dag'},aliases:['date','datum','dag'],suggested:true,virtual:true},
+ week:{labels:{en:'Week',sv:'Vecka'},aliases:['week','vecka'],virtual:true},
+ month:{labels:{en:'Month',sv:'Månad'},aliases:['month','månad'],virtual:true},
+ year:{labels:{en:'Year',sv:'År'},aliases:['year','år'],virtual:true},
+ time:{labels:{en:'Time',sv:'Tid'},aliases:['clock','klockslag','tid'],virtual:true},
+ language:{labels:{en:'Language',sv:'Språk'},aliases:['language','språk','lang'],suggested:true},
+ activity:{labels:{en:'Activity',sv:'Aktivitet'},aliases:['activity','aktivitet','type','typ'],suggested:true},
+ priority:{labels:{en:'Priority',sv:'Prioritet'},aliases:['priority','prioritet','importance'],suggested:true},
+ category:{labels:{en:'Category',sv:'Kategori'},aliases:['category','kategori']},
+ status:{labels:{en:'Status',sv:'Status'},aliases:['state','status']},
+ organization:{labels:{en:'Organization',sv:'Organisation'},aliases:['organisation','organization','company','företag']},
+ resource:{labels:{en:'Resource',sv:'Resurs'},aliases:['resource','resurs']},
+ transport:{labels:{en:'Transport',sv:'Transport'},aliases:['travel','resa','transport']},
+ travel_time:{labels:{en:'Travel time',sv:'Restid'},aliases:['travel time','restid','commute']},
+ dependency:{labels:{en:'Dependency',sv:'Beroende'},aliases:['dependency','beroende']},
+ flexibility:{labels:{en:'Flexibility',sv:'Flexibilitet'},aliases:['flexibility','flexibilitet','movable'],suggested:true},
+ role:{labels:{en:'Role',sv:'Roll'},aliases:['role','roll']},
+ timezone:{labels:{en:'Time zone',sv:'Tidszon'},aliases:['timezone','time zone','tidszon']}
+};
+const COMMON=['location','person','day','activity','priority','language'];
+const EVENT_COMMON=['activity','priority','language','category','status','flexibility','transport','organization'];
+const state={data:null,view:'week',anchor:startOfDay(new Date()),selected:null,drag:null,perspectives:['location','person'],filters:[]};
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const uiLang=()=>String(navigator.language||'en').toLowerCase().startsWith('sv')?'sv':'en';
+function pad(n){return String(n).padStart(2,'0')} function localIso(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`}
+function startOfDay(d){const x=new Date(d);x.setHours(0,0,0,0);return x} function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x} function addMonths(d,n){const x=new Date(d);x.setMonth(x.getMonth()+n);return x}
+function monday(d){const x=startOfDay(d),day=(x.getDay()+6)%7;return addDays(x,-day)} function sameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
+function fmtDate(d,opt={weekday:'short',day:'numeric',month:'short'}){return new Intl.DateTimeFormat(undefined,opt).format(d)} function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]))}
+async function api(path,opts={}){const r=await fetch(path,{headers:{'Content-Type':'application/json'},...opts});const j=await r.json();if(!r.ok)throw new Error(j.error||`HTTP ${r.status}`);return j}
+function toast(msg){const e=$('#toast');e.textContent=msg;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',2400)}
+function personName(id){return state.data?.people.find(p=>p.person_id===id)?.name||id} function conflictsFor(id){return (state.data?.conflicts||[]).some(c=>c.left_event_id===id||c.right_event_id===id)}
+function dimensionKeys(){const found=new Set(Object.keys(CORE_DIMS));Object.keys(state.data?.dimensions||{}).forEach(k=>found.add(k));(state.data?.events||[]).forEach(e=>Object.keys(e.dimensions||{}).forEach(k=>found.add(k)));(state.data?.people||[]).forEach(p=>Object.keys(p.dimensions||{}).forEach(k=>found.add(k)));return [...found].sort((a,b)=>dimensionLabel(a).localeCompare(dimensionLabel(b)))}
+function dimensionMeta(key){return CORE_DIMS[key]||{labels:{en:key,sv:key},aliases:[key]}} function dimensionLabel(key){const m=dimensionMeta(key);return m.labels?.[uiLang()]||m.labels?.en||key}
+function dimensionTerms(key){const m=dimensionMeta(key);return [key,...Object.values(m.labels||{}),...(m.aliases||[])].map(x=>String(x).toLowerCase())}
+function resolveDimension(text){const q=String(text||'').trim().toLowerCase();if(!q)return '';const exact=dimensionKeys().find(k=>dimensionTerms(k).includes(q));if(exact)return exact;const prefix=dimensionKeys().find(k=>dimensionTerms(k).some(t=>t.startsWith(q)));return prefix||String(text).trim()}
+function weekValue(d){const x=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()));const day=x.getUTCDay()||7;x.setUTCDate(x.getUTCDate()+4-day);const y0=new Date(Date.UTC(x.getUTCFullYear(),0,1));const w=Math.ceil((((x-y0)/86400000)+1)/7);return `${x.getUTCFullYear()}-W${pad(w)}`}
+function rawDimValues(e,key){const s=new Date(e.start);if(key==='person')return e.people.length?e.people.map(personName):['—'];if(key==='location')return [e.location||'—'];if(key==='event')return [e.title];if(key==='day')return [localIso(s).slice(0,10)];if(key==='week')return [weekValue(s)];if(key==='month')return [localIso(s).slice(0,7)];if(key==='year')return [String(s.getFullYear())];if(key==='time')return [`${pad(s.getHours())}:${pad(s.getMinutes())}`];const v=(e.dimensions||{})[key];if(Array.isArray(v))return v.length?v.map(String):['—'];if(v===undefined||v===null||v==='')return ['—'];if(typeof v==='object')return [JSON.stringify(v)];return [String(v)]}
+function dimValue(e,key){return rawDimValues(e,key).join(', ')}
+function allDimensionValues(key){const out=new Set();(state.data?.events||[]).forEach(e=>rawDimValues(e,key).forEach(v=>{if(v!=='—')out.add(String(v))}));return [...out].sort((a,b)=>a.localeCompare(b))}
+function eventMatchesFilters(e){return state.filters.every(f=>!f.value||rawDimValues(e,f.key).some(v=>String(v).toLowerCase()===String(f.value).toLowerCase()))} function visibleEvents(){return (state.data?.events||[]).filter(eventMatchesFilters)}
+async function load(){state.data=await api('/api/state');renderPeople();renderDimensionTools();render();}
+function renderPeople(){const box=$('#peopleList'),people=state.data?.people||[];box.innerHTML=people.length?people.map(p=>`<div class="person" data-person="${esc(p.person_id)}"><i class="dot"></i><span>${esc(p.name)}</span></div>`).join(''):'<div class="tiny">No people yet. Add a person, then place events in the shared Calendar Space.</div>';}
+function renderDimensionTools(){const keys=dimensionKeys();$('#dimensionChoices').innerHTML=keys.map(k=>`<option value="${esc(dimensionLabel(k))}">${esc(k)}</option>`).join('');$('#dimensionSuggestions').innerHTML=COMMON.map(k=>`<button class="suggestion" data-dim-suggest="${esc(k)}">${esc(dimensionLabel(k))}</button>`).join('');renderPerspectiveStack();renderFilters();renderEventSuggestions();}
+function renderEventSuggestions(){const box=$('#eventDimSuggestions');if(box)box.innerHTML=EVENT_COMMON.filter(k=>k!=='language').map(k=>`<button class="suggestion" type="button" data-event-dim="${esc(k)}">+ ${esc(dimensionLabel(k))}</button>`).join('')}
+function renderPerspectiveStack(){const box=$('#perspectiveStack');box.innerHTML=state.perspectives.length?state.perspectives.map((k,i)=>`<div class="stackRow"><b>${esc(dimensionLabel(k))}</b><button class="miniBtn" data-stack-up="${i}" aria-label="Move up">↑</button><button class="miniBtn" data-stack-down="${i}" aria-label="Move down">↓</button><button class="miniBtn" data-stack-remove="${i}" aria-label="Remove">×</button></div>`).join(''):'<div class="tiny">No grouping selected. Search a dimension and add it to the perspective stack.</div>';}
+function renderFilters(){const box=$('#filterList');box.innerHTML=state.filters.length?state.filters.map((f,i)=>{const vals=allDimensionValues(f.key),list=`filter-values-${i}`;return `<div class="filterRow"><div class="filterTop"><b>${esc(dimensionLabel(f.key))}</b><button class="miniBtn" data-filter-remove="${i}">×</button></div><input class="filterValue" data-filter-value="${i}" list="${list}" value="${esc(f.value||'')}" placeholder="All values"><datalist id="${list}">${vals.map(v=>`<option value="${esc(v)}"></option>`).join('')}</datalist></div>`}).join(''):'<div class="tiny">No filters. Add any dimension — including custom dimensions — and choose a value.</div>';$('#filterSummary').innerHTML=state.filters.filter(f=>f.value).map(f=>`<span class="filterBadge">${esc(dimensionLabel(f.key))}: ${esc(f.value)}</span>`).join('');$('#visibleCount').textContent=`${visibleEvents().length} of ${(state.data?.events||[]).length} events visible`;}
+function selectedDimension(){return resolveDimension($('#dimensionSearch').value)}
+function addPerspectiveKey(key){key=resolveDimension(key);if(!key)return toast('Choose a dimension first');if(!state.perspectives.includes(key))state.perspectives.push(key);$('#dimensionSearch').value='';renderDimensionTools();state.view='dimension';render()}
+function addFilterKey(key){key=resolveDimension(key);if(!key)return toast('Choose a dimension first');state.filters.push({key,value:''});$('#dimensionSearch').value='';renderDimensionTools();render()}
+function setTitle(){const a=state.anchor;if(state.view==='week'){const m=monday(a),e=addDays(m,6);$('#dateTitle').textContent=`${fmtDate(m,{day:'numeric',month:'short'})} – ${fmtDate(e,{day:'numeric',month:'short',year:'numeric'})}`;}else if(state.view==='month')$('#dateTitle').textContent=fmtDate(a,{month:'long',year:'numeric'});else if(state.view==='year')$('#dateTitle').textContent=String(a.getFullYear());else $('#dateTitle').textContent=fmtDate(a,{weekday:'long',day:'numeric',month:'long',year:'numeric'});$('#todayBtn').textContent=state.view==='year'?'Current month':state.view==='month'?'Today':'Today';}
+function render(){setTitle();$$('.view').forEach(v=>v.classList.toggle('active',v.dataset.view===state.view));renderFilters();if(!(state.data?.events||[]).length){$('#stage').innerHTML=`<div class="card empty"><div><b>Calendar Space is empty</b><span>Add people and events. They will all live in the same logical space.</span><br><button class="btn primary" onclick="openEvent()">Create first event</button></div></div>`;return;}({day:renderTimeline,week:renderTimeline,month:renderMonth,year:renderYear,person:renderPerson,event:renderEventList,dimension:renderPerspective}[state.view]||renderTimeline)();bindDrags();}
+function visibleDays(){if(state.view==='day')return [startOfDay(state.anchor)];const m=monday(state.anchor);return Array.from({length:7},(_,i)=>addDays(m,i));}
+function dayEvents(day){return visibleEvents().filter(e=>sameDay(new Date(e.start),day)).sort((a,b)=>new Date(a.start)-new Date(b.start));}
+function eventHtml(e){const s=new Date(e.start),en=new Date(e.end),top=((s.getHours()+s.getMinutes()/60)-6)*59.5,dur=(en-s)/3600000,height=Math.max(34,dur*59.5-3);if(top<0||top>952)return '';return `<div class="event ${conflictsFor(e.event_id)?'conflict':''}" data-event-id="${esc(e.event_id)}" style="top:${top}px;height:${height}px"><b>${esc(e.title)}</b><small>${pad(s.getHours())}:${pad(s.getMinutes())} · ${e.people.map(personName).map(esc).join(', ')||'Everyone'}</small>${e.location?`<div class="chips"><span class="chip">${esc(e.location)}</span></div>`:''}</div>`;}
+function renderTimeline(){const days=visibleDays(),today=new Date(),heads=days.map(d=>`<div class="dayHead"><b>${fmtDate(d,{weekday:'short',day:'numeric'})}</b><span>${fmtDate(d,{month:'short'})}</span></div>`).join(''),hours=Array.from({length:17},(_,i)=>`<div class="hour" style="top:${i*59.5}px">${pad(i+6)}:00</div>`).join(''),cols=days.map(d=>`<div class="dayCol ${sameDay(d,today)?'today':''}" data-drop-date="${localIso(d).slice(0,10)}">${dayEvents(d).map(eventHtml).join('')}${sameDay(d,today)?nowLine():''}</div>`).join('');$('#stage').innerHTML=`<div class="card timeline" style="--days:${days.length}"><div class="timeHead"></div>${heads}<div class="timeRail">${hours}</div>${cols}</div>`;}
+function nowLine(){const n=new Date(),top=((n.getHours()+n.getMinutes()/60)-6)*59.5;return top>=0&&top<=952?`<div class="nowline" style="top:${top}px"></div>`:''}
+function renderMonth(){const a=new Date(state.anchor.getFullYear(),state.anchor.getMonth(),1),start=monday(a),today=new Date(),dow=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x=>`<div class="monthDow">${x}</div>`).join(''),cells=Array.from({length:42},(_,i)=>{const d=addDays(start,i),ev=dayEvents(d),iso=localIso(d).slice(0,10);return `<div class="dayCell ${d.getMonth()!==a.getMonth()?'out':''} ${sameDay(d,today)?'today':''}" data-drop-date="${iso}"><button class="dayNum" data-jump-date="${iso}">${d.getDate()}</button>${ev.slice(0,5).map(e=>`<div class="monthEvent ${conflictsFor(e.event_id)?'conflict':''}" data-event-id="${esc(e.event_id)}">${esc(e.title)}</div>`).join('')}${ev.length>5?`<div class="tiny">+${ev.length-5} more</div>`:''}</div>`}).join('');$('#stage').innerHTML=`<div class="card month">${dow}${cells}</div>`;}
+function renderYear(){const y=state.anchor.getFullYear(),today=new Date();$('#stage').innerHTML=`<div class="year">${Array.from({length:12},(_,m)=>{const first=new Date(y,m,1),st=monday(first),days=Array.from({length:42},(_,i)=>{const d=addDays(st,i),has=dayEvents(d).length>0,iso=localIso(d).slice(0,10);return `<button class="miniDay ${has?'has':''} ${sameDay(d,today)?'today':''}" data-jump-date="${iso}" style="opacity:${d.getMonth()===m?1:.25}">${d.getDate()}</button>`}).join('');return `<div class="card miniMonth"><h3><button class="monthJump" data-jump-month="${y}-${pad(m+1)}">${fmtDate(first,{month:'long'})}</button></h3><div class="miniGrid">${days}</div></div>`}).join('')}</div>`;}
+function renderPerson(){const people=state.data.people;$('#stage').innerHTML=`<div class="personLanes">${people.map(p=>{const ev=visibleEvents().filter(e=>e.people.includes(p.person_id)).sort((a,b)=>new Date(a.start)-new Date(b.start));return `<div class="card lane" data-drop-person="${esc(p.person_id)}"><div class="laneName">${esc(p.name)}</div><div class="laneEvents">${ev.length?ev.map(e=>`<div class="laneCard" data-event-id="${esc(e.event_id)}"><b>${esc(e.title)}</b><small>${esc(fmtDate(new Date(e.start),{weekday:'short',day:'numeric',month:'short'}))} · ${pad(new Date(e.start).getHours())}:${pad(new Date(e.start).getMinutes())}</small></div>`).join(''):'<span class="tiny">No events in current filter</span>'}</div></div>`}).join('')}</div>`;}
+function renderEventList(){const rows=visibleEvents().map(e=>{const s=new Date(e.start);return `<div class="card eventRow"><div class="when">${esc(fmtDate(s,{weekday:'short',day:'numeric',month:'short'}))}<br>${pad(s.getHours())}:${pad(s.getMinutes())}</div><div><div class="title">${esc(e.title)}</div><div class="meta">${e.people.map(personName).map(esc).join(', ')||'No person'}${e.location?' · '+esc(e.location):''}</div></div><div class="meta">${Object.entries(e.dimensions||{}).map(([k,v])=>`${esc(dimensionLabel(k))}=${esc(typeof v==='object'?JSON.stringify(v):v)}`).join(' · ')}</div><button class="btn" onclick="openEvent('${esc(e.event_id)}')">Open</button></div>`}).join('');$('#stage').innerHTML=rows?`<div class="eventList">${rows}</div>`:`<div class="card empty"><div><b>No matching events</b><span>Change the filters on the right.</span></div></div>`;}
+function perspectiveNode(events,keys,depth=0){if(!keys.length)return `<div class="perspectiveEvents">${events.map(e=>`<div class="pEvent" data-event-id="${esc(e.event_id)}"><b>${esc(e.title)}</b><small>${esc(fmtDate(new Date(e.start),{weekday:'short',day:'numeric',month:'short',year:'numeric'}))} · ${esc(e.location||'No location')}</small></div>`).join('')}</div>`;const key=keys[0],groups=new Map();events.forEach(e=>rawDimValues(e,key).forEach(v=>{if(!groups.has(v))groups.set(v,[]);groups.get(v).push(e)}));return [...groups.entries()].sort((a,b)=>String(a[0]).localeCompare(String(b[0]))).map(([value,items])=>`<div class="perspectiveGroup"><div class="groupHead"><em>${esc(dimensionLabel(key))}</em><span>${esc(value)}</span><span class="tiny">${items.length}</span></div>${perspectiveNode(items,keys.slice(1),depth+1)}</div>`).join('')}
+function renderPerspective(){const keys=state.perspectives,events=visibleEvents(),chain=keys.length?keys.map(dimensionLabel).join(' → '):'No grouping';$('#stage').innerHTML=`<div class="perspective"><div class="card perspectiveIntro"><h2>Calendar Space · Perspective</h2><p>${esc(chain)}. Search and stack any dimensions on the right; filters can be layered independently.</p></div>${events.length?perspectiveNode(events,keys):'<div class="card empty"><div><b>No matching states</b><span>Change the perspective filters.</span></div></div>'}</div>`;}
+function bindDrags(){$$('[data-event-id]').forEach(el=>el.addEventListener('pointerdown',dragStart));}
+function dragStart(ev){if(ev.button!==undefined&&ev.button!==0)return;const el=ev.currentTarget,id=el.dataset.eventId,item=state.data.events.find(x=>x.event_id===id);if(!item||item.locked)return;state.drag={id,el,x:ev.clientX,y:ev.clientY};el.classList.add('dragging');el.setPointerCapture?.(ev.pointerId);el.addEventListener('pointerup',dragEnd,{once:true});el.addEventListener('pointercancel',dragCancel,{once:true});}
+async function dragEnd(ev){const d=state.drag;if(!d)return;d.el.classList.remove('dragging');const under=document.elementFromPoint(ev.clientX,ev.clientY),dateCell=under?.closest('[data-drop-date]'),personLane=under?.closest('[data-drop-person]'),item=state.data.events.find(x=>x.event_id===d.id);state.drag=null;if(!item)return;try{let start=new Date(item.start),end=new Date(item.end),duration=end-start,people=[...item.people];if(dateCell){const parts=dateCell.dataset.dropDate.split('-').map(Number);start.setFullYear(parts[0],parts[1]-1,parts[2]);if(dateCell.classList.contains('dayCol')){const r=dateCell.getBoundingClientRect(),minutes=Math.max(0,Math.min(16*60,Math.round(((ev.clientY-r.top)/59.5*60)/15)*15));start.setHours(6+Math.floor(minutes/60),minutes%60,0,0);}end=new Date(start.getTime()+duration);}if(personLane){people=[personLane.dataset.dropPerson];}if(!dateCell&&!personLane){openEvent(d.id);return;}await api('/api/event/move',{method:'POST',body:JSON.stringify({event_id:d.id,start:localIso(start),end:localIso(end),people})});await load();toast('Event moved in Calendar Space');}catch(e){toast(e.message);}}
+function dragCancel(){if(state.drag)state.drag.el.classList.remove('dragging');state.drag=null}
+function addDimEditor(key='',value=''){const row=document.createElement('div');row.className='dimEdit';row.innerHTML=`<input class="dimKey" list="dimensionChoices" placeholder="Dimension" value="${esc(key?dimensionLabel(key):'')}"><input class="dimVal" placeholder="Value / state" value="${esc(value)}"><button class="miniBtn dimRemove" type="button">×</button>`;row.querySelector('.dimRemove').onclick=()=>row.remove();$('#fDimensions').appendChild(row);}
+function openEvent(id=null){state.selected=id;const e=id?state.data.events.find(x=>x.event_id===id):null,$m=$('#modalBack');$('#modalTitle').textContent=e?'Event state':'New event';$('#fTitle').value=e?.title||'';let s=e?new Date(e.start):new Date(),en=e?new Date(e.end):new Date(s.getTime()+3600000);if(!e){s.setMinutes(Math.ceil(s.getMinutes()/15)*15,0,0);en=new Date(s.getTime()+3600000)}$('#fStart').value=localIso(s);$('#fEnd').value=localIso(en);$('#fLocation').value=e?.location||'';$('#fLanguage').value=String(e?.dimensions?.language||'');$('#fPeople').innerHTML=(state.data.people||[]).map(p=>`<label><input type="checkbox" value="${esc(p.person_id)}" ${e?.people.includes(p.person_id)?'checked':''}> ${esc(p.name)}</label>`).join('')||'<span class="tiny">Add a person first, or save this as a shared/unassigned event.</span>';$('#fDimensions').innerHTML='';Object.entries(e?.dimensions||{}).filter(([k])=>k!=='language').forEach(([k,v])=>addDimEditor(k,typeof v==='object'?JSON.stringify(v):v));$('#qcdsBox').innerHTML='';renderEventSuggestions();$m.style.display='flex';}
+function closeModal(){$('#modalBack').style.display='none';state.selected=null}
+async function saveEvent(){try{const dims={};const lang=$('#fLanguage').value.trim();if(lang)dims.language=lang;$$('#fDimensions .dimEdit').forEach(row=>{const raw=row.querySelector('.dimKey').value.trim(),val=row.querySelector('.dimVal').value.trim();if(!raw||!val)return;const key=resolveDimension(raw);if(['person','event','day','week','month','year','time','location'].includes(key))return;dims[key]=val});const payload={event_id:state.selected||undefined,title:$('#fTitle').value||'Untitled event',start:$('#fStart').value,end:$('#fEnd').value,location:$('#fLocation').value,people:$$('#fPeople input:checked').map(x=>x.value),dimensions:dims};await api('/api/event',{method:'POST',body:JSON.stringify(payload)});closeModal();await load();toast('Event saved as Calendar Space state');}catch(e){toast(e.message)}}
+async function inferFit(){if(!state.selected){toast('Save the event first, then ask QCDS about placement');return}try{$('#inferBtn').disabled=true;const r=await api('/api/infer',{method:'POST',body:JSON.stringify({event_id:state.selected})});$('#qcdsBox').innerHTML=`<div class="qcds"><b>QCDS placement projection · ${r.logical_width} Conditions · 2^${r.logical_width} raw states</b><div class="tiny">Same SyntractSystem; existing events act as represented placement constraints.</div><div class="qcdsRows">${r.stabilized.map(x=>`<div class="qrow"><span>${esc(x.value)}</span><div class="bar"><i style="width:${Math.max(1,x.probability*100)}%"></i></div><b>${(x.probability*100).toFixed(1)}%</b></div>`).join('')}</div></div>`;}catch(e){toast(e.message)}finally{$('#inferBtn').disabled=false}}
+async function addPerson(){const name=prompt('Person name');if(!name)return;try{await api('/api/person',{method:'POST',body:JSON.stringify({name})});await load();toast('Person added to Calendar Space')}catch(e){toast(e.message)}}
+function shift(dir){if(state.view==='day')state.anchor=addDays(state.anchor,dir);else if(state.view==='week'||state.view==='person'||state.view==='event'||state.view==='dimension')state.anchor=addDays(state.anchor,dir*7);else if(state.view==='month')state.anchor=addMonths(state.anchor,dir);else state.anchor=new Date(state.anchor.getFullYear()+dir,state.anchor.getMonth(),1);render()}
+function jumpToday(){const n=startOfDay(new Date());state.anchor=n;if(state.view==='year')state.view='month';else if(state.view==='month')state.view='day';render()}
+$('#viewbar').addEventListener('click',e=>{const b=e.target.closest('[data-view]');if(!b)return;state.view=b.dataset.view;render()});$('#prevBtn').onclick=()=>shift(-1);$('#nextBtn').onclick=()=>shift(1);$('#todayBtn').onclick=jumpToday;$('#eventBtn').onclick=()=>openEvent();$('#personBtn').onclick=addPerson;$('#perspectiveBtn').onclick=()=>$('#rightSide').classList.add('open');$('#closePanel').onclick=()=>$('#rightSide').classList.remove('open');$('#closeModal').onclick=closeModal;$('#saveEvent').onclick=saveEvent;$('#inferBtn').onclick=inferFit;$('#addDimensionRow').onclick=()=>addDimEditor();$('#modalBack').addEventListener('click',e=>{if(e.target===$('#modalBack'))closeModal()});
+$('#addPerspective').onclick=()=>addPerspectiveKey(selectedDimension());$('#addFilter').onclick=()=>addFilterKey(selectedDimension());$('#dimensionSuggestions').addEventListener('click',e=>{const b=e.target.closest('[data-dim-suggest]');if(!b)return;$('#dimensionSearch').value=dimensionLabel(b.dataset.dimSuggest)});$('#eventDimSuggestions').addEventListener('click',e=>{const b=e.target.closest('[data-event-dim]');if(b)addDimEditor(b.dataset.eventDim,'')});
+$('#perspectiveStack').addEventListener('click',e=>{const up=e.target.closest('[data-stack-up]'),down=e.target.closest('[data-stack-down]'),rem=e.target.closest('[data-stack-remove]');let i;if(up){i=+up.dataset.stackUp;if(i>0)[state.perspectives[i-1],state.perspectives[i]]=[state.perspectives[i],state.perspectives[i-1]]}else if(down){i=+down.dataset.stackDown;if(i<state.perspectives.length-1)[state.perspectives[i+1],state.perspectives[i]]=[state.perspectives[i],state.perspectives[i+1]]}else if(rem){state.perspectives.splice(+rem.dataset.stackRemove,1)}else return;renderDimensionTools();render()});
+$('#filterList').addEventListener('input',e=>{const input=e.target.closest('[data-filter-value]');if(!input)return;state.filters[+input.dataset.filterValue].value=input.value;render()});$('#filterList').addEventListener('click',e=>{const b=e.target.closest('[data-filter-remove]');if(!b)return;state.filters.splice(+b.dataset.filterRemove,1);renderDimensionTools();render()});
+$('#stage').addEventListener('click',e=>{const month=e.target.closest('[data-jump-month]'),day=e.target.closest('[data-jump-date]');if(month){const [y,m]=month.dataset.jumpMonth.split('-').map(Number);state.anchor=new Date(y,m-1,1);state.view='month';render();return}if(day&&!e.target.closest('[data-event-id]')){const [y,m,d]=day.dataset.jumpDate.split('-').map(Number);state.anchor=new Date(y,m-1,d);state.view='day';render()}});
+load().catch(e=>{$('#stage').innerHTML=`<div class="card empty"><div><b>Calendar runtime unavailable</b><span>${esc(e.message)}</span></div></div>`});
+</script>
+</body>
+</html>'''
+
+
+def cally_one_html(*, static_mode: bool = False) -> str:
+    html = _HTML
+    if static_mode:
+        marker = "<script>\nconst CORE_DIMS="
+        if marker not in html:
+            raise RuntimeError("Cally.One UI script marker not found")
+        html = html.replace(marker, _STATIC_BRIDGE + "\n" + marker, 1)
+    return html
+
 
 __all__ = ["cally_one_html"]
