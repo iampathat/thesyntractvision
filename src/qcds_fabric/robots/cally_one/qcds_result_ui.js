@@ -4,19 +4,19 @@
   const box = () => document.querySelector('#qcdsBox');
   const locale = () => String(navigator.language || 'en').toLowerCase().startsWith('sv') ? 'sv-SE' : 'en-GB';
   const isSv = () => locale().startsWith('sv');
-  const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 
   function shiftMinutes(value) {
     const text = String(value || '').trim().toLowerCase();
     if (text === 'shift-zero') return 0;
-    let match = text.match(/^shift-(minus|plus)-(\d+)$/);
+    const match = text.match(/^shift-(minus|plus)-(\d+)$/);
     if (!match) return null;
     const minutes = Number(match[2]);
     return match[1] === 'minus' ? -minutes : minutes;
   }
 
   function offsetLabel(minutes) {
-    if (minutes === 0) return isSv() ? 'Nuvarande tid' : 'Current time';
+    if (minutes === 0) return isSv() ? 'Som nu' : 'Current time';
     const abs = Math.abs(minutes);
     const direction = minutes < 0 ? (isSv() ? 'tidigare' : 'earlier') : (isSv() ? 'senare' : 'later');
     if (abs % 60 === 0) {
@@ -68,26 +68,26 @@
     const best = rows.filter(row => Math.abs(row.percent - max) < 0.15);
 
     const title = equal
-      ? (isSv() ? 'QCDS ser ingen tydlig skillnad mellan tiderna' : 'QCDS sees no clear difference between these times')
+      ? (isSv() ? 'Alla tider funkar lika bra' : 'All these times work equally well')
       : best.length === 1
-        ? (isSv() ? `QCDS ger starkast stöd åt ${candidateTime(base, best[0].minutes)}` : `QCDS gives strongest support to ${candidateTime(base, best[0].minutes)}`)
-        : (isSv() ? 'Flera tider har starkast stöd från QCDS' : 'Several times share the strongest QCDS support');
+        ? (isSv() ? `${candidateTime(base, best[0].minutes)} passar bäst` : `${candidateTime(base, best[0].minutes)} works best`)
+        : (isSv() ? 'Flera tider passar lika bra' : 'Several times work equally well');
 
     const intro = equal
       ? (isSv()
-          ? `Alla ${rows.length} representerade tider är lika koherenta med Calendar Space just nu.`
-          : `All ${rows.length} represented times are equally coherent with Calendar Space right now.`)
+          ? 'Ingen av de här tiderna är bättre eller sämre än de andra utifrån det som finns i kalendern.'
+          : 'None of these times is better or worse than the others based on what is in the calendar.')
       : (isSv()
-          ? `QCDS har jämfört ${rows.length} representerade tider mot de tillstånd och begränsningar som finns i Calendar Space.`
-          : `QCDS compared ${rows.length} represented times against the states and constraints in Calendar Space.`);
+          ? 'Här är tiderna som passar bäst ihop med resten av kalendern.'
+          : 'These are the times that fit best with the rest of the calendar.');
 
     const options = rows.map(row => {
       const strongest = !equal && Math.abs(row.percent - max) < 0.15;
       const badge = equal
-        ? (isSv() ? 'Lika stöd' : 'Equal support')
+        ? (isSv() ? 'Funkar lika bra' : 'Works equally well')
         : strongest
-          ? (isSv() ? 'Starkast stöd' : 'Strongest support')
-          : (isSv() ? 'Alternativ' : 'Alternative');
+          ? (isSv() ? 'Bäst' : 'Best')
+          : (isSv() ? 'Funkar' : 'Works');
       const relative = max > 0 ? Math.max(8, Math.round((row.percent / max) * 100)) : 8;
       return `<div class="qcdsChoice ${strongest ? 'best' : ''}">
         <div class="qcdsChoiceTime"><b>${esc(candidateTime(base, row.minutes))}</b><small>${esc(offsetLabel(row.minutes))}</small></div>
@@ -100,24 +100,24 @@
     result.dataset.callyHumanized = '1';
     result.classList.add('qcdsHuman');
     result.innerHTML = `
-      <div class="qcdsHumanHead"><div><div class="qcdsEyebrow">QCDS</div><b>${esc(title)}</b><p>${esc(intro)}</p></div></div>
+      <div class="qcdsHumanHead"><div><b>${esc(title)}</b><p>${esc(intro)}</p></div></div>
       <div class="qcdsChoices">${options}</div>
       <details class="qcdsTech"><summary>${isSv() ? 'Tekniska detaljer' : 'Technical details'}</summary>
         <div><b>${isSv() ? 'Motor' : 'Engine'}:</b> SyntractSystem → shared QCDS core</div>
         <div>${esc(header)}</div>
         ${technicalNote ? `<div>${esc(technicalNote)}</div>` : ''}
-        <div><b>${isSv() ? 'Relativ TruthDistribution' : 'Relative TruthDistribution'}:</b> ${esc(technicalRows)}</div>
+        <div><b>TruthDistribution:</b> ${esc(technicalRows)}</div>
       </details>`;
   }
 
   function setActionLabel() {
     const button = document.querySelector('#inferBtn');
     if (!button) return;
-    const label = isSv() ? 'Kontrollera tider med QCDS' : 'Check times with QCDS';
+    const label = isSv() ? 'Kolla tider' : 'Check times';
     if (button.textContent !== label) button.textContent = label;
     button.title = isSv()
-      ? 'QCDS jämför representerade kalendertillstånd genom SyntractSystem'
-      : 'QCDS compares represented calendar states through SyntractSystem';
+      ? 'Jämför tider mot resten av kalendern'
+      : 'Compare times against the rest of the calendar';
   }
 
   function boot() {
