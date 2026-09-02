@@ -16,6 +16,27 @@ def _asset(name: str) -> str:
     return Path(__file__).with_name(name).read_text(encoding="utf-8")
 
 
+def _stable_interaction_js() -> str:
+    """Return product JS with mutation-sensitive UI updates made idempotent.
+
+    Cally.One uses MutationObservers to decorate dynamically rendered calendar
+    surfaces. A callback must never perform an unconditional child-text rewrite,
+    because that rewrite is itself a DOM mutation and can create a browser loop.
+    Both product layers therefore converge on one Resolve label and only write
+    it when the visible value actually differs.
+    """
+
+    event_js = _asset("enhancements.js").replace(
+        "infer.textContent = 'QCDS Resolve';",
+        "if (infer.textContent !== 'Resolve with QCDS') infer.textContent = 'Resolve with QCDS';",
+    )
+    management_js = _asset("state_management.js").replace(
+        "button.textContent = 'Resolve with QCDS';",
+        "if (button.textContent !== 'Resolve with QCDS') button.textContent = 'Resolve with QCDS';",
+    )
+    return event_js + "\n" + management_js
+
+
 def cally_one_html(*, static_mode: bool = False) -> str:
     html = _base_cally_one_html(static_mode=static_mode)
     if static_mode:
@@ -31,7 +52,7 @@ def cally_one_html(*, static_mode: bool = False) -> str:
         html = html.replace(old, new, 1)
 
     css = _asset("enhancements.css") + "\n" + _asset("state_management.css")
-    js = _asset("enhancements.js") + "\n" + _asset("state_management.js")
+    js = _stable_interaction_js()
     html = html.replace("</head>", f"<style data-cally-enhancements>\n{css}\n</style>\n</head>", 1)
     html = html.replace("</body>", f"<script data-cally-enhancements>\n{js}\n</script>\n</body>", 1)
     return html
