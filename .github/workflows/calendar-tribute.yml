@@ -66,7 +66,9 @@ jobs:
           assert 'timeline[style*="--days:1"]' in html
           assert "'/api/entity'" in html
           assert "'/api/relation'" in html
-          assert 'QCDS Resolve' in html
+          assert 'Resolve with QCDS' in html
+          assert "if (button.textContent !== 'Resolve with QCDS')" in html
+          assert "if (infer.textContent !== 'Resolve with QCDS')" in html
           assert 'PERSON STATE' in html
           assert 'Resources · uses / reserves' in html
           assert 'qcds_fabric.robots.cally_one.robot' in worker
