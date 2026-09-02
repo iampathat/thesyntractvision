@@ -32,7 +32,7 @@ A Logical Robot may carry its own product license. Public source visibility does
 
 ## Calendar Space
 
-Cally.One treats calendar reality as one **Calendar Space**, a domain-specific Logical Space. Dates, times, people, events, places, priorities, dependencies, flexibility and user-defined properties are all state dimensions in that space.
+Cally.One treats calendar reality as one **Calendar Space**, a domain-specific Logical Space. Dates, times, people, events, places, priorities, dependencies, flexibility, language and user-defined properties are all state dimensions in that space.
 
 Events are represented as **oracle constructions / logical constraints** over possible calendar states rather than as isolated rows in a conventional calendar database.
 
@@ -60,9 +60,47 @@ Cally.One manifestation
 
 Cally.One may construct domain frames, projections, oracle logic and product-specific views, but it must not duplicate the four QCDS phases or introduce a second truth path.
 
+## Open-ended dimensions
+
+`X / Y / Z` is only an example of dimensional projection. It is **not** a fixed Cally.One model.
+
+Calendar Space is open-ended. A use case may have a few dimensions or hundreds. The product layer must therefore discover, index and search dimensions rather than expose a fixed three-axis selector.
+
+Built-in/common dimensions can be suggested for convenience, for example:
+
+- Person
+- Location / Plats
+- Day / Week / Month / Year / Time
+- Event
+- Activity
+- Priority
+- Language / Språk
+- Category / Status
+- Organization / Resource
+- Transport / Travel time
+- Dependency / Flexibility
+
+These suggestions do not define the ontology. Arbitrary additional dimension keys remain valid states in Calendar Space and become searchable when represented.
+
+## Language is represented state
+
+Language belongs in the represented state rather than being treated as an external UI-only concern.
+
+A semantic dimension has one canonical identity while its displayed word can exist in multiple language states. For example:
+
+```text
+canonical dimension: location
+representation state (en): Location
+representation state (sv): Plats
+```
+
+`Location` and `Plats` therefore do not create two dimensions or two truths. They are language-dependent representations of the same semantic dimension. Events may also carry an explicit `language` state such as `sv`, `en`, `de`, or another represented language value.
+
 ## One space, many perspectives
 
-A perspective is a projection of the same represented state, never a separate calendar. First-class perspectives are:
+A perspective is a projection of the same represented state, never a separate calendar.
+
+First-class temporal/entity views include:
 
 - Day
 - Week
@@ -70,23 +108,49 @@ A perspective is a projection of the same represented state, never a separate ca
 - Year
 - Person
 - Event
-- Dimension X / Y / Z
+- Perspective
 
-The same event can appear in any projection without becoming a second copy or source of truth.
+The Perspective view is an **ordered stack of arbitrary dimensions**, for example:
+
+```text
+Location / Plats
+    ↓
+Person
+    ↓
+Activity
+    ↓
+Priority
+```
+
+There is no architectural three-dimension limit. The UI may present a short stack at one moment while Calendar Space can contain hundreds of available dimensions.
+
+Filters are independent of grouping. A user can therefore project by `Location → Person` while simultaneously filtering on `Activity = hockey`, `Priority = must`, `Language = sv`, or any other represented dimension/value.
+
+The same event can appear in multiple projections without becoming a second copy or source of truth.
+
+## Calendar navigation and drill-down
+
+Temporal views are navigable projections of the same state:
+
+- Year can drill directly into a selected month or day.
+- Month can drill directly into a selected day.
+- The current-time control returns to the current temporal state; from Year it opens the current month, and from Month it opens the current day.
+- Filters and perspective state remain projections rather than new calendars.
 
 ## Interaction model
 
 The UI is designed for direct manipulation first:
 
 - finger, stylus and mouse use the same pointer interaction model;
-- events can be dragged between times, dates, people and later arbitrary compatible dimensions;
-- event duration and dimensions remain part of the logical state;
+- events can be dragged between times, dates and people;
+- event duration and arbitrary dimensions remain part of the logical state;
+- event editing can attach multiple dimensions, not a single custom key/value pair;
 - touch targets remain usable on phones;
 - the same interface scales through tablet and desktop to presentation displays.
 
 ## Browser / GitHub execution
 
-The initial browser manifestation is intended to run from the same GitHub Pages/Pyodide model already used by the repository.
+The initial browser manifestation runs from the same GitHub Pages/Pyodide model used by the repository.
 
 The browser remains a transport, interaction and local-session surface. Cally.One QCDS inference enters the packaged Python implementation through `qcds_fabric.robots.cally_one.robot` and `SyntractSystem`; there is no second JavaScript inference engine.
 
@@ -114,19 +178,23 @@ Cally.One-specific product code is covered by the robot-local Cally.One Tribute 
 
 The shared QCDS core keeps its own existing license.
 
-## Initial build contract
+## Current build contract
 
-The implementation must provide:
+The implementation provides / must preserve:
 
-1. a Calendar Space state model;
-2. arbitrary event dimensions;
-3. people and events in the same Logical Space;
-4. overlap / conflict observations as oracle inputs, not UI-only warnings;
-5. QCDS placement projection through `SyntractSystem`;
-6. standalone Cally.One browser/runtime entry points;
-7. Day, Week, Month, Year, Person, Event and X/Y/Z perspectives;
-8. pointer-based movement suitable for touch and mouse;
-9. browser execution through the packaged Python/QCDS core;
-10. JSON/API seams for future calendar adapters.
+1. one Calendar Space state model;
+2. arbitrary and open-ended event dimensions;
+3. searchable dimension discovery with common suggestions;
+4. language as represented state and localized labels resolving to one canonical dimension;
+5. people and events in the same Logical Space;
+6. overlap / conflict observations as oracle inputs, not UI-only warnings;
+7. QCDS placement projection through `SyntractSystem`;
+8. standalone Cally.One browser/runtime entry points;
+9. Day, Week, Month, Year, Person, Event and arbitrary Perspective views;
+10. ordered multi-dimension perspective stacks and independent multi-dimension filters;
+11. Year → Month → Day drill-down and current-state navigation;
+12. pointer-based movement suitable for touch and mouse;
+13. browser execution through the packaged Python/QCDS core;
+14. JSON/API seams for future calendar adapters.
 
 Cally.One must remain one specialized Logical Robot manifestation over the shared QCDS architecture.
