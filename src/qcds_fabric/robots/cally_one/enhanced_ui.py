@@ -21,13 +21,14 @@ def _stable_interaction_js() -> str:
 
     event_js = _asset("enhancements.js").replace(
         "infer.textContent = 'QCDS Resolve';",
-        "if (infer.textContent !== 'Resolve with QCDS') infer.textContent = 'Resolve with QCDS';",
+        "infer.dataset.callyCustomerLabel = '1';",
     )
     management_js = _asset("state_management.js").replace(
         "button.textContent = 'Resolve with QCDS';",
-        "if (button.textContent !== 'Resolve with QCDS') button.textContent = 'Resolve with QCDS';",
+        "button.dataset.callyCustomerLabel = '1';",
     )
-    return event_js + "\n" + management_js
+    result_js = _asset("qcds_result_ui.js")
+    return event_js + "\n" + management_js + "\n" + result_js
 
 
 def _make_static_start_nonblocking(html: str) -> str:
@@ -37,7 +38,7 @@ def _make_static_start_nonblocking(html: str) -> str:
     A normalized local snapshot (or an empty Calendar Space) is returned for the
     first state request. The worker then hydrates in the background and emits a
     browser event that refreshes the same manifestation once the shared core is
-    ready. Writes and QCDS Resolve still wait for the real Python core.
+    ready. Writes and QCDS inference still wait for the real Python core.
     """
 
     html = html.replace(
@@ -157,7 +158,13 @@ def cally_one_html(*, static_mode: bool = False) -> str:
             raise RuntimeError("Cally.One static API bridge marker not found")
         html = html.replace(old, new, 1)
 
-    css = _asset("enhancements.css") + "\n" + _asset("state_management.css")
+    css = (
+        _asset("enhancements.css")
+        + "\n"
+        + _asset("state_management.css")
+        + "\n"
+        + _asset("qcds_result_ui.css")
+    )
     js = _stable_interaction_js()
     if static_mode:
         js += "\n" + _static_refresh_js()
