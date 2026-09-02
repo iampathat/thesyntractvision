@@ -65,6 +65,45 @@ def test_perspective_stack_filters_and_calendar_drilldown_are_first_class() -> N
     assert "state.view='day'" in html
 
 
+def test_responsive_header_contains_no_page_level_horizontal_overflow_contract() -> None:
+    html = cally_one_html()
+
+    assert "html,body" in html and "overflow-x:hidden" in html
+    assert "max-width:100vw" in html
+    assert 'grid-template-areas:"brand date actions"' in html
+    assert 'grid-template-areas:"brand actions" "date date"' in html
+    assert ".viewbar" in html and "overflow-x:auto" in html
+    assert ".stage" in html and "overflow:auto" in html
+
+
+def test_events_have_pin_lock_controls_that_gate_dragging() -> None:
+    html = cally_one_html()
+
+    assert "eventPinButton" in html
+    assert "data-pin-event" in html
+    assert "toggleEventPin" in html
+    assert "locked:!e.locked" in html
+    assert "if(ev.target.closest('[data-pin-event]'))return" in html
+    assert "if(!item||item.locked)return" in html
+    assert "locked:!!current?.locked" in html
+
+
+def test_perspective_composer_is_drag_drop_and_can_pin_dedicated_views() -> None:
+    html = cally_one_html()
+
+    assert 'id="perspectiveComposer"' in html
+    assert "data-perspective-index" in html
+    assert "data-perspective-drag" in html
+    assert "perspectiveDragStart" in html
+    assert "perspectiveDragMove" in html
+    assert "perspectiveDragEnd" in html
+    assert "pinCurrentPerspective" in html
+    assert "SAVED_VIEW_KEY" in html
+    assert 'id="savedViews"' in html
+    assert "data-saved-view" in html
+    assert "applySavedView" in html
+
+
 def test_event_editor_accepts_many_additional_dimensions() -> None:
     html = cally_one_html()
 
