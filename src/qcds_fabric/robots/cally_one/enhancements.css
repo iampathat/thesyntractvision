@@ -10,12 +10,12 @@
 .composer{flex-wrap:wrap;overflow-x:hidden;align-items:stretch}
 .perspectiveBox{flex:0 1 190px}
 
-/* Event manipulation is explicit: move handle, edit, pin, resize. */
-.event,.monthEvent,.laneCard,.pEvent{position:relative}
+/* Event manipulation is explicit: event surfaces scroll; handles manipulate. */
+.event,.monthEvent,.laneCard,.pEvent{position:relative;cursor:default!important;touch-action:auto!important}
 .event{padding-left:39px;padding-right:66px}
 .monthEvent{padding-left:28px;padding-right:52px}
 .laneCard,.pEvent{padding-left:40px;padding-right:68px}
-.eventMove,.eventEdit{position:absolute;z-index:14;display:grid;place-items:center;border:1px solid #abc0b1;background:#fffdf8e8;color:#40564a;border-radius:8px;padding:0;cursor:pointer;touch-action:none}
+.eventMove,.eventEdit{position:absolute;z-index:14;display:grid;place-items:center;border:1px solid #abc0b1;background:#fffdf8e8;color:#40564a;border-radius:8px;padding:0;cursor:pointer;touch-action:none!important}
 .eventMove{left:5px;top:5px;width:27px;height:27px;cursor:grab}
 .eventMove:active{cursor:grabbing}
 .eventMove.locked{opacity:.38;cursor:not-allowed}
@@ -23,7 +23,7 @@
 .eventMove svg{width:15px;height:15px;pointer-events:none}
 .eventEdit svg{width:13px;height:13px;pointer-events:none}
 .eventMove:hover,.eventEdit:hover{background:#fff}
-.resizeHandle{position:absolute;right:0;bottom:0;width:30px;height:30px;z-index:15;cursor:ns-resize;touch-action:none;border:0;background:transparent;padding:0}
+.resizeHandle{position:absolute;right:0;bottom:0;width:30px;height:30px;z-index:15;cursor:ns-resize;touch-action:none!important;border:0;background:transparent;padding:0}
 .resizeHandle::before,.resizeHandle::after{content:"";position:absolute;right:4px;bottom:4px;border-right:2px solid #668073;border-bottom:2px solid #668073;border-radius:1px}
 .resizeHandle::before{width:12px;height:12px}
 .resizeHandle::after{width:7px;height:7px;right:8px;bottom:8px;opacity:.65}
