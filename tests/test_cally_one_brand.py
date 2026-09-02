@@ -186,8 +186,9 @@ def test_browser_session_actions_keep_calendar_state_and_qcds_path() -> None:
         }
     )["result"]
 
-    assert inference["candidate_worlds"]["blocked"]["fit"] == "blocked"
-    assert inference["candidate_worlds"]["clear"]["fit"] == "clear"
+    assert inference["mode"] == "qcds-resolve"
+    assert inference["candidate_worlds"]["blocked"]["coherence"] == "blocked"
+    assert inference["candidate_worlds"]["clear"]["coherence"] == "coherent"
     assert inference["provenance"]["logical_robot"] is True
     assert inference["provenance"]["system_boundary"] == "SyntractSystem"
     assert inference["provenance"]["single_qcds_architecture"] is True
