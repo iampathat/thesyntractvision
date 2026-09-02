@@ -17,6 +17,8 @@ on:
       - "tests/test_cally_one_interactions.py"
       - "tests/test_cally_one_state_space.py"
       - "tests/test_cally_one_capacity.py"
+      - "tests/test_cally_one_safe_rebuild.py"
+      - "tests/test_cally_one_stability_hotfix.py"
       - "LICENSE_CALENDAR_TRIBUTE.md"
       - "CALENDAR_ROBOT.md"
       - "pyproject.toml"
@@ -37,7 +39,7 @@ jobs:
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e '.[test]'
       - name: Run Cally.One Logical Robot tests
-        run: pytest -q tests/test_calendar_robot.py tests/test_cally_one_brand.py tests/test_cally_one_interactions.py tests/test_cally_one_state_space.py tests/test_cally_one_capacity.py
+        run: pytest -q tests/test_calendar_robot.py tests/test_cally_one_brand.py tests/test_cally_one_interactions.py tests/test_cally_one_state_space.py tests/test_cally_one_capacity.py tests/test_cally_one_safe_rebuild.py tests/test_cally_one_stability_hotfix.py
       - name: Build static Cally.One GitHub preview
         run: |
           mkdir -p _cally_preview/cally
@@ -85,6 +87,9 @@ jobs:
           assert 'Alla platser' in html
           assert 'PERSON STATE' in html
           assert 'Resources · uses / reserves' in html
+          assert 'new MutationObserver' not in html
+          assert "action === 'infer' ? await inferCally" in worker
+          assert "if (msg.type === 'init')" in worker
           assert 'qcds_fabric.robots.cally_one.runtime_v3' in worker
           assert (out / 'qcds_fabric.zip').stat().st_size > 0
           PY
