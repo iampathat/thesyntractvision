@@ -2,8 +2,8 @@
 
 Cally.One Tribute License 1.0 — see LICENSE.md.
 
-Everything is state.  A person may participate in an event without riding in a
-particular vehicle.  Mobile-resource planning may be resolved either by a human
+Everything is state. A person may participate in an event without riding in a
+particular vehicle. Mobile-resource planning may be resolved either by a human
 editing represented states or by QCDS evaluating represented alternatives.
 """
 
@@ -27,6 +27,14 @@ class CallyOneService(_RouteRuntime):
         return [str(item) for item in event.people]
 
     def route_planning_states(self) -> list[dict[str, Any]]:
+        """Return only mobile state groups that still require a decision.
+
+        A single assigned vehicle/event does not become orange merely because a
+        route exists. Multiple uses of the same mobile state on one day, or an
+        explicitly unresolved route relation, create a planning state. A human
+        can resolve it by editing represented state; QCDS can resolve represented
+        alternatives through the shared SyntractSystem/QCDS core.
+        """
         out: list[dict[str, Any]] = []
         for entity in self.graph.entities.values():
             if self._allocation_mode(entity.entity_id) != "route":
@@ -41,13 +49,19 @@ class CallyOneService(_RouteRuntime):
                 groups.setdefault(day, []).append((relation, event))
 
             for day, day_links in groups.items():
-                if all(
-                    str(relation.dimensions.get("route_status") or "").lower() == "resolved"
+                statuses = [
+                    str(relation.dimensions.get("route_status") or "assigned").strip().lower()
                     for relation, _ in day_links
-                ):
+                ]
+                if statuses and all(status == "resolved" for status in statuses):
                     continue
 
                 event_ids = sorted({event.event_id for _, event in day_links})
+                explicitly_unresolved = any(status in {"needs_resolution", "unresolved"} for status in statuses)
+                shared_mobile_sequence = len(event_ids) > 1
+                if not explicitly_unresolved and not shared_mobile_sequence:
+                    continue
+
                 riders_by_event = {
                     event.event_id: self._rider_ids(relation, event)
                     for relation, event in day_links
@@ -93,7 +107,6 @@ class CallyOneService(_RouteRuntime):
 
     @staticmethod
     def _cmp_day(value: str) -> str:
-        # ISO datetime strings used by CalendarEvent always start with the day.
         return str(value)[:10]
 
     def state(self) -> dict[str, Any]:
@@ -108,6 +121,7 @@ class CallyOneService(_RouteRuntime):
                 "rider_membership_is_state": True,
                 "event_participation_is_not_transport_participation": True,
                 "planning_can_be_resolved_by_human_or_qcds": True,
+                "single_mobile_assignment_is_not_automatically_a_warning": True,
                 "orange_means_needs_resolution": True,
                 "red_means_actual_conflict": True,
             }
