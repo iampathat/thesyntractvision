@@ -74,3 +74,25 @@ def test_large_resource_sets_can_filter_by_state_dimensions() -> None:
     assert "String(dimensions.type || '') === wantedType" in html
     assert "String(dimensions.location || '') === wantedLocation" in html
     assert 'Visar ${Math.min(matched, 30)} av ${matched} träffar' in html
+
+
+def test_today_keeps_the_current_view_and_only_moves_the_date_anchor() -> None:
+    html = cally_one_html()
+    assert "function jumpToday(){state.anchor=startOfDay(new Date());render()}" in html
+    assert "if(state.view==='year')state.view='month'" not in html
+    assert "else if(state.view==='month')state.view='day'" not in html
+    assert "$('#todayBtn').textContent='Today'" in html
+
+
+def test_all_primary_modal_layers_blur_the_calendar_behind_them() -> None:
+    html = cally_one_html()
+    assert '#modalBack[data-cally-base-editor="1"],.stateOverlay,.manageOverlay' in html
+    assert 'backdrop-filter:blur(10px)' in html
+    assert '-webkit-backdrop-filter:blur(10px)' in html
+
+
+def test_event_editor_people_are_compact_selectors_not_giant_raw_checkboxes() -> None:
+    html = cally_one_html()
+    assert '.peopleChecks{display:grid!important' in html
+    assert '.peopleChecks input[type="checkbox"]{appearance:none' in html
+    assert '.peopleChecks input[type="checkbox"]:checked::after{content:"✓"' in html
