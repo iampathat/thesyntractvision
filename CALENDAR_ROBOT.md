@@ -1,4 +1,4 @@
-# Cally.One
+# Cally.One — Calendar Logical Robot
 
 **Branch:** `tribute`
 
@@ -6,43 +6,63 @@
 
 **Architecture:** The Syntract Vision / QCDS
 
-**Product license:** [Cally.One Tribute License 1.0](LICENSE_CALENDAR_TRIBUTE.md)
+**Canonical robot package:** `src/qcds_fabric/robots/cally_one/`
 
-## Purpose
+**Product license:** [Cally.One Tribute License 1.0](src/qcds_fabric/robots/cally_one/LICENSE.md)
 
-**Cally.One** is a standalone Calendar Logical Robot over the same QCDS / Syntract core used by the rest of the repository. It is not a second intelligence engine and must not reimplement QCDS.
+## Logical Robot boundary
+
+Cally.One follows the repository's canonical Logical Robot model: **one shared QCDS / Syntract intelligence core, many replaceable manifested bodies**.
+
+Cally.One is therefore not a second intelligence engine and does not reimplement QCDS. It is a specialized product/body above the shared core, with its own ingress, Calendar Space, event-oracle construction, interaction model, presentation surfaces, adapters and product license.
+
+This boundary is both architectural and licensing-related:
+
+```text
+SHARED QCDS / SYNTRACT CORE
+MIT / existing core license
+            ↓
+     SyntractSystem boundary
+            ↓
+CALLY.ONE LOGICAL ROBOT
+Cally.One Tribute License 1.0
+```
+
+A Logical Robot may carry its own product license. Public source visibility does not make that robot layer MIT or otherwise open source. Cally.One imports and executes the shared core; it does not inherit the core license for its own product code.
+
+## Calendar Space
 
 Cally.One treats calendar reality as one **Calendar Space**, a domain-specific Logical Space. Dates, times, people, events, places, priorities, dependencies, flexibility and user-defined properties are all state dimensions in that space.
 
 Events are represented as **oracle constructions / logical constraints** over possible calendar states rather than as isolated rows in a conventional calendar database.
 
-The product idea is literal: **all people, all events, all dimensions, one Calendar Space**.
+All people, events and dimensions may therefore coexist in one Calendar Space. Separate calendars are projections when useful, not separate sources of truth.
 
 ## Canonical path
 
 ```text
-Cally.One UI
+Cally.One UI / ingress
     ↓
-Calendar ingress / event translator
+Calendar translator
     ↓
 Calendar Space (Logical Space)
     ↓
-Calendar oracle projection
+Calendar event-oracle projection
     ↓
 SyntractSystem
     ↓
-QCDS core
+shared QCDS core
     ↓
 TruthDistribution / Calendar Syntract
     ↓
-Cally.One UI projection
+Cally.One manifestation
 ```
 
-`SyntractSystem` is the system boundary. Cally.One code may construct frames, projections, event-oracle logic and product-specific views, but it must not duplicate the four QCDS phases or introduce a second truth path.
+Cally.One may construct domain frames, projections, oracle logic and product-specific views, but it must not duplicate the four QCDS phases or introduce a second truth path.
 
 ## One space, many perspectives
 
-A perspective is a projection of the same state, never a separate calendar. First-class perspectives are:
+A perspective is a projection of the same represented state, never a separate calendar. First-class perspectives are:
 
 - Day
 - Week
@@ -52,52 +72,61 @@ A perspective is a projection of the same state, never a separate calendar. Firs
 - Event
 - Dimension X / Y / Z
 
-The same event can therefore appear in any projection without copying or transforming it into another source of truth.
+The same event can appear in any projection without becoming a second copy or source of truth.
 
 ## Interaction model
 
 The UI is designed for direct manipulation first:
 
-- finger, stylus and mouse input use the same pointer interaction model;
-- events can be dragged between times, dates and people;
+- finger, stylus and mouse use the same pointer interaction model;
+- events can be dragged between times, dates, people and later arbitrary compatible dimensions;
 - event duration and dimensions remain part of the logical state;
-- touch targets must remain usable on phones;
-- the same interface must scale through tablet and desktop to presentation displays.
+- touch targets remain usable on phones;
+- the same interface scales through tablet and desktop to presentation displays.
+
+## Browser / GitHub execution
+
+The initial browser manifestation is intended to run from the same GitHub Pages/Pyodide model already used by the repository.
+
+The browser remains a transport, interaction and local-session surface. Cally.One QCDS inference enters the packaged Python implementation through `qcds_fabric.robots.cally_one.robot` and `SyntractSystem`; there is no second JavaScript inference engine.
 
 ## Calendar formats
 
-External calendar formats are adapters around Calendar Space, not the internal model. Future adapters may include:
+External calendar formats are adapters around Calendar Space, not the internal model. Planned adapters may include:
 
 - iCalendar / ICS
 - CalDAV
 - Google Calendar
 - Apple Calendar
 - Microsoft Outlook / Exchange
-- other calendar and scheduling formats
+- other scheduling/calendar formats
 
-No external format is allowed to define or limit the logical model.
+No external format is allowed to define or limit the native logical model.
 
 ## Licensing boundary
 
-The shared QCDS core keeps its existing license. Cally.One-specific product files are covered by the Cally.One Tribute License 1.0:
+Cally.One-specific product code is covered by the robot-local Cally.One Tribute License 1.0:
 
 - personal / household use: free;
 - academic, educational and non-commercial research use: free with Tribute / attribution;
-- organizational, institutional, professional and commercial use: EUR 99/month or EUR 990/year per organization;
+- organizational, institutional, professional and commercial use: **EUR 99/month or EUR 990/year per organization**;
 - redistribution, embedded/OEM, white-label and paid hosted services: separate written license.
+
+The shared QCDS core keeps its own existing license.
 
 ## Initial build contract
 
-The first implementation must provide:
+The implementation must provide:
 
-1. a persistent Calendar Space state model;
+1. a Calendar Space state model;
 2. arbitrary event dimensions;
-3. people and events in the same logical space;
+3. people and events in the same Logical Space;
 4. overlap / conflict observations as oracle inputs, not UI-only warnings;
-5. a QCDS placement projection through `SyntractSystem`;
-6. a standalone HTTP entry point and page;
-7. Day, Week, Month, Year, Person, Event and X/Y/Z dimension perspectives;
-8. pointer-based event movement suitable for touch and mouse;
-9. JSON API seams for future format adapters.
+5. QCDS placement projection through `SyntractSystem`;
+6. standalone Cally.One browser/runtime entry points;
+7. Day, Week, Month, Year, Person, Event and X/Y/Z perspectives;
+8. pointer-based movement suitable for touch and mouse;
+9. browser execution through the packaged Python/QCDS core;
+10. JSON/API seams for future calendar adapters.
 
-Cally.One must remain a manifestation over one QCDS architecture.
+Cally.One must remain one specialized Logical Robot manifestation over the shared QCDS architecture.
