@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from qcds_fabric.robots.cally_one.robot import CallyOneService, run_cally_one
-from qcds_fabric.robots.cally_one.ui import cally_one_html
+from qcds_fabric.robots.cally_one.runtime_v3 import CallyOneService, run_cally_one
+from qcds_fabric.robots.cally_one.enhanced_ui import cally_one_html
 
 
 def test_cally_one_is_public_identity_over_calendar_space(tmp_path) -> None:
@@ -18,6 +18,7 @@ def test_cally_one_is_public_identity_over_calendar_space(tmp_path) -> None:
     assert state["provenance"]["robot_package"] == "qcds_fabric.robots.cally_one"
     assert state["provenance"]["system_boundary"] == "SyntractSystem"
     assert state["provenance"]["single_qcds_architecture"] is True
+    assert state["provenance"]["qcds_core_modified"] is False
 
 
 def test_cally_one_public_ui_uses_searchable_unbounded_dimensions() -> None:
@@ -131,9 +132,12 @@ def test_static_cally_one_uses_packaged_python_core() -> None:
     assert "cally_one_run" in html
     assert "qcds_fabric.zip" in html
     assert "localStorage" in html
-    assert "from qcds_fabric.robots.cally_one.robot import run_cally_one_json" in worker
+    assert "from qcds_fabric.robots.cally_one.runtime_v3 import run_cally_one_json" in worker
     assert "msg.type === 'cally_one_run'" in worker
     assert "run_cally_one_json(__payload_json)" in worker
+    assert "Kolla tider" in html
+    assert "Åker med" in html
+    assert "callyNeedsResolution" in html
 
 
 def test_browser_session_actions_keep_calendar_state_and_qcds_path() -> None:
