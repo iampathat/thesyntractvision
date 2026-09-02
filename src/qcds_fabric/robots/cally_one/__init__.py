@@ -5,6 +5,6 @@ core. The robot/product layer has its own Cally.One Tribute License and does
 not inherit the QCDS core's MIT license merely by importing the core.
 """
 
-from .runtime import CallyOneService, run_cally_one, run_cally_one_json
+from .runtime_v2 import CallyOneService, run_cally_one, run_cally_one_json
 
 __all__ = ["CallyOneService", "run_cally_one", "run_cally_one_json"]
