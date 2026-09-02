@@ -1,4 +1,4 @@
-# Family Calendar Logical Robot
+# AllCalendar by Syntract
 
 **Branch:** `tribute`
 
@@ -6,20 +6,22 @@
 
 **Architecture:** The Syntract Vision / QCDS
 
-**Product license:** [Calendar Tribute License 1.0](LICENSE_CALENDAR_TRIBUTE.md)
+**Product license:** [AllCalendar Tribute License 1.0](LICENSE_CALENDAR_TRIBUTE.md)
 
 ## Purpose
 
-The Family Calendar Logical Robot is a standalone product manifestation over the same QCDS / Syntract core used by the rest of the repository. It is not a second intelligence engine and must not reimplement QCDS.
+**AllCalendar by Syntract** is a standalone Calendar Logical Robot over the same QCDS / Syntract core used by the rest of the repository. It is not a second intelligence engine and must not reimplement QCDS.
 
-The product treats calendar reality as one **Calendar Space**, a domain-specific Logical Space. Dates, times, people, events, places, priorities, dependencies, flexibility and user-defined properties are all state dimensions in that space.
+AllCalendar treats calendar reality as one **Calendar Space**, a domain-specific Logical Space. Dates, times, people, events, places, priorities, dependencies, flexibility and user-defined properties are all state dimensions in that space.
 
 Events are represented as **oracle constructions / logical constraints** over possible calendar states rather than as isolated rows in a conventional calendar database.
+
+The product idea is literal: **all people, all events, all dimensions, one Calendar Space**.
 
 ## Canonical path
 
 ```text
-Family Calendar UI
+AllCalendar UI
     ↓
 Calendar ingress / event translator
     ↓
@@ -33,10 +35,10 @@ QCDS core
     ↓
 TruthDistribution / Calendar Syntract
     ↓
-Calendar UI projection
+AllCalendar UI projection
 ```
 
-`SyntractSystem` is the system boundary. Calendar code may construct frames, projections, event-oracle logic and product-specific views, but it must not duplicate the four QCDS phases or introduce a second truth path.
+`SyntractSystem` is the system boundary. AllCalendar code may construct frames, projections, event-oracle logic and product-specific views, but it must not duplicate the four QCDS phases or introduce a second truth path.
 
 ## One space, many perspectives
 
@@ -77,7 +79,7 @@ No external format is allowed to define or limit the logical model.
 
 ## Licensing boundary
 
-The shared QCDS core keeps its existing license. Calendar-specific product files are covered by the Calendar Tribute License 1.0:
+The shared QCDS core keeps its existing license. AllCalendar-specific product files are covered by the AllCalendar Tribute License 1.0:
 
 - personal / household use: free;
 - academic, educational and non-commercial research use: free with Tribute / attribution;
@@ -98,4 +100,4 @@ The first implementation must provide:
 8. pointer-based event movement suitable for touch and mouse;
 9. JSON API seams for future format adapters.
 
-The Calendar Product must remain a manifestation over one QCDS architecture.
+AllCalendar must remain a manifestation over one QCDS architecture.
