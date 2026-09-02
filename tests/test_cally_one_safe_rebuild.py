@@ -44,3 +44,9 @@ def test_interaction_controller_is_singleton_and_observer_free():
     assert "window.__callyInteractionController = true" in html
     assert "document.addEventListener('click'" in html
     assert "observer.observe(document.body, {childList:true, subtree:true});" not in html
+
+
+def test_visible_tribute_credit_names_creator_on_mobile_surface():
+    html = cally_one_html(static_mode=True)
+    assert "by Patrik Sundblom · Tribute License 1.0" in html
+    assert ".brandText::after" in html
