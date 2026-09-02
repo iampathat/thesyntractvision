@@ -30,6 +30,7 @@ def _stable_interaction_js() -> str:
     result_js = _asset("qcds_result_ui.js")
     scale_js = _asset("scale_conflict_ui.js")
     manual_js = _asset("manual_resolution_ui.js")
+    dimension_filter_js = _asset("dimension_filter_ui.js")
     return (
         event_js
         + "\n"
@@ -40,6 +41,8 @@ def _stable_interaction_js() -> str:
         + scale_js
         + "\n"
         + manual_js
+        + "\n"
+        + dimension_filter_js
     )
 
 
