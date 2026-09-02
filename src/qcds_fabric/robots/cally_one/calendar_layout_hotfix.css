@@ -12,19 +12,44 @@
 .dayCol.today{background-color:#f2f8f3!important}
 .event{box-sizing:border-box!important;max-width:calc(100% - 10px)!important;overflow:hidden!important}
 
+/* Month events prioritize legibility over permanently visible edit chrome. */
+.month{background:var(--paper,#fffdf8)!important}
+.dayCell{min-width:0!important;overflow:hidden!important;padding:8px!important;background:var(--paper,#fffdf8)!important}
+.monthEvent{box-sizing:border-box!important;width:100%!important;max-width:100%!important;min-height:30px!important;margin:4px 0!important;padding:7px 8px 6px 18px!important;border:1px solid #bfd2c6!important;border-radius:9px!important;background:#e5f1e9!important;color:var(--ink,#14261e)!important;font-size:9px!important;font-weight:760!important;line-height:1.2!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;cursor:pointer!important;touch-action:auto!important}
+.monthEvent::before{content:"";position:absolute;left:7px;top:50%;width:5px;height:5px;border-radius:999px;background:var(--green,#087b58);transform:translateY(-50%)}
+.monthEvent.conflict::before{background:#a44747}
+.monthEvent .eventMove,.monthEvent [data-edit-event],.monthEvent .pinBtn,.monthEvent .resizeHandle{display:none!important}
+
+/* Year is a compact agenda, not merely a heat map. */
+.year{align-items:start!important}
+.miniMonth{overflow:hidden!important}
+.miniGrid{gap:3px!important}
+.miniDay{aspect-ratio:auto!important;min-width:0!important;min-height:34px!important;padding:3px 4px!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:flex-start!important;gap:2px!important;border:1px solid transparent!important;border-radius:7px!important;overflow:hidden!important;font-size:8px!important;line-height:1!important;text-align:left!important}
+.miniDay.has{background:#f2f8f3!important;border-color:#d4e2d9!important;font-weight:850!important}
+.miniDay.today{box-shadow:inset 0 0 0 1.5px var(--green,#087b58)!important}
+.callyYearEvent{display:block!important;width:100%!important;min-width:0!important;padding:2px 3px!important;border-radius:4px!important;background:#dcefe6!important;color:#244f3d!important;font-size:6.5px!important;font-weight:760!important;line-height:1.15!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;pointer-events:none!important}
+.callyYearMore{display:block!important;color:var(--muted,#6c776f)!important;font-size:6px!important;font-weight:800!important;line-height:1!important;pointer-events:none!important}
+
 /* One geometry for every control in the calendar chrome. */
 .top{background:#fffdf8fa!important;border-bottom:1px solid var(--line,#d8ddd4)!important}
 .topline{align-items:center!important}
+.brand{align-items:center!important}
+.mark{display:grid!important;place-items:center!important;width:var(--cally-control-h)!important;height:var(--cally-control-h)!important;min-width:var(--cally-control-h)!important;margin-right:10px!important;border:1px solid var(--green,#087b58)!important;border-radius:var(--cally-control-radius)!important;background:var(--green,#087b58)!important;color:#fff!important;font-size:13px!important;font-weight:900!important;line-height:1!important;transform:none!important}
 .topActions{align-items:center!important;gap:var(--cally-control-gap)!important}
 .topActions .btn,.callyMenuButton,.dateNav .btn{height:var(--cally-control-h)!important;min-height:var(--cally-control-h)!important;border-radius:var(--cally-control-radius)!important;border-width:1px!important;box-shadow:none!important}
-.topActions .btn,.callyMenuButton{width:var(--cally-control-h)!important;min-width:var(--cally-control-h)!important;padding:0!important;display:grid!important;place-items:center!important}
+.topActions .btn,.callyMenuButton{width:var(--cally-control-h)!important;min-width:var(--cally-control-h)!important;padding:0!important;display:grid!important;place-items:center!important;line-height:1!important}
+.topActions .actionIcon{display:grid!important;place-items:center!important;width:100%!important;height:100%!important;font-size:15px!important;font-weight:900!important;line-height:1!important}
+.topActions .actionText{display:none!important}
+#perspectiveBtn .actionIcon{font-size:18px!important;letter-spacing:-.08em}
+#personBtn .actionIcon{font-size:14px!important}
+#eventBtn .actionIcon{font-size:20px!important}
+.callyMenuButton{font-size:20px!important;font-weight:700!important}
 .dateNav{align-items:center!important;gap:var(--cally-control-gap)!important}
 .dateNav .btn.icon{width:var(--cally-control-h)!important;min-width:var(--cally-control-h)!important;padding:0!important;display:grid!important;place-items:center!important}
 #todayBtn{padding:0 16px!important;min-width:86px!important}
 .dateTitle{display:flex!important;align-items:center!important;gap:7px!important;min-width:0!important;padding-left:4px!important;line-height:1.2!important}
 .viewbar{gap:var(--cally-control-gap)!important;padding-top:10px!important;padding-bottom:10px!important;align-items:stretch!important}
 .view{min-height:var(--cally-control-h)!important;border-radius:var(--cally-control-radius)!important;border-width:1px!important;box-shadow:none!important;display:grid!important;place-items:center!important}
-.callyMenuButton{font-size:21px!important}
 .callyMobileMenu{border-radius:20px!important;padding:8px!important}
 .callyMobileMenu button{min-height:44px!important;border-radius:13px!important;margin:0 0 6px!important;box-shadow:none!important}
 
@@ -52,27 +77,30 @@
   .stage{padding:0 6px 12px!important}
   .top{padding-left:8px!important;padding-right:8px!important;padding-bottom:8px!important;overflow:visible!important}
   .topline{grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"brand actions" "date date"!important;column-gap:8px!important;row-gap:9px!important}
-  .brand{align-self:center!important}.mark{width:44px!important;height:44px!important;border-radius:14px!important;margin-right:9px!important}.brand h1{line-height:1!important}
+  .brand{align-self:center!important;min-height:var(--cally-control-h)!important}.brand h1{line-height:1!important}
+  .mark{width:var(--cally-control-h)!important;height:var(--cally-control-h)!important;min-width:var(--cally-control-h)!important;border-radius:var(--cally-control-radius)!important;margin-right:9px!important}
   .brandText::after{font-size:7px!important;line-height:1.25!important;margin-top:3px!important;max-width:250px}
-  .topActions{padding-right:52px!important;align-self:center!important}
-  .callyIntegratedNav{top:max(8px,env(safe-area-inset-top))!important;right:8px!important}
+  .topActions{padding-right:0!important;align-self:center!important;height:var(--cally-control-h)!important}
+  #callyIntegratedNav{position:absolute!important;top:0!important;right:0!important;width:0!important;height:0!important;margin:0!important}
   .dateNav{grid-area:date!important;width:100%!important;grid-template-columns:44px minmax(86px,auto) 44px minmax(0,1fr)!important;gap:8px!important}
   .dateTitle{font-size:11px!important;padding-left:4px!important;flex-wrap:wrap!important;align-content:center!important}
   .viewbar{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important;overflow:visible!important}
   .view{width:100%!important;min-width:0!important;max-width:none!important;min-height:48px!important;padding:8px 6px!important;font-size:10px!important;text-align:center!important}
   .leftSide{display:none!important}
   .rightSide{display:block!important}
-  .callyMobileMenu{top:calc(max(8px,env(safe-area-inset-top)) + 52px)!important;right:8px!important;left:auto!important}
+  .callyMobileMenu{position:fixed!important;top:calc(max(8px,env(safe-area-inset-top)) + 52px)!important;right:8px!important;left:auto!important}
+  .year{grid-template-columns:repeat(2,minmax(180px,1fr))!important;gap:8px!important}
 }
 
 @media(max-width:390px){
   .callyMobileMenu{left:8px!important;width:auto!important;grid-template-columns:1fr!important;grid-template-areas:"head" "space" "perspective" "dimensions" "people" "organizations" "resources" "things" "add" "time"!important}
   .callyMobileMenu button{min-height:56px!important}
+  .year{grid-template-columns:1fr!important}
 }
 
 @media(max-width:360px){
   .viewbar{grid-template-columns:repeat(2,minmax(0,1fr))!important}
-  .topActions{gap:5px!important;padding-right:49px!important}
-  .topActions .btn,.callyMenuButton{width:41px!important;min-width:41px!important;height:41px!important;min-height:41px!important}
+  .topActions{gap:5px!important}
+  .topActions .btn,.callyMenuButton,.mark{width:41px!important;min-width:41px!important;height:41px!important;min-height:41px!important}
   .dateNav{grid-template-columns:41px 82px 41px minmax(0,1fr)!important;gap:5px!important}
 }
