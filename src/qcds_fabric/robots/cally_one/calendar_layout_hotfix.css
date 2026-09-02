@@ -29,7 +29,7 @@
 .callyMobileMenu button{min-height:44px!important;border-radius:13px!important;margin:0 0 6px!important;box-shadow:none!important}
 
 /* Make the product/license boundary visible without turning the header into an advert. */
-.brandText::after{content:"by Patrik Sundblom · Tribute License 1.0 · personal/family free · organizations €99/mo or €990/yr"!important;max-width:620px;white-space:normal}
+.brandText::after{content:"by Patrik Sundblom · Tribute License 1.0 · personal/family free · commercial/professional use €99/mo or €990/yr"!important;max-width:620px;white-space:normal}
 
 @media(max-width:760px){
   .stage{padding:0 6px 12px!important}
