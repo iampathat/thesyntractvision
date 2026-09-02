@@ -21,6 +21,7 @@ qcds-live = "qcds_fabric.logical_robot_live38:main"
 qcds-reality-web = "qcds_fabric.public_web_reality:main"
 qcds-reality-grow = "qcds_fabric.continuous_reality:main"
 qcds-domain-lab = "qcds_fabric.domain_lab_cli:main"
+qcds-family-calendar = "qcds_fabric.calendar_robot_live:main"
 
 [project.optional-dependencies]
 test = ["pytest>=8"]
