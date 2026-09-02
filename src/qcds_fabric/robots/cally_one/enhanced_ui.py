@@ -28,18 +28,12 @@ def _stable_interaction_js() -> str:
         "button.dataset.callyCustomerLabel = '1';",
     )
     result_js = _asset("qcds_result_ui.js")
-    return event_js + "\n" + management_js + "\n" + result_js
+    scale_js = _asset("scale_conflict_ui.js")
+    return event_js + "\n" + management_js + "\n" + result_js + "\n" + scale_js
 
 
 def _make_static_start_nonblocking(html: str) -> str:
-    """Render Calendar Space immediately while Pyodide/QCDS starts in parallel.
-
-    GitHub Pages must never make the visible calendar wait for the Python worker.
-    A normalized local snapshot (or an empty Calendar Space) is returned for the
-    first state request. The worker then hydrates in the background and emits a
-    browser event that refreshes the same manifestation once the shared core is
-    ready. Writes and QCDS inference still wait for the real Python core.
-    """
+    """Render Calendar Space immediately while Pyodide/QCDS starts in parallel."""
 
     html = html.replace(
         "let hydratePromise = null;",
@@ -55,6 +49,8 @@ def _make_static_start_nonblocking(html: str) -> str:
     if (!Array.isArray(state.entities)) state.entities = [];
     if (!Array.isArray(state.relations)) state.relations = [];
     if (!Array.isArray(state.dimension_states)) state.dimension_states = [];
+    if (!Array.isArray(state.state_conflicts)) state.state_conflicts = [];
+    if (!Array.isArray(state.planning_states)) state.planning_states = [];
     if (!state.dimensions || typeof state.dimensions !== 'object' || Array.isArray(state.dimensions)) state.dimensions = {};
     if (!state.provenance || typeof state.provenance !== 'object') state.provenance = {};
     state.product = state.product || 'Cally.One';
@@ -164,6 +160,8 @@ def cally_one_html(*, static_mode: bool = False) -> str:
         + _asset("state_management.css")
         + "\n"
         + _asset("qcds_result_ui.css")
+        + "\n"
+        + _asset("scale_conflict_ui.css")
     )
     js = _stable_interaction_js()
     if static_mode:
