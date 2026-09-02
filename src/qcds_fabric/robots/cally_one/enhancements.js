@@ -91,10 +91,33 @@
     });
   }
 
+  function focusTimeline(stage) {
+    const timeline = stage.querySelector('.timeline');
+    if (!timeline) {
+      delete stage.dataset.callyTimelineFocus;
+      return;
+    }
+    const title = document.querySelector('#dateTitle')?.textContent || '';
+    const days = timeline.style.getPropertyValue('--days') || '';
+    const signature = `${title}|${days}`;
+    if (stage.dataset.callyTimelineFocus === signature) return;
+    stage.dataset.callyTimelineFocus = signature;
+    requestAnimationFrame(() => {
+      const now = stage.querySelector('.nowline');
+      const eventTops = [...stage.querySelectorAll('.event[data-event-id]')]
+        .map(el => Number.parseFloat(el.style.top || ''))
+        .filter(Number.isFinite);
+      const target = now ? Number.parseFloat(now.style.top || '0') : (eventTops.length ? Math.min(...eventTops) : 180);
+      stage.scrollTop = Math.max(0, target - Math.min(150, stage.clientHeight * 0.25));
+    });
+  }
+
   function decorate(root = document) {
     root.querySelectorAll?.('[data-event-id]').forEach(decorateEvent);
     decorateEventRows(root);
     setHeaderHeight();
+    const stage = root.id === 'stage' ? root : document.querySelector('#stage');
+    if (stage) focusTimeline(stage);
   }
 
   function localIso(d) {
