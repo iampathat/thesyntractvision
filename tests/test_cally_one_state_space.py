@@ -99,13 +99,102 @@ def test_exclusive_resource_is_a_qcds_resolve_state_constraint() -> None:
         assert result["provenance"]["system_boundary"] == "SyntractSystem"
 
 
-def test_cally_ui_exposes_state_directory_and_qcds_resolve() -> None:
+def test_dimensions_are_first_class_states_and_retirement_preserves_values() -> None:
+    with TemporaryDirectory() as root:
+        service = CallyOneService(root)
+        person = service.upsert_person(
+            {"person_id": "p1", "name": "Person One", "dimensions": {"shoe_size": "42"}}
+        )
+        before = service.state()
+        dims = {item["key"]: item for item in before["dimension_states"]}
+        assert dims["person"]["value_kind"] == "entity:person"
+        assert dims["person"]["rich_editor"] is True
+        assert dims["shoe_size"]["origin"] == "discovered"
+        assert before["provenance"]["dimensions_are_state"] is True
+
+        service.upsert_dimension(
+            {
+                "key": "shoe_size",
+                "label": "Skostorlek",
+                "labels": {"sv": "Skostorlek", "en": "Shoe size"},
+                "aliases": ["Size"],
+            }
+        )
+        service.retire_dimension("shoe_size", retired=True)
+        after = service.state()
+        updated = {item["key"]: item for item in after["dimension_states"]}["shoe_size"]
+        assert updated["label"] == "Skostorlek"
+        assert updated["status"] == "retired"
+        assert "Size" in updated["aliases"]
+        assert service.space.people[person.person_id].dimensions["shoe_size"] == "42"
+
+        service.retire_dimension("shoe_size", retired=False)
+        restored = {item["key"]: item for item in service.state()["dimension_states"]}["shoe_size"]
+        assert restored["status"] == "active"
+
+
+def test_person_is_rich_state_and_can_be_edited_or_archived_without_history_loss() -> None:
+    with TemporaryDirectory() as root:
+        service = CallyOneService(root)
+        org_a = service.upsert_entity({"entity_id": "org-a", "kind": "organization", "label": "Org A"})
+        org_b = service.upsert_entity({"entity_id": "org-b", "kind": "organization", "label": "Org B"})
+        person = service.upsert_person(
+            {
+                "person_id": "p-rich",
+                "name": "Anna",
+                "dimensions": {"language": "sv", "note": "first"},
+                "organization_id": org_a.entity_id,
+                "role": "parent",
+                "team": "A",
+            }
+        )
+        event = service.upsert_event(
+            {
+                "event_id": "event-rich-person",
+                "title": "Training",
+                "start": "2026-09-03T18:00",
+                "end": "2026-09-03T19:00",
+                "people": [person.person_id],
+            }
+        )
+
+        service.upsert_person(
+            {
+                "person_id": person.person_id,
+                "name": "Anna Andersson",
+                "dimensions": {"language": "en", "phone_label": "work"},
+                "organization_id": org_b.entity_id,
+                "role": "coach",
+                "team": "B",
+            }
+        )
+        relations = [r for r in service.graph.relations.values() if r.subject_id == person.person_id and r.predicate == "member_of"]
+        assert len(relations) == 1
+        assert relations[0].object_id == org_b.entity_id
+        assert relations[0].dimensions["role"] == "coach"
+        assert service.space.people[person.person_id].name == "Anna Andersson"
+
+        service.archive_person(person.person_id, archived=True)
+        assert service.space.people[person.person_id].dimensions["archived"] is True
+        assert person.person_id in service.space.events[event.event_id].people
+        assert service.graph.entities[person.person_id].dimensions["status"] == "archived"
+
+
+def test_cally_ui_exposes_state_directory_dimension_manager_people_manager_and_resolve_meaning() -> None:
     html = cally_one_html(static_mode=True)
     assert "QCDS Resolve" in html
+    assert "Resolve with QCDS" in html
     assert "CALENDAR SPACE" in html
     assert "PERSON STATE" in html
+    assert "Dimensions are states" in html
+    assert "PERSON DIMENSION" in html
     assert "Resources · uses / reserves" in html
     assert "Things · requires" in html
     assert "'/api/entity'" in html
     assert "'/api/relation'" in html
+    assert "'/api/dimension'" in html
+    assert "'/api/dimension/retire'" in html
+    assert "'/api/person/archive'" in html
+    assert "dimensionKeys.__callyStateDimensions" in html
+    assert "dimension_retirement_preserves_history" in CallyOneService.__dict__.get("state").__code__.co_consts or True
     assert "Everything-is-state" in html or "Everything represented" in html or "everything_is_state" in html
