@@ -36,14 +36,14 @@ jobs:
         run: pytest -q tests/test_calendar_robot.py tests/test_cally_one_brand.py
       - name: Build static Cally.One GitHub preview
         run: |
-          mkdir -p _cally_preview
+          mkdir -p _cally_preview/cally
           python - <<'PY'
           from pathlib import Path
           from zipfile import ZIP_DEFLATED, ZipFile
           from qcds_fabric.robots.cally_one.ui import cally_one_html
 
           out = Path('_cally_preview')
-          (out / 'index.html').write_text(cally_one_html(static_mode=True), encoding='utf-8')
+          (out / 'cally' / 'index.html').write_text(cally_one_html(static_mode=True), encoding='utf-8')
           (out / 'session_core_worker.js').write_text(Path('web/session_core_worker.js').read_text(encoding='utf-8'), encoding='utf-8')
           root = Path('src/qcds_fabric')
           with ZipFile(out / 'qcds_fabric.zip', 'w', compression=ZIP_DEFLATED) as archive:
@@ -51,8 +51,10 @@ jobs:
                   if path.is_file() and path.suffix in {'.py', '.json', '.md'}:
                       archive.write(path, path.relative_to('src'))
 
-          html = (out / 'index.html').read_text(encoding='utf-8')
+          html = (out / 'cally' / 'index.html').read_text(encoding='utf-8')
           worker = (out / 'session_core_worker.js').read_text(encoding='utf-8')
+          assert "new Worker('../session_core_worker.js')" in html
+          assert "new URL('../qcds_fabric.zip'" in html
           assert 'Cally.One' in html
           assert 'cally_one_run' in html
           assert 'qcds_fabric.robots.cally_one.robot' in worker
