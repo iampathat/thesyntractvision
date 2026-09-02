@@ -83,6 +83,36 @@ def test_mobile_car_overlap_is_planning_state_not_false_conflict() -> None:
         assert result["truth_distribution_bound"] is True
 
 
+def test_single_assigned_mobile_use_is_not_orange_by_itself() -> None:
+    with TemporaryDirectory() as root:
+        service = CallyOneService(root)
+        car = service.upsert_entity(
+            {
+                "kind": "resource",
+                "label": "Bil 7",
+                "dimensions": {"type": "car", "mobility": "mobile", "capacity": 4, "capacity_dimension": "person"},
+            }
+        )
+        person = _people(service, 1)[0]
+        event = service.upsert_event(
+            {
+                "title": "Träning",
+                "start": "2026-09-03T18:00",
+                "end": "2026-09-03T19:00",
+                "people": [person],
+                "links": [
+                    {
+                        "predicate": "uses",
+                        "object_id": car.entity_id,
+                        "dimensions": {"rider_ids": [person], "route_status": "assigned"},
+                    }
+                ],
+            }
+        )
+        assert not service.planning_for_event(event.event_id)
+        assert service.state()["state_model"]["single_mobile_assignment_is_not_automatically_a_warning"] is True
+
+
 def test_person_can_leave_vehicle_without_leaving_event() -> None:
     with TemporaryDirectory() as root:
         service = CallyOneService(root)
