@@ -22,6 +22,27 @@ def _replace_once(source: str, old: str, new: str, label: str) -> str:
     return source.replace(old, new, 1)
 
 
+def _make_today_view_aware(html: str) -> str:
+    """Make Today move the date anchor without changing the active projection."""
+
+    old_label = "$('#todayBtn').textContent=state.view==='year'?'Month':state.view==='month'?'Today':'Today';"
+    html = _replace_once(
+        html,
+        old_label,
+        "$('#todayBtn').textContent='Today';",
+        "Today label",
+    )
+
+    old_jump = "function jumpToday(){const n=startOfDay(new Date());state.anchor=n;state.activeSavedView=null;if(state.view==='year')state.view='month';else if(state.view==='month')state.view='day';render()}"
+    html = _replace_once(
+        html,
+        old_jump,
+        "function jumpToday(){state.anchor=startOfDay(new Date());render()}",
+        "Today navigation",
+    )
+    return html
+
+
 def _stable_interaction_js() -> str:
     """Return product JS with explicit, idempotent UI updates and no broad observer."""
 
@@ -227,6 +248,7 @@ def _make_static_start_lazy(html: str) -> str:
 
 def cally_one_html(*, static_mode: bool = False) -> str:
     html = _base_cally_one_html(static_mode=static_mode)
+    html = _make_today_view_aware(html)
     if static_mode:
         html = _make_static_start_lazy(html)
         old = "else if (path === '/api/infer') action = 'infer';\n    else if (path === '/api/entity') action = 'entity';\n    else if (path === '/api/relation') action = 'relation';\n    else if (path !== '/api/state')"
