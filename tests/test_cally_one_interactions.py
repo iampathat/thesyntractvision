@@ -110,10 +110,10 @@ def test_event_editor_people_are_compact_selectors_not_giant_raw_checkboxes() ->
 
 def test_calendar_surface_has_no_transparent_seam_and_time_rail_is_sticky() -> None:
     html = cally_one_html()
-    assert '.stage{padding:0 12px 12px!important}' in html
+    assert '.stage{padding:0 12px 12px!important;background:var(--paper,#fffdf8)!important}' in html
     assert '.timeHead{position:sticky!important;top:0!important;left:0!important' in html
     assert '.timeRail{position:sticky!important;left:0!important' in html
-    assert '.hour{background:#faf8f2}' in html
+    assert '.hour{background:#fffdf8!important}' in html
 
 
 def test_mobile_perspective_button_can_reveal_the_side_panel() -> None:
@@ -157,3 +157,28 @@ def test_calendar_display_changes_do_not_call_qcds_inference() -> None:
     display = html.split('/* Cally.One calendar/time display dimension — projection only; no QCDS startup. */', 1)[1]
     assert "fetch('/api/infer'" not in display
     assert "action:'infer'" not in display
+
+
+def test_week_event_is_clipped_to_its_own_day_column() -> None:
+    html = cally_one_html()
+    assert '.dayCol{min-width:0;overflow:hidden!important;isolation:isolate' in html
+    assert '.event{box-sizing:border-box!important;max-width:calc(100% - 10px)!important;overflow:hidden!important}' in html
+
+
+def test_non_today_week_columns_remain_neutral_when_horizontal_scrolling() -> None:
+    html = cally_one_html()
+    assert 'background-color:var(--paper,#fffdf8)!important' in html
+    assert '.dayCol.today{background-color:#f2f8f3!important}' in html
+
+
+def test_mobile_calendar_chrome_uses_one_control_geometry_and_grid_alignment() -> None:
+    html = cally_one_html()
+    assert '--cally-control-h:44px' in html
+    assert '.topActions .btn,.callyMenuButton,.dateNav .btn{height:var(--cally-control-h)!important' in html
+    assert 'grid-template-columns:repeat(4,minmax(0,1fr))!important' in html
+    assert '.view{width:100%!important;min-width:0!important;max-width:none!important;min-height:48px!important' in html
+
+
+def test_visible_tribute_notice_explains_free_personal_and_paid_organization_use() -> None:
+    html = cally_one_html()
+    assert 'Tribute License 1.0 · personal/family free · organizations €99/mo or €990/yr' in html
