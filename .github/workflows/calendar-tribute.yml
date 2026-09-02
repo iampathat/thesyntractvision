@@ -76,7 +76,13 @@ jobs:
           assert 'callyStateConflict' in html
           assert 'Åker med' in html
           assert 'rider_ids' in html
+          assert 'Markera som löst' in html
+          assert "route_status:'resolved'" in html
+          assert "resolved_by:'human'" in html
           assert 'Sök namn, typ, plats eller annan egenskap' in html
+          assert 'callyLinkedDimensionFilters' in html
+          assert 'Alla typer' in html
+          assert 'Alla platser' in html
           assert 'PERSON STATE' in html
           assert 'Resources · uses / reserves' in html
           assert 'qcds_fabric.robots.cally_one.runtime_v3' in worker
