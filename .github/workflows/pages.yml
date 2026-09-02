@@ -1,13 +1,15 @@
-name: Living Logical Robot Pages
+name: Living Logical Robot + Cally.One Pages
 
 on:
   push:
-    branches: [main]
+    branches: [tribute]
     paths:
       - "src/qcds_fabric/**"
       - "robots/legal/sweden_housing/**"
       - "web/session_core_worker.js"
       - "web/assets/**"
+      - "CALENDAR_ROBOT.md"
+      - "pyproject.toml"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -81,9 +83,29 @@ jobs:
           assert wall["shortest_path_count"] == 0
           print({"core": clear["execution"], "space": clear["candidate_binary_space"], "clear": clear["shortest_steps"], "one_oracle": changed["shortest_steps"], "wall_reachable": wall["reachable"]})
           PY
-      - name: Export the stable public QCDS surface
+      - name: Validate Cally.One Logical Robot boundary
         run: |
-          mkdir -p _site/legal/cases _site/assets
+          python - <<'PY'
+          from qcds_fabric.robots.cally_one.robot import CallyOneService
+          from qcds_fabric.robots.cally_one.ui import cally_one_html
+          from tempfile import TemporaryDirectory
+
+          with TemporaryDirectory() as root:
+              service = CallyOneService(root)
+              state = service.state()
+              assert state["product"] == "Cally.One"
+              assert state["provenance"]["logical_robot"] is True
+              assert state["provenance"]["system_boundary"] == "SyntractSystem"
+              assert state["provenance"]["shared_qcds_core"] is True
+          html = cally_one_html(static_mode=True)
+          assert "Cally.One" in html
+          assert "cally_one_run" in html
+          assert "qcds_fabric.zip" in html
+          print("Cally.One Logical Robot boundary verified")
+          PY
+      - name: Export public QCDS surfaces
+        run: |
+          mkdir -p _site/legal/cases _site/assets _site/cally
           python -m qcds_fabric.living_robot_public --export _site/index.html
           cp web/session_core_worker.js _site/session_core_worker.js
           cp robots/legal/sweden_housing/cases/*.json _site/legal/cases/
@@ -99,12 +121,15 @@ jobs:
           import os
           from pathlib import Path
           from zipfile import ZIP_DEFLATED, ZipFile
+          from qcds_fabric.robots.cally_one.ui import cally_one_html
 
           root = Path('src/qcds_fabric')
           with ZipFile('_site/qcds_fabric.zip', 'w', compression=ZIP_DEFLATED) as archive:
               for path in sorted(root.rglob('*')):
                   if path.is_file() and path.suffix in {'.py', '.json'}:
                       archive.write(path, path.relative_to('src'))
+
+          Path('_site/cally/index.html').write_text(cally_one_html(static_mode=True), encoding='utf-8')
 
           page = Path('_site/index.html')
           html = page.read_text(encoding='utf-8')
@@ -140,6 +165,16 @@ jobs:
           page.write_text(html, encoding='utf-8')
           PY
           touch _site/.nojekyll
+      - name: Validate Cally.One Pages surface
+        run: |
+          test -s _site/cally/index.html
+          test -s _site/session_core_worker.js
+          test -s _site/qcds_fabric.zip
+          grep -F 'Cally.One' _site/cally/index.html
+          grep -F 'cally_one_run' _site/cally/index.html
+          grep -F 'localStorage' _site/cally/index.html
+          grep -F 'qcds_fabric.robots.cally_one.robot' _site/session_core_worker.js
+          grep -F "msg.type === 'cally_one_run'" _site/session_core_worker.js
       - name: Validate Syntract artwork public identity
         run: |
           test -s _site/assets/syntract_art.svg
@@ -172,12 +207,12 @@ jobs:
         id: configure
         continue-on-error: true
         uses: actions/configure-pages@v5
-      - name: Explain first-time Pages enablement
+      - name: Explain Pages enablement
         if: steps.configure.outcome != 'success'
         run: |
           echo '### GitHub Pages is not enabled yet' >> "$GITHUB_STEP_SUMMARY"
           echo '' >> "$GITHUB_STEP_SUMMARY"
-          echo 'The Living Logical Robot site was built and uploaded successfully.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'The Living Logical Robot + Cally.One site was built and uploaded successfully.' >> "$GITHUB_STEP_SUMMARY"
           echo 'Enable **Settings → Pages → Build and deployment → Source: GitHub Actions** once, then rerun this workflow.' >> "$GITHUB_STEP_SUMMARY"
 
   deploy:
