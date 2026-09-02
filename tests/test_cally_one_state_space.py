@@ -82,8 +82,16 @@ def test_exclusive_resource_is_a_qcds_resolve_state_constraint() -> None:
             }
         )
 
+        candidates = service.placement_candidates(second.event_id)
+        assert [item["candidate_id"] for item in candidates] == [
+            "shift-minus-120",
+            "shift-minus-60",
+            "shift-zero",
+            "shift-plus-60",
+            "shift-plus-120",
+        ]
         result = service.infer_placement(second.event_id)
-        current = result["candidate_worlds"]["shift-+0"]
+        current = result["candidate_worlds"]["shift-zero"]
         assert result["mode"] == "qcds-resolve"
         assert current["coherence"] == "blocked"
         assert any(reason.startswith(f"resource:{car.entity_id}:overlap:{first.event_id}") for reason in current["reasons"])
