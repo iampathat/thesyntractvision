@@ -7,7 +7,7 @@ name = "qcds-fabric"
 version = "1.30.0"
 description = "Reference implementation scaffold for QCDS Fabric v1.0"
 requires-python = ">=3.11"
-license = {text = "MIT"}
+license = {text = "Mixed license: MIT for the QCDS core; Calendar Tribute License 1.0 for Family Calendar product files"}
 authors = [{name = "Patrik Sundblom"}]
 
 [project.scripts]
