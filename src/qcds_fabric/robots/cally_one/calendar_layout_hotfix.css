@@ -1,13 +1,56 @@
-/* Cally.One calendar layout hotfix — keep the calendar visually attached to its controls. */
-.stage{padding:0 12px 12px!important}
-.timeline{margin-top:0!important}
-.timeHead{position:sticky!important;top:0!important;left:0!important;z-index:16!important;background:var(--paper,#fffdf8)!important;box-shadow:1px 0 0 var(--line,#d8ddd4)}
-.timeRail{position:sticky!important;left:0!important;z-index:11!important;background:#faf8f2!important;box-shadow:1px 0 0 var(--line,#d8ddd4)}
-.hour{background:#faf8f2}
+/* Cally.One calendar layout — one coherent chrome and a contained calendar body. */
+:root{--cally-control-h:44px;--cally-control-radius:14px;--cally-control-gap:8px}
+
+/* Calendar body starts exactly where the control surface ends. */
+.stage{padding:0 12px 12px!important;background:var(--paper,#fffdf8)!important}
+.timeline{margin-top:0!important;background:var(--paper,#fffdf8)!important;overflow:visible!important}
+.timeHead{position:sticky!important;top:0!important;left:0!important;z-index:26!important;background:var(--paper,#fffdf8)!important;box-shadow:1px 0 0 var(--line,#d8ddd4)}
+.timeRail{position:sticky!important;left:0!important;z-index:22!important;background:#fffdf8!important;box-shadow:1px 0 0 var(--line,#d8ddd4)}
+.hour{background:#fffdf8!important}
+.dayHead{min-width:0;overflow:hidden;background:var(--paper,#fffdf8)!important}
+.dayCol{min-width:0;overflow:hidden!important;isolation:isolate;background-color:var(--paper,#fffdf8)!important;background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 58.5px,#eef0ea 59px,#eef0ea 59.5px)!important}
+.dayCol.today{background-color:#f2f8f3!important}
+.event{box-sizing:border-box!important;max-width:calc(100% - 10px)!important;overflow:hidden!important}
+
+/* One geometry for every control in the calendar chrome. */
+.top{background:#fffdf8fa!important;border-bottom:1px solid var(--line,#d8ddd4)!important}
+.topline{align-items:center!important}
+.topActions{align-items:center!important;gap:var(--cally-control-gap)!important}
+.topActions .btn,.callyMenuButton,.dateNav .btn{height:var(--cally-control-h)!important;min-height:var(--cally-control-h)!important;border-radius:var(--cally-control-radius)!important;border-width:1px!important;box-shadow:none!important}
+.topActions .btn,.callyMenuButton{width:var(--cally-control-h)!important;min-width:var(--cally-control-h)!important;padding:0!important;display:grid!important;place-items:center!important}
+.dateNav{align-items:center!important;gap:var(--cally-control-gap)!important}
+.dateNav .btn.icon{width:var(--cally-control-h)!important;min-width:var(--cally-control-h)!important;padding:0!important;display:grid!important;place-items:center!important}
+#todayBtn{padding:0 16px!important;min-width:86px!important}
+.dateTitle{display:flex!important;align-items:center!important;gap:7px!important;min-width:0!important;padding-left:4px!important;line-height:1.2!important}
+.viewbar{gap:var(--cally-control-gap)!important;padding-top:10px!important;padding-bottom:10px!important;align-items:stretch!important}
+.view{min-height:var(--cally-control-h)!important;border-radius:var(--cally-control-radius)!important;border-width:1px!important;box-shadow:none!important;display:grid!important;place-items:center!important}
+.callyMenuButton{font-size:21px!important}
+.callyMobileMenu{border-radius:20px!important;padding:8px!important}
+.callyMobileMenu button{min-height:44px!important;border-radius:13px!important;margin:0 0 6px!important;box-shadow:none!important}
+
+/* Make the product/license boundary visible without turning the header into an advert. */
+.brandText::after{content:"by Patrik Sundblom · Tribute License 1.0 · personal/family free · organizations €99/mo or €990/yr"!important;max-width:620px;white-space:normal}
+
 @media(max-width:760px){
   .stage{padding:0 6px 12px!important}
-  .topActions .btn,.callyMenuButton{width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;padding:0!important;border-radius:12px!important;display:grid;place-items:center}
-  .callyIntegratedNav{top:max(9px,env(safe-area-inset-top))!important}
+  .top{padding-left:8px!important;padding-right:8px!important;padding-bottom:8px!important;overflow:visible!important}
+  .topline{grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"brand actions" "date date"!important;column-gap:8px!important;row-gap:9px!important}
+  .brand{align-self:center!important}.mark{width:44px!important;height:44px!important;border-radius:14px!important;margin-right:9px!important}.brand h1{line-height:1!important}
+  .brandText::after{font-size:7px!important;line-height:1.25!important;margin-top:3px!important;max-width:250px}
+  .topActions{padding-right:52px!important;align-self:center!important}
+  .callyIntegratedNav{top:max(8px,env(safe-area-inset-top))!important;right:8px!important}
+  .dateNav{grid-area:date!important;width:100%!important;grid-template-columns:44px minmax(86px,auto) 44px minmax(0,1fr)!important;gap:8px!important}
+  .dateTitle{font-size:11px!important;padding-left:4px!important;flex-wrap:wrap!important;align-content:center!important}
+  .viewbar{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important;overflow:visible!important}
+  .view{width:100%!important;min-width:0!important;max-width:none!important;min-height:48px!important;padding:8px 6px!important;font-size:10px!important;text-align:center!important}
   .leftSide{display:none!important}
   .rightSide{display:block!important}
+  .callyMobileMenu{top:calc(max(8px,env(safe-area-inset-top)) + 52px)!important;right:8px!important;left:8px!important;width:auto!important}
+}
+
+@media(max-width:360px){
+  .viewbar{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .topActions{gap:5px!important;padding-right:49px!important}
+  .topActions .btn,.callyMenuButton{width:41px!important;min-width:41px!important;height:41px!important;min-height:41px!important}
+  .dateNav{grid-template-columns:41px 82px 41px minmax(0,1fr)!important;gap:5px!important}
 }
