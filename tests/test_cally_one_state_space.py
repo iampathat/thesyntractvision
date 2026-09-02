@@ -47,6 +47,7 @@ def test_everything_is_state_with_rich_person_organization_resource_and_thing() 
 
         assert state["everything_is_state"] is True
         assert state["state_model"]["people_is_projection"] is True
+        assert state["state_model"]["linked_state_time_intersection"] is True
         entities = {item["entity_id"]: item for item in state["entities"]}
         assert entities[person.person_id]["kind"] == "person"
         assert entities[organization.entity_id]["kind"] == "organization"
@@ -57,9 +58,13 @@ def test_everything_is_state_with_rich_person_organization_resource_and_thing() 
         assert (event.event_id, "participant", person.person_id) in relations
         assert (event.event_id, "uses", room.entity_id) in relations
         assert (event.event_id, "requires", bag.entity_id) in relations
+        use = next(r for r in state["relations"] if r["subject_id"] == event.event_id and r["predicate"] == "uses")
+        assert use["dimensions"]["time_start"] == event.start
+        assert use["dimensions"]["time_end"] == event.end
+        assert use["dimensions"]["temporal_scope"] == "event"
 
 
-def test_exclusive_resource_is_a_qcds_resolve_state_constraint() -> None:
+def test_same_exclusive_state_plus_overlapping_time_becomes_qcds_constraint() -> None:
     with TemporaryDirectory() as root:
         service = CallyOneService(root)
         car = service.upsert_entity(
@@ -82,21 +87,25 @@ def test_exclusive_resource_is_a_qcds_resolve_state_constraint() -> None:
             }
         )
 
-        candidates = service.placement_candidates(second.event_id)
-        assert [item["candidate_id"] for item in candidates] == [
-            "shift-minus-120",
-            "shift-minus-60",
-            "shift-zero",
-            "shift-plus-60",
-            "shift-plus-120",
-        ]
         result = service.infer_placement(second.event_id)
         current = result["candidate_worlds"]["shift-zero"]
         assert result["mode"] == "qcds-resolve"
         assert current["coherence"] == "blocked"
-        assert any(reason.startswith(f"resource:{car.entity_id}:overlap:{first.event_id}") for reason in current["reasons"])
-        assert result["provenance"]["linked_resources_are_state_constraints"] is True
+        assert f"state:{car.entity_id}:time_overlap:{first.event_id}" in current["reasons"]
+        assert result["provenance"]["linked_states_are_temporal"] is True
+        assert result["provenance"]["state_time_intersections_are_constraints"] is True
         assert result["provenance"]["system_boundary"] == "SyntractSystem"
+        assert result["provenance"]["qcds_core_replaced"] is False
+
+        service.move_event(second.event_id, start="2026-09-03T12:00", end="2026-09-03T13:00")
+        link = next(
+            r for r in service.graph.relations.values()
+            if r.subject_id == second.event_id and r.object_id == car.entity_id and r.predicate == "uses"
+        )
+        assert link.dimensions["time_start"] == "2026-09-03T12:00"
+        assert link.dimensions["time_end"] == "2026-09-03T13:00"
+        moved = service.infer_placement(second.event_id)["candidate_worlds"]["shift-zero"]
+        assert f"state:{car.entity_id}:time_overlap:{first.event_id}" not in moved["reasons"]
 
 
 def test_dimensions_are_first_class_states_and_retirement_preserves_values() -> None:
@@ -180,9 +189,13 @@ def test_person_is_rich_state_and_can_be_edited_or_archived_without_history_loss
         assert service.graph.entities[person.person_id].dimensions["status"] == "archived"
 
 
-def test_cally_ui_exposes_state_directory_dimension_manager_people_manager_and_resolve_meaning() -> None:
+def test_cally_ui_keeps_qcds_technical_detail_but_speaks_calendar_language() -> None:
     html = cally_one_html(static_mode=True)
-    assert "Resolve with QCDS" in html
+    assert "Kolla tider" in html
+    assert "Alla tider funkar lika bra" in html
+    assert "Tekniska detaljer" in html
+    assert "SyntractSystem → shared QCDS core" in html
+    assert "TruthDistribution" in html
     assert "CALENDAR SPACE" in html
     assert "PERSON STATE" in html
     assert "Dimensions are states" in html
@@ -198,12 +211,9 @@ def test_cally_ui_exposes_state_directory_dimension_manager_people_manager_and_r
     assert "Everything-is-state" in html or "Everything represented" in html or "everything_is_state" in html
 
 
-def test_mutation_observers_do_not_rewrite_resolve_label_unconditionally() -> None:
+def test_mutation_observers_do_not_rewrite_customer_label_unconditionally() -> None:
     html = cally_one_html(static_mode=True)
-    assert "if (button.textContent !== 'Resolve with QCDS') button.textContent = 'Resolve with QCDS';" in html
-    assert "if (infer.textContent !== 'Resolve with QCDS') infer.textContent = 'Resolve with QCDS';" in html
-    assert "button.textContent = 'Resolve with QCDS';\n" not in html.replace(
-        "if (button.textContent !== 'Resolve with QCDS') button.textContent = 'Resolve with QCDS';\n",
-        "",
-    )
+    assert "if (button.textContent !== label) button.textContent = label;" in html
+    assert "infer.dataset.callyCustomerLabel = '1';" in html
+    assert "button.dataset.callyCustomerLabel = '1';" in html
     assert "infer.textContent = 'QCDS Resolve';" not in html
