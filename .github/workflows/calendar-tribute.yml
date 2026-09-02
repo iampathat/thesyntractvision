@@ -16,6 +16,7 @@ on:
       - "tests/test_cally_one_brand.py"
       - "tests/test_cally_one_interactions.py"
       - "tests/test_cally_one_state_space.py"
+      - "tests/test_cally_one_capacity.py"
       - "LICENSE_CALENDAR_TRIBUTE.md"
       - "CALENDAR_ROBOT.md"
       - "pyproject.toml"
@@ -35,7 +36,7 @@ jobs:
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e '.[test]'
       - name: Run Cally.One Logical Robot tests
-        run: pytest -q tests/test_calendar_robot.py tests/test_cally_one_brand.py tests/test_cally_one_interactions.py tests/test_cally_one_state_space.py
+        run: pytest -q tests/test_calendar_robot.py tests/test_cally_one_brand.py tests/test_cally_one_interactions.py tests/test_cally_one_state_space.py tests/test_cally_one_capacity.py
       - name: Build static Cally.One GitHub preview
         run: |
           mkdir -p _cally_preview/cally
@@ -66,12 +67,18 @@ jobs:
           assert 'timeline[style*="--days:1"]' in html
           assert "'/api/entity'" in html
           assert "'/api/relation'" in html
-          assert 'Resolve with QCDS' in html
-          assert "if (button.textContent !== 'Resolve with QCDS')" in html
-          assert "if (infer.textContent !== 'Resolve with QCDS')" in html
+          assert 'Kolla tider' in html
+          assert 'Alla tider funkar lika bra' in html
+          assert 'Tekniska detaljer' in html
+          assert 'SyntractSystem → shared QCDS core' in html
+          assert 'callyNeedsResolution' in html
+          assert 'callyStateConflict' in html
+          assert 'Åker med' in html
+          assert 'rider_ids' in html
+          assert 'Sök namn, typ, plats eller annan egenskap' in html
           assert 'PERSON STATE' in html
           assert 'Resources · uses / reserves' in html
-          assert 'qcds_fabric.robots.cally_one.robot' in worker
+          assert 'qcds_fabric.robots.cally_one.runtime_v3' in worker
           assert (out / 'qcds_fabric.zip').stat().st_size > 0
           PY
       - name: Validate Cally.One browser JavaScript syntax
