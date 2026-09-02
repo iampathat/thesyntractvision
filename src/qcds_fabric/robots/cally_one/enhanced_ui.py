@@ -16,6 +16,12 @@ def _asset(name: str) -> str:
     return Path(__file__).with_name(name).read_text(encoding="utf-8")
 
 
+def _replace_once(source: str, old: str, new: str, label: str) -> str:
+    if old not in source:
+        raise RuntimeError(f"Cally.One {label} marker not found")
+    return source.replace(old, new, 1)
+
+
 def _stable_interaction_js() -> str:
     """Return product JS with explicit, idempotent UI updates and no broad observer."""
 
@@ -61,10 +67,51 @@ def _stable_interaction_js() -> str:
         "button.textContent = 'Resolve with QCDS';",
         "button.dataset.callyCustomerLabel = '1';",
     )
+    management_js = _replace_once(
+        management_js,
+        """    const observer = new MutationObserver(() => {
+      injectDirectoryManagers();
+      enhanceResolveExplanation();
+      installDimensionSemantics();
+    });
+    observer.observe(document.body, {childList:true, subtree:true});""",
+        """    window.addEventListener('cally-one-ui-refresh', () => {
+      injectDirectoryManagers();
+      enhanceResolveExplanation();
+      installDimensionSemantics();
+    });""",
+        "management observer boot",
+    )
+
     result_js = _asset("qcds_result_ui.js")
+
     scale_js = _asset("scale_conflict_ui.js")
+    scale_js = _replace_once(
+        scale_js,
+        """    const observer = new MutationObserver(() => { enhanceLargeSelectors(); paintStates(); });
+    observer.observe(document.body, {childList:true, subtree:true});""",
+        """    window.addEventListener('cally-one-ui-refresh', () => { enhanceLargeSelectors(); paintStates(); });""",
+        "scale observer boot",
+    )
+
     manual_js = _asset("manual_resolution_ui.js")
+    manual_js = _replace_once(
+        manual_js,
+        """    const observer = new MutationObserver(enhancePlanningCards);
+    observer.observe(document.body, {childList:true, subtree:true});""",
+        """    window.addEventListener('cally-one-ui-refresh', enhancePlanningCards);""",
+        "manual-resolution observer boot",
+    )
+
     dimension_filter_js = _asset("dimension_filter_ui.js")
+    dimension_filter_js = _replace_once(
+        dimension_filter_js,
+        """    const observer = new MutationObserver(enhance);
+    observer.observe(document.body, {childList:true, subtree:true});""",
+        """    window.addEventListener('cally-one-ui-refresh', enhance);""",
+        "dimension-filter observer boot",
+    )
+
     controller_js = _asset("interaction_controller.js")
     return "\n".join(
         [event_js, management_js, result_js, scale_js, manual_js, dimension_filter_js, controller_js]
