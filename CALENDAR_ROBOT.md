@@ -124,6 +124,8 @@ Priority
 
 There is no architectural three-dimension limit. The UI may present a short stack at one moment while Calendar Space can contain hundreds of available dimensions.
 
+The selected Perspective composition is directly manipulable: its dimension boxes can be reordered by drag/drop and the resulting composition can be starred/pinned as a **dedicated view in the main menu**. A pinned view stores the projection definition — and any active filter values — but does not create a second Calendar Space or duplicate events.
+
 Filters are independent of grouping. A user can therefore project by `Location → Person` while simultaneously filtering on `Activity = hockey`, `Priority = must`, `Language = sv`, or any other represented dimension/value.
 
 The same event can appear in multiple projections without becoming a second copy or source of truth.
@@ -143,8 +145,13 @@ The UI is designed for direct manipulation first:
 
 - finger, stylus and mouse use the same pointer interaction model;
 - events can be dragged between times, dates and people;
+- every event exposes a small **pin/unpin control** backed by the event's `locked` state: pinned events cannot be dragged, while unpinned events can be moved;
+- pinning is therefore represented Calendar Space state, not merely a visual decoration;
 - event duration and arbitrary dimensions remain part of the logical state;
 - event editing can attach multiple dimensions, not a single custom key/value pair;
+- Perspective composition uses touch/mouse drag/drop boxes rather than fixed axis selectors;
+- saved Perspective compositions can be pinned to the main view menu as dedicated projections;
+- the top navigation must not force page-level horizontal scrolling on phone/tablet layouts; wide calendar bodies may scroll inside their own stage;
 - touch targets remain usable on phones;
 - the same interface scales through tablet and desktop to presentation displays.
 
@@ -192,9 +199,13 @@ The implementation provides / must preserve:
 8. standalone Cally.One browser/runtime entry points;
 9. Day, Week, Month, Year, Person, Event and arbitrary Perspective views;
 10. ordered multi-dimension perspective stacks and independent multi-dimension filters;
-11. Year → Month → Day drill-down and current-state navigation;
-12. pointer-based movement suitable for touch and mouse;
-13. browser execution through the packaged Python/QCDS core;
-14. JSON/API seams for future calendar adapters.
+11. touch/mouse drag/drop composition of Perspective dimensions;
+12. saved/pinned dedicated Perspective views in the main menu;
+13. event pin/unpin backed by the represented `locked` state;
+14. Year → Month → Day drill-down and current-state navigation;
+15. responsive top navigation without page-level horizontal overflow;
+16. pointer-based movement suitable for touch and mouse;
+17. browser execution through the packaged Python/QCDS core;
+18. JSON/API seams for future calendar adapters.
 
 Cally.One must remain one specialized Logical Robot manifestation over the shared QCDS architecture.
