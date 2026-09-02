@@ -20,7 +20,10 @@ def _stable_interaction_js() -> str:
     """Return product JS with explicit, idempotent UI updates and no broad observer."""
 
     event_js = _asset("enhancements.js")
-    event_js = event_js.replace("infer.textContent = 'QCDS Resolve';", "infer.textContent = 'Kolla tider';")
+    event_js = event_js.replace(
+        "infer.textContent = 'QCDS Resolve';",
+        "infer.dataset.callyCustomerLabel = '1'; infer.textContent = 'Kolla tider';",
+    )
     event_js = event_js.replace(
         '<div class="stateCard"><div class="stateKind">',
         '<div class="stateCard" data-state-entity="${esc(entity.entity_id)}"><div class="stateKind">',
