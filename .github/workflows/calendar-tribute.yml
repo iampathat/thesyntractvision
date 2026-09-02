@@ -15,6 +15,7 @@ on:
       - "tests/test_calendar_robot.py"
       - "tests/test_cally_one_brand.py"
       - "tests/test_cally_one_interactions.py"
+      - "tests/test_cally_one_state_space.py"
       - "LICENSE_CALENDAR_TRIBUTE.md"
       - "CALENDAR_ROBOT.md"
       - "pyproject.toml"
@@ -34,7 +35,7 @@ jobs:
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e '.[test]'
       - name: Run Cally.One Logical Robot tests
-        run: pytest -q tests/test_calendar_robot.py tests/test_cally_one_brand.py tests/test_cally_one_interactions.py
+        run: pytest -q tests/test_calendar_robot.py tests/test_cally_one_brand.py tests/test_cally_one_interactions.py tests/test_cally_one_state_space.py
       - name: Build static Cally.One GitHub preview
         run: |
           mkdir -p _cally_preview/cally
@@ -63,6 +64,11 @@ jobs:
           assert 'resizeHandle' in html
           assert 'eventEdit' in html
           assert 'timeline[style*="--days:1"]' in html
+          assert "'/api/entity'" in html
+          assert "'/api/relation'" in html
+          assert 'QCDS Resolve' in html
+          assert 'PERSON STATE' in html
+          assert 'Resources · uses / reserves' in html
           assert 'qcds_fabric.robots.cally_one.robot' in worker
           assert (out / 'qcds_fabric.zip').stat().st_size > 0
           PY
