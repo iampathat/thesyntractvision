@@ -54,3 +54,13 @@ def test_perspective_and_top_navigation_wrap_instead_of_page_scroll() -> None:
     html = cally_one_html()
     assert '.viewbar{flex-wrap:wrap;overflow-x:hidden' in html
     assert '.composer{flex-wrap:wrap;overflow-x:hidden' in html
+
+
+def test_orange_transport_can_be_completed_by_human_state_editing() -> None:
+    html = cally_one_html(static_mode=True)
+    assert 'Markera som löst' in html
+    assert "route_status:'resolved'" in html
+    assert "resolved_by:'human'" in html
+    assert 'Transportplanen är markerad som klar' in html
+    assert 'completePlanningForEvent' in html
+    assert "['uses','reserves'].includes(relation.predicate)" in html
