@@ -217,9 +217,6 @@ jobs:
 
   deploy:
     if: needs.build.outputs.pages_ready == 'true'
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
     steps:
