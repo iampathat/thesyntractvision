@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-# Cal.Cloud Tribute License 1.0 — see LICENSE_CALENDAR_TRIBUTE.md
+# Cally.One Tribute License 1.0 — see LICENSE_CALENDAR_TRIBUTE.md
 
 import argparse
 import json
@@ -11,8 +11,8 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 from urllib.parse import urlparse
 
-from .cal_cloud import CalCloudService
-from .cal_cloud_ui import cal_cloud_html
+from .cally_one import CallyOneService
+from .cally_one_ui import cally_one_html
 from .calendar_robot import CalendarRobotError
 
 
@@ -22,10 +22,10 @@ def create_calendar_server(
     host: str = "127.0.0.1",
     port: int = 8790,
 ) -> ThreadingHTTPServer:
-    service = CalCloudService(store_root)
+    service = CallyOneService(store_root)
 
     class Handler(BaseHTTPRequestHandler):
-        server_version = "QCDSCalCloud/0.1"
+        server_version = "QCDSCallyOne/0.1"
 
         def _json(self, payload: Mapping[str, Any], status: int = 200) -> None:
             body = json.dumps(dict(payload), ensure_ascii=False, sort_keys=True).encode("utf-8")
@@ -52,7 +52,7 @@ def create_calendar_server(
             return value
 
         def _html(self) -> None:
-            body = cal_cloud_html().encode("utf-8")
+            body = cally_one_html().encode("utf-8")
             self.send_response(HTTPStatus.OK)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.send_header("Content-Length", str(len(body)))
@@ -69,8 +69,8 @@ def create_calendar_server(
                 self._json(
                     {
                         "status": "ok",
-                        "service": "cal-cloud-logical-robot",
-                        "product": "Cal.Cloud",
+                        "service": "cally-one-logical-robot",
+                        "product": "Cally.One",
                         "system_boundary": "SyntractSystem",
                         "single_qcds_architecture": True,
                         "store": str(service.space.store_root),
@@ -134,7 +134,7 @@ def create_calendar_server(
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run Cal.Cloud, the Calendar Logical Robot.")
+    parser = argparse.ArgumentParser(description="Run Cally.One, the Calendar Logical Robot.")
     parser.add_argument("--store", default="./calendar_store", help="Calendar Space storage directory")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8790)
@@ -146,7 +146,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if not args.no_browser and args.host in {"127.0.0.1", "localhost"}:
         webbrowser.open(url)
     try:
-        print(f"Cal.Cloud Logical Robot: {url}")
+        print(f"Cally.One Logical Robot: {url}")
         server.serve_forever()
     except KeyboardInterrupt:
         pass
