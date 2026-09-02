@@ -1,0 +1,58 @@
+/* Cally.One product UI enhancements — Cally.One Tribute License 1.0 */
+:root{--cally-header-h:190px}
+.shell{height:100dvh;min-height:100dvh;overflow:hidden}
+.main{height:calc(100dvh - var(--cally-header-h));min-height:0;overflow:hidden}
+.stage{height:100%;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.viewbar{flex-wrap:wrap;overflow-x:hidden;overscroll-behavior-x:none}
+.view{flex:0 1 auto}
+.timeline[style*="--days:1"]{width:100%;min-width:0;grid-template-columns:54px minmax(0,1fr)}
+.timeline[style*="--days:1"] .dayCol{min-width:0}
+.composer{flex-wrap:wrap;overflow-x:hidden;align-items:stretch}
+.perspectiveBox{flex:0 1 190px}
+
+/* Event manipulation is explicit: move handle, edit, pin, resize. */
+.event,.monthEvent,.laneCard,.pEvent{position:relative}
+.event{padding-left:39px;padding-right:66px}
+.monthEvent{padding-left:28px;padding-right:52px}
+.laneCard,.pEvent{padding-left:40px;padding-right:68px}
+.eventMove,.eventEdit{position:absolute;z-index:14;display:grid;place-items:center;border:1px solid #abc0b1;background:#fffdf8e8;color:#40564a;border-radius:8px;padding:0;cursor:pointer;touch-action:none}
+.eventMove{left:5px;top:5px;width:27px;height:27px;cursor:grab}
+.eventMove:active{cursor:grabbing}
+.eventMove.locked{opacity:.38;cursor:not-allowed}
+.eventEdit{right:34px;top:5px;width:24px;height:24px}
+.eventMove svg{width:15px;height:15px;pointer-events:none}
+.eventEdit svg{width:13px;height:13px;pointer-events:none}
+.eventMove:hover,.eventEdit:hover{background:#fff}
+.resizeHandle{position:absolute;right:4px;bottom:4px;width:17px;height:17px;z-index:15;cursor:ns-resize;touch-action:none;border:0;background:transparent;padding:0}
+.resizeHandle::before,.resizeHandle::after{content:"";position:absolute;right:1px;bottom:1px;border-right:2px solid #668073;border-bottom:2px solid #668073;border-radius:1px}
+.resizeHandle::before{width:12px;height:12px}
+.resizeHandle::after{width:7px;height:7px;right:5px;bottom:5px;opacity:.65}
+.event.resizing{box-shadow:0 0 0 2px #087b5840,0 8px 24px #24362b22;z-index:40}
+.monthEvent .eventMove{left:2px;top:2px;width:20px;height:20px;border-radius:6px}
+.monthEvent .eventEdit{right:24px;top:2px;width:20px;height:20px;border-radius:6px}
+.monthEvent .eventMove svg,.monthEvent .eventEdit svg{width:11px;height:11px}
+.laneCard .eventMove,.pEvent .eventMove{left:7px;top:8px}
+.laneCard .eventEdit,.pEvent .eventEdit{right:34px;top:8px}
+.eventRow .eventControls{display:flex;gap:5px;align-items:center;justify-content:flex-end}
+.eventRow .eventMove,.eventRow .eventEdit{position:static;width:30px;height:30px}
+.eventRow .pinInline{margin-left:0}
+
+@media(max-width:760px){
+  .main{height:calc(100dvh - var(--cally-header-h));min-height:0}
+  .stage{height:100%;padding:7px 6px 12px}
+  .viewbar{gap:5px}
+  .view{flex:1 1 calc(25% - 5px);min-width:72px;max-width:none;text-align:center}
+  #savedViews{display:contents}
+  .timeline[style*="--days:1"]{min-width:0;width:100%;grid-template-columns:50px minmax(0,1fr)}
+  .timeline[style*="--days:1"] .timeRail{width:50px}
+  .composer{gap:6px}
+  .perspectiveBox{flex:1 1 145px;min-width:135px;max-width:none}
+  .composerAdd{flex:1 1 120px}
+}
+
+@media(max-width:430px){
+  .view{flex:1 1 calc(33.333% - 5px);min-width:82px}
+  .event{padding-left:37px;padding-right:62px}
+  .eventMove{width:25px;height:25px}
+  .eventEdit{width:23px;height:23px;right:32px}
+}
