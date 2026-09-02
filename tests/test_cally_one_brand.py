@@ -52,8 +52,8 @@ def test_language_is_a_state_and_localized_words_resolve_to_same_dimension() -> 
 def test_perspective_stack_filters_and_calendar_drilldown_are_first_class() -> None:
     html = cally_one_html()
 
-    assert "state.perspectives=['location','person']" in html
-    assert "state.filters=[]" in html
+    assert "perspectives:['location','person']" in html
+    assert "filters:[]" in html
     assert "eventMatchesFilters" in html
     assert "perspectiveNode" in html
     assert "data-stack-up" in html
@@ -130,9 +130,9 @@ def test_browser_session_actions_keep_calendar_state_and_qcds_path() -> None:
             },
         }
     )
-    state = run_cally_one({"action": "state"})["state"]
-    assert "language" in state["dimensions"]
-    assert "custom_dimension_299" in state["dimensions"]
+    browser_state = run_cally_one({"action": "state"})["state"]
+    assert "language" in browser_state["dimensions"]
+    assert "custom_dimension_299" in browser_state["dimensions"]
 
     inference = run_cally_one(
         {
