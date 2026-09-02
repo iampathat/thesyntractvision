@@ -199,7 +199,11 @@ jobs:
           grep -F 'eventMove' _site/cally/index.html
           grep -F 'resizeHandle' _site/cally/index.html
           grep -F 'eventEdit' _site/cally/index.html
-          grep -F 'qcds_fabric.robots.cally_one.robot' _site/cally/session_core_worker.js
+          grep -F 'callyNeedsResolution' _site/cally/index.html
+          grep -F 'callyStateConflict' _site/cally/index.html
+          grep -F 'Åker med' _site/cally/index.html
+          grep -F 'rider_ids' _site/cally/index.html
+          grep -F 'qcds_fabric.robots.cally_one.runtime_v3' _site/cally/session_core_worker.js
           grep -F "msg.type === 'cally_one_run'" _site/cally/session_core_worker.js
 
       - name: Validate Syntract artwork public identity
