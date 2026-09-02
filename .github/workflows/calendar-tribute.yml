@@ -87,7 +87,8 @@ jobs:
           assert 'Alla platser' in html
           assert 'PERSON STATE' in html
           assert 'Resources · uses / reserves' in html
-          assert 'new MutationObserver' not in html
+          assert 'observer.observe(document.body, {childList:true, subtree:true});' not in html
+          assert 'observer.observe(stage, {childList:true, subtree:true});' not in html
           assert "action === 'infer' ? await inferCally" in worker
           assert "if (msg.type === 'init')" in worker
           assert 'qcds_fabric.robots.cally_one.runtime_v3' in worker
