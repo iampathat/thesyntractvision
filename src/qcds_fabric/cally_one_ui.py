@@ -6,6 +6,6 @@ and license boundary follows the Logical Robot boundary.
 
 from __future__ import annotations
 
-from .robots.cally_one.ui import cally_one_html
+from .robots.cally_one.enhanced_ui import cally_one_html
 
 __all__ = ["cally_one_html"]
