@@ -20,13 +20,59 @@ def test_cally_one_is_public_identity_over_calendar_space(tmp_path) -> None:
     assert state["provenance"]["single_qcds_architecture"] is True
 
 
-def test_cally_one_public_ui_uses_cally_one_brand() -> None:
+def test_cally_one_public_ui_uses_searchable_unbounded_dimensions() -> None:
     html = cally_one_html()
 
     assert "Cally.One" in html
     assert "Cally.One Tribute License 1.0" in html
     assert "Calendar Space" in html
     assert "QCDS / Syntract" in html
+    assert 'id="dimensionSearch"' in html
+    assert 'id="perspectiveStack"' in html
+    assert 'id="filterList"' in html
+    assert 'id="addPerspective"' in html
+    assert 'id="addFilter"' in html
+    assert "dimensionKeys()" in html
+    assert "Object.keys(e.dimensions||{})" in html
+    assert "Dimension X · Y · Z" not in html
+    assert "Calendar Space · X / Y / Z" not in html
+
+
+def test_language_is_a_state_and_localized_words_resolve_to_same_dimension() -> None:
+    html = cally_one_html()
+
+    assert "language:{labels:{en:'Language',sv:'Språk'}" in html
+    assert "location:{labels:{en:'Location',sv:'Plats'}" in html
+    assert 'id="fLanguage"' in html
+    assert "dims.language=lang" in html
+    assert "resolveDimension" in html
+    assert "Location</b> and <b>Plats</b> resolve to the same dimension" in html
+
+
+def test_perspective_stack_filters_and_calendar_drilldown_are_first_class() -> None:
+    html = cally_one_html()
+
+    assert "state.perspectives=['location','person']" in html
+    assert "state.filters=[]" in html
+    assert "eventMatchesFilters" in html
+    assert "perspectiveNode" in html
+    assert "data-stack-up" in html
+    assert "data-filter-value" in html
+    assert "data-jump-month" in html
+    assert "data-jump-date" in html
+    assert "jumpToday" in html
+    assert "state.view='month'" in html
+    assert "state.view='day'" in html
+
+
+def test_event_editor_accepts_many_additional_dimensions() -> None:
+    html = cally_one_html()
+
+    assert 'id="fDimensions"' in html
+    assert 'id="addDimensionRow"' in html
+    assert "addDimEditor" in html
+    assert "#fDimensions .dimEdit" in html
+    assert "EVENT_COMMON" in html
 
 
 def test_cally_one_has_robot_local_non_mit_product_license() -> None:
@@ -67,6 +113,7 @@ def test_browser_session_actions_keep_calendar_state_and_qcds_path() -> None:
                 "end": "2026-09-02T18:00",
                 "people": ["p1"],
                 "locked": True,
+                "dimensions": {"language": "sv", "priority": "must", "custom_dimension_299": "state-a"},
             },
         }
     )
@@ -79,9 +126,14 @@ def test_browser_session_actions_keep_calendar_state_and_qcds_path() -> None:
                 "start": "2026-09-02T16:00",
                 "end": "2026-09-02T17:00",
                 "people": ["p1"],
+                "dimensions": {"language": "en", "activity": "hockey"},
             },
         }
     )
+    state = run_cally_one({"action": "state"})["state"]
+    assert "language" in state["dimensions"]
+    assert "custom_dimension_299" in state["dimensions"]
+
     inference = run_cally_one(
         {
             "action": "infer",
