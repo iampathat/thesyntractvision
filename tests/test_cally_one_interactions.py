@@ -191,3 +191,29 @@ def test_hamburger_menu_is_compact_grouped_and_matches_perspective_hierarchy() -
     assert 'button[data-nav="add-person"]{grid-area:add;background:var(--green' in html
     assert 'button[data-nav="space"]::after{content:"Öppna hela Calendar Space"}' in html
     assert 'button[data-cally-display-settings]::after{content:"Tidszon, tideräkning och 12/24 h"}' in html
+
+
+def test_top_brand_and_action_controls_share_one_geometry_and_alignment() -> None:
+    html = cally_one_html()
+    assert '.mark{display:grid!important;place-items:center!important;width:var(--cally-control-h)!important' in html
+    assert "mark.textContent = 'C'" in html
+    assert "if (menuButton.parentElement !== actions) actions.appendChild(menuButton)" in html
+    assert "['perspectiveBtn','personBtn','eventBtn','callyMenuButton']" in html
+    assert '.topActions .actionText{display:none!important}' in html
+
+
+def test_month_events_prioritize_readable_titles_over_permanent_edit_controls() -> None:
+    html = cally_one_html()
+    assert '.monthEvent{box-sizing:border-box!important;width:100%!important;max-width:100%!important;min-height:30px!important' in html
+    assert '.monthEvent .eventMove,.monthEvent [data-edit-event],.monthEvent .pinBtn,.monthEvent .resizeHandle{display:none!important}' in html
+    assert '.dayCell{min-width:0!important;overflow:hidden!important' in html
+
+
+def test_year_view_shows_event_titles_instead_of_only_coloring_days() -> None:
+    html = cally_one_html()
+    assert 'function decorateYearEvents()' in html
+    assert "document.querySelectorAll('.miniDay[data-jump-date]')" in html
+    assert "first.className = 'callyYearEvent'" in html
+    assert "first.textContent = String(events[0].title || 'Händelse')" in html
+    assert '.callyYearEvent{display:block!important;width:100%!important' in html
+    assert '.miniDay.has{background:#f2f8f3!important;border-color:#d4e2d9!important' in html
