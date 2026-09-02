@@ -31,6 +31,23 @@
 /* Make the product/license boundary visible without turning the header into an advert. */
 .brandText::after{content:"by Patrik Sundblom · Tribute License 1.0 · personal/family free · commercial/professional use €99/mo or €990/yr"!important;max-width:620px;white-space:normal}
 
+/* Hamburger menu: compact panel, same hierarchy as Perspective. */
+.callyMobileMenu{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-areas:"head head" "space space" "perspective dimensions" "people organizations" "resources things" "add add" "time time"!important;gap:8px!important;width:min(430px,calc(100vw - 16px))!important;max-height:calc(100dvh - 76px)!important;padding:14px!important;background:var(--paper,#fffdf8)!important;border:1px solid var(--line,#d8ddd4)!important;border-radius:24px!important;box-shadow:0 28px 80px #17231d2b!important;overflow:auto!important}
+.callyMobileMenu[hidden]{display:none!important}
+.callyMobileMenu::before{content:"CALLY.ONE  ·  MENY";grid-area:head;display:block;padding:2px 2px 5px;color:var(--green,#087b58);font-size:9px;font-weight:900;letter-spacing:.16em;line-height:1}
+.callyMobileMenu button{position:relative!important;display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;width:100%!important;min-width:0!important;min-height:64px!important;margin:0!important;padding:11px 13px!important;border:1px solid var(--line,#d8ddd4)!important;border-radius:16px!important;background:#fff!important;color:var(--ink,#14261e)!important;text-align:left!important;white-space:normal!important;font-size:11px!important;font-weight:820!important;line-height:1.15!important;box-shadow:none!important}
+.callyMobileMenu button::after{display:block;margin-top:4px;color:var(--muted,#6c776f);font-size:8px;font-weight:650;line-height:1.2;letter-spacing:0}
+.callyMobileMenu button:hover{background:#f7f9f5!important}
+.callyMobileMenu button[data-nav="space"]{grid-area:space;background:#f4f8f5!important;border-color:#c4d4ca!important}.callyMobileMenu button[data-nav="space"]::after{content:"Öppna hela Calendar Space"}
+.callyMobileMenu button[data-nav="perspective"]{grid-area:perspective}.callyMobileMenu button[data-nav="perspective"]::after{content:"Projicera samma tillståndsrum"}
+.callyMobileMenu button[data-nav="dimensions"]{grid-area:dimensions}.callyMobileMenu button[data-nav="dimensions"]::after{content:"Hantera logiska dimensioner"}
+.callyMobileMenu button[data-nav="people"]{grid-area:people}.callyMobileMenu button[data-nav="people"]::after{content:"Familj och deltagare"}
+.callyMobileMenu button[data-nav="organizations"]{grid-area:organizations}.callyMobileMenu button[data-nav="organizations"]::after{content:"Grupper och verksamheter"}
+.callyMobileMenu button[data-nav="resources"]{grid-area:resources}.callyMobileMenu button[data-nav="resources"]::after{content:"Rum, bil och andra resurser"}
+.callyMobileMenu button[data-nav="things"]{grid-area:things}.callyMobileMenu button[data-nav="things"]::after{content:"Saker, behov och krav"}
+.callyMobileMenu button[data-nav="add-person"]{grid-area:add;background:var(--green,#087b58)!important;border-color:var(--green,#087b58)!important;color:#fff!important}.callyMobileMenu button[data-nav="add-person"]::after{content:"Lägg till en person i Calendar Space";color:#ffffffc7!important}
+.callyMobileMenu button[data-cally-display-settings]{grid-area:time}.callyMobileMenu button[data-cally-display-settings]::after{content:"Tidszon, tideräkning och 12/24 h"}
+
 @media(max-width:760px){
   .stage{padding:0 6px 12px!important}
   .top{padding-left:8px!important;padding-right:8px!important;padding-bottom:8px!important;overflow:visible!important}
@@ -45,7 +62,12 @@
   .view{width:100%!important;min-width:0!important;max-width:none!important;min-height:48px!important;padding:8px 6px!important;font-size:10px!important;text-align:center!important}
   .leftSide{display:none!important}
   .rightSide{display:block!important}
-  .callyMobileMenu{top:calc(max(8px,env(safe-area-inset-top)) + 52px)!important;right:8px!important;left:8px!important;width:auto!important}
+  .callyMobileMenu{top:calc(max(8px,env(safe-area-inset-top)) + 52px)!important;right:8px!important;left:auto!important}
+}
+
+@media(max-width:390px){
+  .callyMobileMenu{left:8px!important;width:auto!important;grid-template-columns:1fr!important;grid-template-areas:"head" "space" "perspective" "dimensions" "people" "organizations" "resources" "things" "add" "time"!important}
+  .callyMobileMenu button{min-height:56px!important}
 }
 
 @media(max-width:360px){
