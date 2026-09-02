@@ -7,7 +7,7 @@ name = "qcds-fabric"
 version = "1.30.0"
 description = "Reference implementation scaffold for QCDS Fabric v1.0"
 requires-python = ">=3.11"
-license = {text = "Mixed license: MIT for the QCDS core; Cally.One Tribute License 1.0 for Cally.One product files"}
+license = {text = "Mixed license: MIT for the shared QCDS core; robot-specific licenses may apply to Logical Robot product layers, including Cally.One Tribute License 1.0"}
 authors = [{name = "Patrik Sundblom"}]
 
 [project.scripts]
@@ -21,7 +21,7 @@ qcds-live = "qcds_fabric.logical_robot_live38:main"
 qcds-reality-web = "qcds_fabric.public_web_reality:main"
 qcds-reality-grow = "qcds_fabric.continuous_reality:main"
 qcds-domain-lab = "qcds_fabric.domain_lab_cli:main"
-qcds-cally-one = "qcds_fabric.calendar_robot_live:main"
+qcds-cally-one = "qcds_fabric.robots.cally_one.live:main"
 
 [project.optional-dependencies]
 test = ["pytest>=8"]
@@ -30,7 +30,7 @@ test = ["pytest>=8"]
 where = ["src"]
 
 [tool.setuptools.package-data]
-qcds_fabric = ["legal_data/*.json"]
+qcds_fabric = ["legal_data/*.json", "robots/cally_one/LICENSE.md"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
