@@ -179,6 +179,6 @@ def test_mobile_calendar_chrome_uses_one_control_geometry_and_grid_alignment() -
     assert '.view{width:100%!important;min-width:0!important;max-width:none!important;min-height:48px!important' in html
 
 
-def test_visible_tribute_notice_explains_free_personal_and_paid_organization_use() -> None:
+def test_visible_tribute_notice_explains_free_personal_and_paid_commercial_use() -> None:
     html = cally_one_html()
-    assert 'Tribute License 1.0 · personal/family free · organizations €99/mo or €990/yr' in html
+    assert 'Tribute License 1.0 · personal/family free · commercial/professional use €99/mo or €990/yr' in html
