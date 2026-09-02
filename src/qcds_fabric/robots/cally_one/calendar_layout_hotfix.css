@@ -1,0 +1,13 @@
+/* Cally.One calendar layout hotfix — keep the calendar visually attached to its controls. */
+.stage{padding:0 12px 12px!important}
+.timeline{margin-top:0!important}
+.timeHead{position:sticky!important;top:0!important;left:0!important;z-index:16!important;background:var(--paper,#fffdf8)!important;box-shadow:1px 0 0 var(--line,#d8ddd4)}
+.timeRail{position:sticky!important;left:0!important;z-index:11!important;background:#faf8f2!important;box-shadow:1px 0 0 var(--line,#d8ddd4)}
+.hour{background:#faf8f2}
+@media(max-width:760px){
+  .stage{padding:0 6px 12px!important}
+  .topActions .btn,.callyMenuButton{width:42px!important;height:42px!important;min-width:42px!important;min-height:42px!important;padding:0!important;border-radius:12px!important;display:grid;place-items:center}
+  .callyIntegratedNav{top:max(9px,env(safe-area-inset-top))!important}
+  .leftSide{display:none!important}
+  .rightSide{display:block!important}
+}
