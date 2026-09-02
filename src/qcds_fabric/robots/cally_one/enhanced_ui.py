@@ -37,9 +37,32 @@ def _stable_interaction_js() -> str:
     return event_js + "\n" + management_js
 
 
+def _protect_static_hydration(html: str) -> str:
+    """Keep an old local browser state from making the whole Pages app unusable."""
+
+    old = "if (!hydratePromise) hydratePromise = (async () => { const stored = loadSavedState(); if (stored) await callCore({action:'hydrate', state:stored}); })();"
+    new = """if (!hydratePromise) hydratePromise = (async () => {
+      const stored = loadSavedState();
+      if (!stored) return;
+      try {
+        await callCore({action:'hydrate', state:stored});
+      } catch (error) {
+        try {
+          localStorage.setItem('cally.one.state.recovery.v1', JSON.stringify(stored));
+          localStorage.removeItem('cally.one.state.v1');
+        } catch (_) { /* recovery storage is best-effort */ }
+        console.warn('Cally.One recovered from incompatible saved browser state', error);
+      }
+    })();"""
+    if old not in html:
+        raise RuntimeError("Cally.One hydration guard marker not found")
+    return html.replace(old, new, 1)
+
+
 def cally_one_html(*, static_mode: bool = False) -> str:
     html = _base_cally_one_html(static_mode=static_mode)
     if static_mode:
+        html = _protect_static_hydration(html)
         old = "else if (path === '/api/infer') action = 'infer';\n    else if (path === '/api/entity') action = 'entity';\n    else if (path === '/api/relation') action = 'relation';\n    else if (path !== '/api/state')"
         new = "else if (path === '/api/infer') action = 'infer';\n    else if (path === '/api/entity') action = 'entity';\n    else if (path === '/api/relation') action = 'relation';\n    else if (path === '/api/dimension') action = 'dimension';\n    else if (path === '/api/dimension/retire') action = 'dimension_retire';\n    else if (path === '/api/person/archive') action = 'person_archive';\n    else if (path !== '/api/state')"
         if old not in html:
