@@ -182,3 +182,12 @@ def test_mobile_calendar_chrome_uses_one_control_geometry_and_grid_alignment() -
 def test_visible_tribute_notice_explains_free_personal_and_paid_commercial_use() -> None:
     html = cally_one_html()
     assert 'Tribute License 1.0 · personal/family free · commercial/professional use €99/mo or €990/yr' in html
+
+
+def test_hamburger_menu_is_compact_grouped_and_matches_perspective_hierarchy() -> None:
+    html = cally_one_html()
+    assert 'grid-template-areas:"head head" "space space" "perspective dimensions"' in html
+    assert '.callyMobileMenu::before{content:"CALLY.ONE  ·  MENY"' in html
+    assert 'button[data-nav="add-person"]{grid-area:add;background:var(--green' in html
+    assert 'button[data-nav="space"]::after{content:"Öppna hela Calendar Space"}' in html
+    assert 'button[data-cally-display-settings]::after{content:"Tidszon, tideräkning och 12/24 h"}' in html
