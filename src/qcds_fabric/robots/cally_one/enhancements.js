@@ -3,6 +3,8 @@
   const MOVE_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 2v20M2 12h20M12 2l-3 3m3-3 3 3m-3 17-3-3m3 3 3-3M2 12l3-3m-3 3 3 3m17-3-3-3m3 3-3 3"/></svg>';
   const EDIT_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="m4 20 4.2-1 10.6-10.6-3.2-3.2L5 15.8 4 20Zm10.4-13.6 3.2 3.2M14.8 4.8l1.4-1.4a1.6 1.6 0 0 1 2.3 0l2.1 2.1a1.6 1.6 0 0 1 0 2.3l-1.4 1.4"/></svg>';
   let resizeState = null;
+  let stateCache = {events:[]};
+  let refreshPromise = null;
 
   function setHeaderHeight() {
     const top = document.querySelector('.top');
@@ -10,17 +12,30 @@
     document.documentElement.style.setProperty('--cally-header-h', `${Math.ceil(top.getBoundingClientRect().height)}px`);
   }
 
-  function eventFor(el) {
-    const id = el?.dataset?.eventId;
-    return (window.state?.data?.events || []).find(item => item.event_id === id) || null;
+  async function refreshState() {
+    if (refreshPromise) return refreshPromise;
+    refreshPromise = fetch('/api/state')
+      .then(r => r.json())
+      .then(data => { if (data && Array.isArray(data.events)) stateCache = data; return stateCache; })
+      .catch(() => stateCache)
+      .finally(() => { refreshPromise = null; });
+    return refreshPromise;
   }
 
-  function makeMove(item) {
+  function eventForId(id) {
+    return (stateCache.events || []).find(item => item.event_id === id) || null;
+  }
+
+  function isLocked(el) {
+    return !!(el?.classList?.contains('locked') || el?.querySelector?.('[data-pin-event].locked'));
+  }
+
+  function makeMove(locked) {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = `eventMove${item?.locked ? ' locked' : ''}`;
-    b.title = item?.locked ? 'Pinned — unpin before moving' : 'Drag to move';
-    b.setAttribute('aria-label', item?.locked ? 'Event pinned' : 'Move event');
+    b.className = `eventMove${locked ? ' locked' : ''}`;
+    b.title = locked ? 'Pinned — unpin before moving' : 'Drag to move';
+    b.setAttribute('aria-label', locked ? 'Event pinned' : 'Move event');
     b.innerHTML = MOVE_ICON;
     return b;
   }
@@ -36,28 +51,27 @@
     return b;
   }
 
-  function makeResize(id) {
+  function makeResize(id, locked) {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'resizeHandle';
+    b.className = `resizeHandle${locked ? ' locked' : ''}`;
     b.dataset.resizeEvent = id;
-    b.title = 'Drag to change duration';
-    b.setAttribute('aria-label', 'Resize event duration');
+    b.title = locked ? 'Pinned — unpin before resizing' : 'Drag to change duration';
+    b.setAttribute('aria-label', locked ? 'Event pinned' : 'Resize event duration');
     return b;
   }
 
   function decorateEvent(el) {
     if (!el || el.dataset.callyEnhanced === '1') return;
-    const item = eventFor(el);
-    if (!item) return;
+    const id = el.dataset.eventId;
+    if (!id) return;
+    const locked = isLocked(el);
     el.dataset.callyEnhanced = '1';
 
-    if (el.classList.contains('eventRow')) return;
-    const move = makeMove(item);
-    const edit = makeEdit(item.event_id);
-    el.appendChild(move);
-    el.appendChild(edit);
-    if (el.classList.contains('event')) el.appendChild(makeResize(item.event_id));
+    const canMove = el.classList.contains('event') || el.classList.contains('monthEvent') || el.classList.contains('laneCard');
+    if (canMove) el.appendChild(makeMove(locked));
+    el.appendChild(makeEdit(id));
+    if (el.classList.contains('event')) el.appendChild(makeResize(id, locked));
   }
 
   function decorateEventRows(root = document) {
@@ -66,12 +80,10 @@
       const open = row.querySelector('button[onclick*="openEvent"]');
       const pin = row.querySelector('[data-pin-event]');
       const id = pin?.dataset.pinEvent || (open?.getAttribute('onclick') || '').match(/openEvent\('([^']+)'\)/)?.[1];
-      const item = (window.state?.data?.events || []).find(x => x.event_id === id);
-      if (!id || !item) return;
+      if (!id) return;
       row.dataset.callyEnhanced = '1';
       const controls = document.createElement('div');
       controls.className = 'eventControls';
-      controls.appendChild(makeMove(item));
       controls.appendChild(makeEdit(id));
       if (pin) controls.appendChild(pin);
       if (open) open.replaceWith(controls);
@@ -85,10 +97,16 @@
     setHeaderHeight();
   }
 
+  function localIso(d) {
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
   function startResize(ev, handle) {
     const el = handle.closest('[data-event-id]');
-    const item = eventFor(el);
-    if (!el || !item || item.locked) return;
+    const id = el?.dataset?.eventId;
+    const item = eventForId(id);
+    if (!el || !item || item.locked || handle.classList.contains('locked')) return;
     ev.preventDefault();
     ev.stopImmediatePropagation();
     const start = new Date(item.start);
@@ -125,8 +143,11 @@
     const end = resizedEnd(ev);
     cleanupResize();
     try {
-      await window.api('/api/event', {method:'POST', body:JSON.stringify({...d.item, end:window.localIso(end)})});
-      await window.load();
+      const r = await fetch('/api/event', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({...d.item, end:localIso(end)})});
+      const body = await r.json();
+      if (!r.ok) throw new Error(body.error || `HTTP ${r.status}`);
+      await refreshState();
+      await window.load?.();
       window.toast?.('Event duration changed');
     } catch (error) {
       window.toast?.(error.message || String(error));
@@ -162,9 +183,9 @@
     const eventEl = ev.target.closest?.('[data-event-id]');
     if (!eventEl) return;
     if (ev.target.closest?.('[data-pin-event]')) return;
-    if (ev.target.closest?.('.eventMove')) return; // existing dragStart handles movement
+    if (ev.target.closest?.('.eventMove')) return; // canonical dragStart handles allowed movement
 
-    // Do not start moving merely because the event card was touched.
+    // Event cards are inert for movement unless the explicit four-arrow handle is used.
     ev.stopPropagation();
   }
 
@@ -172,9 +193,12 @@
     const stage = document.querySelector('#stage');
     if (!stage) return setTimeout(boot, 40);
     stage.addEventListener('pointerdown', onPointerDown, true);
-    const observer = new MutationObserver(() => decorate(stage));
+    const observer = new MutationObserver(() => {
+      decorate(stage);
+      refreshState();
+    });
     observer.observe(stage, {childList:true, subtree:true});
-    decorate(stage);
+    refreshState().then(() => decorate(stage));
     setHeaderHeight();
     window.addEventListener('resize', setHeaderHeight, {passive:true});
     window.addEventListener('orientationchange', () => setTimeout(setHeaderHeight, 80), {passive:true});
