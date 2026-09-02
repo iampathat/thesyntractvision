@@ -29,7 +29,18 @@ def _stable_interaction_js() -> str:
     )
     result_js = _asset("qcds_result_ui.js")
     scale_js = _asset("scale_conflict_ui.js")
-    return event_js + "\n" + management_js + "\n" + result_js + "\n" + scale_js
+    manual_js = _asset("manual_resolution_ui.js")
+    return (
+        event_js
+        + "\n"
+        + management_js
+        + "\n"
+        + result_js
+        + "\n"
+        + scale_js
+        + "\n"
+        + manual_js
+    )
 
 
 def _make_static_start_nonblocking(html: str) -> str:
