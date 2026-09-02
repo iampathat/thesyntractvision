@@ -2,7 +2,7 @@
 
 Cally.One is a product/body above the shared QCDS / Syntract core. Everything
 represented here is state: events, people, organizations, resources, things,
-requirements and the relations between them.
+dimensions, requirements and the relations between them.
 
 License: Cally.One Tribute License 1.0 — see LICENSE.md in this package.
 """
@@ -18,6 +18,7 @@ from ...calendar_robot import CalendarEvent, CalendarRobotError, CalendarRobotSe
 from ...problem import ProblemQuery, SemanticAtom, SemanticProblemFrame, SemanticRule
 from ...semantic import SemanticClaim
 from ...syntract_system import SyntractSystem
+from .dimensions import DimensionStateRegistry
 from .state_space import CallyOneStateGraph, StateEntity, StateRelation
 
 
@@ -29,6 +30,8 @@ class CallyOneService(CalendarRobotService):
         self.system = SyntractSystem(default_universe_id="cally-one")
         self.graph = CallyOneStateGraph(store_root)
         self._ensure_legacy_states()
+        self.dimensions = DimensionStateRegistry(self.graph, self.space)
+        self.dimensions.ensure()
 
     def _ensure_legacy_states(self) -> None:
         """Project older person/event storage into the unified state graph."""
@@ -52,16 +55,20 @@ class CallyOneService(CalendarRobotService):
 
     def state(self) -> dict[str, Any]:
         state = super().state()
+        dimension_states = self.dimensions.snapshot()
         graph = self.graph.snapshot()
         state.update(graph)
+        state["dimension_states"] = dimension_states
         state["product"] = "Cally.One"
         state["space_id"] = "cally-one"
         state["state_model"] = {
             "everything_is_state": True,
             "events": "temporal state entities",
-            "entities": "person / organization / resource / thing / arbitrary state entities",
+            "entities": "person / organization / resource / thing / dimension / arbitrary state entities",
             "relations": "state-to-state relations with their own dimensions",
+            "dimensions": "dimension definitions are state entities with stable keys and mutable labels/lifecycle",
             "people_is_projection": True,
+            "dimension_retirement_preserves_history": True,
         }
         provenance = dict(state.get("provenance") or {})
         provenance.update(
@@ -76,6 +83,7 @@ class CallyOneService(CalendarRobotService):
                 "single_qcds_architecture": True,
                 "qcds_core_modified": False,
                 "everything_is_state": True,
+                "dimensions_are_state": True,
                 "license": "Cally.One Tribute License 1.0",
             }
         )
@@ -86,27 +94,60 @@ class CallyOneService(CalendarRobotService):
         """Person gets richer UX, but remains an ordinary state entity."""
         person = self.space.upsert_person(payload)
         self.graph.ensure_person(person.person_id, person.name, person.dimensions)
-        organization_id = str(payload.get("organization_id") or "").strip()
-        if organization_id:
+
+        # Membership is relation-state. Supplying organization_id, including an
+        # empty value, means the caller intentionally replaces that relation.
+        if "organization_id" in payload:
             self.graph.remove_relations(subject_id=person.person_id, predicate="member_of")
-            self.graph.upsert_relation(
-                {
-                    "subject_id": person.person_id,
-                    "predicate": "member_of",
-                    "object_id": organization_id,
-                    "dimensions": {
-                        "role": str(payload.get("role") or "").strip(),
-                        "team": str(payload.get("team") or "").strip(),
-                    },
-                }
-            )
+            organization_id = str(payload.get("organization_id") or "").strip()
+            if organization_id:
+                self.graph.upsert_relation(
+                    {
+                        "relation_id": f"{person.person_id}|member_of|{organization_id}",
+                        "subject_id": person.person_id,
+                        "predicate": "member_of",
+                        "object_id": organization_id,
+                        "dimensions": {
+                            "role": str(payload.get("role") or "").strip(),
+                            "team": str(payload.get("team") or "").strip(),
+                        },
+                    }
+                )
+        return person
+
+    def archive_person(self, person_id: str, *, archived: bool = True):
+        """Retire a person from active use without destroying historical state."""
+        current = self.space.people.get(person_id)
+        if current is None:
+            raise CalendarRobotError(f"unknown person: {person_id}")
+        dimensions = dict(current.dimensions)
+        dimensions["archived"] = archived
+        dimensions["status"] = "archived" if archived else "active"
+        person = self.space.upsert_person(
+            {
+                "person_id": current.person_id,
+                "name": current.name,
+                "dimensions": dimensions,
+            }
+        )
+        self.graph.ensure_person(person.person_id, person.name, person.dimensions)
         return person
 
     def upsert_entity(self, payload: Mapping[str, Any]) -> StateEntity:
-        return self.graph.upsert_entity(payload)
+        entity = self.graph.upsert_entity(payload)
+        self.dimensions.ensure()
+        return entity
 
     def upsert_relation(self, payload: Mapping[str, Any]) -> StateRelation:
-        return self.graph.upsert_relation(payload)
+        relation = self.graph.upsert_relation(payload)
+        self.dimensions.ensure()
+        return relation
+
+    def upsert_dimension(self, payload: Mapping[str, Any]) -> StateEntity:
+        return self.dimensions.upsert(payload)
+
+    def retire_dimension(self, key: str, *, retired: bool = True) -> StateEntity:
+        return self.dimensions.retire(key, retired=retired)
 
     def upsert_event(self, payload: Mapping[str, Any]) -> CalendarEvent:
         event = self.space.upsert_event(payload)
@@ -114,6 +155,7 @@ class CallyOneService(CalendarRobotService):
         for person_id in event.people:
             self.graph.upsert_relation(
                 {
+                    "relation_id": f"{event.event_id}|participant|{person_id}",
                     "subject_id": event.event_id,
                     "predicate": "participant",
                     "object_id": person_id,
@@ -124,20 +166,28 @@ class CallyOneService(CalendarRobotService):
         if links is not None:
             if not isinstance(links, list):
                 raise CalendarRobotError("event links must be an array")
-            replace_predicates = {str(item.get("predicate") or "related_to") for item in links if isinstance(item, Mapping)}
+            replace_predicates = {
+                str(item.get("predicate") or "related_to")
+                for item in links
+                if isinstance(item, Mapping)
+            }
             for predicate in replace_predicates:
                 self.graph.remove_relations(subject_id=event.event_id, predicate=predicate)
             for item in links:
                 if not isinstance(item, Mapping):
                     raise CalendarRobotError("event link must be an object")
+                object_id = str(item.get("object_id") or "")
+                predicate = str(item.get("predicate") or "related_to")
                 self.graph.upsert_relation(
                     {
+                        "relation_id": str(item.get("relation_id") or f"{event.event_id}|{predicate}|{object_id}"),
                         "subject_id": event.event_id,
-                        "predicate": str(item.get("predicate") or "related_to"),
-                        "object_id": str(item.get("object_id") or ""),
+                        "predicate": predicate,
+                        "object_id": object_id,
                         "dimensions": dict(item.get("dimensions") or {}),
                     }
                 )
+        self.dimensions.ensure()
         return event
 
     def delete_event(self, event_id: str) -> None:
@@ -174,6 +224,7 @@ class CallyOneService(CalendarRobotService):
                 raise CalendarRobotError("relation state must be an object")
             self.upsert_relation(relation)
         self._ensure_legacy_states()
+        self.dimensions.ensure()
         return self.state()
 
     def _linked_resource_reasons(self, event_id: str, candidate: CalendarEvent) -> list[str]:
@@ -261,21 +312,31 @@ class CallyOneService(CalendarRobotService):
                 "location": candidate.location,
                 "dimensions": dict(candidate.dimensions),
                 "coherence": coherence,
+                "fit": "clear" if coherence == "coherent" else "blocked",
                 "reasons": reasons,
             }
+            # Each candidate gets its own coherence state.  This prevents
+            # semantically different placements from collapsing to duplicate
+            # oracle identities merely because several happen to be coherent.
+            candidate_coherence = f"{candidate_id}:{coherence}"
             rules.append(
                 SemanticRule(
                     rule_id=f"cally:{event_id}:{candidate_id}:coherence",
                     antecedent=SemanticAtom(event_id, "placement", candidate_id),
-                    consequent=SemanticAtom(event_id, "coherence", coherence),
+                    consequent=SemanticAtom(event_id, "candidate_coherence", candidate_coherence),
                     kind="implies",
                     relation_class="temporal",
                     confidence=1.0,
-                    source_id=f"calendar-space:{event_id}",
+                    source_id=f"calendar-space:{event_id}:{candidate_id}",
                     original_text=f"Placement {candidate_id} is {coherence} under represented Calendar Space state constraints.",
                 )
             )
 
+        coherent_states = tuple(
+            f"{candidate_id}:coherent"
+            for candidate_id, world in worlds.items()
+            if world["coherence"] == "coherent"
+        )
         frame = SemanticProblemFrame(
             mission_id=f"cally-resolve-{event_id}",
             raw_text=f"Which represented placement for {current.title} remains coherent in Calendar Space?",
@@ -288,26 +349,30 @@ class CallyOneService(CalendarRobotService):
                     original_text="Which represented event placement remains coherent?",
                 ),
                 ProblemQuery(
-                    query_id="coherence",
+                    query_id="candidate_coherence",
                     subject=event_id,
-                    predicate="coherence",
-                    candidate_values=("coherent", "blocked"),
-                    original_text="Does the placement remain coherent under represented state constraints?",
+                    predicate="candidate_coherence",
+                    candidate_values=tuple(
+                        f"{candidate_id}:{world['coherence']}"
+                        for candidate_id, world in worlds.items()
+                    ),
+                    original_text="What coherence state belongs to each represented placement?",
                 ),
             ),
-            claims=(
+            claims=tuple(
                 SemanticClaim(
                     subject=event_id,
-                    predicate="coherence",
-                    value="coherent",
-                    source_id=f"calendar-space:{event_id}:required-coherence",
+                    predicate="candidate_coherence",
+                    value=value,
+                    source_id=f"calendar-space:{event_id}:required:{value}",
                     confidence=1.0,
                     polarity=True,
-                    original_text="The selected placement must remain coherent under represented Calendar Space constraints.",
-                ),
+                    original_text=f"Represented coherent candidate state: {value}.",
+                )
+                for value in coherent_states
             ),
             rules=tuple(rules),
-            analyzer_id="cally_one_calendar_space_v2",
+            analyzer_id="cally_one_calendar_space_v3",
             provenance={
                 "calendar_space": True,
                 "everything_is_state": True,
@@ -339,11 +404,18 @@ class CallyOneService(CalendarRobotService):
         return {
             "event_id": event_id,
             "mode": "qcds-resolve",
+            "meaning": "Resolve represented alternative event states toward Calendar Space coherence using the shared QCDS/Syntract core.",
             "logical_width": execution.logical_width,
             "raw_state_count": 2 ** execution.logical_width,
             "candidate_worlds": worlds,
-            "baseline": [{"value": str(item.value), "probability": float(item.probability)} for item in baseline],
-            "stabilized": [{"value": str(item.value), "probability": float(item.probability)} for item in stabilized],
+            "baseline": [
+                {"value": str(item.value), "probability": float(item.probability)}
+                for item in baseline
+            ],
+            "stabilized": [
+                {"value": str(item.value), "probability": float(item.probability)}
+                for item in stabilized
+            ],
             "leaders": list(leaders),
             "syntract_id": execution.syntract.syntract_id,
             "truth_distribution_bound": execution.syntract.bound_distribution is execution.truth_distribution,
@@ -372,6 +444,13 @@ def _browser_service() -> CallyOneService:
     return _BROWSER_SERVICE
 
 
+def _body(payload: Mapping[str, Any], name: str) -> Mapping[str, Any]:
+    body = payload.get("payload") or {}
+    if not isinstance(body, Mapping):
+        raise CalendarRobotError(f"{name} payload must be an object")
+    return body
+
+
 def run_cally_one(payload: Mapping[str, Any]) -> dict[str, Any]:
     service = _browser_service()
     action = str(payload.get("action") or "state")
@@ -385,30 +464,37 @@ def run_cally_one(payload: Mapping[str, Any]) -> dict[str, Any]:
             raise CalendarRobotError("hydrate state must be an object")
         service.hydrate(incoming)
     elif action == "person":
-        body = payload.get("payload") or {}
-        if not isinstance(body, Mapping):
-            raise CalendarRobotError("person payload must be an object")
-        result = {"person": service.upsert_person(body).as_dict()}
+        result = {"person": service.upsert_person(_body(payload, "person")).as_dict()}
+    elif action == "person_archive":
+        body = _body(payload, "person archive")
+        result = {
+            "person": service.archive_person(
+                str(body.get("person_id") or ""),
+                archived=bool(body.get("archived", True)),
+            ).as_dict()
+        }
     elif action == "entity":
-        body = payload.get("payload") or {}
-        if not isinstance(body, Mapping):
-            raise CalendarRobotError("entity payload must be an object")
-        result = {"entity": service.upsert_entity(body).as_dict()}
+        result = {"entity": service.upsert_entity(_body(payload, "entity")).as_dict()}
     elif action == "relation":
-        body = payload.get("payload") or {}
-        if not isinstance(body, Mapping):
-            raise CalendarRobotError("relation payload must be an object")
-        result = {"relation": service.upsert_relation(body).as_dict()}
+        result = {"relation": service.upsert_relation(_body(payload, "relation")).as_dict()}
+    elif action == "dimension":
+        result = {"dimension": service.upsert_dimension(_body(payload, "dimension")).as_dict()}
+    elif action == "dimension_retire":
+        body = _body(payload, "dimension retire")
+        result = {
+            "dimension": service.retire_dimension(
+                str(body.get("key") or ""),
+                retired=bool(body.get("retired", True)),
+            ).as_dict()
+        }
     elif action == "event":
-        body = payload.get("payload") or {}
-        if not isinstance(body, Mapping):
-            raise CalendarRobotError("event payload must be an object")
-        event = service.upsert_event(body)
-        result = {"event": event.as_dict(), "conflicts": [item.as_dict() for item in service.space.conflicts()]}
+        event = service.upsert_event(_body(payload, "event"))
+        result = {
+            "event": event.as_dict(),
+            "conflicts": [item.as_dict() for item in service.space.conflicts()],
+        }
     elif action == "move":
-        body = payload.get("payload") or {}
-        if not isinstance(body, Mapping):
-            raise CalendarRobotError("move payload must be an object")
+        body = _body(payload, "move")
         people = body.get("people")
         if people is not None and not isinstance(people, (list, tuple)):
             raise CalendarRobotError("people must be an array")
@@ -418,18 +504,17 @@ def run_cally_one(payload: Mapping[str, Any]) -> dict[str, Any]:
             end=None if body.get("end") is None else str(body.get("end")),
             people=None if people is None else tuple(str(item) for item in people),
         )
-        result = {"event": event.as_dict(), "conflicts": [item.as_dict() for item in service.space.conflicts()]}
+        result = {
+            "event": event.as_dict(),
+            "conflicts": [item.as_dict() for item in service.space.conflicts()],
+        }
     elif action == "delete":
-        body = payload.get("payload") or {}
-        if not isinstance(body, Mapping):
-            raise CalendarRobotError("delete payload must be an object")
+        body = _body(payload, "delete")
         event_id = str(body.get("event_id") or "")
         service.delete_event(event_id)
         result = {"deleted": event_id}
     elif action == "infer":
-        body = payload.get("payload") or {}
-        if not isinstance(body, Mapping):
-            raise CalendarRobotError("infer payload must be an object")
+        body = _body(payload, "infer")
         candidates = body.get("candidates")
         if candidates is not None and not isinstance(candidates, list):
             raise CalendarRobotError("candidates must be an array")
