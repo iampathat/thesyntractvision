@@ -36,6 +36,10 @@ class CallyOneService(CalendarRobotService):
                 "technical_space": "Calendar Space",
                 "logical_robot": True,
                 "robot_package": "qcds_fabric.robots.cally_one",
+                "system_boundary": "SyntractSystem",
+                "shared_qcds_core": True,
+                "single_qcds_architecture": True,
+                "qcds_core_modified": False,
                 "license": "Cally.One Tribute License 1.0",
             }
         )
@@ -95,6 +99,7 @@ class CallyOneService(CalendarRobotService):
                 "product": "Cally.One",
                 "logical_robot": True,
                 "system_boundary": "SyntractSystem",
+                "shared_qcds_core": True,
                 "calendar_space": True,
                 "events_are_oracle_constructions": True,
                 "single_qcds_architecture": True,
