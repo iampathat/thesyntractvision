@@ -9,12 +9,14 @@ function clone(value) {
 
 function normalizeCallyState(value) {
   const state = value && typeof value === 'object' ? clone(value) : {};
-  for (const key of ['people', 'events', 'entities', 'relations', 'dimensions']) {
+  for (const key of ['people', 'events', 'conflicts', 'entities', 'relations', 'dimension_states', 'state_conflicts', 'planning_states']) {
     if (!Array.isArray(state[key])) state[key] = [];
   }
-  if (!Array.isArray(state.planning_states)) state.planning_states = [];
+  if (!state.dimensions || typeof state.dimensions !== 'object' || Array.isArray(state.dimensions)) state.dimensions = {};
   if (!state.state_model || typeof state.state_model !== 'object') state.state_model = {};
   if (!state.provenance || typeof state.provenance !== 'object') state.provenance = {};
+  state.product = state.product || 'Cally.One';
+  state.space_id = state.space_id || 'cally-one';
   return state;
 }
 
@@ -28,6 +30,10 @@ function upsert(items, key, value) {
   if (index >= 0) items[index] = {...items[index], ...value};
   else items.push(value);
   return index >= 0 ? items[index] : value;
+}
+
+function relationId(subjectId, predicate, objectId) {
+  return `${subjectId}|${predicate}|${objectId}`;
 }
 
 function resultFor(action, result = null) {
@@ -74,6 +80,17 @@ function localCallyRun(payload) {
         archived: Boolean(body.archived),
       },
     });
+    callyState.relations = callyState.relations.filter(item => !(item.subject_id === entityId && item.predicate === 'member_of'));
+    if (body.organization_id) {
+      const objectId = String(body.organization_id);
+      callyState.relations.push({
+        relation_id: relationId(entityId, 'member_of', objectId),
+        subject_id: entityId,
+        predicate: 'member_of',
+        object_id: objectId,
+        dimensions: {...(body.role ? {role: body.role} : {}), ...(body.team ? {team: body.team} : {})},
+      });
+    }
     return resultFor(action, {person: clone(person)});
   }
 
@@ -83,8 +100,9 @@ function localCallyRun(payload) {
     const person = callyState.people.find(item => item.person_id === personId || item.entity_id === personId);
     if (!person) throw new Error('person not found');
     person.archived = archived;
+    person.dimensions = {...(person.dimensions || {}), archived};
     const entity = callyState.entities.find(item => item.entity_id === (person.entity_id || personId));
-    if (entity) entity.dimensions = {...(entity.dimensions || {}), archived};
+    if (entity) entity.dimensions = {...(entity.dimensions || {}), status: archived ? 'archived' : 'active', archived};
     return resultFor(action, {person: clone(person)});
   }
 
@@ -101,13 +119,16 @@ function localCallyRun(payload) {
   }
 
   if (action === 'relation') {
-    const relationId = String(body.relation_id || `${body.subject_id || ''}|${body.predicate || ''}|${body.object_id || ''}` || idFor('relation'));
+    const subjectId = String(body.subject_id || '');
+    const predicate = String(body.predicate || '');
+    const objectId = String(body.object_id || '');
+    const id = String(body.relation_id || relationId(subjectId, predicate, objectId) || idFor('relation'));
     const relation = upsert(callyState.relations, 'relation_id', {
       ...body,
-      relation_id: relationId,
-      subject_id: String(body.subject_id || ''),
-      predicate: String(body.predicate || ''),
-      object_id: String(body.object_id || ''),
+      relation_id: id,
+      subject_id: subjectId,
+      predicate,
+      object_id: objectId,
       dimensions: {...(body.dimensions || {})},
     });
     return resultFor(action, {relation: clone(relation)});
@@ -116,15 +137,19 @@ function localCallyRun(payload) {
   if (action === 'dimension') {
     const key = String(body.key || body.dimension_key || '');
     if (!key) throw new Error('dimension key required');
-    const dimension = upsert(callyState.dimensions, 'key', {...body, key, retired: Boolean(body.retired)});
+    const dimension = upsert(callyState.dimension_states, 'key', {
+      ...body,
+      key,
+      status: body.retired ? 'retired' : String(body.status || 'active'),
+    });
     return resultFor(action, {dimension: clone(dimension)});
   }
 
   if (action === 'dimension_retire') {
     const key = String(body.key || '');
-    const dimension = callyState.dimensions.find(item => item.key === key);
+    const dimension = callyState.dimension_states.find(item => item.key === key);
     if (!dimension) throw new Error('dimension not found');
-    dimension.retired = body.retired !== false;
+    dimension.status = body.retired === false ? 'active' : 'retired';
     return resultFor(action, {dimension: clone(dimension)});
   }
 
@@ -138,6 +163,16 @@ function localCallyRun(payload) {
       people: Array.isArray(body.people) ? body.people.map(String) : (Array.isArray(existing.people) ? existing.people : []),
       constraints: {...(existing.constraints || {}), ...(body.constraints || {})},
     });
+    callyState.relations = callyState.relations.filter(item => !(item.subject_id === eventId && item.predicate === 'participant'));
+    for (const personId of event.people || []) {
+      callyState.relations.push({
+        relation_id: relationId(eventId, 'participant', String(personId)),
+        subject_id: eventId,
+        predicate: 'participant',
+        object_id: String(personId),
+        dimensions: {state: 'active'},
+      });
+    }
     return resultFor(action, {event: clone(event), conflicts: [], planning_states: []});
   }
 
