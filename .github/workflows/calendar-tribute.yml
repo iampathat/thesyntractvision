@@ -10,10 +10,8 @@ on:
       - "src/qcds_fabric/calendar_robot_live.py"
       - "src/qcds_fabric/cally_one.py"
       - "src/qcds_fabric/cally_one_ui.py"
-      - "src/qcds_fabric/cal_cloud.py"
-      - "src/qcds_fabric/cal_cloud_ui.py"
       - "tests/test_calendar_robot.py"
-      - "tests/test_cal_cloud_brand.py"
+      - "tests/test_cally_one_brand.py"
       - "LICENSE_CALENDAR_TRIBUTE.md"
       - "CALENDAR_ROBOT.md"
       - "pyproject.toml"
@@ -33,4 +31,4 @@ jobs:
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e '.[test]'
       - name: Run Cally.One calendar tests
-        run: pytest -q tests/test_calendar_robot.py tests/test_cal_cloud_brand.py
+        run: pytest -q tests/test_calendar_robot.py tests/test_cally_one_brand.py
