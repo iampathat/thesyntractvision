@@ -64,3 +64,13 @@ def test_orange_transport_can_be_completed_by_human_state_editing() -> None:
     assert 'Transportplanen är markerad som klar' in html
     assert 'completePlanningForEvent' in html
     assert "['uses','reserves'].includes(relation.predicate)" in html
+
+
+def test_large_resource_sets_can_filter_by_state_dimensions() -> None:
+    html = cally_one_html(static_mode=True)
+    assert 'callyLinkedDimensionFilters' in html
+    assert 'Alla typer' in html
+    assert 'Alla platser' in html
+    assert "String(dimensions.type || '') === wantedType" in html
+    assert "String(dimensions.location || '') === wantedLocation" in html
+    assert 'Visar ${Math.min(matched, 30)} av ${matched} träffar' in html
