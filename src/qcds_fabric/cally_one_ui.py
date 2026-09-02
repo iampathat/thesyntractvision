@@ -10,6 +10,7 @@ _STATIC_BRIDGE = r'''<script>
 (() => {
   const nativeFetch = window.fetch.bind(window);
   const worker = new Worker('../session_core_worker.js');
+  const packageUrl = new URL('../qcds_fabric.zip', window.location.href).href;
   const pending = new Map();
   let nextId = 1;
   let readyResolve, readyReject;
@@ -29,7 +30,7 @@ _STATIC_BRIDGE = r'''<script>
     else item.resolve(msg.result);
   };
   worker.onerror = (event) => readyReject(new Error(event.message || 'Cally.One QCDS worker failed'));
-  worker.postMessage({type: 'init', packageUrl: '../qcds_fabric.zip'});
+  worker.postMessage({type: 'init', packageUrl});
 
   async function callCore(payload) {
     await ready;
