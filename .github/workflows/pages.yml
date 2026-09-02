@@ -1,4 +1,4 @@
-name: Living Logical Robot Pages
+name: Living Logical Robot + Cally.One Pages
 
 on:
   push:
@@ -9,6 +9,9 @@ on:
       - "web/session_core_worker.js"
       - "web/assets/**"
       - ".github/workflows/pages.yml"
+  workflow_run:
+    workflows: ["Cally.One Tribute tests"]
+    types: [completed]
   workflow_dispatch:
 
 permissions:
@@ -25,16 +28,29 @@ env:
 
 jobs:
   build:
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'tribute')
     runs-on: ubuntu-latest
     outputs:
       pages_ready: ${{ steps.configure.outcome == 'success' }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout canonical public site
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Checkout Cally.One product branch
+        uses: actions/checkout@v4
+        with:
+          ref: tribute
+          path: _cally_src
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install package
+
+      - name: Install canonical public package
         run: python -m pip install -e .
+
       - name: Validate real Pick a World QCDS spaces
         run: |
           python - <<'PY'
@@ -51,6 +67,7 @@ jobs:
           assert robotics["binding_status"] == "unresolved_tie"
           print({case_id: {"leaders": result["leading_candidates"], "binding": result["binding_status"], "space": result["candidate_binary_space"]} for case_id, result in results.items()})
           PY
+
       - name: Validate Robotics Playground through SyntractSystem
         run: |
           python - <<'PY'
@@ -81,9 +98,10 @@ jobs:
           assert wall["shortest_path_count"] == 0
           print({"core": clear["execution"], "space": clear["candidate_binary_space"], "clear": clear["shortest_steps"], "one_oracle": changed["shortest_steps"], "wall_reachable": wall["reachable"]})
           PY
-      - name: Export the stable public QCDS surface
+
+      - name: Export canonical public QCDS surface
         run: |
-          mkdir -p _site/legal/cases _site/assets
+          mkdir -p _site/legal/cases _site/assets _site/cally
           python -m qcds_fabric.living_robot_public --export _site/index.html
           cp web/session_core_worker.js _site/session_core_worker.js
           cp robots/legal/sweden_housing/cases/*.json _site/legal/cases/
@@ -139,7 +157,51 @@ jobs:
                   html = html.replace('</body>', js + '\n</body>', 1)
           page.write_text(html, encoding='utf-8')
           PY
+
+      - name: Build isolated Cally.One Pages surface from tribute
+        run: |
+          python - <<'PY'
+          import shutil
+          import sys
+          from pathlib import Path
+          from zipfile import ZIP_DEFLATED, ZipFile
+
+          cally_root = Path('_cally_src').resolve()
+          sys.path.insert(0, str(cally_root / 'src'))
+          from qcds_fabric.robots.cally_one.enhanced_ui import cally_one_html
+
+          out = Path('_site/cally')
+          out.mkdir(parents=True, exist_ok=True)
+
+          html = cally_one_html(static_mode=True)
+          html = html.replace("new Worker('../session_core_worker.js')", "new Worker('./session_core_worker.js')")
+          html = html.replace("new URL('../qcds_fabric.zip'", "new URL('./qcds_fabric.zip'")
+          (out / 'index.html').write_text(html, encoding='utf-8')
+
+          shutil.copy2(cally_root / 'web' / 'session_core_worker.js', out / 'session_core_worker.js')
+          source = cally_root / 'src' / 'qcds_fabric'
+          with ZipFile(out / 'qcds_fabric.zip', 'w', compression=ZIP_DEFLATED) as archive:
+              for path in sorted(source.rglob('*')):
+                  if path.is_file() and path.suffix in {'.py', '.json'}:
+                      archive.write(path, path.relative_to(cally_root / 'src'))
+          PY
           touch _site/.nojekyll
+
+      - name: Validate isolated Cally.One surface
+        run: |
+          test -s _site/cally/index.html
+          test -s _site/cally/session_core_worker.js
+          test -s _site/cally/qcds_fabric.zip
+          grep -F 'Cally.One' _site/cally/index.html
+          grep -F "new Worker('./session_core_worker.js')" _site/cally/index.html
+          grep -F "new URL('./qcds_fabric.zip'" _site/cally/index.html
+          grep -F 'data-cally-enhancements' _site/cally/index.html
+          grep -F 'eventMove' _site/cally/index.html
+          grep -F 'resizeHandle' _site/cally/index.html
+          grep -F 'eventEdit' _site/cally/index.html
+          grep -F 'qcds_fabric.robots.cally_one.robot' _site/cally/session_core_worker.js
+          grep -F "msg.type === 'cally_one_run'" _site/cally/session_core_worker.js
+
       - name: Validate Syntract artwork public identity
         run: |
           test -s _site/assets/syntract_art.svg
@@ -147,6 +209,7 @@ jobs:
           grep -F 'assets/syntract_brand105.css' _site/index.html
           grep -F 'assets/syntract_brand105.js' _site/index.html
           grep -F 'syntract_art.svg' _site/assets/syntract_brand105.js
+
       - name: Validate public presentation assets
         run: |
           test -s _site/assets/syntract_super120.css
@@ -159,26 +222,30 @@ jobs:
           grep -F 'assets/syntract_public_shell.css?v=' _site/index.html
           grep -F 'assets/syntract_public_shell.js?v=' _site/index.html
           grep -F 'qcdsCoreReimplemented:false' _site/assets/syntract_public_shell.js
+
       - name: Validate exact public release artifact
         run: python -m qcds_fabric.public_release_guard --site _site
+
       - name: Validate Superbuild architecture boundary
         run: python -m qcds_fabric.superbuild_release_guard --site _site
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
           name: ${{ env.PAGES_ARTIFACT_NAME }}
           path: _site
+
       - name: Configure Pages
         id: configure
         continue-on-error: true
         uses: actions/configure-pages@v5
-      - name: Explain first-time Pages enablement
+
+      - name: Explain Pages enablement
         if: steps.configure.outcome != 'success'
         run: |
           echo '### GitHub Pages is not enabled yet' >> "$GITHUB_STEP_SUMMARY"
           echo '' >> "$GITHUB_STEP_SUMMARY"
-          echo 'The Living Logical Robot site was built and uploaded successfully.' >> "$GITHUB_STEP_SUMMARY"
-          echo 'Enable **Settings → Pages → Build and deployment → Source: GitHub Actions** once, then rerun this workflow.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'The combined Living Logical Robot + Cally.One site was built and uploaded successfully.' >> "$GITHUB_STEP_SUMMARY"
 
   deploy:
     if: needs.build.outputs.pages_ready == 'true'
