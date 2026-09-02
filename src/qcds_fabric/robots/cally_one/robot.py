@@ -10,6 +10,7 @@ License: Cally.One Tribute License 1.0 — see LICENSE.md in this package.
 from __future__ import annotations
 
 import json
+from datetime import timedelta
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -202,6 +203,31 @@ class CallyOneService(CalendarRobotService):
                 if start < end:
                     reasons.append(f"resource:{resource.entity_id}:overlap:{other.event_id}")
         return reasons
+
+    def placement_candidates(self, event_id: str) -> list[dict[str, Any]]:
+        """Represent nearby placement states with slug-safe semantic identities."""
+        event = self.space.events.get(event_id)
+        if event is None:
+            raise CalendarRobotError(f"unknown event: {event_id}")
+        start = _cmp_dt(event.start)
+        duration = event.duration
+        out: list[dict[str, Any]] = []
+        for offset in (-120, -60, 0, 60, 120):
+            candidate_start = start + timedelta(minutes=offset)
+            if offset < 0:
+                candidate_id = f"shift-minus-{abs(offset)}"
+            elif offset > 0:
+                candidate_id = f"shift-plus-{offset}"
+            else:
+                candidate_id = "shift-zero"
+            out.append(
+                {
+                    "candidate_id": candidate_id,
+                    "start": candidate_start.isoformat(timespec="minutes"),
+                    "end": (candidate_start + duration).isoformat(timespec="minutes"),
+                }
+            )
+        return out
 
     def _build_resolve_frame(
         self,
