@@ -182,7 +182,6 @@ def test_person_is_rich_state_and_can_be_edited_or_archived_without_history_loss
 
 def test_cally_ui_exposes_state_directory_dimension_manager_people_manager_and_resolve_meaning() -> None:
     html = cally_one_html(static_mode=True)
-    assert "QCDS Resolve" in html
     assert "Resolve with QCDS" in html
     assert "CALENDAR SPACE" in html
     assert "PERSON STATE" in html
@@ -196,5 +195,15 @@ def test_cally_ui_exposes_state_directory_dimension_manager_people_manager_and_r
     assert "'/api/dimension/retire'" in html
     assert "'/api/person/archive'" in html
     assert "dimensionKeys.__callyStateDimensions" in html
-    assert "dimension_retirement_preserves_history" in CallyOneService.__dict__.get("state").__code__.co_consts or True
     assert "Everything-is-state" in html or "Everything represented" in html or "everything_is_state" in html
+
+
+def test_mutation_observers_do_not_rewrite_resolve_label_unconditionally() -> None:
+    html = cally_one_html(static_mode=True)
+    assert "if (button.textContent !== 'Resolve with QCDS') button.textContent = 'Resolve with QCDS';" in html
+    assert "if (infer.textContent !== 'Resolve with QCDS') infer.textContent = 'Resolve with QCDS';" in html
+    assert "button.textContent = 'Resolve with QCDS';\n" not in html.replace(
+        "if (button.textContent !== 'Resolve with QCDS') button.textContent = 'Resolve with QCDS';\n",
+        "",
+    )
+    assert "infer.textContent = 'QCDS Resolve';" not in html
