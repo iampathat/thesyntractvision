@@ -132,12 +132,14 @@
     const title = qs('#fTitle', modal);
     if (title) {
       title.classList.add('callyEventTitleInput');
+      title.closest('.field')?.classList.add('callyEventTitleField');
       titleAutosaveInput(title, eventId);
     }
 
     const start = qs('#fStart', modal)?.closest('.field') || qs('#fStart', modal)?.parentElement;
     const end = qs('#fEnd', modal)?.closest('.field') || qs('#fEnd', modal)?.parentElement;
     const location = qs('#fLocation', modal)?.closest('.field') || qs('#fLocation', modal)?.parentElement;
+    const language = qs('#fLanguage', modal)?.closest('.field') || qs('#fLanguage', modal)?.parentElement;
     const people = qs('#fPeople', modal)?.closest('.field') || qs('#fPeople', modal)?.parentElement;
     const linked = qs('#callyLinkedStates', modal);
     const dimensions = qs('#fDimensions', modal)?.closest('.field') || qs('#fDimensions', modal)?.parentElement;
@@ -147,7 +149,9 @@
     sectionFor(location, 'Var');
     sectionFor(people, 'Personer');
     sectionFor(linked, 'Kopplade tillstånd');
-    sectionFor(dimensions, 'Mer');
+    const more = language && !language.closest('.callyEventSection') ? sectionFor(language, 'Mer') : null;
+    if (more && dimensions && !dimensions.closest('.callyEventSection')) more.appendChild(dimensions);
+    else sectionFor(dimensions, 'Mer');
 
     const save = qs('#saveEvent', modal);
     const infer = qs('#inferBtn', modal);
