@@ -17,7 +17,7 @@ def test_event_movement_requires_explicit_four_arrow_handle() -> None:
     assert 'className = `eventMove' in html
     assert 'Drag to move' in html
     assert "if (ev.target.closest?.('.eventMove')) return" in html
-    assert 'Event cards are inert for movement unless the explicit four-arrow handle is used.' in html
+    assert 'const canMove = el.classList.contains(\'event\') || el.classList.contains(\'monthEvent\') || el.classList.contains(\'laneCard\')' in html
 
 
 def test_event_surface_remains_available_for_normal_touch_scrolling() -> None:
@@ -47,7 +47,7 @@ def test_timeline_focuses_near_now_or_first_event_once_per_view() -> None:
     assert 'function focusTimeline(stage)' in html
     assert 'stage.dataset.callyTimelineFocus' in html
     assert "stage.querySelector('.nowline')" in html
-    assert "stage.querySelectorAll('.event[data-event-id]')" in html
+    assert "qsa('.event[data-event-id]', stage)" in html
 
 
 def test_perspective_and_top_navigation_wrap_instead_of_page_scroll() -> None:
