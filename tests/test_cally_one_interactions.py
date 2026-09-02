@@ -20,6 +20,13 @@ def test_event_movement_requires_explicit_four_arrow_handle() -> None:
     assert 'Event cards are inert for movement unless the explicit four-arrow handle is used.' in html
 
 
+def test_event_surface_remains_available_for_normal_touch_scrolling() -> None:
+    html = cally_one_html()
+    assert 'touch-action:auto!important' in html
+    assert 'touch-action:none!important' in html
+    assert 'cursor:default!important' in html
+
+
 def test_day_week_events_have_resize_and_edit_controls() -> None:
     html = cally_one_html()
     assert 'resizeHandle' in html
@@ -33,6 +40,14 @@ def test_movement_semantics_follow_calendar_projection() -> None:
     html = cally_one_html()
     assert "el.classList.contains('event') || el.classList.contains('monthEvent') || el.classList.contains('laneCard')" in html
     assert "if (el.classList.contains('event')) el.appendChild(makeResize" in html
+
+
+def test_timeline_focuses_near_now_or_first_event_once_per_view() -> None:
+    html = cally_one_html()
+    assert 'function focusTimeline(stage)' in html
+    assert 'stage.dataset.callyTimelineFocus' in html
+    assert "stage.querySelector('.nowline')" in html
+    assert "stage.querySelectorAll('.event[data-event-id]')" in html
 
 
 def test_perspective_and_top_navigation_wrap_instead_of_page_scroll() -> None:
