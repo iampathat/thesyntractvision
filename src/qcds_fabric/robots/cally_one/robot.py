@@ -33,6 +33,37 @@ class CallyOneService(CalendarRobotService):
         self.dimensions = DimensionStateRegistry(self.graph, self.space)
         self.dimensions.ensure()
 
+    @staticmethod
+    def _relation_time_dimensions(event: CalendarEvent, dimensions: Mapping[str, Any] | None = None) -> dict[str, Any]:
+        """Represent an event-linked relation in the time dimension too.
+
+        This is product-layer state formation only.  It does not perform
+        inference; the resulting states/constraints are later sent through the
+        shared SyntractSystem/QCDS core.
+        """
+        out = dict(dimensions or {})
+        out["time_start"] = event.start
+        out["time_end"] = event.end
+        out["time_state"] = f"{event.start}/{event.end}"
+        out["temporal_scope"] = "event"
+        return out
+
+    def _sync_event_relation_times(self, event_id: str) -> None:
+        event = self.space.events.get(event_id)
+        if event is None:
+            return
+        linked = [relation for relation in self.graph.relations.values() if relation.subject_id == event_id]
+        for relation in linked:
+            self.graph.upsert_relation(
+                {
+                    "relation_id": relation.relation_id,
+                    "subject_id": relation.subject_id,
+                    "predicate": relation.predicate,
+                    "object_id": relation.object_id,
+                    "dimensions": self._relation_time_dimensions(event, relation.dimensions),
+                }
+            )
+
     def _ensure_legacy_states(self) -> None:
         """Project older person/event storage into the unified state graph."""
         for person in self.space.people.values():
@@ -48,10 +79,11 @@ class CallyOneService(CalendarRobotService):
                             "subject_id": event.event_id,
                             "predicate": "participant",
                             "object_id": person_id,
-                            "dimensions": {"role": "participant"},
+                            "dimensions": self._relation_time_dimensions(event, {"role": "participant"}),
                         }
                     )
                     existing.add(key)
+            self._sync_event_relation_times(event.event_id)
 
     def state(self) -> dict[str, Any]:
         state = super().state()
@@ -65,10 +97,11 @@ class CallyOneService(CalendarRobotService):
             "everything_is_state": True,
             "events": "temporal state entities",
             "entities": "person / organization / resource / thing / dimension / arbitrary state entities",
-            "relations": "state-to-state relations with their own dimensions",
+            "relations": "state-to-state relations with their own dimensions, including event time state",
             "dimensions": "dimension definitions are state entities with stable keys and mutable labels/lifecycle",
             "people_is_projection": True,
             "dimension_retirement_preserves_history": True,
+            "linked_state_time_intersection": True,
         }
         provenance = dict(state.get("provenance") or {})
         provenance.update(
@@ -84,6 +117,7 @@ class CallyOneService(CalendarRobotService):
                 "qcds_core_modified": False,
                 "everything_is_state": True,
                 "dimensions_are_state": True,
+                "linked_states_are_temporal": True,
                 "license": "Cally.One Tribute License 1.0",
             }
         )
@@ -95,8 +129,6 @@ class CallyOneService(CalendarRobotService):
         person = self.space.upsert_person(payload)
         self.graph.ensure_person(person.person_id, person.name, person.dimensions)
 
-        # Membership is relation-state. Supplying organization_id, including an
-        # empty value, means the caller intentionally replaces that relation.
         if "organization_id" in payload:
             self.graph.remove_relations(subject_id=person.person_id, predicate="member_of")
             organization_id = str(payload.get("organization_id") or "").strip()
@@ -116,7 +148,6 @@ class CallyOneService(CalendarRobotService):
         return person
 
     def archive_person(self, person_id: str, *, archived: bool = True):
-        """Retire a person from active use without destroying historical state."""
         current = self.space.people.get(person_id)
         if current is None:
             raise CalendarRobotError(f"unknown person: {person_id}")
@@ -124,11 +155,7 @@ class CallyOneService(CalendarRobotService):
         dimensions["archived"] = archived
         dimensions["status"] = "archived" if archived else "active"
         person = self.space.upsert_person(
-            {
-                "person_id": current.person_id,
-                "name": current.name,
-                "dimensions": dimensions,
-            }
+            {"person_id": current.person_id, "name": current.name, "dimensions": dimensions}
         )
         self.graph.ensure_person(person.person_id, person.name, person.dimensions)
         return person
@@ -139,7 +166,12 @@ class CallyOneService(CalendarRobotService):
         return entity
 
     def upsert_relation(self, payload: Mapping[str, Any]) -> StateRelation:
-        relation = self.graph.upsert_relation(payload)
+        body = dict(payload)
+        subject_id = str(body.get("subject_id") or "")
+        event = self.space.events.get(subject_id)
+        if event is not None:
+            body["dimensions"] = self._relation_time_dimensions(event, body.get("dimensions") or {})
+        relation = self.graph.upsert_relation(body)
         self.dimensions.ensure()
         return relation
 
@@ -159,7 +191,7 @@ class CallyOneService(CalendarRobotService):
                     "subject_id": event.event_id,
                     "predicate": "participant",
                     "object_id": person_id,
-                    "dimensions": {"role": "participant"},
+                    "dimensions": self._relation_time_dimensions(event, {"role": "participant"}),
                 }
             )
         links = payload.get("links")
@@ -184,10 +216,35 @@ class CallyOneService(CalendarRobotService):
                         "subject_id": event.event_id,
                         "predicate": predicate,
                         "object_id": object_id,
-                        "dimensions": dict(item.get("dimensions") or {}),
+                        "dimensions": self._relation_time_dimensions(event, dict(item.get("dimensions") or {})),
                     }
                 )
+        self._sync_event_relation_times(event.event_id)
         self.dimensions.ensure()
+        return event
+
+    def move_event(
+        self,
+        event_id: str,
+        *,
+        start: str,
+        end: str | None = None,
+        people: Sequence[str] | None = None,
+    ) -> CalendarEvent:
+        event = self.space.move_event(event_id, start=start, end=end, people=people)
+        if people is not None:
+            self.graph.remove_relations(subject_id=event.event_id, predicate="participant")
+            for person_id in event.people:
+                self.graph.upsert_relation(
+                    {
+                        "relation_id": f"{event.event_id}|participant|{person_id}",
+                        "subject_id": event.event_id,
+                        "predicate": "participant",
+                        "object_id": person_id,
+                        "dimensions": self._relation_time_dimensions(event, {"role": "participant"}),
+                    }
+                )
+        self._sync_event_relation_times(event.event_id)
         return event
 
     def delete_event(self, event_id: str) -> None:
@@ -227,36 +284,59 @@ class CallyOneService(CalendarRobotService):
         self.dimensions.ensure()
         return self.state()
 
-    def _linked_resource_reasons(self, event_id: str, candidate: CalendarEvent) -> list[str]:
+    @staticmethod
+    def _events_overlap(left: CalendarEvent, right: CalendarEvent) -> bool:
+        return max(_cmp_dt(left.start), _cmp_dt(right.start)) < min(_cmp_dt(left.end), _cmp_dt(right.end))
+
+    def _candidate_state_reasons(self, event_id: str, candidate: CalendarEvent) -> list[str]:
+        """Find state/time intersections before forming QCDS oracle rules.
+
+        No resource type is special here.  A collision is represented whenever
+        the candidate and another event point at the same exclusive state while
+        their time states overlap.  Person participation uses the same rule.
+        """
         reasons: list[str] = []
-        resource_links = [
+
+        not_before = candidate.constraints.get("not_before")
+        if not_before and _cmp_dt(candidate.start) < _cmp_dt(str(not_before)):
+            reasons.append("constraint:not_before")
+        not_after = candidate.constraints.get("not_after")
+        if not_after and _cmp_dt(candidate.end) > _cmp_dt(str(not_after)):
+            reasons.append("constraint:not_after")
+
+        for person_id in candidate.people:
+            for other in self.space.events.values():
+                if other.event_id == event_id or person_id not in other.people:
+                    continue
+                if self._events_overlap(candidate, other):
+                    reasons.append(f"state:{person_id}:time_overlap:{other.event_id}")
+
+        candidate_links = [
             relation
             for relation in self.graph.relations.values()
-            if relation.subject_id == event_id and relation.predicate in {"uses", "reserves"}
+            if relation.subject_id == event_id and not relation.predicate.startswith("not_")
         ]
-        for link in resource_links:
-            resource = self.graph.entities.get(link.object_id)
-            if resource is None or resource.kind != "resource":
+        for link in candidate_links:
+            entity = self.graph.entities.get(link.object_id)
+            if entity is None:
                 continue
-            exclusive = resource.dimensions.get("exclusive", True)
-            if exclusive is False:
+            exclusive = bool(entity.dimensions.get("exclusive", entity.kind == "person"))
+            if not exclusive:
                 continue
             for other_link in self.graph.relations.values():
-                if other_link.object_id != resource.entity_id or other_link.subject_id == event_id:
+                if other_link.subject_id == event_id or other_link.object_id != link.object_id:
                     continue
-                if other_link.predicate not in {"uses", "reserves"}:
+                if other_link.predicate.startswith("not_"):
                     continue
                 other = self.space.events.get(other_link.subject_id)
                 if other is None:
                     continue
-                start = max(_cmp_dt(candidate.start), _cmp_dt(other.start))
-                end = min(_cmp_dt(candidate.end), _cmp_dt(other.end))
-                if start < end:
-                    reasons.append(f"resource:{resource.entity_id}:overlap:{other.event_id}")
-        return reasons
+                if self._events_overlap(candidate, other):
+                    reasons.append(f"state:{link.object_id}:time_overlap:{other.event_id}")
+
+        return list(dict.fromkeys(reasons))
 
     def placement_candidates(self, event_id: str) -> list[dict[str, Any]]:
-        """Represent nearby placement states with slug-safe semantic identities."""
         event = self.space.events.get(event_id)
         if event is None:
             raise CalendarRobotError(f"unknown event: {event_id}")
@@ -300,8 +380,7 @@ class CallyOneService(CalendarRobotService):
             merged = current.as_dict()
             merged.update({key: value for key, value in raw.items() if key != "candidate_id"})
             candidate = CalendarEvent.from_mapping(merged, event_id=current.event_id)
-            blocked, reasons = self.space._candidate_blocked(event_id, candidate)
-            reasons = list(reasons) + self._linked_resource_reasons(event_id, candidate)
+            reasons = self._candidate_state_reasons(event_id, candidate)
             blocked = bool(reasons)
             coherence = "coherent" if not blocked else "blocked"
             worlds[candidate_id] = {
@@ -315,9 +394,6 @@ class CallyOneService(CalendarRobotService):
                 "fit": "clear" if coherence == "coherent" else "blocked",
                 "reasons": reasons,
             }
-            # Each candidate gets its own coherence state.  This prevents
-            # semantically different placements from collapsing to duplicate
-            # oracle identities merely because several happen to be coherent.
             candidate_coherence = f"{candidate_id}:{coherence}"
             rules.append(
                 SemanticRule(
@@ -372,12 +448,13 @@ class CallyOneService(CalendarRobotService):
                 for value in coherent_states
             ),
             rules=tuple(rules),
-            analyzer_id="cally_one_calendar_space_v3",
+            analyzer_id="cally_one_calendar_space_v4",
             provenance={
                 "calendar_space": True,
                 "everything_is_state": True,
                 "events_are_oracle_constructions": True,
-                "linked_resources_are_state_constraints": True,
+                "linked_states_are_temporal": True,
+                "state_time_intersections_are_constraints": True,
                 "candidate_states": len(worlds),
                 "single_qcds_architecture": True,
                 "qcds_core_replaced": False,
@@ -404,17 +481,15 @@ class CallyOneService(CalendarRobotService):
         return {
             "event_id": event_id,
             "mode": "qcds-resolve",
-            "meaning": "Resolve represented alternative event states toward Calendar Space coherence using the shared QCDS/Syntract core.",
+            "meaning": "Resolve represented alternative event states through the shared QCDS/Syntract core.",
             "logical_width": execution.logical_width,
             "raw_state_count": 2 ** execution.logical_width,
             "candidate_worlds": worlds,
             "baseline": [
-                {"value": str(item.value), "probability": float(item.probability)}
-                for item in baseline
+                {"value": str(item.value), "probability": float(item.probability)} for item in baseline
             ],
             "stabilized": [
-                {"value": str(item.value), "probability": float(item.probability)}
-                for item in stabilized
+                {"value": str(item.value), "probability": float(item.probability)} for item in stabilized
             ],
             "leaders": list(leaders),
             "syntract_id": execution.syntract.syntract_id,
@@ -427,7 +502,8 @@ class CallyOneService(CalendarRobotService):
                 "calendar_space": True,
                 "everything_is_state": True,
                 "events_are_oracle_constructions": True,
-                "linked_resources_are_state_constraints": True,
+                "linked_states_are_temporal": True,
+                "state_time_intersections_are_constraints": True,
                 "single_qcds_architecture": True,
                 "qcds_core_replaced": False,
             },
@@ -483,31 +559,24 @@ def run_cally_one(payload: Mapping[str, Any]) -> dict[str, Any]:
         body = _body(payload, "dimension retire")
         result = {
             "dimension": service.retire_dimension(
-                str(body.get("key") or ""),
-                retired=bool(body.get("retired", True)),
+                str(body.get("key") or ""), retired=bool(body.get("retired", True))
             ).as_dict()
         }
     elif action == "event":
         event = service.upsert_event(_body(payload, "event"))
-        result = {
-            "event": event.as_dict(),
-            "conflicts": [item.as_dict() for item in service.space.conflicts()],
-        }
+        result = {"event": event.as_dict(), "conflicts": [item.as_dict() for item in service.space.conflicts()]}
     elif action == "move":
         body = _body(payload, "move")
         people = body.get("people")
         if people is not None and not isinstance(people, (list, tuple)):
             raise CalendarRobotError("people must be an array")
-        event = service.space.move_event(
+        event = service.move_event(
             str(body.get("event_id") or ""),
             start=str(body.get("start") or ""),
             end=None if body.get("end") is None else str(body.get("end")),
             people=None if people is None else tuple(str(item) for item in people),
         )
-        result = {
-            "event": event.as_dict(),
-            "conflicts": [item.as_dict() for item in service.space.conflicts()],
-        }
+        result = {"event": event.as_dict(), "conflicts": [item.as_dict() for item in service.space.conflicts()]}
     elif action == "delete":
         body = _body(payload, "delete")
         event_id = str(body.get("event_id") or "")
