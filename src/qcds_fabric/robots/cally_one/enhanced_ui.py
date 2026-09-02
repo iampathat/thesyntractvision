@@ -19,13 +19,19 @@ def _asset(name: str) -> str:
 def cally_one_html(*, static_mode: bool = False) -> str:
     html = _base_cally_one_html(static_mode=static_mode)
     if static_mode:
-        old = "else if (path === '/api/infer') action = 'infer';\n    else if (path !== '/api/state')"
-        new = "else if (path === '/api/infer') action = 'infer';\n    else if (path === '/api/entity') action = 'entity';\n    else if (path === '/api/relation') action = 'relation';\n    else if (path !== '/api/state')"
+        old = "else if (path === '/api/infer') action = 'infer';\n    else if (path === '/api/entity') action = 'entity';\n    else if (path === '/api/relation') action = 'relation';\n    else if (path !== '/api/state')"
+        new = "else if (path === '/api/infer') action = 'infer';\n    else if (path === '/api/entity') action = 'entity';\n    else if (path === '/api/relation') action = 'relation';\n    else if (path === '/api/dimension') action = 'dimension';\n    else if (path === '/api/dimension/retire') action = 'dimension_retire';\n    else if (path === '/api/person/archive') action = 'person_archive';\n    else if (path !== '/api/state')"
+        if old not in html:
+            # Compatibility with the older bridge before entity/relation were
+            # surfaced by the product enhancement wrapper.
+            old = "else if (path === '/api/infer') action = 'infer';\n    else if (path !== '/api/state')"
+            new = "else if (path === '/api/infer') action = 'infer';\n    else if (path === '/api/entity') action = 'entity';\n    else if (path === '/api/relation') action = 'relation';\n    else if (path === '/api/dimension') action = 'dimension';\n    else if (path === '/api/dimension/retire') action = 'dimension_retire';\n    else if (path === '/api/person/archive') action = 'person_archive';\n    else if (path !== '/api/state')"
         if old not in html:
             raise RuntimeError("Cally.One static API bridge marker not found")
         html = html.replace(old, new, 1)
-    css = _asset("enhancements.css")
-    js = _asset("enhancements.js")
+
+    css = _asset("enhancements.css") + "\n" + _asset("state_management.css")
+    js = _asset("enhancements.js") + "\n" + _asset("state_management.js")
     html = html.replace("</head>", f"<style data-cally-enhancements>\n{css}\n</style>\n</head>", 1)
     html = html.replace("</body>", f"<script data-cally-enhancements>\n{js}\n</script>\n</body>", 1)
     return html
