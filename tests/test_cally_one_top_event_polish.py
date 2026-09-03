@@ -43,3 +43,18 @@ def test_person_and_event_editors_share_the_scandinavian_surface_system() -> Non
     assert 'justify-content:center!important' in html
     assert '.callyEventTitleInput{' in html
     assert 'min-height:48px!important' in html
+
+
+def test_editor_v2_is_compact_headline_first_and_time_grouped() -> None:
+    html = cally_one_html()
+    assert 'Cally.One editor strict v2' in html
+    assert "when.classList.add('callyWhenSection')" in html
+    assert '#modalBack[data-cally-base-editor="1"] .callyEventTitleInput{' in html
+    assert 'border-radius:0!important' in html
+    assert 'font-size:24px!important' in html
+    assert '#modalBack[data-cally-base-editor="1"] .callyWhenSection .field{' in html
+    assert 'grid-template-columns:62px minmax(0,1fr)!important' in html
+    assert '.callyEventActions>*{flex:0 0 auto!important}' in html
+    assert 'min-width:112px!important' in html
+    assert '.stateSheet .statePrimary{' in html
+    assert 'justify-self:end!important' in html
