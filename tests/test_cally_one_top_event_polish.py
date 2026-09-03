@@ -111,3 +111,26 @@ def test_all_add_person_entry_points_use_compact_person_panel() -> None:
     assert '/api/infer' not in compact_section
     assert 'initializeCore' not in compact_section
     assert 'MutationObserver' not in compact_section
+
+
+def test_level2_view_rail_is_one_row_scrollable_and_marks_active_green() -> None:
+    html = cally_one_html(static_mode=True)
+    person_js = Path('src/qcds_fabric/robots/cally_one/person_module_polish.js').read_text(encoding='utf-8')
+    assert 'callyLevel2Rail' in html
+    assert 'callyRailArrowLeft' in html
+    assert 'callyRailArrowRight' in html
+    assert "left.dataset.callyRail = 'left'" in person_js
+    assert "right.dataset.callyRail = 'right'" in person_js
+    assert "bar.scrollBy({left:direction * Math.max(180, bar.clientWidth * 0.72), behavior:'smooth'})" in person_js
+    assert "window.addEventListener('cally-one-ui-refresh', ensureLevel2ViewRail)" in person_js
+    assert '.callyLevel2Rail .viewbar{' in html
+    assert 'display:flex!important;' in html
+    assert 'flex-wrap:nowrap!important;' in html
+    assert 'overflow-x:auto!important;' in html
+    assert 'scrollbar-width:thin!important;' in html
+    assert '.callyLevel2Rail .view.active{' in html
+    assert 'background:var(--green,#087b58)!important;' in html
+    rail_section = person_js.split('function ensureLevel2ViewRail', 1)[1].split("document.addEventListener('click'", 1)[0]
+    assert '/api/infer' not in rail_section
+    assert 'initializeCore' not in rail_section
+    assert 'MutationObserver' not in rail_section
