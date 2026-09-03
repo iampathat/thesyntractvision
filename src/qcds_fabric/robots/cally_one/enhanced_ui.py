@@ -281,6 +281,7 @@ def cally_one_html(*, static_mode: bool = False) -> str:
             _asset("interaction_controller.css"),
             _asset("calendar_layout_hotfix.css"),
             _asset("calendar_display.css"),
+            _asset("scandinavian_polish.css"),
         ]
     )
     js = _stable_interaction_js()
