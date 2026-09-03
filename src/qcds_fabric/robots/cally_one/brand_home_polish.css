@@ -76,10 +76,104 @@
   font-weight:620!important;
 }
 
+/* Simultaneous events: side by side when readable, local horizontal rail when not. */
+.timeline .dayCol{position:relative!important}
+.callyOverlapCluster{
+  position:absolute!important;
+  left:0!important;
+  right:0!important;
+  z-index:4!important;
+  overflow:visible!important;
+  pointer-events:none!important;
+}
+.callyOverlapTrack{
+  position:relative!important;
+  width:100%!important;
+  min-width:100%!important;
+  pointer-events:none!important;
+}
+.callyOverlapCluster .event{
+  pointer-events:auto!important;
+  box-sizing:border-box!important;
+}
+.callyOverlapCluster.dense{
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  overscroll-behavior-x:contain!important;
+  scroll-snap-type:x proximity!important;
+  scrollbar-width:thin!important;
+  scrollbar-color:#91a399 transparent!important;
+  pointer-events:auto!important;
+  padding-bottom:3px!important;
+}
+.callyOverlapCluster.dense::-webkit-scrollbar{height:4px!important}
+.callyOverlapCluster.dense::-webkit-scrollbar-track{background:transparent!important}
+.callyOverlapCluster.dense::-webkit-scrollbar-thumb{background:#91a399!important;border-radius:99px!important}
+.callyOverlapCluster.dense::after{
+  content:'';
+  position:sticky;
+  right:0;
+  float:right;
+  width:18px;
+  height:100%;
+  pointer-events:none;
+  background:linear-gradient(90deg,rgba(251,250,246,0),rgba(251,250,246,.82));
+}
+.callyOverlapCluster.dense .callyOverlapTrack{pointer-events:none!important}
+.callyOverlapCluster.dense .event{pointer-events:auto!important}
+
+/* Accepted conflict = still represented, but no longer an unresolved red blocker. */
+.callyAcceptedConflict{
+  outline:1px solid #7ea493!important;
+  outline-offset:-1px!important;
+  background-image:linear-gradient(rgba(39,116,84,.045),rgba(39,116,84,.045))!important;
+}
+.callyAcceptedConflictBadge{
+  position:absolute!important;
+  top:5px!important;
+  left:5px!important;
+  z-index:18!important;
+  width:20px!important;
+  height:20px!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  border:1px solid #75a08c!important;
+  border-radius:999px!important;
+  background:#edf5f0!important;
+  color:#1d694d!important;
+  font-size:11px!important;
+  line-height:1!important;
+  font-weight:900!important;
+  box-shadow:none!important;
+}
+.callyIssueCard.conflict.accepted,.callyAcceptedIssue{
+  border-color:#aac8b8!important;
+  background:#f3f8f4!important;
+}
+.callyConflictAccept{
+  border-color:#6e9e87!important;
+  background:#eaf4ee!important;
+  color:#165b42!important;
+}
+.callyConflictRevoke{
+  border-color:#c8d1cb!important;
+  background:#fff!important;
+  color:#52645a!important;
+}
+.callyConflictAcceptanceNote{
+  display:block!important;
+  margin-top:7px!important;
+  color:#3e6d58!important;
+  font-size:8.5px!important;
+  line-height:1.4!important;
+}
+
 @media(max-width:760px){
   .callyWordmarkHome{font-size:25px!important;line-height:.95!important}
   #callyHomeTile{width:40px!important;min-width:40px!important;height:40px!important;min-height:40px!important;border-radius:9px!important}
   .brandText{gap:4px!important}
+  .callyOverlapCluster.dense{scrollbar-width:thin!important}
 }
 @media(max-width:390px){
   .callyWordmarkHome{font-size:22px!important}
