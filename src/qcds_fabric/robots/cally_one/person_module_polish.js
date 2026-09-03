@@ -1,4 +1,4 @@
-/* Cally.One Person module — compact expandable projection + compact person add, no inference. */
+/* Cally.One Person module — compact expandable projection + compact person add + Level 2 view rail, no inference. */
 (() => {
   if (window.__callyPersonModulePolish) return;
   window.__callyPersonModulePolish = true;
@@ -180,6 +180,60 @@
     });
   }
 
+  function updateLevel2RailState(shell, bar) {
+    const max = Math.max(0, bar.scrollWidth - bar.clientWidth);
+    const left = qs('[data-cally-rail="left"]', shell);
+    const right = qs('[data-cally-rail="right"]', shell);
+    if (left) left.disabled = bar.scrollLeft <= 2;
+    if (right) right.disabled = bar.scrollLeft >= max - 2;
+    shell.classList.toggle('is-scrollable', max > 4);
+  }
+
+  function centerActiveLevel2View(bar) {
+    const active = qs('.view.active', bar);
+    qsa('.view', bar).forEach(button => button.setAttribute('aria-current', button === active ? 'page' : 'false'));
+    if (!active) return;
+    const key = active.dataset.savedView ? `saved:${active.dataset.savedView}` : `view:${active.dataset.view || active.textContent.trim()}`;
+    if (bar.dataset.callyActiveRailKey === key) return;
+    bar.dataset.callyActiveRailKey = key;
+    const max = Math.max(0, bar.scrollWidth - bar.clientWidth);
+    const target = Math.max(0, Math.min(max, active.offsetLeft - (bar.clientWidth - active.offsetWidth) / 2));
+    bar.scrollTo({left:target, behavior:'smooth'});
+  }
+
+  function ensureLevel2ViewRail() {
+    const bar = qs('#viewbar');
+    if (!bar) return;
+    let shell = bar.parentElement?.classList?.contains('callyLevel2Rail') ? bar.parentElement : null;
+    if (!shell) {
+      shell = document.createElement('div');
+      shell.className = 'callyLevel2Rail';
+      shell.setAttribute('aria-label', 'Kalendervyer');
+      const left = document.createElement('button');
+      left.type = 'button';
+      left.className = 'callyRailArrow callyRailArrowLeft';
+      left.dataset.callyRail = 'left';
+      left.setAttribute('aria-label', 'Föregående kalendervyer');
+      left.textContent = '‹';
+      const right = document.createElement('button');
+      right.type = 'button';
+      right.className = 'callyRailArrow callyRailArrowRight';
+      right.dataset.callyRail = 'right';
+      right.setAttribute('aria-label', 'Nästa kalendervyer');
+      right.textContent = '›';
+      bar.before(shell);
+      shell.append(left, bar, right);
+      const move = direction => bar.scrollBy({left:direction * Math.max(180, bar.clientWidth * 0.72), behavior:'smooth'});
+      left.addEventListener('click', () => move(-1));
+      right.addEventListener('click', () => move(1));
+      bar.addEventListener('scroll', () => updateLevel2RailState(shell, bar), {passive:true});
+    }
+    requestAnimationFrame(() => {
+      centerActiveLevel2View(bar);
+      updateLevel2RailState(shell, bar);
+    });
+  }
+
   document.addEventListener('click', event => {
     const trigger = event.target.closest?.('#personBtn,[data-add-state="person"]');
     if (!trigger) return;
@@ -191,12 +245,19 @@
   }, true);
 
   window.addEventListener('resize', () => {
+    ensureLevel2ViewRail();
     const box = qs('#callyQuickAdd');
     if (!box || box.hidden || box.dataset.kind !== 'person') return;
     const trigger = qs('#personBtn');
     if (trigger) placeCompactPersonAdd(trigger);
   }, {passive:true});
   window.addEventListener('cally-one-ui-refresh', decoratePersonModule);
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', decoratePersonModule, {once:true});
-  else decoratePersonModule();
+  window.addEventListener('cally-one-ui-refresh', ensureLevel2ViewRail);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', decoratePersonModule, {once:true});
+    document.addEventListener('DOMContentLoaded', ensureLevel2ViewRail, {once:true});
+  } else {
+    decoratePersonModule();
+    ensureLevel2ViewRail();
+  }
 })();
