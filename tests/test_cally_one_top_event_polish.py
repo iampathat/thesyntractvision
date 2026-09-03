@@ -94,3 +94,20 @@ def test_person_module_is_compact_expandable_and_inference_free() -> None:
     assert 'MutationObserver' not in person_js
     assert '/api/infer' not in person_js
     assert 'initializeCore' not in person_js
+
+
+def test_all_add_person_entry_points_use_compact_person_panel() -> None:
+    html = cally_one_html(static_mode=True)
+    person_js = Path('src/qcds_fabric/robots/cally_one/person_module_polish.js').read_text(encoding='utf-8')
+    assert "#personBtn,[data-add-state=\"person\"]" in person_js
+    assert 'openCompactPersonAdd(anchor)' in person_js
+    assert 'callyCompactPersonForm' in html
+    assert 'callyCompactPersonTeam' in html
+    assert 'callyPersonQuickDetails' in html
+    assert 'Fler dimensioner' in html
+    assert "postJson('/api/entity'" in person_js
+    assert "postJson('/api/person'" in person_js
+    compact_section = person_js.split('async function openCompactPersonAdd', 1)[1].split('function decoratePersonModule', 1)[0]
+    assert '/api/infer' not in compact_section
+    assert 'initializeCore' not in compact_section
+    assert 'MutationObserver' not in compact_section
