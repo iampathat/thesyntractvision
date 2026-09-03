@@ -1,0 +1,87 @@
+/* Cally.One brand/home chrome — same Scandinavian action family as the top controls. */
+.brand{gap:0!important;align-items:center!important}
+.callyLegacyMark{position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;clip-path:inset(50%)!important;white-space:nowrap!important;margin:0!important;padding:0!important;border:0!important}
+.brandText{min-width:0!important;display:grid!important;gap:5px!important;align-content:center!important}
+.brandText::after{content:none!important;display:none!important}
+.brand small{display:none!important}
+.callyWordmarkHome{
+  display:inline-block!important;
+  width:max-content!important;
+  max-width:100%!important;
+  margin:0!important;
+  padding:0!important;
+  color:var(--cally-ink,#10231b)!important;
+  font-size:clamp(24px,4vw,34px)!important;
+  line-height:.92!important;
+  font-weight:820!important;
+  letter-spacing:-.055em!important;
+  cursor:pointer!important;
+  outline:none!important;
+  user-select:none!important;
+}
+.callyWordmarkHome:hover{color:#184434!important}
+.callyWordmarkHome:focus-visible{outline:2px solid rgba(8,122,89,.26)!important;outline-offset:5px!important;border-radius:4px!important}
+#callyHomeTile{
+  width:42px!important;
+  min-width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  border:1px solid var(--cally-line,#d9ddd7)!important;
+  border-radius:10px!important;
+  background:var(--cally-paper,#fbfaf6)!important;
+  color:var(--cally-accent,#087a59)!important;
+  font-size:14px!important;
+  line-height:1!important;
+  font-weight:900!important;
+  letter-spacing:-.03em!important;
+  box-shadow:none!important;
+}
+#callyHomeTile:hover{background:#edf4ef!important;border-color:#b8cec1!important;color:#075f46!important}
+.callyMenuAbout{
+  margin:10px 2px 2px!important;
+  padding:12px 10px 10px!important;
+  border-top:1px solid var(--cally-line,#d9ddd7)!important;
+  color:var(--cally-muted,#66736c)!important;
+}
+.callyMenuAboutEyebrow{
+  color:var(--cally-accent,#087a59)!important;
+  font-size:7.5px!important;
+  line-height:1!important;
+  font-weight:850!important;
+  letter-spacing:.15em!important;
+}
+.callyMenuAboutName{
+  margin-top:5px!important;
+  color:var(--cally-ink,#10231b)!important;
+  font-size:12px!important;
+  line-height:1.05!important;
+  font-weight:820!important;
+  letter-spacing:-.025em!important;
+}
+.callyMenuAboutCredit{
+  margin-top:6px!important;
+  color:#43564c!important;
+  font-size:8px!important;
+  line-height:1.35!important;
+  font-weight:760!important;
+}
+.callyMenuAboutLicense{
+  margin-top:3px!important;
+  color:var(--cally-muted,#66736c)!important;
+  font-size:7.5px!important;
+  line-height:1.42!important;
+  font-weight:620!important;
+}
+
+@media(max-width:760px){
+  .callyWordmarkHome{font-size:25px!important;line-height:.95!important}
+  #callyHomeTile{width:40px!important;min-width:40px!important;height:40px!important;min-height:40px!important;border-radius:9px!important}
+  .brandText{gap:4px!important}
+}
+@media(max-width:390px){
+  .callyWordmarkHome{font-size:22px!important}
+  #callyHomeTile{width:37px!important;min-width:37px!important;height:37px!important;min-height:37px!important}
+}
