@@ -135,6 +135,7 @@ def _stable_interaction_js() -> str:
 
     controller_js = _asset("interaction_controller.js")
     layout_js = _asset("calendar_layout_hotfix.js")
+    person_module_js = _asset("person_module_polish.js")
     display_js = _asset("calendar_display.js")
     demo_js = _asset("demo_space.js")
     return "\n".join(
@@ -147,6 +148,7 @@ def _stable_interaction_js() -> str:
             dimension_filter_js,
             controller_js,
             layout_js,
+            person_module_js,
             display_js,
             demo_js,
         ]
@@ -310,6 +312,7 @@ def cally_one_html(*, static_mode: bool = False) -> str:
             _asset("scandinavian_polish.css"),
             _asset("top_event_control_polish.css"),
             _asset("editor_strict_v2.css"),
+            _asset("person_module_polish.css"),
             _asset("demo_space.css"),
         ]
     )
