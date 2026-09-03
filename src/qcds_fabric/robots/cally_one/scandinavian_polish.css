@@ -1,0 +1,228 @@
+/* Cally.One Scandinavian strictness pass — flat, precise, calm, information-first. */
+:root{
+  --cally-bg:#f3f1eb;
+  --cally-paper:#fbfaf6;
+  --cally-surface:#ffffff;
+  --cally-ink:#10231b;
+  --cally-muted:#66736c;
+  --cally-line:#d9ddd7;
+  --cally-line-strong:#c4ccc5;
+  --cally-accent:#087a59;
+  --cally-accent-dark:#102a21;
+  --cally-accent-soft:#e7f1eb;
+  --cally-danger:#a64747;
+  --cally-r-xs:6px;
+  --cally-r-sm:9px;
+  --cally-r-md:12px;
+  --cally-r-lg:16px;
+  --cally-space-1:4px;
+  --cally-space-2:8px;
+  --cally-space-3:12px;
+  --cally-space-4:16px;
+  --cally-space-5:24px;
+  --cally-control-h:44px;
+  --bg:var(--cally-bg);
+  --paper:var(--cally-paper);
+  --ink:var(--cally-ink);
+  --muted:var(--cally-muted);
+  --line:var(--cally-line);
+  --soft:#edf0eb;
+  --green:var(--cally-accent);
+  --green2:var(--cally-accent-soft);
+  --shadow:none;
+}
+
+html,body{background:var(--cally-bg)!important;color:var(--cally-ink)!important}
+button,input,select,textarea{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important}
+button{letter-spacing:-.01em}
+
+/* Header: one deliberate product bar, not a stack of unrelated controls. */
+.top{
+  padding:max(12px,env(safe-area-inset-top)) 18px 12px!important;
+  background:rgba(251,250,246,.96)!important;
+  border-bottom:1px solid var(--cally-line)!important;
+  box-shadow:none!important;
+  backdrop-filter:blur(18px) saturate(.9)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(.9)!important;
+}
+.topline{gap:16px!important;align-items:center!important}
+.brand{min-width:0!important;align-items:center!important}
+.mark{
+  width:42px!important;height:42px!important;min-width:42px!important;
+  margin-right:12px!important;border:0!important;border-radius:10px!important;
+  background:var(--cally-accent)!important;color:#fff!important;
+  font-size:13px!important;font-weight:900!important;letter-spacing:-.03em!important;
+}
+.brand h1{font-size:clamp(24px,2.7vw,34px)!important;font-weight:780!important;letter-spacing:-.055em!important;line-height:.94!important}
+.brandText::after{
+  margin-top:6px!important;max-width:520px!important;
+  color:var(--cally-muted)!important;font-size:8px!important;font-weight:650!important;
+  line-height:1.25!important;letter-spacing:.005em!important;
+}
+
+.topActions{gap:6px!important;align-items:center!important}
+.topActions .btn,.callyMenuButton{
+  width:42px!important;min-width:42px!important;height:42px!important;min-height:42px!important;
+  padding:0!important;border:1px solid var(--cally-line)!important;border-radius:10px!important;
+  background:transparent!important;color:var(--cally-ink)!important;box-shadow:none!important;
+  display:grid!important;place-items:center!important;transition:background .14s ease,border-color .14s ease,color .14s ease!important;
+}
+.topActions .btn:hover,.callyMenuButton:hover{background:#f0f1ec!important;border-color:var(--cally-line-strong)!important}
+#eventBtn{background:var(--cally-accent)!important;border-color:var(--cally-accent)!important;color:#fff!important}
+#eventBtn:hover{background:#066c4e!important}
+.topActions .actionIcon{font-weight:780!important;line-height:1!important}
+#perspectiveBtn .actionIcon{font-size:0!important;width:16px!important;height:16px!important;background:radial-gradient(circle at 25% 25%,currentColor 0 1.6px,transparent 1.8px),radial-gradient(circle at 75% 25%,currentColor 0 1.6px,transparent 1.8px),radial-gradient(circle at 25% 75%,currentColor 0 1.6px,transparent 1.8px),radial-gradient(circle at 75% 75%,currentColor 0 1.6px,transparent 1.8px)!important}
+#personBtn .actionIcon{font-size:0!important}
+#personBtn .actionIcon::before{content:"P+";font-size:13px;font-weight:830;letter-spacing:-.07em}
+#eventBtn .actionIcon{font-size:0!important}
+#eventBtn .actionIcon::before{content:"+";font-size:23px;font-weight:520;line-height:1}
+.callyMenuButton{font-size:0!important;position:relative!important}
+.callyMenuButton::before{content:"";width:17px;height:12px;background:linear-gradient(var(--cally-ink),var(--cally-ink)) 0 0/17px 1.5px no-repeat,linear-gradient(var(--cally-ink),var(--cally-ink)) 0 50%/17px 1.5px no-repeat,linear-gradient(var(--cally-ink),var(--cally-ink)) 0 100%/17px 1.5px no-repeat}
+
+/* Date navigation reads as one composed instrument. */
+.dateNav{gap:0!important;max-width:620px!important;border:1px solid var(--cally-line)!important;border-radius:11px!important;background:#fff!important;overflow:hidden!important}
+.dateNav .btn{
+  height:42px!important;min-height:42px!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;
+}
+.dateNav .btn:hover{background:#f2f3ef!important}
+.dateNav .btn.icon{width:42px!important;min-width:42px!important;border-right:1px solid var(--cally-line)!important}
+#nextBtn{border-left:1px solid var(--cally-line)!important;border-right:1px solid var(--cally-line)!important}
+#todayBtn{min-width:82px!important;padding:0 14px!important;font-size:12px!important;font-weight:760!important}
+.dateTitle{padding:0 12px!important;min-height:42px!important;font-size:12px!important;font-weight:720!important;letter-spacing:-.02em!important}
+.callyCalendarContext{border:0!important;background:transparent!important;padding:0!important;color:var(--cally-muted)!important;font-size:8px!important;font-weight:650!important}
+
+/* View/navigation matrix: compact, aligned, deliberately flat. */
+.viewbar{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px!important;padding:10px 0 0!important;overflow:visible!important}
+.view{
+  width:100%!important;min-width:0!important;min-height:42px!important;padding:8px 10px!important;
+  border:1px solid var(--cally-line)!important;border-radius:10px!important;
+  background:transparent!important;color:var(--cally-ink)!important;box-shadow:none!important;
+  font-size:11px!important;font-weight:720!important;letter-spacing:-.02em!important;
+}
+.view:hover{background:#f0f2ed!important;border-color:var(--cally-line-strong)!important}
+.view.active{background:var(--cally-accent-dark)!important;border-color:var(--cally-accent-dark)!important;color:#fff!important}
+.savedView{border-style:dashed!important}.savedView.active{border-style:solid!important}
+.savedStar{color:#a98727!important}
+
+/* Calendar canvas: no decorative shadows, only structure. */
+.stage{padding:0!important;background:var(--cally-paper)!important}
+.card,.lane,.perspectiveIntro,.eventRow{box-shadow:none!important}
+.timeline,.month{border:0!important;border-radius:0!important;background:var(--cally-paper)!important}
+.timeHead,.dayHead{height:50px!important;background:var(--cally-paper)!important;border-bottom:1px solid var(--cally-line)!important}
+.dayHead{padding:10px 12px!important;border-left:1px solid var(--cally-line)!important}
+.dayHead b{font-size:11px!important;font-weight:780!important;letter-spacing:-.025em!important}
+.dayHead span{font-size:8px!important;color:var(--cally-muted)!important}
+.timeRail{background:var(--cally-paper)!important}
+.hour{color:#78817b!important;font-size:8px!important;background:var(--cally-paper)!important;border-top-color:#e8e9e5!important}
+.dayCol{border-left:1px solid var(--cally-line)!important;background-color:var(--cally-paper)!important;background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 58.5px,#e9ebe7 59px,#e9ebe7 59.5px)!important}
+.dayCol.today{background-color:#f1f6f2!important}
+.nowline{border-top:1.5px solid #c75454!important}
+
+/* Day/week events: thin, architectural and readable. */
+.event{
+  left:6px!important;right:6px!important;max-width:calc(100% - 12px)!important;
+  border:1px solid #b9cec1!important;border-left:3px solid var(--cally-accent)!important;
+  border-radius:8px!important;background:#e8f1eb!important;
+  padding:7px 30px 7px 9px!important;box-shadow:none!important;
+}
+.event.conflict{border-color:#d1abab!important;border-left-color:var(--cally-danger)!important;background:#f6e9e7!important}
+.event b{font-size:10px!important;font-weight:780!important;letter-spacing:-.015em!important}
+.event small{font-size:8px!important;color:#52665b!important}
+.event .pinBtn,.event [data-edit-event],.event .eventMove{border-radius:7px!important;box-shadow:none!important;background:rgba(251,250,246,.9)!important}
+
+/* Month: editorial grid, event strips rather than pills. */
+.monthDow{padding:11px 10px!important;background:#f7f6f2!important;border-bottom:1px solid var(--cally-line)!important;color:#758078!important;font-size:8px!important;font-weight:800!important;letter-spacing:.08em!important}
+.dayCell{min-height:132px!important;padding:8px 9px!important;border-right:1px solid var(--cally-line)!important;border-bottom:1px solid var(--cally-line)!important;background:var(--cally-paper)!important}
+.dayCell.out{opacity:.38!important}.dayCell.today{background:#f1f6f2!important}
+.dayNum{font-size:10px!important;font-weight:790!important;color:var(--cally-ink)!important}
+.monthEvent{
+  min-height:26px!important;margin:4px 0!important;padding:6px 7px 6px 12px!important;
+  border:0!important;border-left:3px solid var(--cally-accent)!important;border-radius:5px!important;
+  background:#e9f1eb!important;font-size:8.5px!important;font-weight:740!important;line-height:1.15!important;
+}
+.monthEvent::before{display:none!important}
+.monthEvent.conflict{border-left-color:var(--cally-danger)!important;background:#f6e9e7!important}
+.callyMonthWeek{border:0!important;background:transparent!important;color:#8a938d!important;font-size:7px!important;padding:0!important}
+
+/* Year: twelve calm mini-calendars with real event labels. */
+.year{gap:8px!important;padding:10px!important;background:var(--cally-bg)!important}
+.miniMonth{padding:12px!important;border:1px solid var(--cally-line)!important;border-radius:12px!important;background:var(--cally-paper)!important;box-shadow:none!important}
+.miniMonth h3{margin:0 0 9px!important;font-size:11px!important;font-weight:790!important;letter-spacing:-.025em!important}
+.monthJump{padding:0!important;border-radius:0!important;font-weight:790!important}
+.miniWeekRange{float:right;color:#88928c!important;font-size:7px!important;font-weight:650!important}
+.miniGrid{gap:2px!important}
+.miniDay{min-height:35px!important;padding:4px!important;border-radius:6px!important;border:1px solid transparent!important;background:transparent!important}
+.miniDay.has{background:#f0f5f1!important;border-color:#d9e4dc!important}
+.miniDay.today{box-shadow:inset 0 0 0 1px var(--cally-accent)!important}
+.callyYearEvent{padding:2px 3px!important;border-radius:3px!important;background:#dfece4!important;color:#284c3d!important;font-size:6.3px!important;font-weight:760!important}
+
+/* Side panels and perspective adopt the same flat editorial language. */
+.side{background:#f7f6f1!important}
+.rightSide,.leftSide{border-color:var(--cally-line)!important}
+.perspectiveIntro{border:1px solid var(--cally-line)!important;border-radius:12px!important;background:var(--cally-paper)!important}
+.perspectiveBox,.groupHead,.pEvent{border-radius:8px!important;box-shadow:none!important}
+
+/* Mobile menu is a small navigation sheet, not a collection of cards. */
+.callyMobileMenu{
+  width:min(410px,calc(100vw - 16px))!important;padding:10px!important;gap:5px!important;
+  border:1px solid var(--cally-line)!important;border-radius:14px!important;background:var(--cally-paper)!important;
+  box-shadow:0 18px 50px rgba(16,35,27,.14)!important;
+}
+.callyMobileMenu::before{padding:4px 5px 8px!important;color:#718078!important;font-size:8px!important;letter-spacing:.13em!important}
+.callyMobileMenu button{
+  min-height:54px!important;padding:9px 11px!important;border:1px solid var(--cally-line)!important;border-radius:9px!important;
+  background:#fff!important;font-size:10px!important;font-weight:760!important;
+}
+.callyMobileMenu button::after{margin-top:3px!important;font-size:7.5px!important;color:#7a847e!important}
+.callyMobileMenu button[data-nav="space"]{background:#f4f6f2!important;border-color:var(--cally-line)!important}
+.callyMobileMenu button[data-nav="add-person"]{background:var(--cally-accent-dark)!important;border-color:var(--cally-accent-dark)!important}
+
+/* Modal/sheet discipline: same geometry throughout Cally.One. */
+#modalBack[data-cally-base-editor="1"]>.modal,#modalBack[data-cally-base-editor="1"]>.dialog,#modalBack[data-cally-base-editor="1"]>.card,
+.manageSheet,.stateSheet{
+  border:1px solid var(--cally-line)!important;border-radius:16px!important;background:var(--cally-paper)!important;
+  box-shadow:0 24px 70px rgba(16,35,27,.16)!important;
+}
+.callyEventHead h2,.manageHead h2,.sheetHead h2{letter-spacing:-.04em!important;font-weight:760!important}
+.callyEventClose,.manageHead>button,.sheetClose{border-radius:9px!important;background:#f0f1ed!important;border-color:var(--cally-line)!important}
+#modalBack[data-cally-base-editor="1"] input:not([type="checkbox"]):not([type="radio"]),#modalBack[data-cally-base-editor="1"] select,#modalBack[data-cally-base-editor="1"] textarea,.manageToolbar input,.manageForm input,.manageForm select,.stateInput{
+  border-radius:9px!important;border-color:var(--cally-line)!important;background:#fff!important;box-shadow:none!important;
+}
+.dimensionStateCard,.personStateCard,.stateCard{border-radius:10px!important;box-shadow:none!important}
+
+@media(max-width:760px){
+  .top{padding:max(9px,env(safe-area-inset-top)) 10px 9px!important}
+  .topline{grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"brand actions" "date date"!important;gap:9px 8px!important}
+  .mark{width:40px!important;height:40px!important;min-width:40px!important;margin-right:9px!important;border-radius:9px!important}
+  .brand h1{font-size:26px!important}
+  .brandText::after{font-size:6.7px!important;line-height:1.2!important;max-width:240px!important}
+  .topActions{gap:5px!important;height:40px!important}
+  .topActions .btn,.callyMenuButton{width:40px!important;min-width:40px!important;height:40px!important;min-height:40px!important;border-radius:9px!important}
+  .dateNav{grid-template-columns:40px 78px 40px minmax(0,1fr)!important;border-radius:9px!important}
+  .dateNav .btn{height:40px!important;min-height:40px!important}
+  .dateNav .btn.icon{width:40px!important;min-width:40px!important}
+  #todayBtn{min-width:78px!important;padding:0 10px!important}
+  .dateTitle{min-height:40px!important;padding:0 9px!important;font-size:10px!important}
+  .callyCalendarContext{font-size:6.8px!important;width:100%!important}
+  .viewbar{gap:5px!important;padding-top:8px!important}
+  .view{min-height:40px!important;border-radius:9px!important;font-size:9.5px!important;padding:7px 5px!important}
+  .stage{padding:0!important}
+  .year{grid-template-columns:repeat(2,minmax(160px,1fr))!important;padding:7px!important;gap:7px!important}
+  .miniMonth{padding:9px!important;border-radius:10px!important}
+  #modalBack[data-cally-base-editor="1"]>.modal,#modalBack[data-cally-base-editor="1"]>.dialog,#modalBack[data-cally-base-editor="1"]>.card,.manageSheet,.stateSheet{border-radius:16px 16px 0 0!important}
+}
+
+@media(max-width:430px){
+  .brandText::after{max-width:205px!important}
+  .year{grid-template-columns:1fr!important}
+}
+
+@media(max-width:360px){
+  .mark{width:37px!important;height:37px!important;min-width:37px!important}
+  .brand h1{font-size:23px!important}
+  .topActions .btn,.callyMenuButton{width:37px!important;min-width:37px!important;height:37px!important;min-height:37px!important}
+  .dateNav{grid-template-columns:37px 72px 37px minmax(0,1fr)!important}
+  .dateNav .btn{height:37px!important;min-height:37px!important}.dateNav .btn.icon{width:37px!important;min-width:37px!important}
+  #todayBtn{min-width:72px!important}
+  .viewbar{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
