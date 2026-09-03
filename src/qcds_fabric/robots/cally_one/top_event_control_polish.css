@@ -1,0 +1,90 @@
+/* Cally.One top-action + event-control polish. Semantic icons, one geometry, no content overlap. */
+
+/* Four top actions are one family. */
+.topActions{
+  display:grid!important;
+  grid-auto-flow:column!important;
+  grid-auto-columns:42px!important;
+  gap:6px!important;
+  align-items:center!important;
+  justify-content:end!important;
+}
+.topActions .btn,.callyMenuButton{
+  width:42px!important;
+  min-width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+  padding:0!important;
+  border:1px solid var(--cally-line)!important;
+  border-radius:10px!important;
+  display:grid!important;
+  place-items:center!important;
+}
+.topActions .actionIcon{
+  display:grid!important;
+  place-items:center!important;
+  width:18px!important;
+  height:18px!important;
+  line-height:1!important;
+}
+.topActions .actionIcon svg{
+  display:block!important;
+  width:18px!important;
+  height:18px!important;
+  overflow:visible!important;
+}
+#personBtn .actionIcon::before,#eventBtn .actionIcon::before{content:none!important}
+#personBtn .actionIcon{font-size:0!important;background:none!important}
+#eventBtn .actionIcon{font-size:0!important;background:none!important}
+#eventBtn .actionIcon svg{width:19px!important;height:19px!important}
+#perspectiveBtn .actionIcon{width:18px!important;height:18px!important}
+.callyMenuButton::before{width:18px!important;height:13px!important;background-size:18px 1.5px,18px 1.5px,18px 1.5px!important}
+
+/* Event cards reserve a clear control rail in the upper-right. */
+.event{
+  padding:8px 96px 8px 10px!important;
+}
+.eventMove,.eventEdit,.event .pinBtn{
+  top:7px!important;
+  width:26px!important;
+  height:26px!important;
+  min-width:26px!important;
+  min-height:26px!important;
+  padding:0!important;
+  border:1px solid #b8c7bd!important;
+  border-radius:7px!important;
+  background:#fbfaf6!important;
+  color:#2f5042!important;
+  opacity:1!important;
+  display:grid!important;
+  place-items:center!important;
+  box-shadow:none!important;
+}
+.eventMove{left:auto!important;right:67px!important;cursor:grab!important}
+.eventEdit{left:auto!important;right:37px!important}
+.event .pinBtn{left:auto!important;right:7px!important;z-index:15!important}
+.eventMove svg{width:14px!important;height:14px!important}
+.eventEdit svg,.event .pinBtn svg{width:13px!important;height:13px!important}
+.eventMove:hover,.eventEdit:hover,.event .pinBtn:hover{background:#fff!important;border-color:#8fa79a!important}
+.eventMove.locked{opacity:.34!important;background:#f0f1ed!important;color:#68766f!important;cursor:not-allowed!important}
+.event .pinBtn:not(.locked){background:#fff!important;border-color:#9eafa5!important;color:#214638!important}
+.event .pinBtn.locked{background:var(--cally-accent-dark)!important;border-color:var(--cally-accent-dark)!important;color:#fff!important;opacity:1!important}
+.event .pinBtn.locked svg{opacity:1!important}
+.event b,.event small{position:relative!important;z-index:2!important}
+.event .chips{position:relative!important;z-index:2!important}
+.resizeHandle{z-index:16!important}
+
+/* Keep the same hierarchy when a column gets narrow. */
+@media(max-width:760px){
+  .topActions{grid-auto-columns:40px!important;gap:5px!important}
+  .topActions .btn,.callyMenuButton{width:40px!important;min-width:40px!important;height:40px!important;min-height:40px!important;border-radius:9px!important}
+  .event{padding-right:92px!important}
+  .eventMove{right:64px!important}
+  .eventEdit{right:35px!important}
+  .event .pinBtn{right:6px!important}
+}
+
+@media(max-width:390px){
+  .topActions{grid-auto-columns:37px!important;gap:4px!important}
+  .topActions .btn,.callyMenuButton{width:37px!important;min-width:37px!important;height:37px!important;min-height:37px!important}
+}
