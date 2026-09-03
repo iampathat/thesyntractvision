@@ -5,6 +5,9 @@ Cally.One Tribute License 1.0 — see LICENSE.md.
 Everything is state. A person may participate in an event without riding in a
 particular vehicle. Mobile-resource planning may be resolved either by a human
 editing represented states or by QCDS evaluating represented alternatives.
+An actual conflict may also be explicitly accepted as represented state; that
+keeps the conflict auditable without treating the accepted arrangement as an
+unresolved blocker.
 """
 
 from __future__ import annotations
@@ -25,6 +28,76 @@ class CallyOneService(_RouteRuntime):
         # Legacy mobile links mean all represented event participants ride until
         # the user explicitly refines the transport state.
         return [str(item) for item in event.people]
+
+    def _conflict_acceptances(self) -> dict[str, Any]:
+        """Return active human acceptance states keyed by generated conflict id.
+
+        Acceptance is represented as an ordinary relation, never as deletion of
+        the conflict. This means the system can distinguish "no conflict" from
+        "conflict exists and the represented arrangement is intentionally OK".
+        """
+        accepted: dict[str, Any] = {}
+        for relation in self.graph.relations.values():
+            if str(relation.predicate) != "accepts_conflict":
+                continue
+            dimensions = dict(getattr(relation, "dimensions", {}) or {})
+            if dimensions.get("accepted") is not True:
+                continue
+            conflict_id = str(dimensions.get("conflict_id") or "").strip()
+            if conflict_id:
+                accepted[conflict_id] = relation
+        return accepted
+
+    def state_conflicts(self) -> list[dict[str, Any]]:
+        conflicts = super().state_conflicts()
+        acceptances = self._conflict_acceptances()
+        for conflict in conflicts:
+            relation = acceptances.get(str(conflict.get("conflict_id") or ""))
+            if relation is None:
+                continue
+            dimensions = dict(getattr(relation, "dimensions", {}) or {})
+            conflict["status"] = "accepted"
+            conflict["severity"] = "accepted_conflict"
+            conflict["accepted"] = True
+            conflict["accepted_by"] = str(dimensions.get("accepted_by") or "human")
+            conflict["accepted_at"] = dimensions.get("accepted_at")
+            conflict["acceptance_relation_id"] = relation.relation_id
+            conflict["reason"] = f"{conflict.get('reason') or 'represented conflict'}; explicitly accepted"
+        return conflicts
+
+    def _candidate_state_reasons(self, event_id: str, candidate: Any) -> list[str]:
+        reasons = super()._candidate_state_reasons(event_id, candidate)
+        current = self.space.events.get(event_id)
+        # Acceptance applies to the exact represented arrangement that a human
+        # approved. Moving the event creates a new state that must be checked on
+        # its own merits.
+        if current is None or candidate.start != current.start or candidate.end != current.end:
+            return reasons
+        accepted = [
+            conflict
+            for conflict in self.state_conflicts()
+            if conflict.get("status") == "accepted" and event_id in conflict.get("event_ids", [])
+        ]
+        if not accepted:
+            return reasons
+
+        filtered: list[str] = []
+        marker = ":time_overlap:"
+        for reason in reasons:
+            allowed = False
+            if reason.startswith("state:") and marker in reason:
+                raw_events = reason.rsplit(marker, 1)[1]
+                reason_events = {item for item in raw_events.split(",") if item}
+                reason_events.add(event_id)
+                for conflict in accepted:
+                    state_id = str(conflict.get("state_id") or "")
+                    conflict_events = {str(item) for item in conflict.get("event_ids", [])}
+                    if reason.startswith(f"state:{state_id}:") and reason_events.issubset(conflict_events):
+                        allowed = True
+                        break
+            if not allowed:
+                filtered.append(reason)
+        return filtered
 
     def route_planning_states(self) -> list[dict[str, Any]]:
         """Return only mobile state groups that still require a decision.
@@ -113,6 +186,9 @@ class CallyOneService(_RouteRuntime):
         state = super().state()
         state["planning_states"] = self.route_planning_states()
         state["needs_resolution_count"] = len(state["planning_states"])
+        conflicts = list(state.get("state_conflicts") or [])
+        state["unresolved_conflict_count"] = sum(item.get("status") == "unresolved" for item in conflicts)
+        state["accepted_conflict_count"] = sum(item.get("status") == "accepted" for item in conflicts)
         model = dict(state.get("state_model") or {})
         model.pop("capacity_formula", None)
         model.pop("planning_means_needs_qcds_resolution", None)
@@ -124,6 +200,9 @@ class CallyOneService(_RouteRuntime):
                 "single_mobile_assignment_is_not_automatically_a_warning": True,
                 "orange_means_needs_resolution": True,
                 "red_means_actual_conflict": True,
+                "accepted_conflict_is_represented_state": True,
+                "accepted_conflict_is_not_unresolved": True,
+                "accepted_conflict_remains_auditable": True,
             }
         )
         state["state_model"] = model
@@ -131,6 +210,7 @@ class CallyOneService(_RouteRuntime):
         provenance.update(
             {
                 "planning_resolution_modes": ["human", "qcds"],
+                "conflict_acceptance_mode": "represented relation state",
                 "qcds_core_modified": False,
                 "system_boundary": "SyntractSystem",
             }
@@ -146,6 +226,7 @@ class CallyOneService(_RouteRuntime):
         provenance.update(
             {
                 "mobile_route_can_be_resolved_by_human_or_qcds": True,
+                "accepted_conflicts_are_represented_conditions": True,
                 "system_boundary": "SyntractSystem",
                 "qcds_core_replaced": False,
             }
