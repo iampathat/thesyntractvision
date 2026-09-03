@@ -1,0 +1,163 @@
+/* Cally.One Person module — same compact Scandinavian panel language as quick-add. */
+.personLanes{
+  width:min(760px,100%)!important;
+  margin:0 auto!important;
+  padding:16px!important;
+  gap:6px!important;
+}
+.callyPersonModuleHead{
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:space-between!important;
+  gap:14px!important;
+  padding:2px 2px 12px!important;
+  margin-bottom:4px!important;
+}
+.callyPersonModuleEyebrow{
+  color:var(--cally-accent,#087a59)!important;
+  font-size:7.5px!important;
+  line-height:1!important;
+  font-weight:850!important;
+  letter-spacing:.15em!important;
+}
+.callyPersonModuleHead h2{
+  margin:4px 0 4px!important;
+  font-size:19px!important;
+  line-height:1!important;
+  font-weight:790!important;
+  letter-spacing:-.04em!important;
+}
+.callyPersonModuleHead p{
+  margin:0!important;
+  max-width:520px!important;
+  color:var(--cally-muted,#66736c)!important;
+  font-size:8.5px!important;
+  line-height:1.45!important;
+}
+.personLanes .lane{
+  display:block!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  border:1px solid var(--cally-line,#d9ddd7)!important;
+  border-radius:11px!important;
+  background:var(--cally-paper,#fbfaf6)!important;
+  box-shadow:none!important;
+}
+.callyPersonToggle{
+  width:100%!important;
+  min-height:52px!important;
+  display:grid!important;
+  grid-template-columns:30px minmax(0,1fr) auto 16px!important;
+  align-items:center!important;
+  gap:9px!important;
+  padding:8px 10px!important;
+  border:0!important;
+  background:transparent!important;
+  color:var(--cally-ink,#10231b)!important;
+  text-align:left!important;
+  cursor:pointer!important;
+}
+.callyPersonToggle:hover{background:#f3f5f1!important}
+.callyPersonInitial{
+  width:30px!important;
+  height:30px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:50%!important;
+  background:#e6f0e9!important;
+  color:#174333!important;
+  font-size:10px!important;
+  line-height:1!important;
+  font-weight:850!important;
+}
+.callyPersonIdentity{display:grid!important;gap:2px!important;min-width:0!important}
+.callyPersonIdentity strong{
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  font-size:10.5px!important;
+  line-height:1.1!important;
+  font-weight:790!important;
+  letter-spacing:-.015em!important;
+}
+.callyPersonIdentity small{
+  color:var(--cally-muted,#66736c)!important;
+  font-size:7.5px!important;
+  line-height:1.2!important;
+  font-weight:620!important;
+}
+.callyPersonCount{
+  color:#52645a!important;
+  font-size:7.5px!important;
+  line-height:1!important;
+  font-weight:760!important;
+  white-space:nowrap!important;
+}
+.callyPersonChevron{
+  color:#53645a!important;
+  font-size:16px!important;
+  line-height:1!important;
+  transform:translateY(-1px) rotate(0deg)!important;
+  transition:transform .14s ease!important;
+}
+.lane[data-expanded="1"] .callyPersonChevron{transform:translateY(1px) rotate(180deg)!important}
+.personLanes .laneEvents{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:6px!important;
+  padding:8px 10px 10px!important;
+  overflow:visible!important;
+  border-top:1px solid var(--cally-line,#d9ddd7)!important;
+  background:#f8f8f4!important;
+}
+.personLanes .laneEvents[hidden]{display:none!important}
+.personLanes .laneCard{
+  min-width:0!important;
+  max-width:none!important;
+  min-height:54px!important;
+  padding:9px 34px 9px 10px!important;
+  border:1px solid #c9d6cd!important;
+  border-left:3px solid var(--cally-accent,#087a59)!important;
+  border-radius:8px!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
+.personLanes .laneCard b{
+  display:block!important;
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  font-size:9.5px!important;
+  line-height:1.15!important;
+  font-weight:780!important;
+}
+.personLanes .laneCard small{
+  margin-top:4px!important;
+  color:var(--cally-muted,#66736c)!important;
+  font-size:7.5px!important;
+  line-height:1.25!important;
+}
+.personLanes .laneCard .pinBtn{
+  top:7px!important;
+  right:7px!important;
+  width:23px!important;
+  height:23px!important;
+}
+.personLanes .laneEvents>.tiny{
+  grid-column:1/-1!important;
+  padding:8px 2px!important;
+  color:var(--cally-muted,#66736c)!important;
+  font-size:8px!important;
+}
+@media(max-width:760px){
+  .personLanes{padding:10px!important}
+  .callyPersonModuleHead{padding:3px 2px 10px!important}
+  .callyPersonModuleHead h2{font-size:18px!important}
+  .callyPersonModuleHead p{font-size:8px!important}
+  .callyPersonToggle{min-height:50px!important;padding:8px 9px!important;grid-template-columns:28px minmax(0,1fr) auto 14px!important;gap:8px!important}
+  .callyPersonInitial{width:28px!important;height:28px!important}
+  .callyPersonCount{font-size:7px!important}
+  .personLanes .laneEvents{grid-template-columns:1fr!important;padding:7px 9px 9px!important}
+}
