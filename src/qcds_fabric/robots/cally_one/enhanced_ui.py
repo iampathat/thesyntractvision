@@ -138,6 +138,7 @@ def _stable_interaction_js() -> str:
     person_module_js = _asset("person_module_polish.js")
     display_js = _asset("calendar_display.js")
     demo_js = _asset("demo_space.js")
+    brand_home_js = _asset("brand_home_polish.js")
     return "\n".join(
         [
             event_js,
@@ -151,6 +152,7 @@ def _stable_interaction_js() -> str:
             person_module_js,
             display_js,
             demo_js,
+            brand_home_js,
         ]
     )
 
@@ -314,6 +316,7 @@ def cally_one_html(*, static_mode: bool = False) -> str:
             _asset("editor_strict_v2.css"),
             _asset("person_module_polish.css"),
             _asset("demo_space.css"),
+            _asset("brand_home_polish.css"),
         ]
     )
     js = _stable_interaction_js()
