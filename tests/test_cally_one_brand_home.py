@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from qcds_fabric.robots.cally_one.enhanced_ui import cally_one_html
+from qcds_fabric.robots.cally_one.runtime_v3 import CallyOneService
 
 
 def test_brand_home_moves_c_into_action_family_and_preserves_state_space() -> None:
@@ -38,3 +40,107 @@ def test_attribution_and_tribute_license_live_in_hamburger_menu() -> None:
     assert '/api/infer' not in js
     assert 'initializeCore' not in js
     assert 'MutationObserver' not in js
+
+
+def test_timeline_overlap_layout_is_side_by_side_then_local_scroll_when_dense() -> None:
+    html = cally_one_html(static_mode=True)
+    js = Path('src/qcds_fabric/robots/cally_one/brand_home_polish.js').read_text(encoding='utf-8')
+    css = Path('src/qcds_fabric/robots/cally_one/brand_home_polish.css').read_text(encoding='utf-8')
+
+    assert 'layoutTimelineOverlaps(state)' in js
+    assert 'assignOverlapColumns(items)' in js
+    assert 'dayWidth / columns < 118' in js
+    assert "wrapper.className = `callyOverlapCluster${dense ? ' dense' : ''}`" in js
+    assert "element.style.width = '126px'" in js
+    assert 'element.style.width = `calc(${width}% - 6px)`' in js
+    assert '.callyOverlapCluster.dense{' in css
+    assert 'overflow-x:auto!important' in css
+    assert 'scroll-snap-type:x proximity!important' in css
+    assert '.resizeHandle' in html
+    assert '/api/infer' not in js
+    assert 'initializeCore' not in js
+    assert 'MutationObserver' not in js
+
+
+def test_actual_conflict_can_be_explicitly_accepted_without_deleting_it() -> None:
+    with TemporaryDirectory() as root:
+        service = CallyOneService(root)
+        ball = service.upsert_entity(
+            {
+                'kind': 'resource',
+                'label': 'Matchboll',
+                'dimensions': {
+                    'type': 'ball',
+                    'mobility': 'stationary',
+                    'capacity': 1,
+                    'capacity_dimension': 'booking',
+                },
+            }
+        )
+        first = service.upsert_event(
+            {
+                'title': 'Elsa · fotbollsmatch',
+                'start': '2026-09-05T17:00',
+                'end': '2026-09-05T18:30',
+                'links': [{'predicate': 'uses', 'object_id': ball.entity_id, 'dimensions': {'load': 1}}],
+            }
+        )
+        second = service.upsert_event(
+            {
+                'title': 'Leo · fotbollsmatch',
+                'start': '2026-09-05T17:15',
+                'end': '2026-09-05T18:15',
+                'links': [{'predicate': 'uses', 'object_id': ball.entity_id, 'dimensions': {'load': 1}}],
+            }
+        )
+        conflict = next(item for item in service.state_conflicts() if item['state_id'] == ball.entity_id)
+        assert conflict['status'] == 'unresolved'
+        assert set(conflict['event_ids']) == {first.event_id, second.event_id}
+
+        service.upsert_relation(
+            {
+                'relation_id': f"acceptance:{conflict['conflict_id']}",
+                'subject_id': first.event_id,
+                'predicate': 'accepts_conflict',
+                'object_id': ball.entity_id,
+                'dimensions': {
+                    'conflict_id': conflict['conflict_id'],
+                    'state_id': ball.entity_id,
+                    'event_ids': conflict['event_ids'],
+                    'accepted': True,
+                    'accepted_by': 'human',
+                },
+            }
+        )
+
+        accepted = next(item for item in service.state_conflicts() if item['conflict_id'] == conflict['conflict_id'])
+        assert accepted['status'] == 'accepted'
+        assert accepted['severity'] == 'accepted_conflict'
+        assert accepted['accepted_by'] == 'human'
+        state = service.state()
+        assert state['unresolved_conflict_count'] == 0
+        assert state['accepted_conflict_count'] == 1
+        assert state['state_model']['accepted_conflict_is_represented_state'] is True
+        assert state['state_model']['accepted_conflict_remains_auditable'] is True
+
+        result = service.infer_placement(second.event_id)
+        current = result['candidate_worlds']['shift-zero']
+        assert not any(reason.startswith(f"state:{ball.entity_id}:capacity:") for reason in current['reasons'])
+        assert result['provenance']['accepted_conflicts_are_represented_conditions'] is True
+
+
+def test_conflict_acceptance_ui_is_stateful_and_not_qcds() -> None:
+    html = cally_one_html(static_mode=True)
+    js = Path('src/qcds_fabric/robots/cally_one/brand_home_polish.js').read_text(encoding='utf-8')
+    css = Path('src/qcds_fabric/robots/cally_one/brand_home_polish.css').read_text(encoding='utf-8')
+
+    assert "predicate:'accepts_conflict'" in js
+    assert "button.textContent = accepted ? 'Ångra godkännande' : 'Det här är okej'" in js
+    assert 'Godkänd samtidig användning' in js
+    assert 'callyAcceptedConflictBadge' in html
+    assert '.callyAcceptedConflict{' in css
+    assert '.callyConflictAccept{' in css
+    acceptance_section = js.split('async function setConflictAccepted', 1)[1].split('function effectiveConflicts', 1)[0]
+    assert '/api/relation' in acceptance_section
+    assert '/api/infer' not in acceptance_section
+    assert 'initializeCore' not in acceptance_section
