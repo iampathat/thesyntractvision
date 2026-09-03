@@ -1,6 +1,6 @@
-/* Cally.One top-action + event-control polish. Semantic icons, one geometry, no content overlap. */
+/* Cally.One top-action + editor + event-control polish. Semantic, aligned, information-first. */
 
-/* Four top actions are one family. */
+/* Four top actions are one family and are optically centred, not merely box-centred. */
 .topActions{
   display:grid!important;
   grid-auto-flow:column!important;
@@ -19,13 +19,15 @@
   border-radius:10px!important;
   display:grid!important;
   place-items:center!important;
+  line-height:0!important;
 }
 .topActions .actionIcon{
   display:grid!important;
   place-items:center!important;
   width:18px!important;
   height:18px!important;
-  line-height:1!important;
+  line-height:0!important;
+  transform:translateY(.5px)!important;
 }
 .topActions .actionIcon svg{
   display:block!important;
@@ -38,18 +40,40 @@
 #eventBtn .actionIcon{font-size:0!important;background:none!important}
 #eventBtn .actionIcon svg{width:19px!important;height:19px!important}
 #perspectiveBtn .actionIcon{width:18px!important;height:18px!important}
-.callyMenuButton::before{width:18px!important;height:13px!important;background-size:18px 1.5px,18px 1.5px,18px 1.5px!important}
-
-/* Event cards reserve a clear control rail in the upper-right. */
-.event{
-  padding:8px 96px 8px 10px!important;
+.callyMenuButton::before{
+  width:18px!important;
+  height:13px!important;
+  background-size:18px 1.5px,18px 1.5px,18px 1.5px!important;
+  transform:translateY(.5px)!important;
 }
+
+/* Event cards: title first. Only the pin consumes the title row; move/edit live below. */
+.event{
+  padding:8px 36px 8px 10px!important;
+}
+.event b{
+  display:block!important;
+  min-width:0!important;
+  max-width:100%!important;
+  padding-right:0!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.event small{
+  display:block!important;
+  min-width:0!important;
+  padding-right:58px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.event .chips{padding-right:58px!important}
 .eventMove,.eventEdit,.event .pinBtn{
-  top:7px!important;
-  width:26px!important;
-  height:26px!important;
-  min-width:26px!important;
-  min-height:26px!important;
+  width:24px!important;
+  height:24px!important;
+  min-width:24px!important;
+  min-height:24px!important;
   padding:0!important;
   border:1px solid #b8c7bd!important;
   border-radius:7px!important;
@@ -60,31 +84,240 @@
   place-items:center!important;
   box-shadow:none!important;
 }
-.eventMove{left:auto!important;right:67px!important;cursor:grab!important}
-.eventEdit{left:auto!important;right:37px!important}
-.event .pinBtn{left:auto!important;right:7px!important;z-index:15!important}
-.eventMove svg{width:14px!important;height:14px!important}
-.eventEdit svg,.event .pinBtn svg{width:13px!important;height:13px!important}
+.event .pinBtn{left:auto!important;right:6px!important;top:6px!important;bottom:auto!important;z-index:15!important}
+.eventMove{left:auto!important;right:34px!important;top:auto!important;bottom:6px!important;cursor:grab!important}
+.eventEdit{left:auto!important;right:6px!important;top:auto!important;bottom:6px!important}
+.eventMove svg{width:13px!important;height:13px!important}
+.eventEdit svg,.event .pinBtn svg{width:12px!important;height:12px!important}
 .eventMove:hover,.eventEdit:hover,.event .pinBtn:hover{background:#fff!important;border-color:#8fa79a!important}
 .eventMove.locked{opacity:.34!important;background:#f0f1ed!important;color:#68766f!important;cursor:not-allowed!important}
 .event .pinBtn:not(.locked){background:#fff!important;border-color:#9eafa5!important;color:#214638!important}
 .event .pinBtn.locked{background:var(--cally-accent-dark)!important;border-color:var(--cally-accent-dark)!important;color:#fff!important;opacity:1!important}
 .event .pinBtn.locked svg{opacity:1!important}
-.event b,.event small{position:relative!important;z-index:2!important}
-.event .chips{position:relative!important;z-index:2!important}
-.resizeHandle{z-index:16!important}
+.event b,.event small,.event .chips{position:relative!important;z-index:2!important}
+.resizeHandle{
+  left:0!important;
+  right:auto!important;
+  bottom:0!important;
+  width:25px!important;
+  height:25px!important;
+  z-index:16!important;
+}
+.resizeHandle::before,.resizeHandle::after{left:4px!important;right:auto!important;transform:scaleX(-1)!important}
+.resizeHandle::after{left:8px!important;right:auto!important}
 
-/* Keep the same hierarchy when a column gets narrow. */
+/* Editors use the same Scandinavian strictness as Perspective/States. */
+.stateSheet,
+#modalBack[data-cally-base-editor="1"]>.modal,
+#modalBack[data-cally-base-editor="1"]>.dialog,
+#modalBack[data-cally-base-editor="1"]>.card{
+  width:min(720px,100%)!important;
+  max-width:720px!important;
+  border:1px solid var(--cally-line)!important;
+  border-radius:18px!important;
+  background:var(--cally-paper)!important;
+  box-shadow:0 22px 64px rgba(16,35,27,.14)!important;
+}
+.stateSheet{padding:22px!important}
+.sheetHead,.callyEventHead{
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:space-between!important;
+  gap:18px!important;
+  padding:0 0 16px!important;
+  margin:0 0 18px!important;
+  border-bottom:1px solid var(--cally-line)!important;
+  background:var(--cally-paper)!important;
+}
+.sheetHead h2,.callyEventHead h2{
+  margin:4px 0 7px!important;
+  font-size:30px!important;
+  line-height:1!important;
+  font-weight:760!important;
+  letter-spacing:-.045em!important;
+}
+.sheetHead p{
+  max-width:520px!important;
+  margin:0!important;
+  color:var(--cally-muted)!important;
+  font-size:10.5px!important;
+  line-height:1.5!important;
+}
+.eyebrow,.callyEventHead h2::before{
+  color:var(--cally-accent)!important;
+  font-size:8.5px!important;
+  line-height:1!important;
+  font-weight:850!important;
+  letter-spacing:.16em!important;
+}
+.sheetClose,.callyEventClose{
+  width:40px!important;
+  min-width:40px!important;
+  height:40px!important;
+  min-height:40px!important;
+  padding:0!important;
+  border:1px solid var(--cally-line)!important;
+  border-radius:10px!important;
+  background:#f0f1ed!important;
+  color:var(--cally-ink)!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  line-height:1!important;
+  font-size:22px!important;
+}
+
+.stateForm{gap:13px!important}
+.stateForm label,
+#modalBack[data-cally-base-editor="1"] .field>label,
+#modalBack[data-cally-base-editor="1"] .callyEventSection .field>label{
+  gap:6px!important;
+  color:var(--cally-muted)!important;
+  font-size:9.5px!important;
+  line-height:1.2!important;
+  font-weight:760!important;
+}
+.stateInput,
+#modalBack[data-cally-base-editor="1"] input:not([type="checkbox"]):not([type="radio"]),
+#modalBack[data-cally-base-editor="1"] select,
+#modalBack[data-cally-base-editor="1"] textarea{
+  min-height:44px!important;
+  border:1px solid var(--cally-line)!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  padding:9px 11px!important;
+  color:var(--cally-ink)!important;
+  font-size:13px!important;
+  line-height:1.25!important;
+  box-shadow:none!important;
+}
+.stateInput:focus,
+#modalBack[data-cally-base-editor="1"] input:focus,
+#modalBack[data-cally-base-editor="1"] select:focus,
+#modalBack[data-cally-base-editor="1"] textarea:focus{
+  outline:2px solid rgba(8,122,89,.16)!important;
+  outline-offset:1px!important;
+  border-color:#8eaa9b!important;
+}
+.stateFormTwo{gap:10px!important}
+.stateLabel{
+  margin:3px 0 7px!important;
+  color:var(--cally-muted)!important;
+  font-size:9.5px!important;
+  line-height:1.2!important;
+  font-weight:760!important;
+}
+.smallStateBtn,
+.statePrimary,
+.callyEventActions button{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  line-height:1!important;
+  font-weight:780!important;
+}
+.smallStateBtn{
+  min-height:36px!important;
+  padding:8px 11px!important;
+  border-radius:9px!important;
+  background:transparent!important;
+  border:1px solid var(--cally-line)!important;
+}
+.statePrimary{
+  min-height:46px!important;
+  border-radius:9px!important;
+  background:var(--cally-accent-dark)!important;
+  border-color:var(--cally-accent-dark)!important;
+}
+
+#modalBack[data-cally-base-editor="1"]>.modal,
+#modalBack[data-cally-base-editor="1"]>.dialog,
+#modalBack[data-cally-base-editor="1"]>.card{padding:22px!important}
+#modalBack[data-cally-base-editor="1"] .formGrid{gap:13px!important}
+.callyEventTitleInput{
+  min-height:48px!important;
+  font-size:18px!important;
+  line-height:1.15!important;
+  font-weight:720!important;
+  letter-spacing:-.025em!important;
+}
+#modalBack[data-cally-base-editor="1"] .callyEventSection{
+  margin:15px 0 0!important;
+  padding:15px 0 0!important;
+  border-top:1px solid var(--cally-line)!important;
+  gap:10px 12px!important;
+}
+#modalBack[data-cally-base-editor="1"] .callyEventSection>h3{
+  margin:0 0 2px!important;
+  font-size:8.5px!important;
+  line-height:1!important;
+  letter-spacing:.16em!important;
+}
+.callyEventActions{
+  gap:8px!important;
+  margin:18px -22px -22px!important;
+  padding:12px 22px!important;
+  border-top:1px solid var(--cally-line)!important;
+  background:rgba(251,250,246,.96)!important;
+  box-shadow:none!important;
+}
+.callyEventActions #inferBtn,.callyEventActions #saveEvent{
+  min-height:46px!important;
+  border-radius:9px!important;
+  padding:10px 14px!important;
+  font-size:12px!important;
+}
+.callyEventActions #inferBtn{
+  background:#fff!important;
+  border-color:#b9c7bf!important;
+  color:var(--cally-ink)!important;
+}
+.callyEventActions #saveEvent{
+  background:var(--cally-accent-dark)!important;
+  border-color:var(--cally-accent-dark)!important;
+  color:#fff!important;
+}
+
+/* Keep the same hierarchy when a column/screen gets narrow. */
 @media(max-width:760px){
   .topActions{grid-auto-columns:40px!important;gap:5px!important}
   .topActions .btn,.callyMenuButton{width:40px!important;min-width:40px!important;height:40px!important;min-height:40px!important;border-radius:9px!important}
-  .event{padding-right:92px!important}
-  .eventMove{right:64px!important}
-  .eventEdit{right:35px!important}
-  .event .pinBtn{right:6px!important}
+  .event{padding-right:34px!important}
+  .event small,.event .chips{padding-right:56px!important}
+  .event .pinBtn{right:5px!important;top:5px!important}
+  .eventMove{right:33px!important;bottom:5px!important}
+  .eventEdit{right:5px!important;bottom:5px!important}
+
+  .stateSheet,
+  #modalBack[data-cally-base-editor="1"]>.modal,
+  #modalBack[data-cally-base-editor="1"]>.dialog,
+  #modalBack[data-cally-base-editor="1"]>.card{
+    width:100%!important;
+    max-width:none!important;
+    max-height:92dvh!important;
+    border-radius:18px 18px 0 0!important;
+  }
+  .stateSheet{padding:18px 16px max(18px,env(safe-area-inset-bottom))!important}
+  #modalBack[data-cally-base-editor="1"]>.modal,
+  #modalBack[data-cally-base-editor="1"]>.dialog,
+  #modalBack[data-cally-base-editor="1"]>.card{padding:18px 16px max(18px,env(safe-area-inset-bottom))!important}
+  .sheetHead,.callyEventHead{padding-bottom:14px!important;margin-bottom:16px!important}
+  .sheetHead h2,.callyEventHead h2{font-size:27px!important}
+  .sheetHead p{font-size:10px!important}
+  .stateForm{gap:12px!important}
+  .stateInput,
+  #modalBack[data-cally-base-editor="1"] input:not([type="checkbox"]):not([type="radio"]),
+  #modalBack[data-cally-base-editor="1"] select,
+  #modalBack[data-cally-base-editor="1"] textarea{min-height:43px!important;font-size:16px!important}
+  .callyEventTitleInput{min-height:47px!important;font-size:18px!important}
+  .callyEventActions{
+    margin:16px -16px calc(-1 * max(18px,env(safe-area-inset-bottom)))!important;
+    padding:11px 16px max(11px,env(safe-area-inset-bottom))!important;
+  }
 }
 
 @media(max-width:390px){
   .topActions{grid-auto-columns:37px!important;gap:4px!important}
   .topActions .btn,.callyMenuButton{width:37px!important;min-width:37px!important;height:37px!important;min-height:37px!important}
+  .stateFormTwo{grid-template-columns:1fr!important}
 }
