@@ -7,6 +7,8 @@ from qcds_fabric.robots.cally_one.enhanced_ui import cally_one_html
 
 DEMO_JS = Path("src/qcds_fabric/robots/cally_one/demo_space.js")
 CONTROLLER_JS = Path("src/qcds_fabric/robots/cally_one/interaction_controller.js")
+DISPLAY_JS = Path("src/qcds_fabric/robots/cally_one/calendar_display.js")
+LAYOUT_JS = Path("src/qcds_fabric/robots/cally_one/calendar_layout_hotfix.js")
 
 
 def test_demo_space_is_a_separate_browser_state_domain() -> None:
@@ -73,8 +75,12 @@ def test_demo_switcher_is_reversible_and_never_starts_qcds() -> None:
     assert "MutationObserver" not in demo
 
 
-def test_inline_edits_follow_the_active_space_storage_key() -> None:
+def test_all_browser_projection_reads_follow_the_active_space() -> None:
     controller = CONTROLLER_JS.read_text(encoding="utf-8")
+    display = DISPLAY_JS.read_text(encoding="utf-8")
+    layout = LAYOUT_JS.read_text(encoding="utf-8")
     assert "typeof window.__callySpaceStorageKey === 'function'" in controller
     assert "localStorage.getItem(localKey())" in controller
     assert "localStorage.setItem(localKey(), JSON.stringify(state))" in controller
+    assert "typeof window.__callySpaceStorageKey === 'function'" in display
+    assert "typeof window.__callySpaceStorageKey === 'function'" in layout
