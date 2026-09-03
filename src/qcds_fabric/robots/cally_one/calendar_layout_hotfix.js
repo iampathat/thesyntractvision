@@ -3,6 +3,9 @@
   if (window.__callyCalendarLayoutHotfix) return;
   window.__callyCalendarLayoutHotfix = true;
 
+  const PERSON_PLUS_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 19c0-2.8-2.7-4.5-6-4.5S3 16.2 3 19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="9" cy="8" r="3.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M18 8v6M15 11h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  const CALENDAR_PLUS_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M7 3v4M17 3v4M3 9h18M12 12v6M9 15h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+
   function focusTodayInCurrentProjection() {
     const stage = document.querySelector('#stage');
     if (!stage) return;
@@ -47,6 +50,18 @@
     today.addEventListener('click', () => setTimeout(focusTodayInCurrentProjection, 0));
   }
 
+  function setSemanticActionIcon(id, html, label) {
+    const control = document.getElementById(id);
+    const icon = control?.querySelector('.actionIcon');
+    if (!control || !icon) return;
+    if (icon.dataset.callySemanticIcon !== '1') {
+      icon.dataset.callySemanticIcon = '1';
+      icon.innerHTML = html;
+    }
+    control.title = label;
+    control.setAttribute('aria-label', label);
+  }
+
   function polishTopChrome() {
     const mark = document.querySelector('.mark');
     if (mark && mark.dataset.callyMarkPolished !== '1') {
@@ -63,6 +78,16 @@
       const control = document.getElementById(id);
       if (control && control.parentElement === actions) actions.appendChild(control);
     });
+
+    setSemanticActionIcon('personBtn', PERSON_PLUS_ICON, 'Lägg till person');
+    setSemanticActionIcon('eventBtn', CALENDAR_PLUS_ICON, 'Ny händelse');
+    const perspective = document.getElementById('perspectiveBtn');
+    if (perspective) {
+      perspective.title = 'Perspektiv';
+      perspective.setAttribute('aria-label', 'Perspektiv');
+    }
+    menuButton.title = 'Meny';
+    menuButton.setAttribute('aria-label', 'Meny');
   }
 
   function readEvents() {
