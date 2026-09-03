@@ -1,4 +1,4 @@
-/* Cally.One human planning completion — product UI only.
+/* Cally.One human planning/conflict completion — product UI only.
    Everything remains represented state; QCDS/SyntractSystem is untouched. */
 (() => {
   const qs = (s, root=document) => root.querySelector(s);
@@ -9,6 +9,31 @@
     const body = await response.json();
     if (!response.ok) throw new Error(body.error || `HTTP ${response.status}`);
     return body;
+  }
+
+  /* A conflict acceptance relates the clashing event states to each other.
+     The affected person/resource lives in dimensions.state_id. Keeping the
+     resource out of object_id prevents the acceptance itself from being read
+     as another use/reservation of that resource. */
+  function installConflictAcceptanceGuard() {
+    if (window.fetch.__callyConflictAcceptanceGuard) return;
+    const previous = window.fetch.bind(window);
+    const wrapped = async function(input, options={}) {
+      let nextOptions = options;
+      try {
+        const url = new URL(typeof input === 'string' ? input : input.url, window.location.href);
+        if (url.pathname.endsWith('/api/relation') && String(options.method || 'GET').toUpperCase() === 'POST' && options.body) {
+          const body = JSON.parse(options.body);
+          if (body?.predicate === 'accepts_conflict' && Array.isArray(body?.dimensions?.event_ids) && body.dimensions.event_ids.length > 1) {
+            body.object_id = String(body.dimensions.event_ids[1]);
+            nextOptions = {...options, body:JSON.stringify(body)};
+          }
+        }
+      } catch (_) { /* preserve original request */ }
+      return previous(input, nextOptions);
+    };
+    wrapped.__callyConflictAcceptanceGuard = true;
+    window.fetch = wrapped;
   }
 
   async function completePlanningForEvent(eventId, button) {
@@ -78,6 +103,7 @@
   }
 
   function boot() {
+    installConflictAcceptanceGuard();
     const observer = new MutationObserver(enhancePlanningCards);
     observer.observe(document.body, {childList:true, subtree:true});
     enhancePlanningCards();
