@@ -130,7 +130,24 @@ def test_level2_view_rail_is_one_row_scrollable_and_marks_active_green() -> None
     assert 'scrollbar-width:thin!important;' in html
     assert '.callyLevel2Rail .view.active{' in html
     assert 'background:var(--green,#087b58)!important;' in html
-    rail_section = person_js.split('function ensureLevel2ViewRail', 1)[1].split("document.addEventListener('click'", 1)[0]
+    rail_section = person_js.split('function ensureLevel2ViewRail', 1)[1].split('function closeEventPeek', 1)[0]
     assert '/api/infer' not in rail_section
     assert 'initializeCore' not in rail_section
     assert 'MutationObserver' not in rail_section
+
+
+def test_compact_timeline_events_keep_resize_and_progressively_disclose_other_controls() -> None:
+    html = cally_one_html(static_mode=True)
+    person_js = Path('src/qcds_fabric/robots/cally_one/person_module_polish.js').read_text(encoding='utf-8')
+    assert "const resize = qs('.resizeHandle', eventEl);" in person_js
+    assert "more.textContent = '⋯';" in person_js
+    assert "menu.append(move, pin, edit, info);" in person_js
+    assert "info.textContent = 'i';" in person_js
+    assert 'callyEventPeek' in html
+    assert '.event.callyCompactControls{' in html
+    assert '.resizeHandle{display:block!important;visibility:visible!important;opacity:1!important}' in html
+    assert '.callyEventActionMenu[hidden]{display:none!important}' in html
+    progressive = person_js.split('function closeEventPeek', 1)[1]
+    assert '/api/infer' not in progressive
+    assert 'initializeCore' not in progressive
+    assert 'MutationObserver' not in progressive
