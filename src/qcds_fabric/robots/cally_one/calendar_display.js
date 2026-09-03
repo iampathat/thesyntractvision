@@ -116,7 +116,8 @@
 
   function loadEventState() {
     try {
-      const parsed = JSON.parse(localStorage.getItem('cally.one.state.v1') || '{}');
+      const key = typeof window.__callySpaceStorageKey === 'function' ? window.__callySpaceStorageKey() : 'cally.one.state.v1';
+      const parsed = JSON.parse(localStorage.getItem(key) || '{}');
       return Array.isArray(parsed.events) ? parsed.events : [];
     } catch (_) { return []; }
   }
