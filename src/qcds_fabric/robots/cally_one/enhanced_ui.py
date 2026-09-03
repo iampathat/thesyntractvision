@@ -136,6 +136,7 @@ def _stable_interaction_js() -> str:
     controller_js = _asset("interaction_controller.js")
     layout_js = _asset("calendar_layout_hotfix.js")
     display_js = _asset("calendar_display.js")
+    demo_js = _asset("demo_space.js")
     return "\n".join(
         [
             event_js,
@@ -147,6 +148,7 @@ def _stable_interaction_js() -> str:
             controller_js,
             layout_js,
             display_js,
+            demo_js,
         ]
     )
 
@@ -162,6 +164,16 @@ def _make_static_start_lazy(html: str) -> str:
     html = html.replace(
         "let readyResolve, readyReject;\n  const ready = new Promise((resolve, reject) => { readyResolve = resolve; readyReject = reject; });",
         "let ready = null, readyResolve = null, readyReject = null;",
+        1,
+    )
+    html = html.replace(
+        "localStorage.getItem('cally.one.state.v1')",
+        "localStorage.getItem(window.__callySpaceStorageKey())",
+        1,
+    )
+    html = html.replace(
+        "localStorage.setItem('cally.one.state.v1', JSON.stringify(state))",
+        "localStorage.setItem(window.__callySpaceStorageKey(), JSON.stringify(state))",
         1,
     )
     old_worker = """  worker.onmessage = (event) => {
@@ -205,6 +217,14 @@ def _make_static_start_lazy(html: str) -> str:
     html = html.replace(
         "let hydratePromise = null;",
         """let hydratePromise = null;
+  const ACTIVE_SPACE_KEY = 'cally.one.active-space.v1';
+  const DEMO_SPACE_ID = 'demo-family-company';
+  const LIVE_STATE_KEY = 'cally.one.state.v1';
+  const DEMO_STATE_KEY = 'cally.one.state.demo.family-company.v1';
+  window.__callyActiveSpace = () => localStorage.getItem(ACTIVE_SPACE_KEY) === DEMO_SPACE_ID ? DEMO_SPACE_ID : 'personal';
+  window.__callySpaceStorageKey = () => window.__callyActiveSpace() === DEMO_SPACE_ID ? DEMO_STATE_KEY : LIVE_STATE_KEY;
+  window.__callySpaceRecoveryKey = () => window.__callyActiveSpace() === DEMO_SPACE_ID ? 'cally.one.state.recovery.demo.family-company.v1' : 'cally.one.state.recovery.v1';
+  window.__callyIsDemoSpace = () => window.__callyActiveSpace() === DEMO_SPACE_ID;
   let coreStateReady = false;
   window.__callyCoreStateReady = false;
   window.__callyWorkerStarted = false;
@@ -217,7 +237,7 @@ def _make_static_start_lazy(html: str) -> str:
     if (!state.dimensions || typeof state.dimensions !== 'object' || Array.isArray(state.dimensions)) state.dimensions = {};
     if (!state.provenance || typeof state.provenance !== 'object') state.provenance = {};
     state.product = state.product || 'Cally.One';
-    state.space_id = state.space_id || 'cally-one';
+    state.space_id = state.space_id || (window.__callyIsDemoSpace() ? DEMO_SPACE_ID : 'cally-one');
     state.browser_bootstrap = !coreStateReady;
     return state;
   }""",
@@ -234,7 +254,7 @@ def _make_static_start_lazy(html: str) -> str:
         window.__callyCoreStateReady = true;
       } catch (error) {
         try {
-          localStorage.setItem('cally.one.state.recovery.v1', JSON.stringify(stored));
+          localStorage.setItem(window.__callySpaceRecoveryKey(), JSON.stringify(stored));
         } catch (_) {}
         throw error;
       }
@@ -262,6 +282,12 @@ def cally_one_html(*, static_mode: bool = False) -> str:
     html = _base_cally_one_html(static_mode=static_mode)
     html = _make_today_view_aware(html)
     if static_mode:
+        html = _replace_once(
+            html,
+            "const SAVED_VIEW_KEY='cally.one.saved.perspectives.v1';",
+            "const SAVED_VIEW_KEY=localStorage.getItem('cally.one.active-space.v1')==='demo-family-company'?'cally.one.saved.perspectives.demo.family-company.v1':'cally.one.saved.perspectives.v1';",
+            "space-aware saved perspectives",
+        )
         html = _make_static_start_lazy(html)
         old = "else if (path === '/api/infer') action = 'infer';\n    else if (path === '/api/entity') action = 'entity';\n    else if (path === '/api/relation') action = 'relation';\n    else if (path !== '/api/state')"
         new = "else if (path === '/api/infer') action = 'infer';\n    else if (path === '/api/entity') action = 'entity';\n    else if (path === '/api/relation') action = 'relation';\n    else if (path === '/api/dimension') action = 'dimension';\n    else if (path === '/api/dimension/retire') action = 'dimension_retire';\n    else if (path === '/api/person/archive') action = 'person_archive';\n    else if (path !== '/api/state')"
@@ -284,6 +310,7 @@ def cally_one_html(*, static_mode: bool = False) -> str:
             _asset("scandinavian_polish.css"),
             _asset("top_event_control_polish.css"),
             _asset("editor_strict_v2.css"),
+            _asset("demo_space.css"),
         ]
     )
     js = _stable_interaction_js()
