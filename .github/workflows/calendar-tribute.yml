@@ -90,7 +90,7 @@ jobs:
           assert 'PERSON STATE' in html
           assert 'Resources · uses / reserves' in html
           assert 'Cally.One Scandinavian strictness pass' in html
-          assert 'Cally.One top-action + event-control polish' in html
+          assert 'Cally.One top-action + editor + event-control polish' in html
           assert 'PERSON_PLUS_ICON' in html
           assert 'CALENDAR_PLUS_ICON' in html
           assert '--shadow:none' in html
