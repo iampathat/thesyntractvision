@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from qcds_fabric.robots.cally_one.enhanced_ui import cally_one_html
 
 
@@ -58,3 +60,22 @@ def test_editor_v2_is_compact_headline_first_and_time_grouped() -> None:
     assert 'min-width:112px!important' in html
     assert '.stateSheet .statePrimary{' in html
     assert 'justify-self:end!important' in html
+
+
+def test_add_event_and_person_use_compact_popovers_without_qcds() -> None:
+    html = cally_one_html(static_mode=True)
+    layout = Path('src/qcds_fabric/robots/cally_one/calendar_layout_hotfix.js').read_text(encoding='utf-8')
+    assert "openEventQuickAdd" in html
+    assert "openPersonQuickAdd" in html
+    assert "text.textContent = 'Event'" in html
+    assert "text.textContent = 'Person'" in html
+    assert "callyQuickAdd" in html
+    assert "grid-auto-columns:max-content!important" in html
+    assert "transform:translateY(1.75px)!important" in html
+    assert "fetch('/api/event'" in layout
+    assert "fetch('/api/person'" in layout
+    quick_section = layout.split('async function openEventQuickAdd', 1)[1].split('function focusTodayInCurrentProjection', 1)[0]
+    assert '/api/infer' not in quick_section
+    assert 'initializeCore' not in quick_section
+    assert 'MutationObserver' not in quick_section
+    assert "function openEvent(id=null)" in html
