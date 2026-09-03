@@ -79,3 +79,18 @@ def test_add_event_and_person_use_compact_popovers_without_qcds() -> None:
     assert 'initializeCore' not in quick_section
     assert 'MutationObserver' not in quick_section
     assert "function openEvent(id=null)" in html
+
+
+def test_person_module_is_compact_expandable_and_inference_free() -> None:
+    html = cally_one_html(static_mode=True)
+    person_js = Path('src/qcds_fabric/robots/cally_one/person_module_polish.js').read_text(encoding='utf-8')
+    assert 'PERSON SPACE' in html
+    assert 'callyPersonToggle' in html
+    assert 'callyPersonCount' in html
+    assert 'lane.dataset.expanded' in html
+    assert '.personLanes .laneEvents[hidden]{display:none!important}' in html
+    assert 'grid-template-columns:30px minmax(0,1fr) auto 16px!important' in html
+    assert "window.addEventListener('cally-one-ui-refresh', decoratePersonModule)" in person_js
+    assert 'MutationObserver' not in person_js
+    assert '/api/infer' not in person_js
+    assert 'initializeCore' not in person_js
