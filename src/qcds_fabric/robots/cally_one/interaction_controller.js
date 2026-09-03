@@ -5,12 +5,12 @@
 
   const qs = (s, root=document) => root.querySelector(s);
   const qsa = (s, root=document) => [...root.querySelectorAll(s)];
-  const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const localKey = 'cally.one.state.v1';
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+  const localKey = () => typeof window.__callySpaceStorageKey === 'function' ? window.__callySpaceStorageKey() : 'cally.one.state.v1';
 
   function readLocalState() {
     try {
-      const raw = localStorage.getItem(localKey);
+      const raw = localStorage.getItem(localKey());
       const state = raw ? JSON.parse(raw) : {};
       if (!Array.isArray(state.people)) state.people = [];
       if (!Array.isArray(state.events)) state.events = [];
@@ -21,7 +21,7 @@
   }
 
   function writeLocalState(state) {
-    try { localStorage.setItem(localKey, JSON.stringify(state)); }
+    try { localStorage.setItem(localKey(), JSON.stringify(state)); }
     catch (_) { /* browser storage is best effort */ }
   }
 
