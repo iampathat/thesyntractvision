@@ -151,6 +151,62 @@
   color:var(--cally-muted,#66736c)!important;
   font-size:8px!important;
 }
+
+/* Compact person add uses the exact same popover vocabulary as Event/Hamburger. */
+.callyPersonQuickForm{gap:9px!important}
+.callyPersonQuickLoading{padding:12px 2px;color:var(--cally-muted,#66736c);font-size:9px}
+.callyPersonQuickDetails{
+  border:1px solid var(--cally-line,#d9ddd7);
+  border-radius:9px;
+  background:#f8f8f4;
+  overflow:hidden;
+}
+.callyPersonQuickDetails summary{
+  min-height:34px;
+  display:flex;
+  align-items:center;
+  padding:8px 10px;
+  cursor:pointer;
+  color:#31473d;
+  font-size:8.5px;
+  line-height:1;
+  font-weight:790;
+  list-style:none;
+}
+.callyPersonQuickDetails summary::-webkit-details-marker{display:none}
+.callyPersonQuickDetails summary::after{content:'+';margin-left:auto;font-size:14px;font-weight:600;color:#64736b}
+.callyPersonQuickDetails[open] summary::after{content:'–'}
+.callyPersonQuickDetails[open] summary{border-bottom:1px solid var(--cally-line,#d9ddd7)}
+.callyPersonQuickDims{display:grid;gap:6px;padding:8px 8px 0}
+.callyPersonQuickDimRow{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) 28px;
+  gap:6px;
+  align-items:center;
+}
+.callyPersonQuickDimRow input{
+  min-width:0;
+  height:34px;
+  padding:6px 8px;
+  border:1px solid var(--cally-line,#d9ddd7);
+  border-radius:7px;
+  background:#fff;
+  color:var(--cally-ink,#10231b);
+  font-size:9px;
+}
+.callyPersonQuickDimRemove,.callyPersonQuickAddDim{
+  border:1px solid var(--cally-line,#d9ddd7);
+  background:#fff;
+  color:var(--cally-ink,#10231b);
+  border-radius:7px;
+  min-height:30px;
+  font-size:9px;
+  font-weight:760;
+  cursor:pointer;
+}
+.callyPersonQuickDimRemove{width:28px;height:28px;padding:0;display:grid;place-items:center;font-size:14px;line-height:1}
+.callyPersonQuickAddDim{margin:8px;padding:6px 9px}
+
 @media(max-width:760px){
   .personLanes{padding:10px!important}
   .callyPersonModuleHead{padding:3px 2px 10px!important}
@@ -160,4 +216,6 @@
   .callyPersonInitial{width:28px!important;height:28px!important}
   .callyPersonCount{font-size:7px!important}
   .personLanes .laneEvents{grid-template-columns:1fr!important;padding:7px 9px 9px!important}
+  .callyPersonQuickDimRow{grid-template-columns:1fr 1fr 28px}
+  .callyPersonQuickDimRow input{font-size:16px;height:38px}
 }
