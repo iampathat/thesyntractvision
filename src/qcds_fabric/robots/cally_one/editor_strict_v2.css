@@ -1,0 +1,248 @@
+/* Cally.One editor strict v2 — compact Scandinavian form architecture. */
+
+/* Event editor: less box, less dead space, more structure. */
+#modalBack[data-cally-base-editor="1"]>.modal,
+#modalBack[data-cally-base-editor="1"]>.dialog,
+#modalBack[data-cally-base-editor="1"]>.card{
+  width:min(660px,100%)!important;
+  max-width:660px!important;
+  padding:20px 22px 0!important;
+  border-radius:16px!important;
+  background:#fbfaf6!important;
+}
+.callyEventHead{
+  align-items:flex-start!important;
+  padding:0!important;
+  margin:0 0 12px!important;
+  border:0!important;
+}
+.callyEventHead h2{
+  margin:3px 0 0!important;
+  font-size:27px!important;
+  line-height:.98!important;
+  font-weight:730!important;
+  letter-spacing:-.045em!important;
+}
+.callyEventHead h2::before{
+  margin-bottom:7px!important;
+  font-size:8px!important;
+  line-height:1!important;
+}
+.callyEventClose,.sheetClose{
+  width:36px!important;
+  min-width:36px!important;
+  height:36px!important;
+  min-height:36px!important;
+  border-radius:9px!important;
+  font-size:20px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  line-height:1!important;
+}
+#modalBack[data-cally-base-editor="1"] .formGrid{gap:0!important}
+
+/* Title behaves like the event headline, not a giant generic form box. */
+#modalBack[data-cally-base-editor="1"] .callyEventTitleField{
+  grid-column:1/-1!important;
+  margin:0!important;
+  padding:5px 0 15px!important;
+  border-bottom:1px solid #d8ddd6!important;
+}
+#modalBack[data-cally-base-editor="1"] .callyEventTitleField>label{
+  margin-bottom:2px!important;
+  font-size:8.5px!important;
+  letter-spacing:.035em!important;
+}
+#modalBack[data-cally-base-editor="1"] .callyEventTitleInput{
+  min-height:40px!important;
+  padding:2px 0 4px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  outline:0!important;
+  font-size:24px!important;
+  line-height:1.08!important;
+  font-weight:650!important;
+  letter-spacing:-.035em!important;
+  box-shadow:none!important;
+}
+#modalBack[data-cally-base-editor="1"] .callyEventTitleInput:focus{
+  outline:0!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+#modalBack[data-cally-base-editor="1"] .callyEventTitleInput::placeholder{color:#8a908b!important;opacity:1!important}
+
+/* Sections are separated by rhythm, not giant rules and giant fields. */
+#modalBack[data-cally-base-editor="1"] .callyEventSection{
+  grid-column:1/-1!important;
+  margin:0!important;
+  padding:14px 0!important;
+  border-top:1px solid #e1e4df!important;
+  gap:8px!important;
+}
+#modalBack[data-cally-base-editor="1"] .callyEventTitleField + .callyEventSection{border-top:0!important}
+#modalBack[data-cally-base-editor="1"] .callyEventSection>h3{
+  margin:0 0 8px!important;
+  color:#0d7f5c!important;
+  font-size:8px!important;
+  line-height:1!important;
+  letter-spacing:.17em!important;
+}
+
+/* Start/end form one compact temporal block. */
+#modalBack[data-cally-base-editor="1"] .callyWhenSection{display:block!important}
+#modalBack[data-cally-base-editor="1"] .callyWhenSection .field{
+  display:grid!important;
+  grid-template-columns:62px minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:12px!important;
+  margin:0!important;
+  padding:0!important;
+}
+#modalBack[data-cally-base-editor="1"] .callyWhenSection .field + .field{margin-top:8px!important}
+#modalBack[data-cally-base-editor="1"] .callyWhenSection .field>label{
+  margin:0!important;
+  color:#66736c!important;
+  font-size:9px!important;
+  line-height:1!important;
+  font-weight:760!important;
+}
+#modalBack[data-cally-base-editor="1"] .callyWhenSection input{
+  min-height:42px!important;
+  border-radius:8px!important;
+  padding:8px 10px!important;
+  font-size:14px!important;
+  font-variant-numeric:tabular-nums!important;
+}
+
+/* Remaining fields use restrained, consistent controls. */
+#modalBack[data-cally-base-editor="1"] .callyEventSection input:not([type="checkbox"]):not([type="radio"]),
+#modalBack[data-cally-base-editor="1"] .callyEventSection select,
+#modalBack[data-cally-base-editor="1"] .callyEventSection textarea{
+  min-height:42px!important;
+  border-radius:8px!important;
+  padding:8px 10px!important;
+  font-size:13px!important;
+}
+#modalBack[data-cally-base-editor="1"] .peopleChecks label{
+  min-height:42px!important;
+  padding:8px 10px!important;
+  border-radius:9px!important;
+}
+
+/* Action bar: clear priority, no two giant slabs. */
+.callyEventActions{
+  position:sticky!important;
+  bottom:0!important;
+  display:flex!important;
+  justify-content:flex-end!important;
+  align-items:center!important;
+  gap:8px!important;
+  margin:2px -22px 0!important;
+  padding:11px 22px 12px!important;
+  border-top:1px solid #dfe3dd!important;
+  background:rgba(251,250,246,.96)!important;
+  backdrop-filter:blur(14px)!important;
+  -webkit-backdrop-filter:blur(14px)!important;
+  box-shadow:none!important;
+}
+.callyEventActions>*{flex:0 0 auto!important}
+.callyEventActions #inferBtn,.callyEventActions #saveEvent{
+  width:auto!important;
+  min-width:112px!important;
+  min-height:42px!important;
+  border-radius:8px!important;
+  padding:0 15px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  line-height:1!important;
+  font-size:11.5px!important;
+}
+.callyEventActions #inferBtn{background:transparent!important;border-color:#b7c4bc!important}
+.callyEventActions #saveEvent{min-width:104px!important}
+
+/* Person editor uses the same compact architecture. */
+.stateSheet{
+  width:min(660px,100%)!important;
+  max-width:660px!important;
+  padding:20px 22px 22px!important;
+  border-radius:16px!important;
+  background:#fbfaf6!important;
+}
+.stateSheet .sheetHead{
+  padding:0!important;
+  margin:0 0 14px!important;
+  border:0!important;
+}
+.stateSheet .sheetHead h2{
+  margin:3px 0 5px!important;
+  font-size:27px!important;
+  line-height:1!important;
+  font-weight:730!important;
+  letter-spacing:-.04em!important;
+}
+.stateSheet .sheetHead p{
+  max-width:470px!important;
+  font-size:9.5px!important;
+  line-height:1.45!important;
+}
+.stateSheet .stateForm{gap:11px!important}
+.stateSheet .stateForm label{gap:5px!important;font-size:9px!important}
+.stateSheet .stateInput{
+  min-height:42px!important;
+  border-radius:8px!important;
+  padding:8px 10px!important;
+  font-size:13px!important;
+}
+.stateSheet .stateFormTwo{gap:10px!important}
+.stateSheet .stateLabel{margin:5px 0 5px!important;font-size:9px!important}
+.stateSheet .personExtraDims{gap:6px!important}
+.stateSheet .smallStateBtn{min-height:34px!important;border-radius:8px!important;padding:0 11px!important}
+.stateSheet .statePrimary{
+  justify-self:end!important;
+  width:auto!important;
+  min-width:132px!important;
+  min-height:42px!important;
+  border-radius:8px!important;
+  padding:0 15px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  line-height:1!important;
+}
+
+@media(max-width:760px){
+  #modalBack[data-cally-base-editor="1"]>.modal,
+  #modalBack[data-cally-base-editor="1"]>.dialog,
+  #modalBack[data-cally-base-editor="1"]>.card,
+  .stateSheet{
+    width:100%!important;
+    max-width:none!important;
+    max-height:90dvh!important;
+    border-radius:16px 16px 0 0!important;
+  }
+  #modalBack[data-cally-base-editor="1"]>.modal,
+  #modalBack[data-cally-base-editor="1"]>.dialog,
+  #modalBack[data-cally-base-editor="1"]>.card{padding:17px 16px 0!important}
+  .stateSheet{padding:17px 16px max(17px,env(safe-area-inset-bottom))!important}
+  .callyEventHead,.stateSheet .sheetHead{margin-bottom:11px!important}
+  .callyEventHead h2,.stateSheet .sheetHead h2{font-size:25px!important}
+  #modalBack[data-cally-base-editor="1"] .callyEventTitleInput{font-size:21px!important}
+  #modalBack[data-cally-base-editor="1"] .callyWhenSection .field{grid-template-columns:54px minmax(0,1fr)!important;gap:9px!important}
+  #modalBack[data-cally-base-editor="1"] .callyWhenSection input{font-size:16px!important}
+  .callyEventActions{
+    margin:2px -16px 0!important;
+    padding:10px 16px max(10px,env(safe-area-inset-bottom))!important;
+  }
+  .callyEventActions #inferBtn,.callyEventActions #saveEvent{min-height:42px!important;padding:0 13px!important}
+  .stateSheet .stateInput{font-size:16px!important}
+}
+
+@media(max-width:390px){
+  .callyEventActions #inferBtn{min-width:104px!important}
+  .callyEventActions #saveEvent{min-width:92px!important}
+  .stateSheet .stateFormTwo{grid-template-columns:1fr!important}
+}
