@@ -102,7 +102,7 @@ def test_actual_conflict_can_be_explicitly_accepted_without_deleting_it() -> Non
                 'relation_id': f"acceptance:{conflict['conflict_id']}",
                 'subject_id': first.event_id,
                 'predicate': 'accepts_conflict',
-                'object_id': ball.entity_id,
+                'object_id': second.event_id,
                 'dimensions': {
                     'conflict_id': conflict['conflict_id'],
                     'state_id': ball.entity_id,
@@ -132,6 +132,7 @@ def test_actual_conflict_can_be_explicitly_accepted_without_deleting_it() -> Non
 def test_conflict_acceptance_ui_is_stateful_and_not_qcds() -> None:
     html = cally_one_html(static_mode=True)
     js = Path('src/qcds_fabric/robots/cally_one/brand_home_polish.js').read_text(encoding='utf-8')
+    guard = Path('src/qcds_fabric/robots/cally_one/manual_resolution_ui.js').read_text(encoding='utf-8')
     css = Path('src/qcds_fabric/robots/cally_one/brand_home_polish.css').read_text(encoding='utf-8')
 
     assert "predicate:'accepts_conflict'" in js
@@ -140,6 +141,8 @@ def test_conflict_acceptance_ui_is_stateful_and_not_qcds() -> None:
     assert 'callyAcceptedConflictBadge' in html
     assert '.callyAcceptedConflict{' in css
     assert '.callyConflictAccept{' in css
+    assert "body?.predicate === 'accepts_conflict'" in guard
+    assert 'body.object_id = String(body.dimensions.event_ids[1])' in guard
     acceptance_section = js.split('async function setConflictAccepted', 1)[1].split('function effectiveConflicts', 1)[0]
     assert '/api/relation' in acceptance_section
     assert '/api/infer' not in acceptance_section
