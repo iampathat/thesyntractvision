@@ -1,4 +1,4 @@
-/* Cally.One Person module — compact expandable projection + compact person add + Level 2 view rail, no inference. */
+/* Cally.One Person module — compact expandable projection + compact person add + Level 2 view rail + progressive event controls, no inference. */
 (() => {
   if (window.__callyPersonModulePolish) return;
   window.__callyPersonModulePolish = true;
@@ -234,18 +234,120 @@
     });
   }
 
+  function closeEventPeek() {
+    qs('#callyEventPeek')?.remove();
+  }
+
+  function closeEventActionMenus(except=null) {
+    qsa('.callyEventActionMenu').forEach(menu => {
+      if (menu === except) return;
+      menu.hidden = true;
+      menu.closest('.event')?.querySelector('.callyEventMore')?.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  function formatEventMoment(value) {
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return String(value || '');
+    return new Intl.DateTimeFormat(undefined, {weekday:'short', day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'}).format(d);
+  }
+
+  async function openEventPeek(anchor, eventId) {
+    closeEventPeek();
+    const state = await currentState();
+    const item = (state.events || []).find(event => event.event_id === eventId);
+    if (!item) return;
+    const peopleById = new Map((state.people || []).map(person => [person.person_id, person.name]));
+    const people = (item.people || []).map(id => peopleById.get(id) || id).filter(Boolean);
+    const dimensions = Object.entries(item.dimensions || {}).filter(([,value]) => value !== '' && value != null).slice(0,6);
+    const peek = document.createElement('div');
+    peek.id = 'callyEventPeek';
+    peek.className = 'callyEventPeek';
+    peek.innerHTML = `<div class="callyEventPeekHead"><div><div class="callyEventPeekEyebrow">HÄNDELSE</div><strong>${esc(item.title || 'Händelse')}</strong></div><button type="button" class="callyEventPeekClose" aria-label="Stäng">×</button></div><div class="callyEventPeekTime">${esc(formatEventMoment(item.start))}<span>→</span>${esc(formatEventMoment(item.end))}</div>${item.location ? `<div class="callyEventPeekRow"><span>Plats</span><b>${esc(item.location)}</b></div>` : ''}${people.length ? `<div class="callyEventPeekRow"><span>Personer</span><b>${people.map(esc).join(' · ')}</b></div>` : ''}${dimensions.length ? `<div class="callyEventPeekDims">${dimensions.map(([key,value]) => `<span>${esc(key)} · ${esc(typeof value === 'object' ? JSON.stringify(value) : value)}</span>`).join('')}</div>` : ''}`;
+    document.body.appendChild(peek);
+    const rect = anchor.getBoundingClientRect();
+    const width = Math.min(340, window.innerWidth - 16);
+    let left = Math.max(8, Math.min(rect.left, window.innerWidth - width - 8));
+    let top = rect.bottom + 8;
+    if (top + peek.offsetHeight > window.innerHeight - 8) top = Math.max(8, rect.top - peek.offsetHeight - 8);
+    peek.style.width = `${width}px`;
+    peek.style.left = `${left}px`;
+    peek.style.top = `${top}px`;
+    qs('.callyEventPeekClose', peek)?.addEventListener('click', closeEventPeek, {once:true});
+  }
+
+  function decorateProgressiveEventControls() {
+    qsa('#stage .event[data-event-id]').forEach(eventEl => {
+      if (eventEl.dataset.callyProgressiveControls === '1') return;
+      const move = qs('.eventMove', eventEl);
+      const edit = qs('.eventEdit', eventEl);
+      const pin = qs('.pinBtn[data-pin-event]', eventEl);
+      const resize = qs('.resizeHandle', eventEl);
+      if (!move || !edit || !pin || !resize) return;
+      eventEl.dataset.callyProgressiveControls = '1';
+      eventEl.classList.add('callyCompactControls');
+
+      const more = document.createElement('button');
+      more.type = 'button';
+      more.className = 'callyEventMore';
+      more.setAttribute('aria-label', 'Fler händelseval');
+      more.setAttribute('aria-expanded', 'false');
+      more.textContent = '⋯';
+
+      const menu = document.createElement('div');
+      menu.className = 'callyEventActionMenu';
+      menu.hidden = true;
+      menu.setAttribute('role', 'menu');
+      move.title = 'Flytta';
+      edit.title = 'Redigera';
+      pin.title = pin.classList.contains('locked') ? 'Lossa' : 'Nåla';
+      const info = document.createElement('button');
+      info.type = 'button';
+      info.className = 'callyEventInfo';
+      info.dataset.eventInfo = eventEl.dataset.eventId;
+      info.title = 'Visa information';
+      info.setAttribute('aria-label', 'Visa händelseinformation');
+      info.textContent = 'i';
+      menu.append(move, pin, edit, info);
+      eventEl.append(more, menu);
+
+      more.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        const opening = menu.hidden;
+        closeEventActionMenus(menu);
+        closeEventPeek();
+        menu.hidden = !opening;
+        more.setAttribute('aria-expanded', String(opening));
+      });
+      info.addEventListener('click', event => {
+        event.preventDefault();
+        event.stopPropagation();
+        menu.hidden = true;
+        more.setAttribute('aria-expanded', 'false');
+        openEventPeek(eventEl, eventEl.dataset.eventId);
+      });
+    });
+  }
+
   document.addEventListener('click', event => {
     const trigger = event.target.closest?.('#personBtn,[data-add-state="person"]');
-    if (!trigger) return;
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
-    const anchor = qs('#personBtn') || trigger;
-    openCompactPersonAdd(anchor);
+    if (trigger) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      const anchor = qs('#personBtn') || trigger;
+      openCompactPersonAdd(anchor);
+      return;
+    }
+    if (!event.target.closest?.('.callyEventActionMenu,.callyEventMore')) closeEventActionMenus();
+    if (!event.target.closest?.('#callyEventPeek,.callyEventInfo')) closeEventPeek();
   }, true);
 
   window.addEventListener('resize', () => {
     ensureLevel2ViewRail();
+    closeEventActionMenus();
+    closeEventPeek();
     const box = qs('#callyQuickAdd');
     if (!box || box.hidden || box.dataset.kind !== 'person') return;
     const trigger = qs('#personBtn');
@@ -253,11 +355,14 @@
   }, {passive:true});
   window.addEventListener('cally-one-ui-refresh', decoratePersonModule);
   window.addEventListener('cally-one-ui-refresh', ensureLevel2ViewRail);
+  window.addEventListener('cally-one-ui-refresh', decorateProgressiveEventControls);
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', decoratePersonModule, {once:true});
     document.addEventListener('DOMContentLoaded', ensureLevel2ViewRail, {once:true});
+    document.addEventListener('DOMContentLoaded', decorateProgressiveEventControls, {once:true});
   } else {
     decoratePersonModule();
     ensureLevel2ViewRail();
+    decorateProgressiveEventControls();
   }
 })();
