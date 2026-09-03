@@ -27,6 +27,12 @@
     }, 0);
   }
 
+  function openAllStates() {
+    closeTransientUI();
+    const legacyStateTrigger = qs('.mark');
+    if (legacyStateTrigger) legacyStateTrigger.click();
+  }
+
   function ensureHomeTile(actions) {
     let home = qs('#callyHomeTile');
     if (!home) {
@@ -35,9 +41,9 @@
       home.type = 'button';
       home.className = 'btn callyHomeTile';
       home.textContent = 'C';
-      home.title = 'Cally.One · Start';
-      home.setAttribute('aria-label', 'Cally.One · Start');
-      home.addEventListener('click', goHome);
+      home.title = 'Calendar Space · alla states';
+      home.setAttribute('aria-label', 'Calendar Space · alla states');
+      home.addEventListener('click', openAllStates);
     }
     const perspective = qs('#perspectiveBtn');
     if (home.parentElement !== actions) actions.insertBefore(home, perspective || actions.firstChild);
