@@ -144,7 +144,8 @@
     const linked = qs('#callyLinkedStates', modal);
     const dimensions = qs('#fDimensions', modal)?.closest('.field') || qs('#fDimensions', modal)?.parentElement;
 
-    const when = start && !start.closest('.callyEventSection') ? sectionFor(start, 'När') : null;
+    const when = start && !start.closest('.callyEventSection') ? sectionFor(start, 'När') : start?.closest('.callyEventSection');
+    if (when) when.classList.add('callyWhenSection');
     if (when && end && !end.closest('.callyEventSection')) when.appendChild(end);
     sectionFor(location, 'Var');
     sectionFor(people, 'Personer');
