@@ -427,3 +427,56 @@
   .callyWordmarkHome{font-size:22px!important}
   #callyHomeTile{width:37px!important;min-width:37px!important;height:37px!important;min-height:37px!important}
 }
+
+/* First overlap detail level: fixed chrome + one horizontal event rail. */
+html body .callyOverlapCluster.expanded{
+  overflow:visible!important;
+  padding:36px 4px 10px!important;
+  box-sizing:content-box!important;
+  scroll-snap-type:none!important;
+}
+html body .callyOverlapCluster.expanded .callyOverlapTrack{
+  width:100%!important;
+  min-width:100%!important;
+  height:100%!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  overscroll-behavior-x:contain!important;
+  scroll-snap-type:x proximity!important;
+  scrollbar-width:thin!important;
+  scrollbar-color:#789184 rgba(120,145,132,.14)!important;
+  pointer-events:auto!important;
+}
+html body .callyOverlapCluster.expanded .callyOverlapTrack::-webkit-scrollbar{height:5px!important}
+html body .callyOverlapCluster.expanded .callyOverlapTrack::-webkit-scrollbar-track{background:rgba(120,145,132,.12)!important;border-radius:99px!important}
+html body .callyOverlapCluster.expanded .callyOverlapTrack::-webkit-scrollbar-thumb{background:#789184!important;border-radius:99px!important}
+html body .callyOverlapCluster.expanded .event{
+  top:0!important;
+  scroll-snap-align:start!important;
+}
+html body .callyOverlapCluster.expanded .callyOverlapLane{top:0!important;bottom:0!important}
+html body .callyOverlapCluster.expanded .callyOverlapSpread{
+  position:absolute!important;
+  left:6px!important;
+  right:auto!important;
+  top:6px!important;
+  bottom:auto!important;
+  z-index:92!important;
+  min-width:84px!important;
+}
+html body .callyOverlapCluster.expanded .callyOverlapDeep{
+  position:absolute!important;
+  left:auto!important;
+  right:6px!important;
+  top:6px!important;
+  bottom:auto!important;
+  z-index:94!important;
+  width:max-content!important;
+  display:inline-flex!important;
+}
+html body .callyOverlapCluster.expanded .callyOverlapProgress{display:none!important}
+@media(max-width:760px){
+  html body .callyOverlapCluster.expanded{padding-top:34px!important}
+  html body .callyOverlapCluster.expanded .callyOverlapSpread{left:5px!important;top:5px!important;min-width:78px!important}
+  html body .callyOverlapCluster.expanded .callyOverlapDeep{right:5px!important;top:5px!important}
+}
