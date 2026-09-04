@@ -96,3 +96,33 @@ def test_geometry_changes_get_bounded_overlap_rebuild_and_readable_count():
     assert "callyProjectionRetry" in integrity
     assert '/api/infer' not in integrity
     assert 'initializeCore' not in integrity
+
+
+def test_deep_overlap_workbench_is_readable_editable_and_lazy():
+    html = cally_one_html(static_mode=True)
+    workbench = html.split('Cally.One simultaneous-event workbench.', 1)[1]
+    assert 'window.__callyOverlapWorkbenchV1 = true' in workbench
+    assert 'SAMTIDIGHET · DJUPVY' in workbench
+    assert 'data-workbench-edit' in workbench
+    assert 'window.openEvent?.(eventId)' in workbench
+    assert 'data-workbench-locate' in workbench
+    assert 'data-workbench-fit' in workbench
+    assert 'data-workbench-context' in workbench
+    assert 'pageSize:160' in workbench
+    assert "event.touches.length===2" in workbench
+    assert "event.ctrlKey||event.metaKey" in workbench
+    assert "event.key.toLowerCase()==='e'" in workbench
+    assert "if(event.key==='0')" in workbench
+    assert "fetch('/api/state')" in workbench
+    assert '/api/infer' not in workbench
+    assert 'initializeCore' not in workbench
+    assert 'MutationObserver' not in workbench
+
+
+def test_deep_overlap_workbench_keeps_text_legible_across_zoom_bands():
+    html = cally_one_html(static_mode=True)
+    assert '.callyOverlapWorkbenchSheet[data-zoom-band="overview"] .callyOverlapWorkbenchCard strong' in html
+    assert '.callyOverlapWorkbenchSheet[data-zoom-band="detail"] .callyOverlapWorkbenchCard strong' in html
+    assert '.callyOverlapWorkbenchCardActions' in html
+    assert '.callyOverlapWorkbenchContext' in html
+    assert '@media(pointer:coarse)' in html
