@@ -3,6 +3,7 @@
 (() => {
   const qs = (s, root=document) => root.querySelector(s);
   const qsa = (s, root=document) => [...root.querySelectorAll(s)];
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
   async function json(path, options={}) {
     const response = await fetch(path, options);
@@ -97,13 +98,12 @@
   function ensureOverlapTiming(cluster) {
     const clusterTop = Number.parseFloat(cluster.style.top || '') || 0;
     qsa('.event[data-event-id]', cluster).forEach(event => {
-      let relative = Number.parseFloat(event.dataset.callyOverlapTimedTop || '');
-      if (!Number.isFinite(relative)) {
-        const absolute = Number.parseFloat(event.dataset.callyOverlapAbsoluteTop || '');
-        const current = Number.parseFloat(event.style.top || '');
-        relative = Number.isFinite(absolute) ? absolute - clusterTop : (Number.isFinite(current) ? current : 0);
-        event.dataset.callyOverlapTimedTop = String(relative);
-      }
+      const absolute = Number.parseFloat(event.dataset.callyOverlapAbsoluteTop || '');
+      const current = Number.parseFloat(event.style.top || '');
+      const relative = Number.isFinite(absolute)
+        ? absolute - clusterTop
+        : (Number.isFinite(current) ? current : Number.parseFloat(event.dataset.callyOverlapTimedTop || '0') || 0);
+      event.dataset.callyOverlapTimedTop = String(relative);
       event.style.top = `${relative}px`;
     });
   }
@@ -120,6 +120,24 @@
     event.appendChild(peek);
   }
 
+  function clearOverlapLanes(cluster) {
+    qsa('.callyOverlapLane', cluster).forEach(node => node.remove());
+  }
+
+  function ensureOverlapLanes(cluster, columns, cardWidth, step) {
+    clearOverlapLanes(cluster);
+    const track = qs('.callyOverlapTrack', cluster);
+    if (!track) return;
+    for (let column = 0; column < columns; column += 1) {
+      const lane = document.createElement('span');
+      lane.className = 'callyOverlapLane';
+      lane.style.left = `${4 + column * step}px`;
+      lane.style.width = `${cardWidth}px`;
+      lane.setAttribute('aria-hidden', 'true');
+      track.prepend(lane);
+    }
+  }
+
   function updateOverlapProgress(cluster) {
     const progress = qs('.callyOverlapProgress', cluster);
     if (!progress) return;
@@ -128,7 +146,7 @@
     const count = Math.max(2, Number.parseInt(cluster.dataset.overlapCount || '2', 10) || 2);
     const max = Math.max(0, cluster.scrollWidth - cluster.clientWidth);
     const ratio = max > 0 ? Math.max(0, Math.min(1, cluster.scrollLeft / max)) : 0;
-    const visibleRatio = cluster.scrollWidth > 0 ? Math.max(.08, Math.min(1, cluster.clientWidth / cluster.scrollWidth)) : 1;
+    const visibleRatio = cluster.scrollWidth > 0 ? Math.max(.06, Math.min(1, cluster.clientWidth / cluster.scrollWidth)) : 1;
     if (thumb) {
       thumb.style.width = `${visibleRatio * 100}%`;
       thumb.style.left = `${ratio * (100 - visibleRatio * 100)}%`;
@@ -167,6 +185,7 @@
     const fan = columns <= 3 && cardWidth >= 108;
 
     ensureOverlapTiming(cluster);
+    clearOverlapLanes(cluster);
     cluster.classList.add('callyOverlapFan');
     cluster.classList.toggle('rail', !fan);
     cluster.classList.remove('expanded');
@@ -208,12 +227,16 @@
     const dayRect = cluster.parentElement?.getBoundingClientRect();
     if (!dayRect) return;
     const edge = 8;
-    const cardWidth = 154;
-    const step = 162;
-    const desired = Math.min(window.innerWidth - edge * 2, Math.max(dayRect.width, Math.min(columns, 4) * step + 8));
+    const available = Math.max(260, window.innerWidth - edge * 2);
+    const desired = Math.min(available, Math.max(dayRect.width, Math.min(columns, 4) * 150 + 14));
     let left = 0;
     if (dayRect.left + desired > window.innerWidth - edge) left = window.innerWidth - edge - dayRect.left - desired;
     if (dayRect.left + left < edge) left = edge - dayRect.left;
+
+    const gap = 6;
+    const visibleColumns = Math.max(2, Math.min(columns, Math.floor((desired - 14) / 132)));
+    const cardWidth = Math.max(126, Math.floor((desired - 12 - gap * (visibleColumns - 1)) / visibleColumns));
+    const step = cardWidth + gap;
 
     ensureOverlapTiming(cluster);
     cluster.classList.add('callyOverlapFan', 'expanded');
@@ -221,6 +244,7 @@
     cluster.style.setProperty('--cally-overlap-expanded-left', `${left}px`);
     cluster.style.setProperty('--cally-overlap-expanded-width', `${desired}px`);
     track.style.setProperty('--cally-overlap-track-width', `${Math.max(desired, columns * step + 8)}px`);
+    ensureOverlapLanes(cluster, columns, cardWidth, step);
     events.forEach(event => {
       const column = overlapColumn(event);
       event.dataset.callyOverlapColumn = String(column);
@@ -236,11 +260,13 @@
     return qsa('.event[data-event-id]', cluster).map(event => ({
       element:event,
       eventId:String(event.dataset.eventId || ''),
+      column:overlapColumn(event),
       title:(qs('b', event)?.textContent || qs('.eventTitle', event)?.textContent || 'Händelse').trim(),
       meta:(qs('small', event)?.textContent || '').trim(),
       time:overlapClock(event),
       top:Number.parseFloat(event.dataset.callyOverlapTimedTop || event.style.top || '0') || 0,
-    })).sort((a,b) => a.top - b.top || a.title.localeCompare(b.title, 'sv'));
+      height:Math.max(30, Number.parseFloat(event.style.height || '') || event.offsetHeight || 34),
+    })).sort((a,b) => a.column - b.column || a.top - b.top || a.title.localeCompare(b.title, 'sv'));
   }
 
   function openOverlapExplorer(cluster) {
@@ -251,27 +277,42 @@
       overlay = document.createElement('div');
       overlay.id = 'callyOverlapExplorer';
       overlay.className = 'callyOverlapExplorer';
-      overlay.innerHTML = '<section class="callyOverlapExplorerSheet" role="dialog" aria-modal="true" aria-label="Utforska samtidiga händelser"></section>';
+      overlay.innerHTML = '<section class="callyOverlapExplorerSheet" role="dialog" aria-modal="true" aria-label="Zooma samtidiga händelser"></section>';
       document.body.appendChild(overlay);
       overlay.addEventListener('click', event => { if (event.target === overlay) overlay.classList.remove('open'); });
     }
     const sheet = qs('.callyOverlapExplorerSheet', overlay);
+    const pageSize = 80;
     let page = 0;
-    const pageSize = 60;
     let query = '';
+    let zoom = 1;
 
-    const render = () => {
-      const filtered = rows.filter(row => !query || `${row.title} ${row.meta} ${row.time}`.toLowerCase().includes(query));
+    const clampZoom = value => Math.max(.45, Math.min(1.9, value));
+    const filteredRows = () => rows.filter(row => !query || `${row.title} ${row.meta} ${row.time}`.toLowerCase().includes(query));
+
+    const renderBoard = () => {
+      const filtered = filteredRows();
       const pages = Math.max(1, Math.ceil(filtered.length / pageSize));
       page = Math.max(0, Math.min(page, pages - 1));
       const visible = filtered.slice(page * pageSize, page * pageSize + pageSize);
-      sheet.innerHTML = `<div class="callyOverlapExplorerHead"><div><small>SAMTIDIGHET · DJUPVY</small><h2>${rows.length} samtidiga händelser</h2><p>Filtrera och utforska utan att lämna kalenderns tidsposition.</p></div><button type="button" data-overlap-explorer-close aria-label="Stäng">×</button></div><div class="callyOverlapExplorerTools"><label><span>Sök</span><input data-overlap-explorer-search value="${query.replace(/"/g,'&quot;')}" placeholder="Person, plats, händelse …"></label><div class="callyOverlapExplorerPager"><button type="button" data-overlap-page="prev" ${page<=0?'disabled':''}>‹</button><span>${filtered.length ? page * pageSize + 1 : 0}–${Math.min(filtered.length,(page+1)*pageSize)} / ${filtered.length}</span><button type="button" data-overlap-page="next" ${page>=pages-1?'disabled':''}>›</button></div></div><div class="callyOverlapExplorerList">${visible.map((row,index)=>`<button type="button" class="callyOverlapExplorerRow" data-overlap-row="${page*pageSize+index}"><time>${row.time || '—'}</time><span><b>${row.title}</b><small>${row.meta}</small></span><i>Visa</i></button>`).join('')}</div>`;
-      qs('[data-overlap-explorer-close]', sheet)?.addEventListener('click', () => overlay.classList.remove('open'));
-      const search = qs('[data-overlap-explorer-search]', sheet);
-      search?.addEventListener('input', () => { query = search.value.trim().toLowerCase(); page = 0; render(); requestAnimationFrame(()=>qs('[data-overlap-explorer-search]', sheet)?.focus()); });
-      qs('[data-overlap-page="prev"]', sheet)?.addEventListener('click', () => { page -= 1; render(); });
-      qs('[data-overlap-page="next"]', sheet)?.addEventListener('click', () => { page += 1; render(); });
-      qsa('[data-overlap-row]', sheet).forEach((button,index) => button.addEventListener('click', () => {
+      const viewport = qs('.callyOverlapZoomViewport', sheet);
+      const board = qs('.callyOverlapZoomBoard', sheet);
+      const zoomLabel = qs('[data-overlap-zoom-label]', sheet);
+      const pager = qs('[data-overlap-page-label]', sheet);
+      if (!viewport || !board) return;
+
+      const baseWidth = 150;
+      const cardWidth = Math.round(baseWidth * zoom);
+      const step = cardWidth + 8;
+      const minTop = visible.length ? Math.min(...visible.map(row => row.top)) : 0;
+      const maxBottom = visible.length ? Math.max(...visible.map(row => row.top + row.height)) : 220;
+      board.style.width = `${Math.max(viewport.clientWidth - 2, visible.length * step + 16)}px`;
+      board.style.height = `${Math.max(250, maxBottom - minTop + 70)}px`;
+      board.innerHTML = visible.map((row,index) => {
+        const top = Math.max(12, row.top - minTop + 34);
+        return `<button type="button" class="callyOverlapZoomCard" data-overlap-zoom-row="${index}" style="left:${8 + index * step}px;top:${top}px;width:${cardWidth}px;height:${Math.max(34,row.height)}px"><time>${esc(row.time || '—')}</time><b>${esc(row.title)}</b><small>${esc(row.meta)}</small></button>`;
+      }).join('');
+      qsa('[data-overlap-zoom-row]', board).forEach((button,index) => button.addEventListener('click', () => {
         const target = visible[index]?.element;
         overlay.classList.remove('open');
         if (!target) return;
@@ -279,25 +320,67 @@
         target.classList.add('callyOverlapLocate');
         setTimeout(() => target.classList.remove('callyOverlapLocate'), 900);
       }));
+      if (zoomLabel) zoomLabel.textContent = `${Math.round(zoom * 100)}%`;
+      if (pager) pager.textContent = `${filtered.length ? page * pageSize + 1 : 0}–${Math.min(filtered.length,(page+1)*pageSize)} / ${filtered.length}`;
+      const prev = qs('[data-overlap-page="prev"]', sheet);
+      const next = qs('[data-overlap-page="next"]', sheet);
+      if (prev) prev.disabled = page <= 0;
+      if (next) next.disabled = page >= pages - 1;
     };
-    render();
+
+    const renderShell = () => {
+      sheet.innerHTML = `<div class="callyOverlapExplorerHead"><button type="button" class="callyOverlapBack" data-overlap-explorer-back>← Återgå</button><div><small>SAMTIDIGHET · ZOOM</small><h2>${rows.length} samtidiga händelser</h2><p>Pinch med två fingrar eller använd − / +. Korten ligger kvar på sina riktiga tider.</p></div><button type="button" class="callyOverlapExplorerX" data-overlap-explorer-close aria-label="Stäng">×</button></div><div class="callyOverlapExplorerTools"><label class="callyOverlapSearch"><span>Sök</span><input data-overlap-explorer-search value="${esc(query)}" placeholder="Person, plats, händelse …"></label><div class="callyOverlapZoomControls" aria-label="Zoom"><button type="button" data-overlap-zoom="out" aria-label="Zooma ut">−</button><span data-overlap-zoom-label>100%</span><button type="button" data-overlap-zoom="in" aria-label="Zooma in">+</button></div><div class="callyOverlapExplorerPager"><button type="button" data-overlap-page="prev" aria-label="Föregående grupp">‹</button><span data-overlap-page-label></span><button type="button" data-overlap-page="next" aria-label="Nästa grupp">›</button></div></div><div class="callyOverlapZoomViewport"><div class="callyOverlapZoomBoard"></div></div>`;
+      qs('[data-overlap-explorer-back]', sheet)?.addEventListener('click', () => overlay.classList.remove('open'));
+      qs('[data-overlap-explorer-close]', sheet)?.addEventListener('click', () => overlay.classList.remove('open'));
+      const search = qs('[data-overlap-explorer-search]', sheet);
+      search?.addEventListener('input', () => { query = search.value.trim().toLowerCase(); page = 0; renderBoard(); });
+      qs('[data-overlap-page="prev"]', sheet)?.addEventListener('click', () => { page -= 1; renderBoard(); });
+      qs('[data-overlap-page="next"]', sheet)?.addEventListener('click', () => { page += 1; renderBoard(); });
+      qs('[data-overlap-zoom="out"]', sheet)?.addEventListener('click', () => { zoom = clampZoom(zoom - .15); renderBoard(); });
+      qs('[data-overlap-zoom="in"]', sheet)?.addEventListener('click', () => { zoom = clampZoom(zoom + .15); renderBoard(); });
+
+      const viewport = qs('.callyOverlapZoomViewport', sheet);
+      if (viewport) {
+        let pinchStart = 0;
+        let pinchZoom = zoom;
+        const distance = touches => {
+          const a = touches[0], b = touches[1];
+          return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+        };
+        viewport.addEventListener('touchstart', event => {
+          if (event.touches.length !== 2) return;
+          pinchStart = distance(event.touches);
+          pinchZoom = zoom;
+        }, {passive:true});
+        viewport.addEventListener('touchmove', event => {
+          if (event.touches.length !== 2 || !pinchStart) return;
+          event.preventDefault();
+          zoom = clampZoom(pinchZoom * (distance(event.touches) / pinchStart));
+          renderBoard();
+        }, {passive:false});
+        viewport.addEventListener('touchend', event => { if (event.touches.length < 2) pinchStart = 0; }, {passive:true});
+        viewport.addEventListener('wheel', event => {
+          if (!(event.ctrlKey || event.metaKey)) return;
+          event.preventDefault();
+          zoom = clampZoom(zoom + (event.deltaY < 0 ? .12 : -.12));
+          renderBoard();
+        }, {passive:false});
+      }
+      renderBoard();
+    };
+
+    renderShell();
     overlay.classList.add('open');
-    requestAnimationFrame(() => qs('[data-overlap-explorer-search]', sheet)?.focus());
   }
 
   function ensureOverlapDeepButton(cluster) {
-    const columns = Math.max(2, Number.parseInt(cluster.dataset.overlapCount || '2', 10) || 2);
     let button = qs('.callyOverlapDeep', cluster);
-    if (columns < 6) {
-      button?.remove();
-      return;
-    }
     if (!button) {
       button = document.createElement('button');
       button.type = 'button';
       button.className = 'callyOverlapDeep';
-      button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5"></circle><path d="M14.5 14.5L20 20"></path></svg><span>Djupvy</span>';
-      button.title = 'Utforska alla samtidiga händelser';
+      button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5"></circle><path d="M14.5 14.5L20 20"></path><path d="M10.5 8v5M8 10.5h5"></path></svg><span>Zoom</span>';
+      button.title = 'Zooma och utforska samtidiga händelser';
       button.setAttribute('aria-label', button.title);
       button.addEventListener('click', event => {
         event.preventDefault();
@@ -328,7 +411,7 @@
       cluster.appendChild(button);
     }
     const expanded = cluster.classList.contains('expanded');
-    button.innerHTML = expanded ? `<span>${columns}</span><b>⇥⇤</b><em>Fäll ihop</em>` : `<span>${columns}</span><b>↔</b>`;
+    button.innerHTML = expanded ? `<b>←</b><em>Fäll ihop</em>` : `<span>${columns}</span><b>↔</b>`;
     button.title = expanded ? 'Fäll ihop samtidiga händelser' : 'Bredda samtidiga händelser';
     button.setAttribute('aria-label', button.title);
     button.setAttribute('aria-expanded', String(expanded));
