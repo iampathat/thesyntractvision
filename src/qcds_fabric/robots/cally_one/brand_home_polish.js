@@ -5,7 +5,7 @@
 
   const qs = (s, root=document) => root.querySelector(s);
   const qsa = (s, root=document) => [...root.querySelectorAll(s)];
-  const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 
   function closeTransientUI() {
     const quick = qs('#callyQuickAdd');
@@ -424,4 +424,216 @@
     refreshBrandHome();
     refreshCalendarStatePresentation();
   }
+})();
+
+/* Interaction integrity pass: real four-way move handle, fully visible event tools,
+   and a bounded second UI pass after geometry changes so overlap clusters are
+   always rebuilt from the current event times. No inference is started here. */
+(() => {
+  if (window.__callyInteractionIntegrityV1) return;
+  window.__callyInteractionIntegrityV1 = true;
+
+  const qs = (s, root=document) => root.querySelector(s);
+  const qsa = (s, root=document) => [...root.querySelectorAll(s)];
+  const pad = value => String(value).padStart(2, '0');
+  const localIso = date => `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  let moveState = null;
+  let followTimer = null;
+  let labelTimer = null;
+  let projectionRetryBudget = 0;
+
+  function ensureStyles() {
+    if (qs('#callyInteractionIntegrityStyles')) return;
+    const style = document.createElement('style');
+    style.id = 'callyInteractionIntegrityStyles';
+    style.textContent = `
+      html body #stage .event.callyCompactControls .callyEventActionMenu{
+        left:auto!important;right:6px!important;width:max-content!important;max-width:none!important;
+        overflow:visible!important;flex-wrap:nowrap!important;pointer-events:auto!important;
+      }
+      html body #stage .event.callyCompactControls .callyEventActionMenu>*{flex:0 0 26px!important;pointer-events:auto!important}
+      html body #stage .event.callyCompactControls .callyEventActionMenu .eventMove{
+        display:grid!important;pointer-events:auto!important;cursor:grab!important;touch-action:none!important;
+      }
+      html body #stage .event.callyCompactControls .callyEventActionMenu .eventMove:active{cursor:grabbing!important}
+      html body #stage .timeline .dayCol .callyOverlapCluster:not(.expanded)>.callyOverlapSpread{
+        min-width:92px!important;width:auto!important;padding:0 8px!important;gap:5px!important;white-space:nowrap!important;
+        display:inline-flex!important;align-items:center!important;justify-content:center!important;
+      }
+      html body #stage .timeline .dayCol .callyOverlapCluster:not(.expanded)>.callyOverlapSpread span,
+      html body #stage .timeline .dayCol .callyOverlapCluster:not(.expanded)>.callyOverlapSpread em{
+        font-size:8px!important;line-height:1!important;font-style:normal!important;font-weight:820!important;
+      }
+      html body #stage .timeline .dayCol .callyOverlapCluster:not(.expanded)>.callyOverlapSpread b{font-size:11px!important;line-height:1!important}
+    `;
+    document.head.appendChild(style);
+  }
+
+  function effectiveLocked(element) {
+    const mode = window.__callyGlobalMoveMode?.() || 'free';
+    if (mode === 'lock_all') return true;
+    if (mode === 'unlock_all') return false;
+    return element.classList.contains('locked') || !!qs('[data-pin-event].locked', element);
+  }
+
+  async function currentEvent(id) {
+    try {
+      const response = await fetch('/api/state');
+      const state = await response.json();
+      return (state.events || []).find(item => String(item.event_id) === String(id)) || null;
+    } catch (_) { return null; }
+  }
+
+  async function postMove(item, start, end, people) {
+    const response = await fetch('/api/event/move', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({event_id:item.event_id,start:localIso(start),end:localIso(end),people}),
+    });
+    const body = await response.json();
+    if (!response.ok) throw new Error(body.error || `HTTP ${response.status}`);
+    return body;
+  }
+
+  function closeEventMenu(element) {
+    const menu = qs('.callyEventActionMenu', element);
+    if (menu) menu.hidden = true;
+    qs('.callyEventMore', element)?.setAttribute('aria-expanded','false');
+  }
+
+  function cleanupMove() {
+    const state = moveState;
+    if (!state) return;
+    state.handle.removeEventListener('pointerup', finishMove);
+    state.handle.removeEventListener('pointercancel', cancelMove);
+    state.element.classList.remove('dragging');
+    state.handle.removeAttribute('aria-grabbed');
+    moveState = null;
+  }
+
+  function cancelMove() { cleanupMove(); }
+
+  async function finishMove(event) {
+    const state = moveState;
+    if (!state) return;
+    const item = await currentEvent(state.eventId);
+    const under = document.elementFromPoint(event.clientX, event.clientY);
+    const dateCell = under?.closest?.('[data-drop-date]');
+    const personLane = under?.closest?.('[data-drop-person]');
+    cleanupMove();
+    if (!item || (!dateCell && !personLane)) return;
+
+    let start = new Date(item.start);
+    let end = new Date(item.end);
+    const duration = Math.max(0, end - start);
+    let people = [...(item.people || [])];
+    if (dateCell) {
+      const parts = String(dateCell.dataset.dropDate || '').split('-').map(Number);
+      if (parts.length === 3 && parts.every(Number.isFinite)) {
+        start.setFullYear(parts[0], parts[1]-1, parts[2]);
+        if (dateCell.classList.contains('dayCol')) {
+          const rect = dateCell.getBoundingClientRect();
+          const rawMinutes = ((event.clientY - rect.top) / 59.5) * 60;
+          const snapped = Math.max(0, Math.min(16 * 60, Math.round(rawMinutes / 15) * 15));
+          start.setHours(6 + Math.floor(snapped / 60), snapped % 60, 0, 0);
+        }
+        end = new Date(start.getTime() + duration);
+      }
+    }
+    if (personLane) people = [String(personLane.dataset.dropPerson || '')].filter(Boolean);
+
+    try {
+      await postMove(item, start, end, people);
+      await window.load?.();
+      requestAnimationFrame(() => window.dispatchEvent(new CustomEvent('cally-one-ui-refresh', {detail:{geometryExplicit:true}})));
+      window.toast?.('Händelsen flyttad');
+    } catch (error) {
+      window.toast?.(error.message || String(error));
+      await window.load?.();
+    }
+  }
+
+  function beginMove(event, handle) {
+    if (moveState || (event.button !== undefined && event.button !== 0)) return;
+    const element = handle.closest('#stage [data-event-id]');
+    if (!element || effectiveLocked(element)) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      return;
+    }
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    closeEventMenu(element);
+    moveState = {handle, element, eventId:String(element.dataset.eventId || '')};
+    element.classList.add('dragging');
+    handle.setAttribute('aria-grabbed','true');
+    handle.setPointerCapture?.(event.pointerId);
+    handle.addEventListener('pointerup', finishMove, {once:true});
+    handle.addEventListener('pointercancel', cancelMove, {once:true});
+  }
+
+  function decorateOverlapLabels() {
+    qsa('.callyOverlapCluster:not(.expanded)>.callyOverlapSpread').forEach(button => {
+      const cluster = button.closest('.callyOverlapCluster');
+      const count = Math.max(2, Number.parseInt(cluster?.dataset.overlapCount || '2', 10) || 2);
+      button.innerHTML = `<span>${count}</span><em>samtidiga</em><b aria-hidden="true">↔</b>`;
+      button.title = `Bredda ${count} samtidiga händelser`;
+      button.setAttribute('aria-label', button.title);
+    });
+  }
+
+  function ensureVisibleActions() {
+    qsa('#stage .event.callyCompactControls').forEach(element => {
+      const move = qs('.callyEventActionMenu .eventMove', element);
+      if (move) {
+        move.title = 'Flytta mellan dagar och tider';
+        move.setAttribute('aria-label', 'Flytta händelse mellan dagar och tider');
+      }
+    });
+  }
+
+  function hasMissingProjectionAction() {
+    return qsa('#stage .event.callyCompactControls').some(element => {
+      const menu = qs('.callyEventActionMenu', element);
+      return !!menu && !qs('.callyEventProjectionAction', menu);
+    });
+  }
+
+  function scheduleAfterRefresh(isFollowup=false) {
+    ensureStyles();
+    ensureVisibleActions();
+    clearTimeout(labelTimer);
+    labelTimer = setTimeout(() => {
+      decorateOverlapLabels();
+      ensureVisibleActions();
+      if (hasMissingProjectionAction() && projectionRetryBudget > 0) {
+        projectionRetryBudget -= 1;
+        window.dispatchEvent(new CustomEvent('cally-one-ui-refresh', {detail:{callyPostLayout:true,callyProjectionRetry:true}}));
+      }
+    }, 190);
+
+    if (isFollowup) return;
+    projectionRetryBudget = 1;
+    clearTimeout(followTimer);
+    followTimer = setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('cally-one-ui-refresh', {detail:{callyPostLayout:true}}));
+    }, 145);
+  }
+
+  document.addEventListener('pointerdown', event => {
+    const handle = event.target.closest?.('#stage .eventMove');
+    if (handle) beginMove(event, handle);
+  }, true);
+
+  document.addEventListener('click', event => {
+    if (event.target.closest?.('.callyOverlapSpread')) setTimeout(decorateOverlapLabels, 0);
+  });
+
+  window.addEventListener('cally-one-ui-refresh', event => {
+    scheduleAfterRefresh(Boolean(event.detail?.callyPostLayout));
+  });
+  window.addEventListener('cally-demo-space-changed', () => scheduleAfterRefresh(false));
+  window.addEventListener('resize', () => setTimeout(() => { decorateOverlapLabels(); ensureVisibleActions(); }, 120), {passive:true});
+
+  ensureStyles();
+  scheduleAfterRefresh(false);
 })();
