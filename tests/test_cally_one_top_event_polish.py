@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from qcds_fabric.robots.cally_one.enhanced_ui import cally_one_html
+from qcds_fabric.robots.cally_one.runtime_v3 import CallyOneService
 
 
 def test_top_actions_use_semantic_icons_in_one_control_family() -> None:
@@ -151,3 +153,80 @@ def test_compact_timeline_events_keep_resize_and_progressively_disclose_other_co
     assert '/api/infer' not in progressive
     assert 'initializeCore' not in progressive
     assert 'MutationObserver' not in progressive
+
+
+def test_overlap_stack_control_is_topmost_and_last_active_event_can_return_to_front() -> None:
+    html = cally_one_html(static_mode=True)
+    projection = Path('src/qcds_fabric/robots/cally_one/dimension_filter_ui.js').read_text(encoding='utf-8')
+    css = Path('src/qcds_fabric/robots/cally_one/calendar_display.css').read_text(encoding='utf-8')
+    assert '.callyOverlapCluster:not(.expanded)>.callyOverlapSpread{' in html
+    assert 'top:4px!important;' in css
+    assert 'bottom:auto!important;' in css
+    assert 'z-index:118!important;' in css
+    assert 'const activeOverlapEvent = new Map();' in projection
+    assert 'function rememberActive(cluster, eventId)' in projection
+    assert "const zoomCard = event.target.closest?.('.callyOverlapZoomCard');" in projection
+    assert "rememberActive(lastZoomCluster, source.dataset.eventId)" in projection
+    assert "event.style.setProperty('--cally-overlap-z', String(90 - index))" in projection
+    active_section = projection.split('function eventPriority', 1)[1]
+    assert '/api/infer' not in active_section
+    assert 'initializeCore' not in active_section
+    assert 'MutationObserver' not in active_section
+
+
+def test_event_layer_priority_and_scoped_sharing_are_represented_event_state() -> None:
+    with TemporaryDirectory() as root:
+        service = CallyOneService(root)
+        event = service.upsert_event(
+            {
+                'title': 'Familjen i bilen',
+                'start': '2026-09-05T17:00',
+                'end': '2026-09-05T18:00',
+                'dimensions': {
+                    'calendar_layer_priority': 20,
+                    'calendar_priority_dimension': 'resource',
+                    'visibility_policy': {
+                        'version': 1,
+                        'scope': 'linked',
+                        'audience_ids': ['family-car'],
+                        'shared_state_presence': True,
+                        'grants_calendar_access': False,
+                        'principle': 'state_presence_without_calendar_access',
+                        'fields': {
+                            'title': 'busy',
+                            'time': True,
+                            'location': False,
+                            'people': 'presence',
+                            'linked_states': 'labels',
+                        },
+                    },
+                },
+            }
+        )
+        saved = next(item for item in service.state()['events'] if item['event_id'] == event.event_id)
+        assert saved['dimensions']['calendar_layer_priority'] == 20
+        assert saved['dimensions']['calendar_priority_dimension'] == 'resource'
+        policy = saved['dimensions']['visibility_policy']
+        assert policy['scope'] == 'linked'
+        assert policy['shared_state_presence'] is True
+        assert policy['grants_calendar_access'] is False
+        assert policy['principle'] == 'state_presence_without_calendar_access'
+        assert policy['fields']['people'] == 'presence'
+
+
+def test_event_overflow_menu_exposes_layer_and_sharing_without_qcds() -> None:
+    html = cally_one_html(static_mode=True)
+    projection = Path('src/qcds_fabric/robots/cally_one/dimension_filter_ui.js').read_text(encoding='utf-8')
+    assert 'callyEventProjectionAction' in html
+    assert "button.title = 'Lager & delning'" in projection
+    assert 'Visas överst när det är trångt' in projection
+    assert 'Prioritera via dimension' in projection
+    assert 'Vilka får se den här händelsen?' in projection
+    assert 'Visa närvaro i delat tillstånd' in projection
+    assert 'grants_calendar_access:false' in projection
+    assert "principle:'state_presence_without_calendar_access'" in projection
+    assert "fetch('/api/event'" in projection
+    projection_section = projection.split('function eventPriority', 1)[1]
+    assert '/api/infer' not in projection_section
+    assert 'initializeCore' not in projection_section
+    assert 'MutationObserver' not in projection_section
