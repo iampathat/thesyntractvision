@@ -428,10 +428,14 @@
   #callyHomeTile{width:37px!important;min-width:37px!important;height:37px!important;min-height:37px!important}
 }
 
-/* First overlap detail level: fixed chrome + one horizontal event rail. */
+/* First overlap detail level: fixed chrome + one horizontal event rail inside the day. */
 html body .callyOverlapCluster.expanded{
+  left:0!important;
+  right:0!important;
+  width:auto!important;
+  max-width:100%!important;
   overflow:visible!important;
-  padding:36px 4px 10px!important;
+  padding:34px 4px 9px!important;
   box-sizing:content-box!important;
   scroll-snap-type:none!important;
 }
@@ -457,18 +461,18 @@ html body .callyOverlapCluster.expanded .event{
 html body .callyOverlapCluster.expanded .callyOverlapLane{top:0!important;bottom:0!important}
 html body .callyOverlapCluster.expanded .callyOverlapSpread{
   position:absolute!important;
-  left:6px!important;
+  left:5px!important;
   right:auto!important;
-  top:6px!important;
+  top:5px!important;
   bottom:auto!important;
   z-index:92!important;
-  min-width:84px!important;
+  min-width:76px!important;
 }
 html body .callyOverlapCluster.expanded .callyOverlapDeep{
   position:absolute!important;
   left:auto!important;
-  right:6px!important;
-  top:6px!important;
+  right:5px!important;
+  top:5px!important;
   bottom:auto!important;
   z-index:94!important;
   width:max-content!important;
@@ -476,7 +480,7 @@ html body .callyOverlapCluster.expanded .callyOverlapDeep{
 }
 html body .callyOverlapCluster.expanded .callyOverlapProgress{display:none!important}
 @media(max-width:760px){
-  html body .callyOverlapCluster.expanded{padding-top:34px!important}
-  html body .callyOverlapCluster.expanded .callyOverlapSpread{left:5px!important;top:5px!important;min-width:78px!important}
-  html body .callyOverlapCluster.expanded .callyOverlapDeep{right:5px!important;top:5px!important}
+  html body .callyOverlapCluster.expanded{padding-top:32px!important}
+  html body .callyOverlapCluster.expanded .callyOverlapSpread{left:4px!important;top:4px!important;min-width:72px!important}
+  html body .callyOverlapCluster.expanded .callyOverlapDeep{right:4px!important;top:4px!important}
 }
