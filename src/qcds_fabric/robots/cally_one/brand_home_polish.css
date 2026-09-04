@@ -503,3 +503,6 @@ html body .callyOverlapCluster.expanded .callyOverlapProgress{display:none!impor
   html body .callyOverlapCluster.expanded .callyOverlapSpread{left:4px!important;top:4px!important;min-width:72px!important}
   html body .callyOverlapCluster.expanded .callyOverlapDeep{right:4px!important;top:4px!important}
 }
+
+/* The position/scroll cue belongs to the first overlap detail level, never the collapsed calendar. */
+html body .callyOverlapCluster:not(.expanded) .callyOverlapProgress{display:none!important}
