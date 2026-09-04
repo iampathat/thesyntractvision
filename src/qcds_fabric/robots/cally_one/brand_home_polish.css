@@ -428,7 +428,7 @@
   #callyHomeTile{width:37px!important;min-width:37px!important;height:37px!important;min-height:37px!important}
 }
 
-/* First overlap detail level: fixed chrome + one horizontal event rail inside the day. */
+/* First overlap detail level: true horizontal card rail inside the day. */
 html body .callyOverlapCluster.expanded{
   left:0!important;
   right:0!important;
@@ -436,29 +436,46 @@ html body .callyOverlapCluster.expanded{
   max-width:100%!important;
   overflow:visible!important;
   padding:34px 4px 9px!important;
-  box-sizing:content-box!important;
+  box-sizing:border-box!important;
   scroll-snap-type:none!important;
 }
 html body .callyOverlapCluster.expanded .callyOverlapTrack{
+  position:relative!important;
+  display:flex!important;
+  flex-flow:row nowrap!important;
+  align-items:flex-start!important;
+  gap:7px!important;
   width:100%!important;
-  min-width:100%!important;
-  height:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:100%!important;
   overflow-x:auto!important;
   overflow-y:hidden!important;
   overscroll-behavior-x:contain!important;
-  scroll-snap-type:x proximity!important;
+  scroll-snap-type:x mandatory!important;
   scrollbar-width:thin!important;
   scrollbar-color:#789184 rgba(120,145,132,.14)!important;
   pointer-events:auto!important;
+  padding:0 2px 5px!important;
+  box-sizing:border-box!important;
 }
 html body .callyOverlapCluster.expanded .callyOverlapTrack::-webkit-scrollbar{height:5px!important}
 html body .callyOverlapCluster.expanded .callyOverlapTrack::-webkit-scrollbar-track{background:rgba(120,145,132,.12)!important;border-radius:99px!important}
 html body .callyOverlapCluster.expanded .callyOverlapTrack::-webkit-scrollbar-thumb{background:#789184!important;border-radius:99px!important}
 html body .callyOverlapCluster.expanded .event{
-  top:0!important;
+  position:relative!important;
+  left:auto!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:auto!important;
+  flex:0 0 clamp(126px,82%,180px)!important;
+  width:auto!important;
+  max-width:none!important;
+  margin:0!important;
   scroll-snap-align:start!important;
+  z-index:20!important;
 }
-html body .callyOverlapCluster.expanded .callyOverlapLane{top:0!important;bottom:0!important}
+html body .callyOverlapCluster.expanded .callyOverlapLane{display:none!important}
 html body .callyOverlapCluster.expanded .callyOverlapSpread{
   position:absolute!important;
   left:5px!important;
@@ -481,6 +498,8 @@ html body .callyOverlapCluster.expanded .callyOverlapDeep{
 html body .callyOverlapCluster.expanded .callyOverlapProgress{display:none!important}
 @media(max-width:760px){
   html body .callyOverlapCluster.expanded{padding-top:32px!important}
+  html body .callyOverlapCluster.expanded .callyOverlapTrack{gap:6px!important}
+  html body .callyOverlapCluster.expanded .event{flex-basis:clamp(120px,84%,166px)!important}
   html body .callyOverlapCluster.expanded .callyOverlapSpread{left:4px!important;top:4px!important;min-width:72px!important}
   html body .callyOverlapCluster.expanded .callyOverlapDeep{right:4px!important;top:4px!important}
 }
