@@ -107,3 +107,29 @@ html body #stage .event.callyCompactControls .callyEventActionMenu::before{
   content:none!important;
   display:none!important;
 }
+
+/* Keep every event action inside the visible card edge. Five actions fit even
+   in the narrow 126px dense-overlap card instead of pushing the first one left
+   under the stage/cluster clip. */
+html body #stage .timeline .dayCol .event.callyCompactControls .callyEventActionMenu{
+  left:2px!important;
+  right:2px!important;
+  width:auto!important;
+  min-width:0!important;
+  max-width:calc(100% - 4px)!important;
+  gap:2px!important;
+  padding:2px!important;
+  justify-content:space-between!important;
+  overflow:visible!important;
+}
+html body #stage .timeline .dayCol .event.callyCompactControls .callyEventActionMenu .eventMove,
+html body #stage .timeline .dayCol .event.callyCompactControls .callyEventActionMenu .eventEdit,
+html body #stage .timeline .dayCol .event.callyCompactControls .callyEventActionMenu .pinBtn,
+html body #stage .timeline .dayCol .event.callyCompactControls .callyEventActionMenu .callyEventInfo,
+html body #stage .timeline .dayCol .event.callyCompactControls .callyEventActionMenu .callyEventProjectionAction{
+  flex:0 0 22px!important;
+  width:22px!important;
+  min-width:22px!important;
+  height:22px!important;
+  min-height:22px!important;
+}
