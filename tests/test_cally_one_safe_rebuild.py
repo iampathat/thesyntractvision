@@ -57,21 +57,42 @@ def test_single_event_uses_real_four_way_move_icon_not_overlap_expand_glyph():
     assert "const MOVE_ICON = '<svg" in html
     assert 'M12 2v20M2 12h20' in html
     assert 'html body #stage .event.callyCompactControls .callyEventActionMenu .eventMove{\n  display:grid!important;' in html
+    assert 'pointer-events:auto!important;' in html
+    assert 'touch-action:none!important;' in html
     assert 'html body #stage .event.callyCompactControls .callyEventActionMenu::before{\n  content:none!important;' in html
     assert '#callyMoveOverrideBar [data-move-override="free"]::before{\n  content:none!important;' in html
 
 
 def test_four_way_move_handle_moves_on_the_visible_calendar_axes():
     html = cally_one_html(static_mode=True)
-    # The move icon passes pointer input through to the event drag controller.
-    assert 'html body #stage .event.callyCompactControls .callyEventActionMenu .eventMove{\n  display:grid!important;' in html
-    assert 'pointer-events:none!important;' in html
-    # Horizontal drop selects the visible day/date column.
-    assert "const dateCell = under?.closest?.('[data-drop-date]');" in html
-    assert "start.setFullYear(parts[0], parts[1]-1, parts[2]);" in html
-    # Where an hour axis is visible (day/week timeline), vertical drop selects time.
-    assert "if (dateCell.classList.contains('dayCol'))" in html
-    assert "Math.round(((event.clientY-rect.top)/59.5*60)/15)*15" in html
-    assert "start.setHours(6+Math.floor(minutes/60), minutes%60, 0, 0);" in html
-    # The move remains ordinary state/UI work, not QCDS inference.
-    assert "await post('/api/event/move'" in html
+    integrity = html.split('Interaction integrity pass:', 1)[1]
+    assert "event.target.closest?.('#stage .eventMove')" in integrity
+    assert "handle.setPointerCapture?.(event.pointerId)" in integrity
+    assert "document.elementFromPoint(event.clientX, event.clientY)" in integrity
+    assert "under?.closest?.('[data-drop-date]')" in integrity
+    assert "start.setFullYear(parts[0], parts[1]-1, parts[2]);" in integrity
+    assert "if (dateCell.classList.contains('dayCol'))" in integrity
+    assert "Math.round(rawMinutes / 15) * 15" in integrity
+    assert "start.setHours(6 + Math.floor(snapped / 60), snapped % 60, 0, 0);" in integrity
+    assert "fetch('/api/event/move'" in integrity
+    assert "window.__callyGlobalMoveMode?.()" in integrity
+    assert "mode === 'lock_all'" in integrity
+    assert "mode === 'unlock_all'" in integrity
+    assert '/api/infer' not in integrity
+    assert 'initializeCore' not in integrity
+    assert 'MutationObserver' not in integrity
+
+
+def test_geometry_changes_get_bounded_overlap_rebuild_and_readable_count():
+    html = cally_one_html(static_mode=True)
+    integrity = html.split('Interaction integrity pass:', 1)[1]
+    assert "await window.load?.();" in integrity
+    assert "detail:{geometryExplicit:true}" in integrity
+    assert "detail:{callyPostLayout:true}" in integrity
+    assert "if (isFollowup) return;" in integrity
+    assert "button.innerHTML = `<span>${count}</span><em>samtidiga</em><b aria-hidden=\"true\">↔</b>`;" in integrity
+    assert "hasMissingProjectionAction()" in integrity
+    assert ".callyEventProjectionAction" in integrity
+    assert "callyProjectionRetry" in integrity
+    assert '/api/infer' not in integrity
+    assert 'initializeCore' not in integrity
