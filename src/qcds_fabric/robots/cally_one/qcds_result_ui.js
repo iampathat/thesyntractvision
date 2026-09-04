@@ -135,3 +135,120 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, {once:true});
   else boot();
 })();
+
+/* Cally.One semantic lock + overlap zoom polish.
+   Pure UI projection: it never mutates event pin state and never starts QCDS. */
+(() => {
+  if (window.__callySemanticLockZoomPolish) return;
+  window.__callySemanticLockZoomPolish = true;
+
+  const qs = (s, root=document) => root.querySelector(s);
+  const qsa = (s, root=document) => [...root.querySelectorAll(s)];
+  const OPEN_LOCK = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="10.5" width="11" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M9 10.5V7.8c0-2.3 1.5-3.8 3.7-3.8 1.5 0 2.7.7 3.4 1.8" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="15" r="1" fill="currentColor"/></svg>';
+  const CLOSED_LOCK = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="10.5" width="11" height="9" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M9 10.5V7.7a3 3 0 0 1 6 0v2.8" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="15" r="1" fill="currentColor"/></svg>';
+
+  function ensureStyles() {
+    if (qs('#callySemanticLockZoomStyles')) return;
+    const style = document.createElement('style');
+    style.id = 'callySemanticLockZoomStyles';
+    style.textContent = `
+      #callyMoveOverrideBar button{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:5px!important}
+      #callyMoveOverrideBar .callyMoveLockGlyph{width:14px!important;height:14px!important;display:grid!important;place-items:center!important;flex:0 0 14px!important}
+      #callyMoveOverrideBar .callyMoveLockGlyph svg{display:block!important;width:14px!important;height:14px!important;overflow:visible!important}
+      #callyMoveOverrideBar [data-move-override="free"] .callyMoveLockGlyph{color:#7d8781!important}
+      #callyMoveOverrideBar [data-move-override="unlock_all"] .callyMoveLockGlyph,
+      #callyMoveOverrideBar [data-move-override="lock_all"] .callyMoveLockGlyph{color:#b58a18!important}
+      #callyMoveOverrideBar button[aria-pressed="true"]{background:#edf4ef!important;border-color:#8eac9d!important;color:#173126!important;box-shadow:inset 0 -2px 0 var(--green,#087b58)!important}
+      #callyMoveOverrideBar button[aria-pressed="true"] .callyMoveLockGlyph{filter:none!important}
+
+      .callyOverlapExplorerHead{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:start!important;gap:12px!important}
+      .callyOverlapExplorerTitle{min-width:0!important;align-self:center!important}
+      .callyOverlapExplorerTitle h2{margin:5px 0 4px!important;max-width:100%!important;font-size:clamp(18px,2.7vw,24px)!important;line-height:1.04!important;letter-spacing:-.035em!important;white-space:normal!important;overflow-wrap:normal!important;word-break:normal!important}
+      .callyOverlapExplorerTitle p{margin:0!important;max-width:620px!important;line-height:1.4!important}
+      .callyOverlapExplorerHeadActions{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:6px!important;white-space:nowrap!important}
+      .callyOverlapExplorerHeadActions>.callyOverlapBack{position:static!important;inset:auto!important;width:auto!important;min-width:78px!important;height:32px!important;padding:0 10px!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:5px!important;white-space:nowrap!important}
+      .callyOverlapExplorerHeadActions>.callyOverlapExplorerX{position:static!important;inset:auto!important;width:32px!important;min-width:32px!important;height:32px!important;padding:0!important}
+      .callyOverlapExplorerPager[hidden]{display:none!important}
+      .callyOverlapExplorerTools:has(.callyOverlapExplorerPager[hidden]){grid-template-columns:minmax(180px,1fr) auto!important}
+      @media(max-width:760px){
+        .callyOverlapExplorerHead{grid-template-columns:minmax(0,1fr) auto!important;gap:8px!important}
+        .callyOverlapExplorerTitle h2{font-size:18px!important;line-height:1.08!important}
+        .callyOverlapExplorerTitle p{font-size:7.5px!important}
+        .callyOverlapExplorerHeadActions{gap:4px!important}
+        .callyOverlapExplorerHeadActions>.callyOverlapBack{min-width:68px!important;height:30px!important;padding:0 7px!important;font-size:7.5px!important}
+        .callyOverlapExplorerHeadActions>.callyOverlapExplorerX{width:30px!important;min-width:30px!important;height:30px!important}
+        .callyOverlapExplorerTools:has(.callyOverlapExplorerPager[hidden]){grid-template-columns:1fr auto!important}
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function decorateMoveOverride() {
+    const bar = qs('#callyMoveOverrideBar');
+    if (!bar) return;
+    const free = qs('[data-move-override="free"]', bar);
+    const unlock = qs('[data-move-override="unlock_all"]', bar);
+    const lock = qs('[data-move-override="lock_all"]', bar);
+    const set = (button, icon, label) => {
+      if (!button || button.dataset.callySemanticLock === '1') return;
+      button.dataset.callySemanticLock = '1';
+      button.innerHTML = `<span class="callyMoveLockGlyph" aria-hidden="true">${icon}</span><span>${label}</span>`;
+    };
+    set(free, OPEN_LOCK, 'Free');
+    set(unlock, OPEN_LOCK, 'Unlock all');
+    set(lock, CLOSED_LOCK, 'Lock all');
+    // Neutral free → permissive override → restrictive override is the visual logic.
+    [free, unlock, lock].filter(Boolean).forEach(button => bar.appendChild(button));
+  }
+
+  function polishExplorer() {
+    const sheet = qs('.callyOverlapExplorerSheet');
+    if (!sheet) return;
+    const head = qs('.callyOverlapExplorerHead', sheet);
+    if (head) {
+      const back = qs('.callyOverlapBack', head);
+      const close = qs('.callyOverlapExplorerX', head);
+      let title = qs('.callyOverlapExplorerTitle', head);
+      if (!title) {
+        title = [...head.children].find(node => node.tagName === 'DIV' && !node.classList.contains('callyOverlapExplorerHeadActions')) || null;
+        title?.classList.add('callyOverlapExplorerTitle');
+      }
+      let actions = qs('.callyOverlapExplorerHeadActions', head);
+      if (!actions) {
+        actions = document.createElement('div');
+        actions.className = 'callyOverlapExplorerHeadActions';
+      }
+      if (title && title !== head.firstElementChild) head.insertBefore(title, head.firstElementChild);
+      if (back) actions.appendChild(back);
+      if (close) actions.appendChild(close);
+      if (actions.parentElement !== head) head.appendChild(actions);
+    }
+
+    const pager = qs('.callyOverlapExplorerPager', sheet);
+    const prev = qs('[data-overlap-page="prev"]', pager || sheet);
+    const next = qs('[data-overlap-page="next"]', pager || sheet);
+    const label = qs('[data-overlap-page-label]', pager || sheet);
+    if (pager) {
+      const onePage = (!prev || prev.disabled) && (!next || next.disabled);
+      pager.hidden = onePage;
+      if (!onePage && label) label.textContent = label.textContent.replace(/\s*\/\s*/, ' av ');
+    }
+  }
+
+  const schedule = () => setTimeout(() => {
+    ensureStyles();
+    decorateMoveOverride();
+    polishExplorer();
+  }, 0);
+
+  document.addEventListener('click', event => {
+    if (event.target.closest?.('.callyOverlapDeep,[data-overlap-page],[data-overlap-explorer-back],[data-overlap-explorer-close]')) schedule();
+  }, true);
+  document.addEventListener('input', event => {
+    if (event.target.matches?.('[data-overlap-explorer-search]')) schedule();
+  }, true);
+  window.addEventListener('cally-one-ui-refresh', schedule);
+  window.addEventListener('cally-demo-space-changed', schedule);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', schedule, {once:true});
+  else schedule();
+})();
