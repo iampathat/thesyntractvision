@@ -258,3 +258,278 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wireBaseUI, {once:true});
   else wireBaseUI();
 })();
+
+/* Cally.One temporary movement override.
+   Free = each event's own pin state. Lock all / Unlock all override behavior only;
+   individual pin changes remain available and become effective again on Free. */
+(() => {
+  if (window.__callyGlobalMoveOverride) return;
+  window.__callyGlobalMoveOverride = true;
+
+  const qs = (s, root=document) => root.querySelector(s);
+  const qsa = (s, root=document) => [...root.querySelectorAll(s)];
+  const pad = value => String(value).padStart(2, '0');
+  const localIso = date => `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  const modes = new Set(['free','lock_all','unlock_all']);
+  let snapshot = {events:[]};
+  let dragState = null;
+  let resizeState = null;
+
+  const activeSpace = () => {
+    try { return window.__callyActiveSpace?.() || 'personal'; }
+    catch (_) { return 'personal'; }
+  };
+  const modeKey = () => `cally.one.move-override.v1:${activeSpace()}`;
+  const stateKey = () => {
+    try { return window.__callySpaceStorageKey?.() || 'cally.one.state.v1'; }
+    catch (_) { return 'cally.one.state.v1'; }
+  };
+  const readMode = () => {
+    try {
+      const value = sessionStorage.getItem(modeKey()) || 'free';
+      return modes.has(value) ? value : 'free';
+    } catch (_) { return 'free'; }
+  };
+  let mode = readMode();
+
+  function readLocalEvent(id) {
+    try {
+      const state = JSON.parse(localStorage.getItem(stateKey()) || '{}');
+      return (state.events || []).find(item => String(item.event_id) === String(id)) || null;
+    } catch (_) { return null; }
+  }
+
+  function eventById(id) {
+    return readLocalEvent(id) || (snapshot.events || []).find(item => String(item.event_id) === String(id)) || null;
+  }
+
+  async function refreshSnapshot() {
+    try {
+      const response = await fetch('/api/state');
+      const body = await response.json();
+      if (body && Array.isArray(body.events)) snapshot = body;
+    } catch (_) {}
+  }
+
+  window.__callyGlobalMoveMode = () => mode;
+  window.__callyEffectiveLocked = item => mode === 'lock_all' ? true : mode === 'unlock_all' ? false : !!item?.locked;
+  const effectiveLocked = item => window.__callyEffectiveLocked(item);
+
+  function ensureStyles() {
+    if (qs('#callyGlobalMoveOverrideStyles')) return;
+    const style = document.createElement('style');
+    style.id = 'callyGlobalMoveOverrideStyles';
+    style.textContent = `
+      .callyMoveOverrideBar{display:flex;align-items:center;gap:4px;width:max-content;max-width:100%;margin:7px 0 0 auto;padding:3px;border:1px solid var(--line,#d8ddd4);border-radius:11px;background:rgba(255,253,248,.95);overflow-x:auto;scrollbar-width:none}
+      .callyMoveOverrideBar::-webkit-scrollbar{display:none}
+      .callyMoveOverrideLabel{padding:0 5px;color:var(--muted,#6c776f);font-size:7px;font-weight:850;letter-spacing:.1em;white-space:nowrap}
+      .callyMoveOverrideBar button{min-height:30px;padding:5px 8px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--ink,#14261e);font-size:8px;line-height:1;font-weight:790;white-space:nowrap;cursor:pointer}
+      .callyMoveOverrideBar button:hover{background:#f0f4ec}
+      .callyMoveOverrideBar button[aria-pressed="true"]{background:var(--green,#087b58);border-color:var(--green,#087b58);color:#fff}
+      html.callyLockAll #stage [data-event-id]{cursor:default!important;touch-action:pan-x pan-y!important}
+      html.callyUnlockAll #stage [data-event-id]{cursor:grab!important}
+      html.callyUnlockAll #stage [data-event-id]:active{cursor:grabbing!important}
+      html.callyLockAll #stage .resizeHandle{opacity:.38!important;cursor:not-allowed!important}
+      html.callyUnlockAll #stage .resizeHandle{opacity:1!important;cursor:ns-resize!important}
+      @media(max-width:760px){.callyMoveOverrideBar{margin:5px auto 0 0;gap:2px;padding:3px}.callyMoveOverrideLabel{font-size:6.5px;padding:0 3px}.callyMoveOverrideBar button{min-height:28px;padding:5px 7px;font-size:7.5px}}
+    `;
+    document.head.appendChild(style);
+  }
+
+  function paintMode() {
+    document.documentElement.classList.toggle('callyLockAll', mode === 'lock_all');
+    document.documentElement.classList.toggle('callyUnlockAll', mode === 'unlock_all');
+    qsa('#callyMoveOverrideBar [data-move-override]').forEach(button => {
+      button.setAttribute('aria-pressed', String(button.dataset.moveOverride === mode));
+    });
+  }
+
+  function setMode(next) {
+    mode = modes.has(next) ? next : 'free';
+    try { sessionStorage.setItem(modeKey(), mode); } catch (_) {}
+    void refreshSnapshot();
+    paintMode();
+    window.dispatchEvent(new CustomEvent('cally-global-move-mode-changed', {detail:{mode}}));
+  }
+
+  function ensureBar() {
+    ensureStyles();
+    const top = qs('.top');
+    if (!top) return;
+    let bar = qs('#callyMoveOverrideBar');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'callyMoveOverrideBar';
+      bar.className = 'callyMoveOverrideBar';
+      bar.setAttribute('aria-label', 'Tillfälligt låsläge för kalendern');
+      bar.innerHTML = `<span class="callyMoveOverrideLabel">FLYTTLÄGE</span><button type="button" data-move-override="free">Free</button><button type="button" data-move-override="lock_all">🔒 Lock all</button><button type="button" data-move-override="unlock_all">🔓 Unlock all</button>`;
+      bar.addEventListener('click', event => {
+        const button = event.target.closest?.('[data-move-override]');
+        if (button) setMode(button.dataset.moveOverride);
+      });
+    }
+    const rail = qs('.callyLevel2Rail') || qs('#viewbar');
+    if (rail?.parentElement === top) rail.insertAdjacentElement('afterend', bar);
+    else if (bar.parentElement !== top) top.appendChild(bar);
+    paintMode();
+  }
+
+  function controlTarget(target) {
+    return !!target.closest?.('button,input,select,textarea,a,[role="button"],.callyEventActionMenu');
+  }
+
+  async function post(path, payload) {
+    const response = await fetch(path, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+    const body = await response.json();
+    if (!response.ok) throw new Error(body.error || `HTTP ${response.status}`);
+    return body;
+  }
+
+  function beginDrag(event, element, item) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    dragState = {id:String(item.event_id), element};
+    element.classList.add('dragging');
+    element.setPointerCapture?.(event.pointerId);
+    element.addEventListener('pointerup', finishDrag, {once:true});
+    element.addEventListener('pointercancel', cancelDrag, {once:true});
+  }
+
+  async function finishDrag(event) {
+    const current = dragState;
+    if (!current) return;
+    current.element.classList.remove('dragging');
+    const item = eventById(current.id);
+    const under = document.elementFromPoint(event.clientX, event.clientY);
+    const dateCell = under?.closest?.('[data-drop-date]');
+    const personLane = under?.closest?.('[data-drop-person]');
+    dragState = null;
+    if (!item) return;
+    try {
+      let start = new Date(item.start);
+      let end = new Date(item.end);
+      const duration = end - start;
+      let people = [...(item.people || [])];
+      if (dateCell) {
+        const parts = dateCell.dataset.dropDate.split('-').map(Number);
+        start.setFullYear(parts[0], parts[1]-1, parts[2]);
+        if (dateCell.classList.contains('dayCol')) {
+          const rect = dateCell.getBoundingClientRect();
+          const minutes = Math.max(0, Math.min(16*60, Math.round(((event.clientY-rect.top)/59.5*60)/15)*15));
+          start.setHours(6+Math.floor(minutes/60), minutes%60, 0, 0);
+        }
+        end = new Date(start.getTime()+duration);
+      }
+      if (personLane) people = [personLane.dataset.dropPerson];
+      if (!dateCell && !personLane) {
+        window.openEvent?.(current.id);
+        return;
+      }
+      await post('/api/event/move', {event_id:current.id,start:localIso(start),end:localIso(end),people});
+      await window.load?.();
+      await refreshSnapshot();
+      window.toast?.('Event moved in Calendar Space');
+    } catch (error) {
+      window.toast?.(error.message || String(error));
+      await window.load?.();
+    }
+  }
+
+  function cancelDrag() {
+    dragState?.element?.classList.remove('dragging');
+    dragState = null;
+  }
+
+  function resizeEndFor(event) {
+    if (!resizeState) return null;
+    const deltaMinutes = Math.round(((event.clientY-resizeState.startY)/59.5*60)/15)*15;
+    const minimum = new Date(resizeState.start.getTime()+15*60000);
+    const candidate = new Date(resizeState.originalEnd.getTime()+deltaMinutes*60000);
+    return candidate < minimum ? minimum : candidate;
+  }
+
+  function beginResize(event, handle, element, item) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    resizeState = {handle,element,item,startY:event.clientY,start:new Date(item.start),originalEnd:new Date(item.end)};
+    element.classList.add('resizing');
+    handle.setPointerCapture?.(event.pointerId);
+    handle.addEventListener('pointermove', moveResize);
+    handle.addEventListener('pointerup', finishResize, {once:true});
+    handle.addEventListener('pointercancel', cancelResize, {once:true});
+  }
+
+  function moveResize(event) {
+    if (!resizeState) return;
+    event.preventDefault();
+    const end = resizeEndFor(event);
+    const hours = (end-resizeState.start)/3600000;
+    resizeState.element.style.height = `${Math.max(34,hours*59.5-3)}px`;
+  }
+
+  async function finishResize(event) {
+    const current = resizeState;
+    if (!current) return;
+    const end = resizeEndFor(event);
+    cleanupResize();
+    try {
+      await post('/api/event', {...current.item,end:localIso(end)});
+      await window.load?.();
+      await refreshSnapshot();
+      window.toast?.('Event duration changed');
+    } catch (error) {
+      window.toast?.(error.message || String(error));
+      await window.load?.();
+    }
+  }
+
+  function cleanupResize() {
+    if (!resizeState) return;
+    resizeState.element.classList.remove('resizing');
+    resizeState.handle.removeEventListener('pointermove', moveResize);
+    resizeState = null;
+  }
+
+  function cancelResize() {
+    cleanupResize();
+    window.render?.();
+  }
+
+  document.addEventListener('pointerdown', event => {
+    const handle = event.target.closest?.('[data-resize-event]');
+    if (handle) {
+      const element = handle.closest?.('[data-event-id]');
+      const item = eventById(element?.dataset?.eventId);
+      if (!element || !item) return;
+      if (effectiveLocked(item)) {
+        event.stopImmediatePropagation();
+        return;
+      }
+      beginResize(event, handle, element, item);
+      return;
+    }
+
+    const element = event.target.closest?.('#stage [data-event-id]');
+    if (!element || controlTarget(event.target)) return;
+    if (event.button !== undefined && event.button !== 0) return;
+    const item = eventById(element.dataset.eventId);
+    if (!item) return;
+    if (effectiveLocked(item)) {
+      event.stopImmediatePropagation();
+      return;
+    }
+    beginDrag(event, element, item);
+  }, true);
+
+  function refreshSpaceMode() {
+    mode = readMode();
+    void refreshSnapshot();
+    ensureBar();
+    paintMode();
+  }
+
+  window.addEventListener('cally-one-ui-refresh', () => { ensureBar(); void refreshSnapshot(); });
+  window.addEventListener('cally-demo-space-changed', refreshSpaceMode);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', refreshSpaceMode, {once:true});
+  else refreshSpaceMode();
+})();
