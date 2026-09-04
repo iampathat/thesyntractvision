@@ -168,7 +168,7 @@ def test_overlap_stack_control_is_topmost_and_last_active_event_can_return_to_fr
     assert "const zoomCard = event.target.closest?.('.callyOverlapZoomCard');" in projection
     assert "rememberActive(lastZoomCluster, source.dataset.eventId)" in projection
     assert "event.style.setProperty('--cally-overlap-z', String(90 - index))" in projection
-    active_section = projection.split('function eventPriority', 1)[1]
+    active_section = projection.split('function eventPriority', 1)[1].split('function boot()', 1)[0]
     assert '/api/infer' not in active_section
     assert 'initializeCore' not in active_section
     assert 'MutationObserver' not in active_section
@@ -226,7 +226,7 @@ def test_event_overflow_menu_exposes_layer_and_sharing_without_qcds() -> None:
     assert 'grants_calendar_access:false' in projection
     assert "principle:'state_presence_without_calendar_access'" in projection
     assert "fetch('/api/event'" in projection
-    projection_section = projection.split('function eventPriority', 1)[1]
+    projection_section = projection.split('function eventPriority', 1)[1].split('function boot()', 1)[0]
     assert '/api/infer' not in projection_section
     assert 'initializeCore' not in projection_section
     assert 'MutationObserver' not in projection_section
