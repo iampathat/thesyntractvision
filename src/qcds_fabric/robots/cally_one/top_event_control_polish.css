@@ -321,3 +321,64 @@
   .topActions .btn,.callyMenuButton{width:37px!important;min-width:37px!important;height:37px!important;min-height:37px!important}
   .stateFormTwo{grid-template-columns:1fr!important}
 }
+
+/* Temporary movement mode must read as an actual three-state control. */
+#callyMoveOverrideBar [data-move-override="free"]::before{
+  content:'↔';
+  display:inline-grid;
+  place-items:center;
+  margin-right:4px;
+  font-size:12px;
+  line-height:1;
+  font-weight:850;
+  transform:translateY(-.5px);
+}
+#callyMoveOverrideBar [data-move-override]{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+
+/* The overflow menu is anchored from the readable edge. The move affordance is the
+   first visible handle and deliberately passes pointer input through to the event,
+   so Free / Lock all / Unlock all keep controlling the actual drag semantics. */
+html body #stage .event.callyCompactControls .callyEventActionMenu{
+  left:6px!important;
+  right:auto!important;
+  width:max-content!important;
+  max-width:calc(100% - 12px)!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  justify-content:flex-start!important;
+  scrollbar-width:none!important;
+  overscroll-behavior-x:contain!important;
+  pointer-events:none!important;
+}
+html body #stage .event.callyCompactControls .callyEventActionMenu::-webkit-scrollbar{display:none!important}
+html body #stage .event.callyCompactControls .callyEventActionMenu>*{pointer-events:auto!important;flex:0 0 26px!important}
+html body #stage .event.callyCompactControls .callyEventActionMenu .eventMove{display:none!important}
+html body #stage .event.callyCompactControls .callyEventActionMenu::before{
+  content:'↔';
+  order:-20;
+  flex:0 0 26px;
+  width:26px;
+  min-width:26px;
+  height:26px;
+  min-height:26px;
+  display:grid;
+  place-items:center;
+  border:1px solid #b8c7bd;
+  border-radius:7px;
+  background:#fff;
+  color:#2f5042;
+  font-size:15px;
+  line-height:1;
+  font-weight:760;
+  box-sizing:border-box;
+  pointer-events:none!important;
+}
+html.callyLockAll body #stage .event.callyCompactControls .callyEventActionMenu::before{
+  opacity:.34!important;
+  background:#f0f1ed!important;
+  color:#68766f!important;
+}
