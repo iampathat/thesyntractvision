@@ -319,6 +319,7 @@ def cally_one_html(*, static_mode: bool = False) -> str:
             _asset("demo_space.css"),
             _asset("brand_home_polish.css"),
             _asset("overlap_workbench.css"),
+            _asset("overlap_workbench_finish.css"),
         ]
     )
     js = _stable_interaction_js()
