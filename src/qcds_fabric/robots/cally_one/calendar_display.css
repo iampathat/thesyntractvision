@@ -38,6 +38,20 @@ html body #stage .timeline .dayCol .callyOverlapCluster:not(.expanded) .callyOve
   overflow:hidden!important;
 }
 
+/* The stack control belongs to the top of the overlap stack, never between cards. */
+html body #stage .timeline .dayCol .callyOverlapCluster:not(.expanded)>.callyOverlapSpread{
+  top:4px!important;
+  bottom:auto!important;
+  left:50%!important;
+  right:auto!important;
+  transform:translateX(-50%)!important;
+  z-index:118!important;
+  min-width:44px!important;
+  height:24px!important;
+  background:rgba(251,250,246,.97)!important;
+  box-shadow:0 3px 10px rgba(16,35,27,.12)!important;
+}
+
 /* First detail: one contained card rail. The tallest event defines the rail height;
    card borders/shadows receive a real gutter instead of being cut by the viewport. */
 html body #stage .timeline .dayCol .callyOverlapCluster.expanded{
@@ -96,8 +110,40 @@ html body #stage .timeline .dayCol .callyOverlapCluster.expanded .event{
   transform:none!important;
   z-index:20!important;
 }
+
+/* Event projection priority + scoped sharing. This is represented event state, not calendar-wide permission. */
+.callyEventActionMenu .callyEventProjectionAction{
+  position:static!important;inset:auto!important;width:26px!important;min-width:26px!important;height:26px!important;min-height:26px!important;margin:0!important;padding:0!important;display:grid!important;place-items:center!important;border:1px solid #b8c7bd!important;border-radius:7px!important;background:#fff!important;color:#2f5042!important;box-shadow:none!important;cursor:pointer!important
+}
+.callyEventProjectionAction svg{width:14px!important;height:14px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.7!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+.callyEventProjectionPanel{
+  position:fixed!important;z-index:235!important;max-height:calc(100dvh - 16px)!important;overflow:auto!important;padding:12px!important;border:1px solid #c7d1ca!important;border-radius:14px!important;background:rgba(255,253,248,.985)!important;color:#10231b!important;box-shadow:0 22px 64px rgba(16,35,27,.20)!important;backdrop-filter:blur(14px)!important;-webkit-backdrop-filter:blur(14px)!important
+}
+.callyProjectionHead{display:flex!important;align-items:flex-start!important;justify-content:space-between!important;gap:12px!important;padding:1px 1px 10px!important;border-bottom:1px solid #d9ddd7!important}
+.callyProjectionHead small{display:block!important;color:#087a59!important;font-size:7px!important;line-height:1!important;font-weight:850!important;letter-spacing:.15em!important}
+.callyProjectionHead strong{display:block!important;margin-top:5px!important;max-width:310px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;font-size:14px!important;line-height:1.05!important;font-weight:820!important;letter-spacing:-.025em!important}
+.callyProjectionHead button{width:28px!important;min-width:28px!important;height:28px!important;padding:0!important;display:grid!important;place-items:center!important;border:1px solid #d3d9d4!important;border-radius:8px!important;background:#f1f2ee!important;color:#173126!important;font-size:17px!important;line-height:1!important;cursor:pointer!important}
+.callyProjectionSection{display:grid!important;gap:9px!important;padding:11px 1px!important;border-bottom:1px solid #e0e4df!important}
+.callyProjectionSectionTitle{color:#087a59!important;font-size:7.5px!important;line-height:1!important;font-weight:850!important;letter-spacing:.13em!important;text-transform:uppercase!important}
+.callyProjectionSection>label,.callyProjectionTwo label,.callyProjectionThree label{display:grid!important;gap:4px!important;color:#68756e!important;font-size:7.5px!important;line-height:1.2!important;font-weight:770!important}
+.callyProjectionSection select{width:100%!important;height:35px!important;padding:6px 8px!important;border:1px solid #d2d8d3!important;border-radius:8px!important;background:#fff!important;color:#173126!important;font-size:9px!important;box-shadow:none!important}
+.callyProjectionTwo{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important}
+.callyProjectionThree{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:7px!important}
+.callyProjectionSection p{margin:0!important;color:#6b766f!important;font-size:7.5px!important;line-height:1.4!important}
+.callyProjectionToggle{display:flex!important;grid-template-columns:none!important;align-items:flex-start!important;gap:8px!important;padding:8px!important;border:1px solid #dde2de!important;border-radius:9px!important;background:#f8f9f5!important;color:#173126!important}
+.callyProjectionToggle input{margin:2px 0 0!important;accent-color:#087a59!important}
+.callyProjectionToggle span{display:grid!important;gap:2px!important;min-width:0!important}.callyProjectionToggle b{font-size:8.5px!important;line-height:1.2!important}.callyProjectionToggle small{color:#6b766f!important;font-size:7px!important;line-height:1.35!important;font-weight:620!important}
+.callyShareAudience{max-height:150px!important;overflow:auto!important;display:grid!important;gap:4px!important;padding:7px!important;border:1px solid #dce1dd!important;border-radius:9px!important;background:#fff!important;scrollbar-width:thin!important}
+.callyShareAudience[hidden]{display:none!important}.callyShareAudienceTitle{padding:2px 2px 5px!important;color:#596a61!important;font-size:7px!important;font-weight:820!important;text-transform:uppercase!important;letter-spacing:.08em!important}
+.callyShareChoice{display:grid!important;grid-template-columns:18px minmax(0,1fr)!important;align-items:center!important;gap:6px!important;padding:5px 6px!important;border-radius:7px!important;background:#f8faf7!important}.callyShareChoice span{display:grid!important;gap:1px!important}.callyShareChoice b{font-size:8px!important}.callyShareChoice small{color:#718078!important;font-size:6.5px!important;font-weight:620!important}
+.callyProjectionAccessNote{padding:8px 9px!important;border-left:2px solid #72a58c!important;background:#eef5f0!important;color:#496256!important;font-size:7.5px!important;line-height:1.45!important}
+.callyProjectionActions{display:flex!important;justify-content:flex-end!important;gap:6px!important;padding-top:10px!important}.callyProjectionActions button{min-height:34px!important;padding:7px 11px!important;border:1px solid #c9d2cc!important;border-radius:8px!important;background:#fff!important;color:#173126!important;font-size:8.5px!important;font-weight:790!important;cursor:pointer!important}.callyProjectionActions [data-projection-save]{background:#173126!important;border-color:#173126!important;color:#fff!important}.callyProjectionActions button:disabled{opacity:.5!important}
+
 @media(max-width:760px){
   html body #stage .timeline .dayCol .callyOverlapCluster.expanded{padding:36px 5px 7px!important}
   html body #stage .timeline .dayCol .callyOverlapCluster.expanded .callyOverlapTrack{gap:7px!important;padding:7px 8px 11px!important;scroll-padding-inline:8px!important}
   html body #stage .timeline .dayCol .callyOverlapCluster.expanded .event{flex-basis:clamp(126px,84%,168px)!important;scroll-margin-inline:8px!important}
+  html body #stage .timeline .dayCol .callyOverlapCluster:not(.expanded)>.callyOverlapSpread{top:3px!important;height:23px!important}
+  .callyEventProjectionPanel{left:8px!important;right:8px!important;top:auto!important;bottom:max(8px,env(safe-area-inset-bottom))!important;width:auto!important;max-height:82dvh!important;border-radius:15px!important;padding:11px!important}
+  .callyProjectionTwo{grid-template-columns:1fr!important}.callyProjectionThree{grid-template-columns:repeat(3,minmax(0,1fr))!important}.callyProjectionSection select{font-size:16px!important}.callyProjectionHead strong{font-size:13px!important}
 }
