@@ -59,3 +59,19 @@ def test_single_event_uses_real_four_way_move_icon_not_overlap_expand_glyph():
     assert 'html body #stage .event.callyCompactControls .callyEventActionMenu .eventMove{\n  display:grid!important;' in html
     assert 'html body #stage .event.callyCompactControls .callyEventActionMenu::before{\n  content:none!important;' in html
     assert '#callyMoveOverrideBar [data-move-override="free"]::before{\n  content:none!important;' in html
+
+
+def test_four_way_move_handle_moves_on_the_visible_calendar_axes():
+    html = cally_one_html(static_mode=True)
+    # The move icon passes pointer input through to the event drag controller.
+    assert 'html body #stage .event.callyCompactControls .callyEventActionMenu .eventMove{\n  display:grid!important;' in html
+    assert 'pointer-events:none!important;' in html
+    # Horizontal drop selects the visible day/date column.
+    assert "const dateCell = under?.closest?.('[data-drop-date]');" in html
+    assert "start.setFullYear(parts[0], parts[1]-1, parts[2]);" in html
+    # Where an hour axis is visible (day/week timeline), vertical drop selects time.
+    assert "if (dateCell.classList.contains('dayCol'))" in html
+    assert "Math.round(((event.clientY-rect.top)/59.5*60)/15)*15" in html
+    assert "start.setHours(6+Math.floor(minutes/60), minutes%60, 0, 0);" in html
+    # The move remains ordinary state/UI work, not QCDS inference.
+    assert "await post('/api/event/move'" in html
