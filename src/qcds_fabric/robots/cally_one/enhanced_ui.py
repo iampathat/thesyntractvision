@@ -139,6 +139,7 @@ def _stable_interaction_js() -> str:
     display_js = _asset("calendar_display.js")
     demo_js = _asset("demo_space.js")
     brand_home_js = _asset("brand_home_polish.js")
+    overlap_workbench_js = _asset("overlap_workbench.js")
     return "\n".join(
         [
             event_js,
@@ -153,6 +154,7 @@ def _stable_interaction_js() -> str:
             display_js,
             demo_js,
             brand_home_js,
+            overlap_workbench_js,
         ]
     )
 
@@ -217,7 +219,6 @@ def _make_static_start_lazy(html: str) -> str:
         "  async function callCore(payload) {\n    ensureWorkerStarted();\n    await ready;",
         1,
     )
-
     html = html.replace(
         "let hydratePromise = null;",
         """let hydratePromise = null;
@@ -317,6 +318,7 @@ def cally_one_html(*, static_mode: bool = False) -> str:
             _asset("person_module_polish.css"),
             _asset("demo_space.css"),
             _asset("brand_home_polish.css"),
+            _asset("overlap_workbench.css"),
         ]
     )
     js = _stable_interaction_js()
