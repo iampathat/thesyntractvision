@@ -112,7 +112,7 @@
 .callyOverlapCluster.dense .callyOverlapTrack{pointer-events:none!important}
 .callyOverlapCluster.dense .event{pointer-events:auto!important}
 
-/* Dense overlap fan: always reveal the next card/time, then expand on demand. */
+/* Dense overlap fan: preserve time vertically, reveal next card, expand on demand. */
 .callyOverlapCluster.callyOverlapFan{
   overflow-x:hidden!important;
   overflow-y:visible!important;
@@ -123,7 +123,10 @@
   overflow-x:auto!important;
   overflow-y:hidden!important;
   scroll-snap-type:x proximity!important;
+  scrollbar-width:none!important;
 }
+.callyOverlapCluster.callyOverlapFan.rail::-webkit-scrollbar,
+.callyOverlapCluster.expanded::-webkit-scrollbar{width:0!important;height:0!important;display:none!important}
 .callyOverlapCluster.callyOverlapFan .callyOverlapTrack{
   width:var(--cally-overlap-track-width,100%)!important;
   min-width:var(--cally-overlap-track-width,100%)!important;
@@ -183,6 +186,7 @@
 }
 .callyOverlapSpread span{font-size:7px!important;color:#5a6d62!important}
 .callyOverlapSpread b{font-size:13px!important;line-height:1!important;font-weight:650!important}
+.callyOverlapSpread em{font-style:normal!important;font-size:7px!important;line-height:1!important;font-weight:780!important;white-space:nowrap!important}
 .callyOverlapCluster.expanded{
   left:var(--cally-overlap-expanded-left,0)!important;
   right:auto!important;
@@ -190,22 +194,172 @@
   overflow-x:auto!important;
   overflow-y:visible!important;
   z-index:58!important;
-  padding:4px 4px 7px!important;
+  padding:4px 4px 12px!important;
   border:1px solid rgba(154,174,163,.62)!important;
   border-radius:12px!important;
   background:rgba(251,250,246,.985)!important;
   box-shadow:0 14px 34px rgba(16,35,27,.16)!important;
   scroll-snap-type:x proximity!important;
+  scrollbar-width:none!important;
 }
 .callyOverlapCluster.expanded .event{
   scroll-snap-align:start!important;
   box-shadow:0 3px 12px rgba(16,35,27,.08)!important;
 }
 .callyOverlapCluster.expanded .callyOverlapSpread{
-  right:7px!important;
-  bottom:7px!important;
+  position:sticky!important;
+  left:calc(100% - 105px)!important;
+  right:auto!important;
+  top:5px!important;
+  bottom:auto!important;
+  width:max-content!important;
+  min-width:95px!important;
   background:#edf4ef!important;
 }
+.callyOverlapProgress{
+  position:sticky!important;
+  left:50%!important;
+  bottom:3px!important;
+  z-index:68!important;
+  width:min(168px,58%)!important;
+  height:15px!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:6px!important;
+  padding:2px 5px!important;
+  border:1px solid rgba(145,163,153,.34)!important;
+  border-radius:999px!important;
+  background:rgba(251,250,246,.92)!important;
+  backdrop-filter:blur(8px)!important;
+  pointer-events:none!important;
+}
+.callyOverlapProgress[hidden]{display:none!important}
+.callyOverlapProgressRail{
+  position:relative!important;
+  flex:1!important;
+  height:3px!important;
+  overflow:hidden!important;
+  border-radius:99px!important;
+  background:#dce3de!important;
+}
+.callyOverlapProgressThumb{
+  position:absolute!important;
+  top:0!important;
+  bottom:0!important;
+  left:0;
+  min-width:10px!important;
+  border-radius:99px!important;
+  background:#527565!important;
+}
+.callyOverlapProgressLabel{
+  min-width:43px!important;
+  color:#50655a!important;
+  font-size:6.5px!important;
+  line-height:1!important;
+  font-weight:780!important;
+  text-align:right!important;
+  white-space:nowrap!important;
+}
+.callyOverlapDeep{
+  position:sticky!important;
+  left:6px!important;
+  top:5px!important;
+  z-index:72!important;
+  width:max-content!important;
+  height:25px!important;
+  padding:0 8px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:5px!important;
+  border:1px solid #9fb3a7!important;
+  border-radius:8px!important;
+  background:rgba(251,250,246,.96)!important;
+  color:#21483a!important;
+  font-size:7px!important;
+  line-height:1!important;
+  font-weight:790!important;
+  pointer-events:auto!important;
+  cursor:pointer!important;
+}
+.callyOverlapDeep[hidden]{display:none!important}
+.callyOverlapDeep svg{width:12px!important;height:12px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;stroke-linecap:round!important}
+.callyOverlapLocate{animation:callyOverlapLocate .9s ease!important}
+@keyframes callyOverlapLocate{0%,100%{filter:none}35%{filter:brightness(.9);box-shadow:0 0 0 4px rgba(8,122,89,.24)!important}}
+
+/* Third zoom level for very large overlap sets; paged so 1000 events stays usable. */
+.callyOverlapExplorer{
+  position:fixed!important;
+  inset:0!important;
+  z-index:240!important;
+  display:none!important;
+  place-items:center!important;
+  padding:18px!important;
+  background:rgba(13,29,23,.22)!important;
+  backdrop-filter:blur(10px)!important;
+}
+.callyOverlapExplorer.open{display:grid!important}
+.callyOverlapExplorerSheet{
+  width:min(760px,100%)!important;
+  max-height:min(82dvh,760px)!important;
+  overflow:hidden!important;
+  display:grid!important;
+  grid-template-rows:auto auto minmax(0,1fr)!important;
+  border:1px solid #cfd8d2!important;
+  border-radius:16px!important;
+  background:#fbfaf6!important;
+  color:#10231b!important;
+  box-shadow:0 28px 72px rgba(16,35,27,.22)!important;
+}
+.callyOverlapExplorerHead{
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:space-between!important;
+  gap:16px!important;
+  padding:16px 16px 13px!important;
+  border-bottom:1px solid #d9ddd7!important;
+}
+.callyOverlapExplorerHead small{color:#087a59!important;font-size:7px!important;line-height:1!important;font-weight:850!important;letter-spacing:.15em!important}
+.callyOverlapExplorerHead h2{margin:5px 0 3px!important;font-size:20px!important;line-height:1!important;font-weight:820!important;letter-spacing:-.035em!important}
+.callyOverlapExplorerHead p{margin:0!important;color:#66736c!important;font-size:8px!important;line-height:1.4!important}
+.callyOverlapExplorerHead button{width:30px!important;height:30px!important;padding:0!important;display:grid!important;place-items:center!important;border:1px solid #d9ddd7!important;border-radius:8px!important;background:#f0f1ed!important;color:#10231b!important;font-size:18px!important;line-height:1!important;cursor:pointer!important}
+.callyOverlapExplorerTools{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  gap:10px!important;
+  align-items:end!important;
+  padding:10px 14px!important;
+  border-bottom:1px solid #d9ddd7!important;
+}
+.callyOverlapExplorerTools label{display:grid!important;gap:4px!important;color:#66736c!important;font-size:7px!important;font-weight:780!important}
+.callyOverlapExplorerTools input{height:36px!important;padding:7px 9px!important;border:1px solid #d9ddd7!important;border-radius:8px!important;background:#fff!important;color:#10231b!important;font-size:10px!important;box-shadow:none!important}
+.callyOverlapExplorerPager{display:flex!important;align-items:center!important;gap:6px!important;height:36px!important}
+.callyOverlapExplorerPager button{width:30px!important;height:30px!important;padding:0!important;border:1px solid #d9ddd7!important;border-radius:8px!important;background:#fff!important;color:#10231b!important;font-size:16px!important;cursor:pointer!important}
+.callyOverlapExplorerPager button:disabled{opacity:.3!important;cursor:default!important}
+.callyOverlapExplorerPager span{min-width:76px!important;color:#53665b!important;font-size:7px!important;font-weight:760!important;text-align:center!important;white-space:nowrap!important}
+.callyOverlapExplorerList{min-height:0!important;overflow:auto!important;padding:8px!important;display:grid!important;gap:5px!important}
+.callyOverlapExplorerRow{
+  width:100%!important;
+  min-height:48px!important;
+  display:grid!important;
+  grid-template-columns:48px minmax(0,1fr) auto!important;
+  gap:9px!important;
+  align-items:center!important;
+  padding:8px 9px!important;
+  border:1px solid #dde2dd!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  color:#10231b!important;
+  text-align:left!important;
+  cursor:pointer!important;
+}
+.callyOverlapExplorerRow:hover{border-color:#aec5b7!important;background:#f4f7f3!important}
+.callyOverlapExplorerRow time{color:#087a59!important;font-size:8px!important;font-weight:830!important}
+.callyOverlapExplorerRow>span{min-width:0!important;display:grid!important;gap:3px!important}
+.callyOverlapExplorerRow b{overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;font-size:9.5px!important;line-height:1.1!important;font-weight:800!important}
+.callyOverlapExplorerRow small{overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;color:#66736c!important;font-size:7.5px!important;line-height:1.2!important}
+.callyOverlapExplorerRow i{font-style:normal!important;color:#49675a!important;font-size:7px!important;font-weight:760!important}
 
 /* Accepted conflict = still represented, but no longer an unresolved red blocker. */
 .callyAcceptedConflict{
@@ -258,8 +412,16 @@
   .callyWordmarkHome{font-size:25px!important;line-height:.95!important}
   #callyHomeTile{width:40px!important;min-width:40px!important;height:40px!important;min-height:40px!important;border-radius:9px!important}
   .brandText{gap:4px!important}
-  .callyOverlapCluster.dense{scrollbar-width:thin!important}
+  .callyOverlapCluster.dense{scrollbar-width:none!important}
   .callyOverlapSpread{height:24px!important;min-width:39px!important;right:4px!important;bottom:4px!important}
+  .callyOverlapCluster.expanded .callyOverlapSpread{left:calc(100% - 98px)!important;min-width:90px!important}
+  .callyOverlapProgress{width:min(150px,62%)!important}
+  .callyOverlapExplorer{padding:8px!important;place-items:end center!important}
+  .callyOverlapExplorerSheet{width:100%!important;max-height:88dvh!important;border-radius:15px 15px 8px 8px!important}
+  .callyOverlapExplorerTools{grid-template-columns:1fr!important;gap:7px!important}
+  .callyOverlapExplorerTools input{font-size:16px!important}
+  .callyOverlapExplorerPager{justify-content:space-between!important}
+  .callyOverlapExplorerRow{grid-template-columns:42px minmax(0,1fr) auto!important}
 }
 @media(max-width:390px){
   .callyWordmarkHome{font-size:22px!important}
