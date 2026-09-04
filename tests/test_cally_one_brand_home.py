@@ -53,13 +53,15 @@ def test_timeline_overlap_layout_fans_cards_then_expands_without_inference() -> 
     assert 'applyCollapsedOverlap(cluster)' in fan_js
     assert 'applyExpandedOverlap(cluster)' in fan_js
     assert 'ensureOverlapSpreadButton(cluster)' in fan_js
+    assert 'ensureOverlapTiming(cluster)' in fan_js
     assert "peek.className = 'callyOverlapPeek'" in fan_js
     assert "button.className = 'callyOverlapSpread'" in fan_js
-    assert "button.innerHTML = `<span>${columns}</span><b>↔</b>`" in fan_js
+    assert "<em>Fäll ihop</em>" in fan_js
     assert 'dayWidth * .24' in fan_js
     assert 'cardWidth >= 108' in fan_js
     assert "event.style.setProperty('--cally-overlap-left'" in fan_js
     assert "event.style.setProperty('--cally-overlap-width'" in fan_js
+    assert "event.style.top = `${relative}px`" in fan_js
     assert '.callyOverlapCluster.callyOverlapFan{' in css
     assert '.callyOverlapPeek{' in css
     assert '.callyOverlapSpread{' in css
@@ -70,6 +72,32 @@ def test_timeline_overlap_layout_fans_cards_then_expands_without_inference() -> 
     assert '/api/infer' not in fan_section
     assert 'initializeCore' not in fan_section
     assert 'MutationObserver' not in fan_section
+
+
+def test_large_overlap_sets_have_position_indicator_and_paged_deep_explorer() -> None:
+    html = cally_one_html(static_mode=True)
+    fan_js = Path('src/qcds_fabric/robots/cally_one/manual_resolution_ui.js').read_text(encoding='utf-8')
+    css = Path('src/qcds_fabric/robots/cally_one/brand_home_polish.css').read_text(encoding='utf-8')
+
+    assert 'ensureOverlapProgress(cluster)' in fan_js
+    assert "progress.className = 'callyOverlapProgress'" in fan_js
+    assert 'callyOverlapProgressThumb' in fan_js
+    assert 'callyOverlapProgressLabel' in fan_js
+    assert "button.className = 'callyOverlapDeep'" in fan_js
+    assert 'openOverlapExplorer(cluster)' in fan_js
+    assert 'const pageSize = 60' in fan_js
+    assert 'SAMTIDIGHET · DJUPVY' in fan_js
+    assert '1000' not in fan_js  # no hard ceiling; paging scales with the actual count
+    assert '.callyOverlapProgress{' in css
+    assert '.callyOverlapDeep{' in css
+    assert '.callyOverlapExplorer{' in css
+    assert '.callyOverlapExplorerRow{' in css
+    assert 'backdrop-filter:blur(10px)!important' in css
+    assert 'callyOverlapExplorer' in html
+    explorer_section = fan_js.split('function updateOverlapProgress', 1)[1].split('function enhancePlanningCards', 1)[0]
+    assert '/api/infer' not in explorer_section
+    assert 'initializeCore' not in explorer_section
+    assert 'MutationObserver' not in explorer_section
 
 
 def test_actual_conflict_can_be_explicitly_accepted_without_deleting_it() -> None:
