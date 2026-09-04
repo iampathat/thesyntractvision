@@ -5,6 +5,34 @@
   const qsa = (s, root=document) => [...root.querySelectorAll(s)];
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+  function ensureOverlapZoomStyles() {
+    if (qs('#callyOverlapZoomV2Styles')) return;
+    const style = document.createElement('style');
+    style.id = 'callyOverlapZoomV2Styles';
+    style.textContent = `
+      .callyOverlapLane{position:absolute;top:0;bottom:0;z-index:1;border-left:1px solid rgba(122,147,134,.18);border-right:1px solid rgba(122,147,134,.12);background:rgba(238,244,240,.16);pointer-events:none}
+      .callyOverlapCluster.expanded .event{z-index:20!important}
+      .callyOverlapCluster.expanded .callyOverlapSpread{position:sticky!important;left:6px!important;right:auto!important;top:5px!important;bottom:auto!important;width:max-content!important;min-width:84px!important;background:#edf4ef!important}
+      .callyOverlapCluster.expanded .callyOverlapDeep{position:sticky!important;left:98px!important;top:5px!important;width:max-content!important;display:inline-flex!important;background:#fbfaf6!important}
+      .callyOverlapExplorerSheet{grid-template-rows:auto auto minmax(0,1fr)!important}
+      .callyOverlapExplorerHead{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;align-items:center!important;gap:12px!important}
+      .callyOverlapBack,.callyOverlapExplorerX{height:32px!important;padding:0 10px!important;border:1px solid #d6ddd8!important;border-radius:8px!important;background:#f5f6f2!important;color:#173126!important;font-size:8.5px!important;line-height:1!important;font-weight:790!important;cursor:pointer!important}
+      .callyOverlapExplorerX{width:32px!important;padding:0!important;font-size:17px!important}
+      .callyOverlapExplorerTools{display:grid!important;grid-template-columns:minmax(180px,1fr) auto auto!important;gap:9px!important;align-items:end!important}
+      .callyOverlapSearch{display:grid!important;gap:4px!important;color:#66736c!important;font-size:7px!important;font-weight:780!important}
+      .callyOverlapZoomControls{height:36px!important;display:flex!important;align-items:center!important;gap:4px!important;padding:3px!important;border:1px solid #d9ddd7!important;border-radius:9px!important;background:#fff!important}
+      .callyOverlapZoomControls button{width:29px!important;height:29px!important;padding:0!important;display:grid!important;place-items:center!important;border:0!important;border-radius:7px!important;background:#f2f4f0!important;color:#173126!important;font-size:18px!important;line-height:1!important;cursor:pointer!important}
+      .callyOverlapZoomControls span{min-width:44px!important;color:#42594d!important;font-size:7.5px!important;font-weight:800!important;text-align:center!important}
+      .callyOverlapZoomViewport{position:relative!important;min-height:0!important;overflow:auto!important;overscroll-behavior:contain!important;touch-action:pan-x pan-y!important;background-color:#f7f8f4!important;background-image:linear-gradient(rgba(119,141,130,.10) 1px,transparent 1px),linear-gradient(90deg,rgba(119,141,130,.08) 1px,transparent 1px)!important;background-size:100% 36px,120px 100%!important;scrollbar-width:thin!important;scrollbar-color:#789184 #e4e9e5!important}
+      .callyOverlapZoomViewport::-webkit-scrollbar{width:7px!important;height:7px!important}.callyOverlapZoomViewport::-webkit-scrollbar-thumb{background:#789184!important;border-radius:99px!important}.callyOverlapZoomViewport::-webkit-scrollbar-track{background:#e4e9e5!important}
+      .callyOverlapZoomBoard{position:relative!important;min-width:100%!important;min-height:100%!important;transition:width .12s ease!important}
+      .callyOverlapZoomCard{position:absolute!important;overflow:hidden!important;display:grid!important;grid-template-rows:auto auto minmax(0,1fr)!important;gap:3px!important;padding:7px 8px!important;border:1px solid #9fb7aa!important;border-left:3px solid #087a59!important;border-radius:9px!important;background:#f9fcfa!important;color:#10231b!important;text-align:left!important;box-shadow:0 2px 8px rgba(16,35,27,.07)!important;cursor:pointer!important}
+      .callyOverlapZoomCard:hover{border-color:#6e9e87!important;background:#f2f8f4!important}.callyOverlapZoomCard time{color:#087a59!important;font-size:7px!important;font-weight:850!important}.callyOverlapZoomCard b{overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;font-size:9.5px!important;line-height:1.1!important}.callyOverlapZoomCard small{overflow:hidden!important;color:#64736b!important;font-size:7px!important;line-height:1.25!important}
+      @media(max-width:760px){.callyOverlapExplorerHead{grid-template-columns:auto minmax(0,1fr) 30px!important;gap:8px!important}.callyOverlapBack{padding:0 8px!important}.callyOverlapExplorerTools{grid-template-columns:1fr auto!important}.callyOverlapSearch{grid-column:1/-1!important}.callyOverlapZoomViewport{min-height:54dvh!important}.callyOverlapCluster.expanded .callyOverlapDeep{left:94px!important}}
+    `;
+    document.head.appendChild(style);
+  }
+
   async function json(path, options={}) {
     const response = await fetch(path, options);
     const body = await response.json();
@@ -44,42 +72,19 @@
     button.textContent = 'Sparar…';
     try {
       const state = await json('/api/state');
-      const planning = (state.planning_states || []).find(item =>
-        item.status === 'needs_resolution' && (item.event_ids || []).includes(eventId)
-      );
-      if (!planning) {
-        window.toast?.('Planeringen är redan löst');
-        return;
-      }
+      const planning = (state.planning_states || []).find(item => item.status === 'needs_resolution' && (item.event_ids || []).includes(eventId));
+      if (!planning) { window.toast?.('Planeringen är redan löst'); return; }
       const eventIds = new Set(planning.event_ids || []);
-      const relations = (state.relations || []).filter(relation =>
-        eventIds.has(relation.subject_id) &&
-        relation.object_id === planning.state_id &&
-        ['uses','reserves'].includes(relation.predicate)
-      );
+      const relations = (state.relations || []).filter(relation => eventIds.has(relation.subject_id) && relation.object_id === planning.state_id && ['uses','reserves'].includes(relation.predicate));
       if (!relations.length) throw new Error('Transportkopplingen saknas');
       for (const relation of relations) {
-        await json('/api/relation', {
-          method:'POST',
-          headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({
-            relation_id:relation.relation_id,
-            subject_id:relation.subject_id,
-            predicate:relation.predicate,
-            object_id:relation.object_id,
-            dimensions:{...(relation.dimensions || {}), route_status:'resolved', resolved_by:'human'},
-          }),
-        });
+        await json('/api/relation', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({relation_id:relation.relation_id,subject_id:relation.subject_id,predicate:relation.predicate,object_id:relation.object_id,dimensions:{...(relation.dimensions || {}), route_status:'resolved', resolved_by:'human'}})});
       }
       qs('#callyIssueOverlay')?.classList.remove('open');
       await window.load?.();
       window.toast?.('Transportplanen är markerad som klar');
-    } catch (error) {
-      window.toast?.(error.message || String(error));
-    } finally {
-      button.disabled = false;
-      button.textContent = old;
-    }
+    } catch (error) { window.toast?.(error.message || String(error)); }
+    finally { button.disabled = false; button.textContent = old; }
   }
 
   function overlapColumn(event) {
@@ -100,9 +105,7 @@
     qsa('.event[data-event-id]', cluster).forEach(event => {
       const absolute = Number.parseFloat(event.dataset.callyOverlapAbsoluteTop || '');
       const current = Number.parseFloat(event.style.top || '');
-      const relative = Number.isFinite(absolute)
-        ? absolute - clusterTop
-        : (Number.isFinite(current) ? current : Number.parseFloat(event.dataset.callyOverlapTimedTop || '0') || 0);
+      const relative = Number.isFinite(absolute) ? absolute - clusterTop : (Number.isFinite(current) ? current : Number.parseFloat(event.dataset.callyOverlapTimedTop || '0') || 0);
       event.dataset.callyOverlapTimedTop = String(relative);
       event.style.top = `${relative}px`;
     });
@@ -120,9 +123,7 @@
     event.appendChild(peek);
   }
 
-  function clearOverlapLanes(cluster) {
-    qsa('.callyOverlapLane', cluster).forEach(node => node.remove());
-  }
+  function clearOverlapLanes(cluster) { qsa('.callyOverlapLane', cluster).forEach(node => node.remove()); }
 
   function ensureOverlapLanes(cluster, columns, cardWidth, step) {
     clearOverlapLanes(cluster);
@@ -147,10 +148,7 @@
     const max = Math.max(0, cluster.scrollWidth - cluster.clientWidth);
     const ratio = max > 0 ? Math.max(0, Math.min(1, cluster.scrollLeft / max)) : 0;
     const visibleRatio = cluster.scrollWidth > 0 ? Math.max(.06, Math.min(1, cluster.clientWidth / cluster.scrollWidth)) : 1;
-    if (thumb) {
-      thumb.style.width = `${visibleRatio * 100}%`;
-      thumb.style.left = `${ratio * (100 - visibleRatio * 100)}%`;
-    }
+    if (thumb) { thumb.style.width = `${visibleRatio * 100}%`; thumb.style.left = `${ratio * (100 - visibleRatio * 100)}%`; }
     if (label) {
       const visible = Math.max(1, Math.min(count, Math.round(count * visibleRatio)));
       const first = Math.min(count, Math.max(1, Math.round((count - visible) * ratio) + 1));
@@ -306,11 +304,14 @@
       const step = cardWidth + 8;
       const minTop = visible.length ? Math.min(...visible.map(row => row.top)) : 0;
       const maxBottom = visible.length ? Math.max(...visible.map(row => row.top + row.height)) : 220;
-      board.style.width = `${Math.max(viewport.clientWidth - 2, visible.length * step + 16)}px`;
+      const uniqueColumns = [...new Set(visible.map(row => row.column))];
+      const columnMap = new Map(uniqueColumns.map((column,index) => [column,index]));
+      board.style.width = `${Math.max(viewport.clientWidth - 2, uniqueColumns.length * step + 16)}px`;
       board.style.height = `${Math.max(250, maxBottom - minTop + 70)}px`;
       board.innerHTML = visible.map((row,index) => {
         const top = Math.max(12, row.top - minTop + 34);
-        return `<button type="button" class="callyOverlapZoomCard" data-overlap-zoom-row="${index}" style="left:${8 + index * step}px;top:${top}px;width:${cardWidth}px;height:${Math.max(34,row.height)}px"><time>${esc(row.time || '—')}</time><b>${esc(row.title)}</b><small>${esc(row.meta)}</small></button>`;
+        const left = 8 + (columnMap.get(row.column) || 0) * step;
+        return `<button type="button" class="callyOverlapZoomCard" data-overlap-zoom-row="${index}" style="left:${left}px;top:${top}px;width:${cardWidth}px;height:${Math.max(34,row.height)}px"><time>${esc(row.time || '—')}</time><b>${esc(row.title)}</b><small>${esc(row.meta)}</small></button>`;
       }).join('');
       qsa('[data-overlap-zoom-row]', board).forEach((button,index) => button.addEventListener('click', () => {
         const target = visible[index]?.element;
@@ -343,10 +344,7 @@
       if (viewport) {
         let pinchStart = 0;
         let pinchZoom = zoom;
-        const distance = touches => {
-          const a = touches[0], b = touches[1];
-          return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-        };
+        const distance = touches => { const a = touches[0], b = touches[1]; return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); };
         viewport.addEventListener('touchstart', event => {
           if (event.touches.length !== 2) return;
           pinchStart = distance(event.touches);
@@ -382,11 +380,7 @@
       button.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5"></circle><path d="M14.5 14.5L20 20"></path><path d="M10.5 8v5M8 10.5h5"></path></svg><span>Zoom</span>';
       button.title = 'Zooma och utforska samtidiga händelser';
       button.setAttribute('aria-label', button.title);
-      button.addEventListener('click', event => {
-        event.preventDefault();
-        event.stopPropagation();
-        openOverlapExplorer(cluster);
-      });
+      button.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); openOverlapExplorer(cluster); });
       cluster.appendChild(button);
     }
     button.hidden = !cluster.classList.contains('expanded');
@@ -400,13 +394,9 @@
       button.type = 'button';
       button.className = 'callyOverlapSpread';
       button.addEventListener('click', event => {
-        event.preventDefault();
-        event.stopPropagation();
-        if (cluster.classList.contains('expanded')) applyCollapsedOverlap(cluster);
-        else applyExpandedOverlap(cluster);
-        ensureOverlapSpreadButton(cluster);
-        ensureOverlapDeepButton(cluster);
-        ensureOverlapProgress(cluster);
+        event.preventDefault(); event.stopPropagation();
+        if (cluster.classList.contains('expanded')) applyCollapsedOverlap(cluster); else applyExpandedOverlap(cluster);
+        ensureOverlapSpreadButton(cluster); ensureOverlapDeepButton(cluster); ensureOverlapProgress(cluster);
       });
       cluster.appendChild(button);
     }
@@ -430,9 +420,7 @@
   let overlapTimer = null;
   function scheduleOverlapFans(delay=36) {
     clearTimeout(overlapTimer);
-    requestAnimationFrame(() => {
-      overlapTimer = setTimeout(enhanceOverlapFans, delay);
-    });
+    requestAnimationFrame(() => { overlapTimer = setTimeout(enhanceOverlapFans, delay); });
   }
 
   function enhancePlanningCards() {
@@ -447,11 +435,7 @@
       done.className = 'callyHumanResolved';
       done.textContent = 'Markera som löst';
       done.title = 'Använd när du själv har bestämt bil, passagerare, tider eller annan transportinformation';
-      done.addEventListener('click', event => {
-        event.preventDefault();
-        event.stopPropagation();
-        completePlanningForEvent(edit.dataset.editEvent, done);
-      });
+      done.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); completePlanningForEvent(edit.dataset.editEvent, done); });
       actions.insertBefore(done, actions.querySelector('span'));
     });
     scheduleOverlapFans();
@@ -469,6 +453,7 @@
   window.addEventListener('resize', () => scheduleOverlapFans(110), {passive:true});
 
   function boot() {
+    ensureOverlapZoomStyles();
     installConflictAcceptanceGuard();
     const observer = new MutationObserver(enhancePlanningCards);
     observer.observe(document.body, {childList:true, subtree:true});
