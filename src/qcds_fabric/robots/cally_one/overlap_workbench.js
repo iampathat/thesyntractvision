@@ -84,9 +84,27 @@
     return {min,max,minutes:(max-min)/60000};
   }
 
+  function zoomBand(scale) {
+    if (scale < .78) return 'overview';
+    if (scale < 1.2) return 'normal';
+    return 'detail';
+  }
+
+  function fitZoom() {
+    if (!model) return;
+    const viewport = qs('.callyOverlapWorkbenchViewport',model.sheet);
+    if (!viewport) return;
+    const query=model.query.trim().toLowerCase();
+    const filtered=model.rows.filter(row=>!query||`${row.title} ${row.location} ${row.people.join(' ')} ${JSON.stringify(row.dimensions)}`.toLowerCase().includes(query));
+    const columns=Math.max(1,new Set(filtered.map(row=>row.column)).size);
+    const available=Math.max(260,viewport.clientWidth-86);
+    model.zoom=Math.max(.55,Math.min(1.35,(available/columns)/230));
+    render();
+  }
+
   function render() {
     if (!model) return;
-    const {overlay,sheet} = model;
+    const {sheet} = model;
     const query = model.query.trim().toLowerCase();
     const filtered = model.rows.filter(row => !query || `${row.title} ${row.location} ${row.people.join(' ')} ${JSON.stringify(row.dimensions)}`.toLowerCase().includes(query));
     const pageSize = model.pageSize;
@@ -97,6 +115,9 @@
     const viewport = qs('.callyOverlapWorkbenchViewport',sheet);
     const board = qs('.callyOverlapWorkbenchBoard',sheet);
     if (!viewport || !board) return;
+
+    sheet.dataset.zoomBand=zoomBand(model.zoom);
+    sheet.style.setProperty('--cally-workbench-scale',String(model.zoom));
 
     if (!visible.length || !range) {
       board.style.width='100%'; board.style.height='100%';
@@ -131,7 +152,7 @@
       const height=Math.max(64,durationMinutes(row.item)*pxPerMinute);
       const width=Math.max(150,laneWidth-16);
       const meta=[`${clock(row.start)}–${clock(row.end)}`,row.people.join(', ')].filter(Boolean).join(' · ');
-      const chips=[row.location,...Object.entries(row.dimensions).filter(([key,value])=>!key.startsWith('calendar_')&&value!=null&&value!=='').slice(0,2).map(([key,value])=>`${key}: ${typeof value==='object'?JSON.stringify(value):value}`)].filter(Boolean);
+      const chips=[row.location,...Object.entries(row.dimensions).filter(([key,value])=>!key.startsWith('calendar_')&&value!=null&&value!=='').slice(0,3).map(([key,value])=>`${key}: ${typeof value==='object'?JSON.stringify(value):value}`)].filter(Boolean);
       return `<article class="callyOverlapWorkbenchCard${model.activeId===row.id?' is-active':''}" data-workbench-event="${esc(row.id)}" style="left:${left}px;top:${top}px;width:${width}px;height:${height}px"><time>${esc(clock(row.start))}</time><strong>${esc(row.title)}</strong><div class="callyOverlapWorkbenchCardMeta">${esc(meta)}</div><div class="callyOverlapWorkbenchCardChips">${chips.map(value=>`<span>${esc(value)}</span>`).join('')}</div></article>`;
     }).join('');
     board.innerHTML=hourMarks.join('')+cards;
@@ -155,14 +176,35 @@
 
   function renderShell() {
     const {sheet,rows}=model;
-    sheet.innerHTML=`<header class="callyOverlapWorkbenchHead"><div><div class="callyOverlapWorkbenchKicker">SAMTIDIGHET · DJUPVY</div><h2>${rows.length} samtidiga händelser</h2><p>En riktig tidsaxel med separata lager. Zooma utan att tappa läsbarheten; händelserna ligger kvar på sina faktiska tider.</p></div><div class="callyOverlapWorkbenchHeadActions"><button type="button" data-workbench-back>← Återgå</button><button type="button" class="callyOverlapWorkbenchClose" data-workbench-close aria-label="Stäng">×</button></div></header><div class="callyOverlapWorkbenchTools"><label class="callyOverlapWorkbenchSearch"><span>Sök</span><input data-workbench-search placeholder="Person, plats, händelse, dimension…"></label><div class="callyOverlapWorkbenchZoom"><button type="button" data-workbench-zoom="out" aria-label="Zooma ut">−</button><span data-workbench-zoom-label>100%</span><button type="button" data-workbench-zoom="in" aria-label="Zooma in">+</button></div><div class="callyOverlapWorkbenchPager" hidden><button type="button" data-workbench-page="prev">‹</button><span data-workbench-page-label></span><button type="button" data-workbench-page="next">›</button></div></div><div class="callyOverlapWorkbenchViewport"><div class="callyOverlapWorkbenchBoard"></div></div>`;
+    sheet.innerHTML=`<header class="callyOverlapWorkbenchHead"><div><div class="callyOverlapWorkbenchKicker">SAMTIDIGHET · DJUPVY</div><h2>${rows.length} samtidiga händelser</h2><p>En riktig tidsaxel med separata lager. Zooma utan att tappa läsbarheten; händelserna ligger kvar på sina faktiska tider.</p></div><div class="callyOverlapWorkbenchHeadActions"><button type="button" data-workbench-back>← Återgå</button><button type="button" class="callyOverlapWorkbenchClose" data-workbench-close aria-label="Stäng">×</button></div></header><div class="callyOverlapWorkbenchTools"><label class="callyOverlapWorkbenchSearch"><span>Sök</span><input data-workbench-search placeholder="Person, plats, händelse, dimension…"></label><div class="callyOverlapWorkbenchZoom"><button type="button" data-workbench-zoom="out" aria-label="Zooma ut">−</button><span data-workbench-zoom-label>100%</span><button type="button" data-workbench-zoom="in" aria-label="Zooma in">+</button><button type="button" data-workbench-fit aria-label="Anpassa till bredd">Passa</button></div><div class="callyOverlapWorkbenchPager" hidden><button type="button" data-workbench-page="prev">‹</button><span data-workbench-page-label></span><button type="button" data-workbench-page="next">›</button></div></div><div class="callyOverlapWorkbenchViewport"><div class="callyOverlapWorkbenchBoard"></div></div>`;
     qs('[data-workbench-back]',sheet)?.addEventListener('click',close);
     qs('[data-workbench-close]',sheet)?.addEventListener('click',close);
     qs('[data-workbench-search]',sheet)?.addEventListener('input',event=>{model.query=event.target.value||'';model.page=0;render();});
     qs('[data-workbench-zoom="out"]',sheet)?.addEventListener('click',()=>{model.zoom=Math.max(.55,model.zoom-.15);render();});
     qs('[data-workbench-zoom="in"]',sheet)?.addEventListener('click',()=>{model.zoom=Math.min(2.25,model.zoom+.15);render();});
+    qs('[data-workbench-fit]',sheet)?.addEventListener('click',fitZoom);
     qs('[data-workbench-page="prev"]',sheet)?.addEventListener('click',()=>{model.page-=1;render();});
     qs('[data-workbench-page="next"]',sheet)?.addEventListener('click',()=>{model.page+=1;render();});
+
+    const viewport=qs('.callyOverlapWorkbenchViewport',sheet);
+    if(viewport){
+      viewport.addEventListener('wheel',event=>{
+        if(!(event.ctrlKey||event.metaKey)) return;
+        event.preventDefault();
+        model.zoom=Math.max(.55,Math.min(2.25,model.zoom+(event.deltaY<0?.12:-.12)));
+        render();
+      },{passive:false});
+      let pinchStart=0,pinchZoom=1;
+      const distance=touches=>Math.hypot(touches[0].clientX-touches[1].clientX,touches[0].clientY-touches[1].clientY);
+      viewport.addEventListener('touchstart',event=>{if(event.touches.length===2){pinchStart=distance(event.touches);pinchZoom=model.zoom;}},{passive:true});
+      viewport.addEventListener('touchmove',event=>{
+        if(event.touches.length!==2||!pinchStart) return;
+        event.preventDefault();
+        model.zoom=Math.max(.55,Math.min(2.25,pinchZoom*(distance(event.touches)/pinchStart)));
+        render();
+      },{passive:false});
+      viewport.addEventListener('touchend',event=>{if(event.touches.length<2) pinchStart=0;},{passive:true});
+    }
     render();
   }
 
