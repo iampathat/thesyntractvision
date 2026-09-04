@@ -91,7 +91,17 @@ html[data-cally-space="demo"] .top{
 html body #stage .event.callyCompactControls .callyEventActionMenu .eventMove{
   display:grid!important;
   order:-20!important;
-  pointer-events:none!important;
+  pointer-events:auto!important;
+  touch-action:none!important;
+  cursor:grab!important;
+}
+html body #stage .event.callyCompactControls .callyEventActionMenu .eventMove:active{
+  cursor:grabbing!important;
+}
+/* beginMove closes the menu before pointer capture; keep that handle rendered
+   for the duration of the drag so capture and pointer-up remain reliable. */
+html body #stage .event.dragging .callyEventActionMenu[hidden]{
+  display:flex!important;
 }
 html body #stage .event.callyCompactControls .callyEventActionMenu::before{
   content:none!important;
