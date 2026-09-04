@@ -42,7 +42,7 @@ def test_attribution_and_tribute_license_live_in_hamburger_menu() -> None:
     assert 'MutationObserver' not in js
 
 
-def test_timeline_overlap_layout_fans_cards_then_expands_without_inference() -> None:
+def test_timeline_overlap_layout_fans_cards_then_expands_as_time_columns() -> None:
     html = cally_one_html(static_mode=True)
     base_js = Path('src/qcds_fabric/robots/cally_one/brand_home_polish.js').read_text(encoding='utf-8')
     fan_js = Path('src/qcds_fabric/robots/cally_one/manual_resolution_ui.js').read_text(encoding='utf-8')
@@ -52,21 +52,16 @@ def test_timeline_overlap_layout_fans_cards_then_expands_without_inference() -> 
     assert 'assignOverlapColumns(items)' in base_js
     assert 'applyCollapsedOverlap(cluster)' in fan_js
     assert 'applyExpandedOverlap(cluster)' in fan_js
-    assert 'ensureOverlapSpreadButton(cluster)' in fan_js
     assert 'ensureOverlapTiming(cluster)' in fan_js
-    assert "peek.className = 'callyOverlapPeek'" in fan_js
-    assert "button.className = 'callyOverlapSpread'" in fan_js
-    assert "<em>Fäll ihop</em>" in fan_js
-    assert 'dayWidth * .24' in fan_js
-    assert 'cardWidth >= 108' in fan_js
+    assert 'ensureOverlapLanes(cluster, columns, cardWidth, step)' in fan_js
+    assert "lane.className = 'callyOverlapLane'" in fan_js
+    assert 'visibleColumns' in fan_js
     assert "event.style.setProperty('--cally-overlap-left'" in fan_js
     assert "event.style.setProperty('--cally-overlap-width'" in fan_js
     assert "event.style.top = `${relative}px`" in fan_js
+    assert "<em>Fäll ihop</em>" in fan_js
     assert '.callyOverlapCluster.callyOverlapFan{' in css
-    assert '.callyOverlapPeek{' in css
-    assert '.callyOverlapSpread{' in css
     assert '.callyOverlapCluster.expanded{' in css
-    assert 'overflow-x:auto!important' in css
     assert '.resizeHandle' in html
     fan_section = fan_js.split('function overlapColumn', 1)[1].split('function enhancePlanningCards', 1)[0]
     assert '/api/infer' not in fan_section
@@ -74,7 +69,36 @@ def test_timeline_overlap_layout_fans_cards_then_expands_without_inference() -> 
     assert 'MutationObserver' not in fan_section
 
 
-def test_large_overlap_sets_have_position_indicator_and_paged_deep_explorer() -> None:
+def test_overlap_zoom_is_always_available_with_back_mouse_and_pinch_controls() -> None:
+    html = cally_one_html(static_mode=True)
+    fan_js = Path('src/qcds_fabric/robots/cally_one/manual_resolution_ui.js').read_text(encoding='utf-8')
+
+    assert "button.className = 'callyOverlapDeep'" in fan_js
+    assert '<span>Zoom</span>' in fan_js
+    assert "button.hidden = !cluster.classList.contains('expanded')" in fan_js
+    assert 'columns < 6' not in fan_js
+    assert '← Återgå' in fan_js
+    assert 'data-overlap-zoom="out"' in fan_js
+    assert 'data-overlap-zoom="in"' in fan_js
+    assert 'data-overlap-zoom-label' in fan_js
+    assert "viewport.addEventListener('touchstart'" in fan_js
+    assert "viewport.addEventListener('touchmove'" in fan_js
+    assert "viewport.addEventListener('wheel'" in fan_js
+    assert 'event.ctrlKey || event.metaKey' in fan_js
+    assert 'const pageSize = 80' in fan_js
+    assert 'SAMTIDIGHET · ZOOM' in fan_js
+    assert "style.id = 'callyOverlapZoomV2Styles'" in fan_js
+    assert '.callyOverlapZoomViewport' in fan_js
+    assert '.callyOverlapZoomCard' in fan_js
+    assert 'uniqueColumns' in fan_js
+    assert 'columnMap' in fan_js
+    zoom_section = fan_js.split('function openOverlapExplorer', 1)[1].split('function ensureOverlapDeepButton', 1)[0]
+    assert '/api/infer' not in zoom_section
+    assert 'initializeCore' not in zoom_section
+    assert 'MutationObserver' not in zoom_section
+
+
+def test_large_overlap_sets_keep_position_indicator_and_windowed_zoom() -> None:
     html = cally_one_html(static_mode=True)
     fan_js = Path('src/qcds_fabric/robots/cally_one/manual_resolution_ui.js').read_text(encoding='utf-8')
     css = Path('src/qcds_fabric/robots/cally_one/brand_home_polish.css').read_text(encoding='utf-8')
@@ -83,16 +107,9 @@ def test_large_overlap_sets_have_position_indicator_and_paged_deep_explorer() ->
     assert "progress.className = 'callyOverlapProgress'" in fan_js
     assert 'callyOverlapProgressThumb' in fan_js
     assert 'callyOverlapProgressLabel' in fan_js
-    assert "button.className = 'callyOverlapDeep'" in fan_js
-    assert 'openOverlapExplorer(cluster)' in fan_js
-    assert 'const pageSize = 60' in fan_js
-    assert 'SAMTIDIGHET · DJUPVY' in fan_js
-    assert '1000' not in fan_js  # no hard ceiling; paging scales with the actual count
+    assert 'const pageSize = 80' in fan_js
     assert '.callyOverlapProgress{' in css
-    assert '.callyOverlapDeep{' in css
     assert '.callyOverlapExplorer{' in css
-    assert '.callyOverlapExplorerRow{' in css
-    assert 'backdrop-filter:blur(10px)!important' in css
     assert 'callyOverlapExplorer' in html
     explorer_section = fan_js.split('function updateOverlapProgress', 1)[1].split('function enhancePlanningCards', 1)[0]
     assert '/api/infer' not in explorer_section
