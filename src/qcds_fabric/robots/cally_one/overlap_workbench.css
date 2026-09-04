@@ -124,6 +124,7 @@
   text-align:center!important;
   white-space:nowrap!important;
 }
+.callyOverlapWorkbenchZoom [data-workbench-fit]{width:auto!important;min-width:46px!important;padding:0 8px!important;font-size:8px!important}
 .callyOverlapWorkbenchPager[hidden]{display:none!important}
 .callyOverlapWorkbenchPager button:disabled{opacity:.28!important;cursor:default!important}
 .callyOverlapWorkbenchViewport{
@@ -210,6 +211,22 @@
   font-weight:700!important;
 }
 .callyOverlapWorkbenchEmpty{padding:40px!important;color:#66736c!important;font-size:11px!important;text-align:center!important}
+
+/* Zoom is geometric, not typographic: text stays readable while lanes compress. */
+.callyOverlapWorkbenchSheet[data-zoom-band="overview"] .callyOverlapWorkbenchCard{padding:8px 9px!important;gap:3px!important}
+.callyOverlapWorkbenchSheet[data-zoom-band="overview"] .callyOverlapWorkbenchCard strong{font-size:11px!important;-webkit-line-clamp:2!important}
+.callyOverlapWorkbenchSheet[data-zoom-band="overview"] .callyOverlapWorkbenchCard time{font-size:7.5px!important}
+.callyOverlapWorkbenchSheet[data-zoom-band="overview"] .callyOverlapWorkbenchCardMeta{font-size:7.5px!important;white-space:nowrap!important;text-overflow:ellipsis!important}
+.callyOverlapWorkbenchSheet[data-zoom-band="overview"] .callyOverlapWorkbenchCardChips{display:none!important}
+.callyOverlapWorkbenchSheet[data-zoom-band="normal"] .callyOverlapWorkbenchCard strong{font-size:12px!important}
+.callyOverlapWorkbenchSheet[data-zoom-band="detail"] .callyOverlapWorkbenchCard{padding:11px 13px!important;gap:5px!important;overflow:auto!important}
+.callyOverlapWorkbenchSheet[data-zoom-band="detail"] .callyOverlapWorkbenchCard strong{font-size:13px!important;-webkit-line-clamp:3!important}
+.callyOverlapWorkbenchSheet[data-zoom-band="detail"] .callyOverlapWorkbenchCardMeta{font-size:8.5px!important;white-space:normal!important}
+.callyOverlapWorkbenchSheet[data-zoom-band="detail"] .callyOverlapWorkbenchCardChips span{font-size:7.5px!important}
+
+/* Time labels remain visually anchored while the board pans horizontally. */
+.callyOverlapWorkbenchTime{position:sticky!important;z-index:6!important;background:rgba(248,249,246,.92)!important;padding:2px 4px!important;border-radius:5px!important;backdrop-filter:blur(5px)!important}
+
 @media(max-width:760px){
   .callyOverlapWorkbench{padding:8px!important}
   .callyOverlapWorkbenchSheet{height:94dvh!important;min-height:0!important;border-radius:14px!important}
