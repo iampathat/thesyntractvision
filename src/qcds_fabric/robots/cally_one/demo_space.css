@@ -80,3 +80,20 @@ html[data-cally-space="demo"] .top{
 @media(max-width:390px){
   .demoSpaceMenuActions{grid-template-columns:1fr}
 }
+
+/* Global event-control regression guard. The real four-way MOVE_ICON is the
+   movement affordance. A horizontal expand glyph belongs only to overlap
+   clusters and must never be synthesized on an ordinary event card. */
+#callyMoveOverrideBar [data-move-override="free"]::before{
+  content:none!important;
+  display:none!important;
+}
+html body #stage .event.callyCompactControls .callyEventActionMenu .eventMove{
+  display:grid!important;
+  order:-20!important;
+  pointer-events:none!important;
+}
+html body #stage .event.callyCompactControls .callyEventActionMenu::before{
+  content:none!important;
+  display:none!important;
+}
