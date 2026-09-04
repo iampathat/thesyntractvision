@@ -1,0 +1,52 @@
+/* Final deep-view hierarchy: concise context, touch-safe actions, no pixel hunting. */
+.callyOverlapWorkbenchContext{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:5px!important;
+  margin-top:9px!important;
+}
+.callyOverlapWorkbenchContext b,
+.callyOverlapWorkbenchContext span{
+  display:inline-flex!important;
+  align-items:center!important;
+  min-height:22px!important;
+  padding:4px 7px!important;
+  border:1px solid #cfdbd3!important;
+  border-radius:999px!important;
+  background:#f3f6f2!important;
+  color:#4a6156!important;
+  font-size:7.5px!important;
+  line-height:1!important;
+  font-weight:720!important;
+  white-space:nowrap!important;
+  max-width:min(48ch,100%)!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+.callyOverlapWorkbenchContext b{
+  background:#e8f2eb!important;
+  border-color:#b9cec1!important;
+  color:#14543f!important;
+  font-weight:840!important;
+}
+.callyOverlapWorkbenchZoom{white-space:nowrap!important}
+.callyOverlapWorkbenchCardActions{opacity:.72!important;transition:opacity .12s ease!important}
+.callyOverlapWorkbenchCard:hover .callyOverlapWorkbenchCardActions,
+.callyOverlapWorkbenchCard:focus-within .callyOverlapWorkbenchCardActions,
+.callyOverlapWorkbenchCard.is-active .callyOverlapWorkbenchCardActions{opacity:1!important}
+.callyOverlapWorkbenchCardActions [data-workbench-edit]{background:#edf4ef!important;border-color:#a9c1b3!important}
+.callyOverlapWorkbenchCardActions [data-workbench-locate]{background:#fff!important}
+@media(pointer:coarse){
+  .callyOverlapWorkbenchCardActions{opacity:1!important}
+  .callyOverlapWorkbenchCardActions button{width:32px!important;min-width:32px!important;height:32px!important;min-height:32px!important;border-radius:9px!important}
+  .callyOverlapWorkbenchCard{padding-right:80px!important}
+}
+@media(max-width:760px){
+  .callyOverlapWorkbenchContext{margin-top:7px!important;gap:4px!important}
+  .callyOverlapWorkbenchContext b,.callyOverlapWorkbenchContext span{font-size:7px!important;min-height:20px!important;padding:3px 6px!important}
+  .callyOverlapWorkbenchZoom [data-workbench-fit]{min-width:50px!important}
+}
+@media(max-width:430px){
+  .callyOverlapWorkbenchContext{padding-right:92px!important}
+  .callyOverlapWorkbenchContext span:last-child{max-width:100%!important}
+}
