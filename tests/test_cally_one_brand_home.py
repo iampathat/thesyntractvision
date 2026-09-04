@@ -42,24 +42,34 @@ def test_attribution_and_tribute_license_live_in_hamburger_menu() -> None:
     assert 'MutationObserver' not in js
 
 
-def test_timeline_overlap_layout_is_side_by_side_then_local_scroll_when_dense() -> None:
+def test_timeline_overlap_layout_fans_cards_then_expands_without_inference() -> None:
     html = cally_one_html(static_mode=True)
-    js = Path('src/qcds_fabric/robots/cally_one/brand_home_polish.js').read_text(encoding='utf-8')
+    base_js = Path('src/qcds_fabric/robots/cally_one/brand_home_polish.js').read_text(encoding='utf-8')
+    fan_js = Path('src/qcds_fabric/robots/cally_one/manual_resolution_ui.js').read_text(encoding='utf-8')
     css = Path('src/qcds_fabric/robots/cally_one/brand_home_polish.css').read_text(encoding='utf-8')
 
-    assert 'layoutTimelineOverlaps(state)' in js
-    assert 'assignOverlapColumns(items)' in js
-    assert 'dayWidth / columns < 118' in js
-    assert "wrapper.className = `callyOverlapCluster${dense ? ' dense' : ''}`" in js
-    assert "element.style.width = '126px'" in js
-    assert 'element.style.width = `calc(${width}% - 6px)`' in js
-    assert '.callyOverlapCluster.dense{' in css
+    assert 'layoutTimelineOverlaps(state)' in base_js
+    assert 'assignOverlapColumns(items)' in base_js
+    assert 'applyCollapsedOverlap(cluster)' in fan_js
+    assert 'applyExpandedOverlap(cluster)' in fan_js
+    assert 'ensureOverlapSpreadButton(cluster)' in fan_js
+    assert "peek.className = 'callyOverlapPeek'" in fan_js
+    assert "button.className = 'callyOverlapSpread'" in fan_js
+    assert "button.innerHTML = `<span>${columns}</span><b>↔</b>`" in fan_js
+    assert 'dayWidth * .24' in fan_js
+    assert 'cardWidth >= 108' in fan_js
+    assert "event.style.setProperty('--cally-overlap-left'" in fan_js
+    assert "event.style.setProperty('--cally-overlap-width'" in fan_js
+    assert '.callyOverlapCluster.callyOverlapFan{' in css
+    assert '.callyOverlapPeek{' in css
+    assert '.callyOverlapSpread{' in css
+    assert '.callyOverlapCluster.expanded{' in css
     assert 'overflow-x:auto!important' in css
-    assert 'scroll-snap-type:x proximity!important' in css
     assert '.resizeHandle' in html
-    assert '/api/infer' not in js
-    assert 'initializeCore' not in js
-    assert 'MutationObserver' not in js
+    fan_section = fan_js.split('function overlapColumn', 1)[1].split('function enhancePlanningCards', 1)[0]
+    assert '/api/infer' not in fan_section
+    assert 'initializeCore' not in fan_section
+    assert 'MutationObserver' not in fan_section
 
 
 def test_actual_conflict_can_be_explicitly_accepted_without_deleting_it() -> None:
