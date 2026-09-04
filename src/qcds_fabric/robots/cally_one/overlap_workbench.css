@@ -162,7 +162,7 @@
 .callyOverlapWorkbenchCard{
   position:absolute!important;
   min-height:64px!important;
-  padding:10px 12px!important;
+  padding:10px 58px 10px 12px!important;
   display:grid!important;
   grid-template-rows:auto auto auto minmax(0,1fr)!important;
   align-content:start!important;
@@ -175,6 +175,7 @@
   color:#10231b!important;
   text-align:left!important;
   box-shadow:0 4px 14px rgba(16,35,27,.08)!important;
+  cursor:pointer!important;
 }
 .callyOverlapWorkbenchCard.is-active{border-color:#087a59!important;box-shadow:0 0 0 2px rgba(8,122,89,.12),0 8px 20px rgba(16,35,27,.10)!important}
 .callyOverlapWorkbenchCard time{color:#087a59!important;font-size:8px!important;font-weight:860!important;line-height:1!important}
@@ -210,19 +211,48 @@
   line-height:1!important;
   font-weight:700!important;
 }
+.callyOverlapWorkbenchCardActions{
+  position:absolute!important;
+  top:7px!important;
+  right:7px!important;
+  z-index:4!important;
+  display:flex!important;
+  gap:4px!important;
+}
+.callyOverlapWorkbenchCardActions button{
+  width:24px!important;
+  min-width:24px!important;
+  height:24px!important;
+  min-height:24px!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  border:1px solid #b7c6bd!important;
+  border-radius:7px!important;
+  background:#fbfcfa!important;
+  color:#285040!important;
+  font-size:13px!important;
+  line-height:1!important;
+  font-weight:800!important;
+  cursor:pointer!important;
+  box-shadow:none!important;
+}
+.callyOverlapWorkbenchCardActions button:hover,.callyOverlapWorkbenchCardActions button:focus-visible{background:#edf4ef!important;border-color:#82a18f!important;outline:none!important}
 .callyOverlapWorkbenchEmpty{padding:40px!important;color:#66736c!important;font-size:11px!important;text-align:center!important}
 
 /* Zoom is geometric, not typographic: text stays readable while lanes compress. */
-.callyOverlapWorkbenchSheet[data-zoom-band="overview"] .callyOverlapWorkbenchCard{padding:8px 9px!important;gap:3px!important}
+.callyOverlapWorkbenchSheet[data-zoom-band="overview"] .callyOverlapWorkbenchCard{padding:8px 54px 8px 9px!important;gap:3px!important}
 .callyOverlapWorkbenchSheet[data-zoom-band="overview"] .callyOverlapWorkbenchCard strong{font-size:11px!important;-webkit-line-clamp:2!important}
 .callyOverlapWorkbenchSheet[data-zoom-band="overview"] .callyOverlapWorkbenchCard time{font-size:7.5px!important}
 .callyOverlapWorkbenchSheet[data-zoom-band="overview"] .callyOverlapWorkbenchCardMeta{font-size:7.5px!important;white-space:nowrap!important;text-overflow:ellipsis!important}
 .callyOverlapWorkbenchSheet[data-zoom-band="overview"] .callyOverlapWorkbenchCardChips{display:none!important}
+.callyOverlapWorkbenchSheet[data-zoom-band="overview"] .callyOverlapWorkbenchCardActions button{width:22px!important;min-width:22px!important;height:22px!important;min-height:22px!important}
 .callyOverlapWorkbenchSheet[data-zoom-band="normal"] .callyOverlapWorkbenchCard strong{font-size:12px!important}
-.callyOverlapWorkbenchSheet[data-zoom-band="detail"] .callyOverlapWorkbenchCard{padding:11px 13px!important;gap:5px!important;overflow:auto!important}
+.callyOverlapWorkbenchSheet[data-zoom-band="detail"] .callyOverlapWorkbenchCard{padding:11px 66px 11px 13px!important;gap:5px!important;overflow:auto!important}
 .callyOverlapWorkbenchSheet[data-zoom-band="detail"] .callyOverlapWorkbenchCard strong{font-size:13px!important;-webkit-line-clamp:3!important}
 .callyOverlapWorkbenchSheet[data-zoom-band="detail"] .callyOverlapWorkbenchCardMeta{font-size:8.5px!important;white-space:normal!important}
 .callyOverlapWorkbenchSheet[data-zoom-band="detail"] .callyOverlapWorkbenchCardChips span{font-size:7.5px!important}
+.callyOverlapWorkbenchSheet[data-zoom-band="detail"] .callyOverlapWorkbenchCardActions button{width:27px!important;min-width:27px!important;height:27px!important;min-height:27px!important}
 
 /* Time labels remain visually anchored while the board pans horizontally. */
 .callyOverlapWorkbenchTime{position:sticky!important;z-index:6!important;background:rgba(248,249,246,.92)!important;padding:2px 4px!important;border-radius:5px!important;backdrop-filter:blur(5px)!important}
@@ -236,5 +266,6 @@
   .callyOverlapWorkbenchClose{width:34px!important;min-width:34px!important}
   .callyOverlapWorkbenchTools{grid-template-columns:1fr auto!important;padding:9px 12px!important}
   .callyOverlapWorkbenchSearch{grid-column:1/-1!important}
-  .callyOverlapWorkbenchCard{padding:9px 10px!important}
+  .callyOverlapWorkbenchCard{padding:9px 62px 9px 10px!important}
+  .callyOverlapWorkbenchCardActions button{width:28px!important;min-width:28px!important;height:28px!important;min-height:28px!important}
 }
