@@ -67,157 +67,90 @@
     if (!model?.activeId || !sourceCluster) return;
     sourceCluster.dataset.callyActiveEvent=String(model.activeId);
     const active=model.rows.find(row=>row.id===model.activeId)?.element;
-    if(active){
-      active.style.setProperty('--cally-overlap-z','99');
-      model.rows.filter(row=>row.element!==active).forEach((row,index)=>row.element.style.setProperty('--cally-overlap-z',String(80-index)));
-    }
+    if(active){active.style.setProperty('--cally-overlap-z','99');model.rows.filter(row=>row.element!==active).forEach((row,index)=>row.element.style.setProperty('--cally-overlap-z',String(80-index)));}
   }
 
-  function close() {
-    rememberActiveInSource();
-    qs('#callyOverlapWorkbench')?.classList.remove('open');
-  }
+  function close() { rememberActiveInSource();qs('#callyOverlapWorkbench')?.classList.remove('open'); }
 
   function locateAndClose(id) {
-    const row=model?.rows.find(item=>item.id===String(id));
-    if(!row) return;
+    const row=model?.rows.find(item=>item.id===String(id));if(!row)return;
     model.activeId=row.id;rememberActiveInSource();close();
     requestAnimationFrame(()=>{row.element?.scrollIntoView?.({block:'center',inline:'center',behavior:'smooth'});row.element?.classList.add('callyOverlapLocate');setTimeout(()=>row.element?.classList.remove('callyOverlapLocate'),900);});
   }
 
-  function editAndClose(id) {
-    const eventId=String(id||'');if(!eventId)return;
-    model.activeId=eventId;rememberActiveInSource();close();setTimeout(()=>window.openEvent?.(eventId),0);
-  }
+  function editAndClose(id) { const eventId=String(id||'');if(!eventId)return;model.activeId=eventId;rememberActiveInSource();close();setTimeout(()=>window.openEvent?.(eventId),0); }
 
   function boardWindow(rows) {
     if (!rows.length) return null;
-    const starts = rows.map(row => row.start.getTime());
-    const ends = rows.map(row => row.end.getTime());
-    const min = new Date(Math.min(...starts));
-    const max = new Date(Math.max(...ends));
-    min.setMinutes(Math.floor(min.getMinutes()/30)*30,0,0);
-    max.setMinutes(Math.ceil(max.getMinutes()/30)*30,0,0);
-    if (max <= min) max.setTime(min.getTime()+3600000);
+    const starts=rows.map(row=>row.start.getTime()),ends=rows.map(row=>row.end.getTime());
+    const min=new Date(Math.min(...starts)),max=new Date(Math.max(...ends));
+    min.setMinutes(Math.floor(min.getMinutes()/30)*30,0,0);max.setMinutes(Math.ceil(max.getMinutes()/30)*30,0,0);if(max<=min)max.setTime(min.getTime()+3600000);
     return {min,max,minutes:(max-min)/60000};
   }
 
-  function zoomBand(scale) { if (scale < .78) return 'overview'; if (scale < 1.2) return 'normal'; return 'detail'; }
+  function zoomBand(scale) { if(scale<.78)return'overview';if(scale<1.2)return'normal';return'detail'; }
 
   function setZoom(next, focusX=null, focusY=null) {
-    if(!model) return;
-    const viewport=qs('.callyOverlapWorkbenchViewport',model.sheet);
-    const board=qs('.callyOverlapWorkbenchBoard',model.sheet);
-    const oldZoom=model.zoom;
-    const clamped=Math.max(.55,Math.min(2.25,next));
+    if(!model)return;
+    const viewport=qs('.callyOverlapWorkbenchViewport',model.sheet),board=qs('.callyOverlapWorkbenchBoard',model.sheet);const oldZoom=model.zoom,clamped=Math.max(.55,Math.min(2.25,next));
     if(Math.abs(clamped-oldZoom)<.001){render();return;}
-    const x=focusX==null?(viewport?.clientWidth||0)/2:focusX;
-    const y=focusY==null?(viewport?.clientHeight||0)/2:focusY;
-    const worldX=viewport&&board?(viewport.scrollLeft+x)/Math.max(1,board.scrollWidth):.5;
-    const worldY=viewport&&board?(viewport.scrollTop+y)/Math.max(1,board.scrollHeight):.5;
-    model.zoom=clamped;
-    render();
-    requestAnimationFrame(()=>{
-      const nextViewport=qs('.callyOverlapWorkbenchViewport',model.sheet);
-      const nextBoard=qs('.callyOverlapWorkbenchBoard',model.sheet);
-      if(!nextViewport||!nextBoard)return;
-      nextViewport.scrollLeft=Math.max(0,worldX*nextBoard.scrollWidth-x);
-      nextViewport.scrollTop=Math.max(0,worldY*nextBoard.scrollHeight-y);
-    });
+    const x=focusX==null?(viewport?.clientWidth||0)/2:focusX,y=focusY==null?(viewport?.clientHeight||0)/2:focusY;
+    const worldX=viewport&&board?(viewport.scrollLeft+x)/Math.max(1,board.scrollWidth):.5,worldY=viewport&&board?(viewport.scrollTop+y)/Math.max(1,board.scrollHeight):.5;
+    model.zoom=clamped;render();
+    requestAnimationFrame(()=>{const v=qs('.callyOverlapWorkbenchViewport',model.sheet),b=qs('.callyOverlapWorkbenchBoard',model.sheet);if(!v||!b)return;v.scrollLeft=Math.max(0,worldX*b.scrollWidth-x);v.scrollTop=Math.max(0,worldY*b.scrollHeight-y);});
   }
 
   function fitZoom() {
-    if (!model) return;
-    const viewport = qs('.callyOverlapWorkbenchViewport',model.sheet);
-    if (!viewport) return;
-    const query=model.query.trim().toLowerCase();
-    const filtered=model.rows.filter(row=>!query||`${row.title} ${row.location} ${row.people.join(' ')} ${JSON.stringify(row.dimensions)}`.toLowerCase().includes(query));
-    const columns=Math.max(1,new Set(filtered.map(row=>row.column)).size);
-    const available=Math.max(260,viewport.clientWidth-86);
+    if(!model)return;
+    const viewport=qs('.callyOverlapWorkbenchViewport',model.sheet);if(!viewport)return;
+    const query=model.query.trim().toLowerCase();const filtered=model.rows.filter(row=>!query||`${row.title} ${row.location} ${row.people.join(' ')} ${JSON.stringify(row.dimensions)}`.toLowerCase().includes(query));
+    const columns=Math.max(1,new Set(filtered.map(row=>row.column)).size),available=Math.max(260,viewport.clientWidth-86);
     setZoom(Math.max(.55,Math.min(1.35,(available/columns)/230)));
   }
 
+  function updateContext(filtered) {
+    if(!model)return;
+    const context=qs('[data-workbench-context]',model.sheet);if(!context)return;
+    if(!filtered.length){context.textContent='0 händelser';return;}
+    const first=filtered.reduce((a,b)=>a.start<b.start?a:b),last=filtered.reduce((a,b)=>a.end>b.end?a:b);
+    const active=filtered.find(row=>row.id===model.activeId)||model.rows.find(row=>row.id===model.activeId);
+    context.innerHTML=`<b>${filtered.length} händelser</b><span>${esc(clock(first.start))}–${esc(clock(last.end))}</span>${active?`<span>Vald: ${esc(active.title)}</span>`:''}`;
+  }
+
   function render() {
-    if (!model) return;
-    const {sheet} = model;
-    const query = model.query.trim().toLowerCase();
-    const filtered = model.rows.filter(row => !query || `${row.title} ${row.location} ${row.people.join(' ')} ${JSON.stringify(row.dimensions)}`.toLowerCase().includes(query));
-    const pageSize = model.pageSize;
-    const pages = Math.max(1,Math.ceil(filtered.length/pageSize));
-    model.page = Math.max(0,Math.min(model.page,pages-1));
-    const visible = filtered.slice(model.page*pageSize,(model.page+1)*pageSize);
-    const range = boardWindow(visible);
-    const viewport = qs('.callyOverlapWorkbenchViewport',sheet);
-    const board = qs('.callyOverlapWorkbenchBoard',sheet);
-    if (!viewport || !board) return;
+    if(!model)return;
+    const {sheet}=model,query=model.query.trim().toLowerCase();const filtered=model.rows.filter(row=>!query||`${row.title} ${row.location} ${row.people.join(' ')} ${JSON.stringify(row.dimensions)}`.toLowerCase().includes(query));
+    updateContext(filtered);
+    const pageSize=model.pageSize,pages=Math.max(1,Math.ceil(filtered.length/pageSize));model.page=Math.max(0,Math.min(model.page,pages-1));const visible=filtered.slice(model.page*pageSize,(model.page+1)*pageSize),range=boardWindow(visible);
+    const viewport=qs('.callyOverlapWorkbenchViewport',sheet),board=qs('.callyOverlapWorkbenchBoard',sheet);if(!viewport||!board)return;
+    sheet.dataset.zoomBand=zoomBand(model.zoom);sheet.style.setProperty('--cally-workbench-scale',String(model.zoom));
+    if(!visible.length||!range){board.style.width='100%';board.style.height='100%';board.innerHTML='<div class="callyOverlapWorkbenchEmpty">Inga händelser matchar sökningen.</div>';return;}
 
-    sheet.dataset.zoomBand=zoomBand(model.zoom);
-    sheet.style.setProperty('--cally-workbench-scale',String(model.zoom));
-    if (!visible.length || !range) { board.style.width='100%';board.style.height='100%';board.innerHTML='<div class="callyOverlapWorkbenchEmpty">Inga händelser matchar sökningen.</div>';return; }
-
-    const scale=model.zoom,pxPerMinute=1.18*scale,laneWidth=Math.max(170,230*scale);
-    const uniqueColumns=[...new Set(visible.map(row=>row.column))],columnMap=new Map(uniqueColumns.map((value,index)=>[value,index]));
-    const leftGutter=68;
-    board.style.width=`${Math.max(viewport.clientWidth-2,leftGutter+uniqueColumns.length*laneWidth+28)}px`;
-    board.style.height=`${Math.max(viewport.clientHeight-2,range.minutes*pxPerMinute+64)}px`;
-    board.style.setProperty('--cally-workbench-hour',`${60*pxPerMinute}px`);
-
-    const hourMarks=[];const markStart=new Date(range.min);markStart.setMinutes(0,0,0);if(markStart<range.min)markStart.setHours(markStart.getHours()+1);
+    const scale=model.zoom,pxPerMinute=1.18*scale,laneWidth=Math.max(170,230*scale),uniqueColumns=[...new Set(visible.map(row=>row.column))],columnMap=new Map(uniqueColumns.map((value,index)=>[value,index])),leftGutter=68;
+    board.style.width=`${Math.max(viewport.clientWidth-2,leftGutter+uniqueColumns.length*laneWidth+28)}px`;board.style.height=`${Math.max(viewport.clientHeight-2,range.minutes*pxPerMinute+64)}px`;board.style.setProperty('--cally-workbench-hour',`${60*pxPerMinute}px`);
+    const hourMarks=[],markStart=new Date(range.min);markStart.setMinutes(0,0,0);if(markStart<range.min)markStart.setHours(markStart.getHours()+1);
     for(let t=markStart.getTime();t<=range.max.getTime();t+=3600000){const top=32+((t-range.min.getTime())/60000)*pxPerMinute;hourMarks.push(`<span class="callyOverlapWorkbenchTime" style="top:${top}px">${esc(clock(new Date(t)))}</span>`);}
-
-    const cards=visible.map(row=>{
-      const top=32+((row.start-range.min)/60000)*pxPerMinute,left=leftGutter+(columnMap.get(row.column)||0)*laneWidth+8,height=Math.max(64,durationMinutes(row.item)*pxPerMinute),width=Math.max(150,laneWidth-16);
-      const meta=[`${clock(row.start)}–${clock(row.end)}`,row.people.join(', ')].filter(Boolean).join(' · ');
-      const chips=[row.location,...Object.entries(row.dimensions).filter(([key,value])=>!key.startsWith('calendar_')&&value!=null&&value!=='').slice(0,3).map(([key,value])=>`${key}: ${typeof value==='object'?JSON.stringify(value):value}`)].filter(Boolean);
-      return `<article class="callyOverlapWorkbenchCard${model.activeId===row.id?' is-active':''}" data-workbench-event="${esc(row.id)}" tabindex="0" style="left:${left}px;top:${top}px;width:${width}px;height:${height}px"><div class="callyOverlapWorkbenchCardActions"><button type="button" data-workbench-edit="${esc(row.id)}" title="Redigera" aria-label="Redigera händelse">✎</button><button type="button" data-workbench-locate="${esc(row.id)}" title="Visa i kalendern" aria-label="Visa i kalendern">↗</button></div><time>${esc(clock(row.start))}</time><strong>${esc(row.title)}</strong><div class="callyOverlapWorkbenchCardMeta">${esc(meta)}</div><div class="callyOverlapWorkbenchCardChips">${chips.map(value=>`<span>${esc(value)}</span>`).join('')}</div></article>`;
-    }).join('');
+    const cards=visible.map(row=>{const top=32+((row.start-range.min)/60000)*pxPerMinute,left=leftGutter+(columnMap.get(row.column)||0)*laneWidth+8,height=Math.max(64,durationMinutes(row.item)*pxPerMinute),width=Math.max(150,laneWidth-16),meta=[`${clock(row.start)}–${clock(row.end)}`,row.people.join(', ')].filter(Boolean).join(' · '),chips=[row.location,...Object.entries(row.dimensions).filter(([key,value])=>!key.startsWith('calendar_')&&value!=null&&value!=='').slice(0,3).map(([key,value])=>`${key}: ${typeof value==='object'?JSON.stringify(value):value}`)].filter(Boolean);return `<article class="callyOverlapWorkbenchCard${model.activeId===row.id?' is-active':''}" data-workbench-event="${esc(row.id)}" tabindex="0" style="left:${left}px;top:${top}px;width:${width}px;height:${height}px"><div class="callyOverlapWorkbenchCardActions"><button type="button" data-workbench-edit="${esc(row.id)}" title="Redigera" aria-label="Redigera händelse">✎</button><button type="button" data-workbench-locate="${esc(row.id)}" title="Visa i kalendern" aria-label="Visa i kalendern">↗</button></div><time>${esc(clock(row.start))}</time><strong>${esc(row.title)}</strong><div class="callyOverlapWorkbenchCardMeta">${esc(meta)}</div><div class="callyOverlapWorkbenchCardChips">${chips.map(value=>`<span>${esc(value)}</span>`).join('')}</div></article>`;}).join('');
     board.innerHTML=hourMarks.join('')+cards;
-
-    qsa('[data-workbench-event]',board).forEach(card=>{const activate=()=>{model.activeId=String(card.dataset.workbenchEvent||'');render();};card.addEventListener('click',activate);card.addEventListener('focus',()=>{model.activeId=String(card.dataset.workbenchEvent||'');});card.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();editAndClose(card.dataset.workbenchEvent);}});});
-    qsa('[data-workbench-edit]',board).forEach(button=>button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();editAndClose(button.dataset.workbenchEdit);}));
-    qsa('[data-workbench-locate]',board).forEach(button=>button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();locateAndClose(button.dataset.workbenchLocate);}));
-
-    const zoomLabel=qs('[data-workbench-zoom-label]',sheet);if(zoomLabel)zoomLabel.textContent=`${Math.round(scale*100)}%`;
-    const pager=qs('.callyOverlapWorkbenchPager',sheet);if(pager){pager.hidden=pages<=1;const label=qs('[data-workbench-page-label]',pager);if(label)label.textContent=`${filtered.length?model.page*pageSize+1:0}–${Math.min(filtered.length,(model.page+1)*pageSize)} / ${filtered.length}`;const prev=qs('[data-workbench-page="prev"]',pager),next=qs('[data-workbench-page="next"]',pager);if(prev)prev.disabled=model.page<=0;if(next)next.disabled=model.page>=pages-1;}
+    qsa('[data-workbench-event]',board).forEach(card=>{const activate=()=>{model.activeId=String(card.dataset.workbenchEvent||'');render();};card.addEventListener('click',activate);card.addEventListener('focus',()=>{model.activeId=String(card.dataset.workbenchEvent||'');updateContext(filtered);});card.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();editAndClose(card.dataset.workbenchEvent);}});});
+    qsa('[data-workbench-edit]',board).forEach(button=>button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();editAndClose(button.dataset.workbenchEdit);}));qsa('[data-workbench-locate]',board).forEach(button=>button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();locateAndClose(button.dataset.workbenchLocate);}));
+    const zoomLabel=qs('[data-workbench-zoom-label]',sheet);if(zoomLabel)zoomLabel.textContent=`${Math.round(scale*100)}%`;const pager=qs('.callyOverlapWorkbenchPager',sheet);if(pager){pager.hidden=pages<=1;const label=qs('[data-workbench-page-label]',pager);if(label)label.textContent=`${filtered.length?model.page*pageSize+1:0}–${Math.min(filtered.length,(model.page+1)*pageSize)} / ${filtered.length}`;const prev=qs('[data-workbench-page="prev"]',pager),next=qs('[data-workbench-page="next"]',pager);if(prev)prev.disabled=model.page<=0;if(next)next.disabled=model.page>=pages-1;}
   }
 
   function renderShell() {
     const {sheet,rows}=model;
-    sheet.innerHTML=`<header class="callyOverlapWorkbenchHead"><div><div class="callyOverlapWorkbenchKicker">SAMTIDIGHET · DJUPVY</div><h2>${rows.length} samtidiga händelser</h2><p>En riktig tidsaxel med separata lager. Välj en händelse, redigera direkt härifrån eller hoppa tillbaka till exakt kort i kalendern.</p></div><div class="callyOverlapWorkbenchHeadActions"><button type="button" data-workbench-back>← Återgå</button><button type="button" class="callyOverlapWorkbenchClose" data-workbench-close aria-label="Stäng">×</button></div></header><div class="callyOverlapWorkbenchTools"><label class="callyOverlapWorkbenchSearch"><span>Sök</span><input data-workbench-search placeholder="Person, plats, händelse, dimension…"></label><div class="callyOverlapWorkbenchZoom"><button type="button" data-workbench-zoom="out" aria-label="Zooma ut">−</button><span data-workbench-zoom-label>100%</span><button type="button" data-workbench-zoom="in" aria-label="Zooma in">+</button><button type="button" data-workbench-fit aria-label="Anpassa till bredd">Passa</button></div><div class="callyOverlapWorkbenchPager" hidden><button type="button" data-workbench-page="prev">‹</button><span data-workbench-page-label></span><button type="button" data-workbench-page="next">›</button></div></div><div class="callyOverlapWorkbenchViewport"><div class="callyOverlapWorkbenchBoard"></div></div>`;
-    qs('[data-workbench-back]',sheet)?.addEventListener('click',close);qs('[data-workbench-close]',sheet)?.addEventListener('click',close);
-    qs('[data-workbench-search]',sheet)?.addEventListener('input',event=>{model.query=event.target.value||'';model.page=0;render();});
-    qs('[data-workbench-zoom="out"]',sheet)?.addEventListener('click',()=>setZoom(model.zoom-.15));qs('[data-workbench-zoom="in"]',sheet)?.addEventListener('click',()=>setZoom(model.zoom+.15));qs('[data-workbench-fit]',sheet)?.addEventListener('click',fitZoom);
-    qs('[data-workbench-page="prev"]',sheet)?.addEventListener('click',()=>{model.page-=1;render();});qs('[data-workbench-page="next"]',sheet)?.addEventListener('click',()=>{model.page+=1;render();});
-    const viewport=qs('.callyOverlapWorkbenchViewport',sheet);
-    if(viewport){
-      viewport.addEventListener('wheel',event=>{if(!(event.ctrlKey||event.metaKey))return;event.preventDefault();const rect=viewport.getBoundingClientRect();setZoom(model.zoom+(event.deltaY<0?.12:-.12),event.clientX-rect.left,event.clientY-rect.top);},{passive:false});
-      let pinchStart=0,pinchZoom=1,pinchX=0,pinchY=0;const distance=touches=>Math.hypot(touches[0].clientX-touches[1].clientX,touches[0].clientY-touches[1].clientY);
-      viewport.addEventListener('touchstart',event=>{if(event.touches.length===2){pinchStart=distance(event.touches);pinchZoom=model.zoom;const rect=viewport.getBoundingClientRect();pinchX=(event.touches[0].clientX+event.touches[1].clientX)/2-rect.left;pinchY=(event.touches[0].clientY+event.touches[1].clientY)/2-rect.top;}},{passive:true});
-      viewport.addEventListener('touchmove',event=>{if(event.touches.length!==2||!pinchStart)return;event.preventDefault();setZoom(pinchZoom*(distance(event.touches)/pinchStart),pinchX,pinchY);},{passive:false});
-      viewport.addEventListener('touchend',event=>{if(event.touches.length<2)pinchStart=0;},{passive:true});
-    }
+    sheet.innerHTML=`<header class="callyOverlapWorkbenchHead"><div><div class="callyOverlapWorkbenchKicker">SAMTIDIGHET · DJUPVY</div><h2>${rows.length} samtidiga händelser</h2><p>En riktig tidsaxel med separata lager. Välj en händelse, redigera direkt härifrån eller hoppa tillbaka till exakt kort i kalendern.</p><div class="callyOverlapWorkbenchContext" data-workbench-context></div></div><div class="callyOverlapWorkbenchHeadActions"><button type="button" data-workbench-back>← Återgå</button><button type="button" class="callyOverlapWorkbenchClose" data-workbench-close aria-label="Stäng">×</button></div></header><div class="callyOverlapWorkbenchTools"><label class="callyOverlapWorkbenchSearch"><span>Sök</span><input data-workbench-search placeholder="Person, plats, händelse, dimension…"></label><div class="callyOverlapWorkbenchZoom"><button type="button" data-workbench-zoom="out" aria-label="Zooma ut">−</button><span data-workbench-zoom-label>100%</span><button type="button" data-workbench-zoom="in" aria-label="Zooma in">+</button><button type="button" data-workbench-fit aria-label="Anpassa till bredd">Passa</button></div><div class="callyOverlapWorkbenchPager" hidden><button type="button" data-workbench-page="prev">‹</button><span data-workbench-page-label></span><button type="button" data-workbench-page="next">›</button></div></div><div class="callyOverlapWorkbenchViewport"><div class="callyOverlapWorkbenchBoard"></div></div>`;
+    qs('[data-workbench-back]',sheet)?.addEventListener('click',close);qs('[data-workbench-close]',sheet)?.addEventListener('click',close);qs('[data-workbench-search]',sheet)?.addEventListener('input',event=>{model.query=event.target.value||'';model.page=0;render();});qs('[data-workbench-zoom="out"]',sheet)?.addEventListener('click',()=>setZoom(model.zoom-.15));qs('[data-workbench-zoom="in"]',sheet)?.addEventListener('click',()=>setZoom(model.zoom+.15));qs('[data-workbench-fit]',sheet)?.addEventListener('click',fitZoom);qs('[data-workbench-page="prev"]',sheet)?.addEventListener('click',()=>{model.page-=1;render();});qs('[data-workbench-page="next"]',sheet)?.addEventListener('click',()=>{model.page+=1;render();});
+    const viewport=qs('.callyOverlapWorkbenchViewport',sheet);if(viewport){viewport.addEventListener('wheel',event=>{if(!(event.ctrlKey||event.metaKey))return;event.preventDefault();const rect=viewport.getBoundingClientRect();setZoom(model.zoom+(event.deltaY<0?.12:-.12),event.clientX-rect.left,event.clientY-rect.top);},{passive:false});let pinchStart=0,pinchZoom=1,pinchX=0,pinchY=0;const distance=touches=>Math.hypot(touches[0].clientX-touches[1].clientX,touches[0].clientY-touches[1].clientY);viewport.addEventListener('touchstart',event=>{if(event.touches.length===2){pinchStart=distance(event.touches);pinchZoom=model.zoom;const rect=viewport.getBoundingClientRect();pinchX=(event.touches[0].clientX+event.touches[1].clientX)/2-rect.left;pinchY=(event.touches[0].clientY+event.touches[1].clientY)/2-rect.top;}},{passive:true});viewport.addEventListener('touchmove',event=>{if(event.touches.length!==2||!pinchStart)return;event.preventDefault();setZoom(pinchZoom*(distance(event.touches)/pinchStart),pinchX,pinchY);},{passive:false});viewport.addEventListener('touchend',event=>{if(event.touches.length<2)pinchStart=0;},{passive:true});}
     render();
   }
 
   async function open(cluster) {
-    sourceCluster=cluster;const snapshot=await readState();const rows=sourceRows(cluster,snapshot);if(!rows.length)return;
+    sourceCluster=cluster;const snapshot=await readState(),rows=sourceRows(cluster,snapshot);if(!rows.length)return;
     const overlay=ensureOverlay(),sheet=qs('.callyOverlapWorkbenchSheet',overlay);model={overlay,sheet,rows,query:'',zoom:1,page:0,pageSize:160,activeId:cluster.dataset.callyActiveEvent||rows[0].id};renderShell();overlay.classList.add('open');
+    requestAnimationFrame(()=>{fitZoom();requestAnimationFrame(()=>{const active=qs(`[data-workbench-event="${CSS.escape(String(model.activeId))}"]`,sheet);active?.scrollIntoView?.({block:'center',inline:'center'});});});
   }
 
   document.addEventListener('click',event=>{const deep=event.target.closest?.('.callyOverlapDeep');if(!deep)return;const cluster=deep.closest('.callyOverlapCluster');if(!cluster)return;event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();void open(cluster);},true);
-  document.addEventListener('keydown',event=>{
-    if(!qs('#callyOverlapWorkbench.open')||!model)return;
-    const tag=event.target?.tagName?.toLowerCase();if(tag==='input'||tag==='textarea'||tag==='select')return;
-    const viewport=qs('.callyOverlapWorkbenchViewport',model.sheet);
-    if(event.key==='Escape'){event.preventDefault();close();return;}
-    if(event.key==='+'||event.key==='='){event.preventDefault();setZoom(model.zoom+.15);return;}
-    if(event.key==='-'){event.preventDefault();setZoom(model.zoom-.15);return;}
-    if(event.key==='0'){event.preventDefault();fitZoom();return;}
-    if(event.key.toLowerCase()==='e'&&model.activeId){event.preventDefault();editAndClose(model.activeId);return;}
-    if(!viewport)return;
-    if(event.key==='ArrowLeft'){event.preventDefault();viewport.scrollBy({left:-160,behavior:'smooth'});}
-    if(event.key==='ArrowRight'){event.preventDefault();viewport.scrollBy({left:160,behavior:'smooth'});}
-    if(event.key==='ArrowUp'){event.preventDefault();viewport.scrollBy({top:-120,behavior:'smooth'});}
-    if(event.key==='ArrowDown'){event.preventDefault();viewport.scrollBy({top:120,behavior:'smooth'});}
-  });
+  document.addEventListener('keydown',event=>{if(!qs('#callyOverlapWorkbench.open')||!model)return;const tag=event.target?.tagName?.toLowerCase();if(tag==='input'||tag==='textarea'||tag==='select')return;const viewport=qs('.callyOverlapWorkbenchViewport',model.sheet);if(event.key==='Escape'){event.preventDefault();close();return;}if(event.key==='+'||event.key==='='){event.preventDefault();setZoom(model.zoom+.15);return;}if(event.key==='-'){event.preventDefault();setZoom(model.zoom-.15);return;}if(event.key==='0'){event.preventDefault();fitZoom();return;}if(event.key.toLowerCase()==='e'&&model.activeId){event.preventDefault();editAndClose(model.activeId);return;}if(!viewport)return;if(event.key==='ArrowLeft'){event.preventDefault();viewport.scrollBy({left:-160,behavior:'smooth'});}if(event.key==='ArrowRight'){event.preventDefault();viewport.scrollBy({left:160,behavior:'smooth'});}if(event.key==='ArrowUp'){event.preventDefault();viewport.scrollBy({top:-120,behavior:'smooth'});}if(event.key==='ArrowDown'){event.preventDefault();viewport.scrollBy({top:120,behavior:'smooth'});}});
 })();
