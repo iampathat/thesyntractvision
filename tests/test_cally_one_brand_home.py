@@ -69,6 +69,23 @@ def test_timeline_overlap_layout_fans_cards_then_expands_as_time_columns() -> No
     assert 'MutationObserver' not in fan_section
 
 
+def test_first_overlap_detail_is_true_horizontal_scroll_rail() -> None:
+    css = Path('src/qcds_fabric/robots/cally_one/brand_home_polish.css').read_text(encoding='utf-8')
+
+    detail = css.split('/* First overlap detail level: true horizontal card rail inside the day. */', 1)[1]
+    assert 'display:flex!important;' in detail
+    assert 'flex-flow:row nowrap!important;' in detail
+    assert 'overflow-x:auto!important;' in detail
+    assert 'scroll-snap-type:x mandatory!important;' in detail
+    assert 'position:relative!important;' in detail
+    assert 'left:auto!important;' in detail
+    assert 'top:auto!important;' in detail
+    assert 'flex:0 0 clamp(126px,82%,180px)!important;' in detail
+    assert '.callyOverlapLane{display:none!important}' in detail
+    assert '.callyOverlapSpread{' in detail
+    assert '.callyOverlapDeep{' in detail
+
+
 def test_overlap_zoom_is_always_available_with_back_mouse_and_pinch_controls() -> None:
     html = cally_one_html(static_mode=True)
     fan_js = Path('src/qcds_fabric/robots/cally_one/manual_resolution_ui.js').read_text(encoding='utf-8')
