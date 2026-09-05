@@ -150,6 +150,33 @@ ACCOUNT_ROLE_VALUES = [
     {"code": "superadmin", "labels": {"sv": "Superadmin", "en": "Superadmin"}},
 ]
 
+TERMINOLOGY_MODE_VALUES = [
+    {
+        "code": "simple",
+        "labels": {"sv": "Enkelt", "en": "Simple"},
+        "descriptions": {
+            "sv": "Vanliga ord. Den tekniska modellen arbetar under ytan.",
+            "en": "Everyday words. The technical model stays underneath.",
+        },
+    },
+    {
+        "code": "standard",
+        "labels": {"sv": "Standard", "en": "Standard"},
+        "descriptions": {
+            "sv": "Tydliga produktord med lite mer struktur.",
+            "en": "Clear product terminology with a little more structure.",
+        },
+    },
+    {
+        "code": "technical",
+        "labels": {"sv": "Tekniskt", "en": "Technical"},
+        "descriptions": {
+            "sv": "State, dimensioner, orakel, QCDS och Syntract.",
+            "en": "State, dimensions, oracles, QCDS and Syntract.",
+        },
+    },
+]
+
 BUILTIN_DIMENSIONS: dict[str, dict[str, Any]] = {
     "person": {"labels": {"en": "Person", "sv": "Person"}, "value_kind": "entity:person", "preferred": True, "rich_editor": True},
     "event": {"labels": {"en": "Event", "sv": "Händelse"}, "value_kind": "event", "preferred": True, "rich_editor": True},
@@ -171,6 +198,13 @@ BUILTIN_DIMENSIONS: dict[str, dict[str, Any]] = {
         "preferred": True,
         "rich_editor": False,
         "values": LANGUAGE_VALUES,
+    },
+    "terminology_mode": {
+        "labels": {"en": "Terminology mode", "sv": "Språknivå"},
+        "value_kind": "terminology-projection-state",
+        "preferred": True,
+        "rich_editor": False,
+        "values": TERMINOLOGY_MODE_VALUES,
     },
     "calendar_display_language": {
         "labels": {"en": "Calendar display language", "sv": "Kalenderns visningsspråk"},
@@ -481,6 +515,7 @@ __all__ = [
     "CALENDAR_SYSTEM_VALUES",
     "LANGUAGE_VALUES",
     "REFERENCE_BODY_VALUES",
+    "TERMINOLOGY_MODE_VALUES",
     "TIME_REFERENCE_VALUES",
     "DimensionStateRegistry",
     "canonical_dimension_key",
