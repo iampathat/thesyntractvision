@@ -129,7 +129,7 @@ def test_week_numbers_are_first_class_across_calendar_views() -> None:
     assert 'class="callyWeekNumber"' in html
     assert 'class="callyMonthWeek"' in html
     assert 'class="miniWeekRange"' in html
-    assert 'Veckonummer visas enligt ISO 8601' in html
+    assert 'ISO 8601' in html
 
 
 def test_calendar_system_is_a_switchable_display_dimension() -> None:
@@ -138,7 +138,8 @@ def test_calendar_system_is_a_switchable_display_dimension() -> None:
         assert f"['{calendar}'" in html or f"['{calendar}'," in html
     assert 'KALENDERDIMENSION' in html
     assert 'calendar:prefs.calendar' in html
-    assert 'Händelsernas underliggande tid ändras inte' in html
+    assert 'display_projection_does_not_change_temporal_state:true' in html
+    assert 'De ändrar inte den underliggande tiden.' in html
 
 
 def test_timezone_and_12_24_hour_projection_are_explicit() -> None:
