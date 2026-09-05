@@ -2,10 +2,11 @@
 
 Cally.One Tribute License 1.0 — see LICENSE.md in this package.
 
-A dimension is itself represented as state.  Its canonical key is stable while
-labels, aliases, visibility, value semantics and lifecycle are mutable state.
-Retiring a dimension hides it from active projections without deleting the
-historical states that already use it.
+A dimension is itself represented as state. Its canonical key is stable while
+labels, aliases, value semantics and lifecycle are mutable state. Display
+language, calendar system, time zone and account access are therefore not UI
+special cases: they are domain dimensions projected by the client. QCDS remains
+the sole inference engine when logical inference is explicitly requested.
 """
 
 from __future__ import annotations
@@ -17,53 +18,112 @@ from ...calendar_robot import CalendarRobotError, CalendarSpace, _cmp_dt
 from .state_space import CallyOneStateGraph, StateEntity
 
 
+LANGUAGE_VALUES = [
+    {
+        "code": "sv",
+        "labels": {"sv": "Svenska", "en": "Swedish"},
+        "native_label": "Svenska",
+        "locale": "sv-SE",
+        "direction": "ltr",
+    },
+    {
+        "code": "en",
+        "labels": {"sv": "Engelska", "en": "English"},
+        "native_label": "English",
+        "locale": "en-GB",
+        "direction": "ltr",
+    },
+]
+
+CALENDAR_SYSTEM_VALUES = [
+    {"code": "gregory", "labels": {"sv": "Gregoriansk", "en": "Gregorian"}},
+    {"code": "iso8601", "labels": {"sv": "ISO 8601", "en": "ISO 8601"}},
+    {"code": "islamic", "labels": {"sv": "Islamisk", "en": "Islamic"}},
+    {"code": "islamic-umalqura", "labels": {"sv": "Islamisk · Umm al-Qura", "en": "Islamic · Umm al-Qura"}},
+    {"code": "chinese", "labels": {"sv": "Kinesisk", "en": "Chinese"}},
+    {"code": "hebrew", "labels": {"sv": "Hebreisk", "en": "Hebrew"}},
+    {"code": "persian", "labels": {"sv": "Persisk", "en": "Persian"}},
+    {"code": "indian", "labels": {"sv": "Indisk nationalkalender", "en": "Indian national calendar"}},
+    {"code": "buddhist", "labels": {"sv": "Buddhistisk", "en": "Buddhist"}},
+    {"code": "japanese", "labels": {"sv": "Japansk era", "en": "Japanese era"}},
+]
+
+ACCOUNT_ROLE_VALUES = [
+    {"code": "member", "labels": {"sv": "Medlem", "en": "Member"}},
+    {"code": "admin", "labels": {"sv": "Admin", "en": "Admin"}},
+    {"code": "superadmin", "labels": {"sv": "Superadmin", "en": "Superadmin"}},
+]
+
 BUILTIN_DIMENSIONS: dict[str, dict[str, Any]] = {
-    "person": {
-        "labels": {"en": "Person", "sv": "Person"},
-        "value_kind": "entity:person",
-        "preferred": True,
-        "rich_editor": True,
-    },
-    "event": {
-        "labels": {"en": "Event", "sv": "Händelse"},
-        "value_kind": "event",
-        "preferred": True,
-        "rich_editor": True,
-    },
-    "organization": {
-        "labels": {"en": "Organization", "sv": "Organisation"},
-        "value_kind": "entity:organization",
-        "preferred": True,
-        "rich_editor": True,
-    },
-    "location": {
-        "labels": {"en": "Location", "sv": "Plats"},
-        "value_kind": "scalar",
-        "preferred": True,
-        "rich_editor": False,
-    },
-    "resource": {
-        "labels": {"en": "Resource", "sv": "Resurs"},
-        "value_kind": "entity:resource",
-        "preferred": True,
-        "rich_editor": True,
-    },
-    "thing": {
-        "labels": {"en": "Thing", "sv": "Sak"},
-        "value_kind": "entity:thing",
-        "preferred": True,
-        "rich_editor": True,
-    },
-    "day": {
-        "labels": {"en": "Day", "sv": "Dag"},
-        "value_kind": "temporal:day",
-        "preferred": True,
-        "rich_editor": False,
-    },
+    "person": {"labels": {"en": "Person", "sv": "Person"}, "value_kind": "entity:person", "preferred": True, "rich_editor": True},
+    "event": {"labels": {"en": "Event", "sv": "Händelse"}, "value_kind": "event", "preferred": True, "rich_editor": True},
+    "organization": {"labels": {"en": "Organization", "sv": "Organisation"}, "value_kind": "entity:organization", "preferred": True, "rich_editor": True},
+    "location": {"labels": {"en": "Location", "sv": "Plats"}, "value_kind": "scalar", "preferred": True, "rich_editor": False},
+    "resource": {"labels": {"en": "Resource", "sv": "Resurs"}, "value_kind": "entity:resource", "preferred": True, "rich_editor": True},
+    "thing": {"labels": {"en": "Thing", "sv": "Sak"}, "value_kind": "entity:thing", "preferred": True, "rich_editor": True},
+    "day": {"labels": {"en": "Day", "sv": "Dag"}, "value_kind": "temporal:day", "preferred": True, "rich_editor": False},
     "language": {
         "labels": {"en": "Language", "sv": "Språk"},
         "value_kind": "language-state",
         "preferred": True,
+        "rich_editor": True,
+        "values": LANGUAGE_VALUES,
+    },
+    "interface_language": {
+        "labels": {"en": "Interface language", "sv": "Gränssnittsspråk"},
+        "value_kind": "language-state",
+        "preferred": True,
+        "rich_editor": False,
+        "values": LANGUAGE_VALUES,
+    },
+    "calendar_display_language": {
+        "labels": {"en": "Calendar display language", "sv": "Kalenderns visningsspråk"},
+        "value_kind": "language-state",
+        "preferred": True,
+        "rich_editor": False,
+        "values": LANGUAGE_VALUES,
+    },
+    "calendar_system": {
+        "labels": {"en": "Calendar system", "sv": "Tideräkning"},
+        "value_kind": "calendar-system-state",
+        "preferred": True,
+        "rich_editor": False,
+        "values": CALENDAR_SYSTEM_VALUES,
+    },
+    "time_zone": {
+        "labels": {"en": "Time zone", "sv": "Tidszon"},
+        "value_kind": "time-zone-state",
+        "preferred": True,
+        "rich_editor": False,
+    },
+    "clock_format": {
+        "labels": {"en": "Clock format", "sv": "Klockformat"},
+        "value_kind": "clock-format-state",
+        "preferred": True,
+        "rich_editor": False,
+        "values": [
+            {"code": "auto", "labels": {"sv": "Automatiskt", "en": "Automatic"}},
+            {"code": "h23", "labels": {"sv": "24 timmar", "en": "24 hour"}},
+            {"code": "h12", "labels": {"sv": "12 timmar", "en": "12 hour"}},
+        ],
+    },
+    "account_role": {
+        "labels": {"en": "Account role", "sv": "Kontoroll"},
+        "value_kind": "access-role-state",
+        "preferred": False,
+        "rich_editor": True,
+        "values": ACCOUNT_ROLE_VALUES,
+    },
+    "visibility_policy": {
+        "labels": {"en": "Visibility policy", "sv": "Synlighetspolicy"},
+        "value_kind": "access-policy-state",
+        "preferred": False,
+        "rich_editor": True,
+    },
+    "calendar_layer_priority": {
+        "labels": {"en": "Calendar layer priority", "sv": "Kalenderns lagerprioritet"},
+        "value_kind": "scalar",
+        "preferred": False,
         "rich_editor": False,
     },
 }
@@ -79,6 +139,28 @@ def canonical_dimension_key(value: Any) -> str:
 
 def _humanize(key: str) -> str:
     return " ".join(part.capitalize() for part in key.split("_") if part)
+
+
+def _normalize_values(raw: Any, current: Any = None) -> list[dict[str, Any]]:
+    if raw is None:
+        raw = current or []
+    if not isinstance(raw, (list, tuple)):
+        raise CalendarRobotError("dimension values must be an array")
+    values: list[dict[str, Any]] = []
+    for item in raw:
+        if not isinstance(item, Mapping):
+            raise CalendarRobotError("dimension value must be an object")
+        value = dict(item)
+        code = str(value.get("code") or "").strip()
+        if not code:
+            raise CalendarRobotError("dimension value code must be non-empty")
+        labels = value.get("labels") or {}
+        if not isinstance(labels, Mapping):
+            raise CalendarRobotError("dimension value labels must be an object")
+        value["code"] = code
+        value["labels"] = {str(k): str(v) for k, v in labels.items() if str(v).strip()}
+        values.append(value)
+    return values
 
 
 class DimensionStateRegistry:
@@ -107,6 +189,7 @@ class DimensionStateRegistry:
                         "value_kind": spec["value_kind"],
                         "preferred": spec["preferred"],
                         "rich_editor": spec["rich_editor"],
+                        "values": spec.get("values", []),
                         "system": True,
                     }
                 )
@@ -135,9 +218,7 @@ class DimensionStateRegistry:
                 )
 
     def upsert(self, payload: Mapping[str, Any]) -> StateEntity:
-        raw_key = payload.get("key") or payload.get("canonical_key")
-        if not raw_key:
-            raw_key = payload.get("label")
+        raw_key = payload.get("key") or payload.get("canonical_key") or payload.get("label")
         key = canonical_dimension_key(raw_key)
         current = self._dimension_entity(key)
         current_dims = dict(current.dimensions) if current else {}
@@ -147,7 +228,6 @@ class DimensionStateRegistry:
             raise CalendarRobotError("dimension labels must be an object")
         labels = dict(current_dims.get("labels") or {})
         labels.update({str(k): str(v) for k, v in dict(raw_labels or {}).items() if str(v).strip()})
-
         explicit_label = str(payload.get("label") or "").strip()
         label = explicit_label or labels.get("sv") or labels.get("en") or (current.label if current else _humanize(key))
         if explicit_label:
@@ -177,6 +257,7 @@ class DimensionStateRegistry:
                 "rich_editor": bool(payload.get("rich_editor", current_dims.get("rich_editor", False))),
                 "system": bool(payload.get("system", current_dims.get("system", False))),
                 "origin": str(payload.get("origin") or current_dims.get("origin") or "user"),
+                "values": _normalize_values(payload.get("values"), current_dims.get("values")),
             }
         )
         return self.graph.upsert_entity(
@@ -210,6 +291,7 @@ class DimensionStateRegistry:
                 "rich_editor": current.dimensions.get("rich_editor", False),
                 "system": current.dimensions.get("system", False),
                 "origin": current.dimensions.get("origin", "user"),
+                "values": list(current.dimensions.get("values") or []),
             }
         )
 
@@ -226,7 +308,6 @@ class DimensionStateRegistry:
             return sum(item.kind == "thing" for item in self.graph.entities.values())
         if key == "day":
             return len({_cmp_dt(event.start).date().isoformat() for event in self.space.events.values()})
-
         count = 0
         if key == "location":
             count += sum(bool(event.location) for event in self.space.events.values())
@@ -258,6 +339,7 @@ class DimensionStateRegistry:
                     "rich_editor": bool(dims.get("rich_editor", False)),
                     "system": bool(dims.get("system", False)),
                     "origin": str(dims.get("origin") or "user"),
+                    "values": list(dims.get("values") or []),
                     "usage": self._usage(key),
                 }
             )
@@ -265,4 +347,11 @@ class DimensionStateRegistry:
         return out
 
 
-__all__ = ["BUILTIN_DIMENSIONS", "DimensionStateRegistry", "canonical_dimension_key"]
+__all__ = [
+    "ACCOUNT_ROLE_VALUES",
+    "BUILTIN_DIMENSIONS",
+    "CALENDAR_SYSTEM_VALUES",
+    "LANGUAGE_VALUES",
+    "DimensionStateRegistry",
+    "canonical_dimension_key",
+]
