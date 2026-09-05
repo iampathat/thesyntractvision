@@ -194,17 +194,18 @@
   window.__callySetTerminologyMode=setMode;
   window.__callyApplyTerminology=applyNow;
 
+  let scheduled=false;
+  const schedule=()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;applyNow();});};
+  const reapplySoon=()=>{schedule();setTimeout(schedule,0);setTimeout(schedule,60);};
+
   document.addEventListener('click',event=>{
     if(event.target.closest?.('[data-terminology-settings]')){event.preventDefault();event.stopPropagation();open();return;}
     if(event.target.closest?.('[data-terminology-close]')){close();return;}
     const choice=event.target.closest?.('[data-terminology-mode]');if(choice){event.preventDefault();setMode(choice.dataset.terminologyMode);return;}
-    if(event.target.closest?.('[data-system-action="dimensions"]'))setTimeout(applyNow,40);
+    if(event.target.closest?.('[data-system-action="dimensions"],[data-state-tab],[data-edit-dimension],[data-new-dimension],[data-tab-jump],[data-toggle-dimension]'))reapplySoon();
   });
 
-  let scheduled=false;
-  const schedule=()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;applyNow();});};
-  const observer=new MutationObserver(mutations=>{if(mutations.some(m=>m.addedNodes.length||m.removedNodes.length))schedule();});
-  const boot=()=>{ensureState(mode);applyNow();observer.observe(document.body,{childList:true,subtree:true});};
-  window.addEventListener('cally-one-ui-refresh',schedule);
+  const boot=()=>{ensureState(mode);applyNow();};
+  window.addEventListener('cally-one-ui-refresh',reapplySoon);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
