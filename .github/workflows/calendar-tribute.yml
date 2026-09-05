@@ -23,6 +23,7 @@ on:
       - "tests/test_cally_one_scandinavian_design.py"
       - "tests/test_cally_one_top_event_polish.py"
       - "tests/test_cally_one_demo_space.py"
+      - "tests/test_cally_one_locale_access.py"
       - "LICENSE_CALENDAR_TRIBUTE.md"
       - "CALENDAR_ROBOT.md"
       - "pyproject.toml"
@@ -43,7 +44,7 @@ jobs:
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e '.[test]'
       - name: Run Cally.One Logical Robot tests
-        run: pytest -q tests/test_calendar_robot.py tests/test_cally_one_brand.py tests/test_cally_one_brand_home.py tests/test_cally_one_interactions.py tests/test_cally_one_state_space.py tests/test_cally_one_capacity.py tests/test_cally_one_safe_rebuild.py tests/test_cally_one_stability_hotfix.py tests/test_cally_one_scandinavian_design.py tests/test_cally_one_top_event_polish.py tests/test_cally_one_demo_space.py
+        run: pytest -q tests/test_calendar_robot.py tests/test_cally_one_brand.py tests/test_cally_one_brand_home.py tests/test_cally_one_interactions.py tests/test_cally_one_state_space.py tests/test_cally_one_capacity.py tests/test_cally_one_safe_rebuild.py tests/test_cally_one_stability_hotfix.py tests/test_cally_one_scandinavian_design.py tests/test_cally_one_top_event_polish.py tests/test_cally_one_demo_space.py tests/test_cally_one_locale_access.py
       - name: Build static Cally.One GitHub preview
         run: |
           mkdir -p _cally_preview/cally
@@ -103,6 +104,10 @@ jobs:
           assert 'cally.one.state.demo.family-company.v1' in html
           assert 'Demokalender' in html
           assert 'Nordverk AB' in html
+          assert 'callyLocaleAccessMenu' in html
+          assert "key:'language'" in html
+          assert "key:'account_role'" in html
+          assert 'subscription_responsible' in html
           assert '--shadow:none' in html
           assert 'observer.observe(document.body, {childList:true, subtree:true});' not in html
           assert 'observer.observe(stage, {childList:true, subtree:true});' not in html
