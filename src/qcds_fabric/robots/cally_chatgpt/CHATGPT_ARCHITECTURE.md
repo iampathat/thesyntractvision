@@ -67,6 +67,49 @@ READ / WRITE / QUERY / PROJECT  = no inference
 RESOLVE                         = QCDS -> Syntract
 ```
 
+## Target operating model
+
+The desired end state is **OpenAI-first and operations-minimal** for the author.
+
+The target is not a conventional self-operated SaaS business where the author
+must host and administer a large application stack or sell many small end-user
+subscriptions. Instead, the preferred model is:
+
+```text
+OpenAI / ChatGPT
+  hosts or operates the QCDS production runtime
+  under a separate written license and attribution agreement
+        │
+        ▼
+Logical Robot Interface
+READ · WRITE · QUERY · PROJECT · RESOLVE
+        │
+        ▼
+QCDS / SyntractSystem
+QCDS by Patrik Sundblom / The Syntract Vision
+        │
+        ▼
+Logical Robots
+Cally · Legal · Robotics · Operations · future robots
+```
+
+The intended commercial relationship is a platform / technology-license model,
+not primarily a per-end-user subscription model:
+
+- Patrik Sundblom retains QCDS authorship and IP rights subject to already
+  published licenses.
+- OpenAI may host and use a defined QCDS production runtime only under a
+  separate written agreement.
+- QCDS attribution / credit remains explicit.
+- Commercial compensation can be defined separately (for example licensing,
+  revenue share, royalty, compute credit or another mutually agreed structure).
+- Logical Robots may use the hosted QCDS runtime through the same small interface.
+- The architecture must remain portable so the QCDS runtime can move between
+  hosting environments without redesigning the robots.
+
+This is a **target operating and commercial model**, not a claim that OpenAI has
+accepted or currently offers such an agreement or hosting arrangement.
+
 ## Human languages and machine languages
 
 Both are representations around one canonical state model.
@@ -123,11 +166,10 @@ continue here without destabilising `robots/cally_one`.
 
 ## Next live milestones
 
-1. Run the MCP endpoint remotely over HTTPS.
+1. Keep the QCDS runtime host-neutral and deployable over HTTPS/MCP while OpenAI-hosted runtime is not available.
 2. Replace the development workspace resolver with authenticated identity.
 3. Package the calendar projection as the Apps SDK UI inside ChatGPT.
-4. Add subscription/license state for organization workspaces while preserving
-   free private/family use.
-5. Connect real Google/Microsoft/CalDAV/ICS adapters to the machine-language
-   state model.
+4. Prepare a concise hosted-QCDS technology-license / attribution proposal for OpenAI.
+5. Connect real Google/Microsoft/CalDAV/ICS adapters to the machine-language state model.
 6. Test through ChatGPT Developer Mode and prepare directory publication.
+7. Keep Cally as the first Logical Robot while preserving the same interface for additional robots.
