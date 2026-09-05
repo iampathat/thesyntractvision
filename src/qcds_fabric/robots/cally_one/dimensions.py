@@ -127,6 +127,14 @@ TIME_REFERENCE_VALUES = [
         "physical_timescale": False,
     },
     {
+        "code": "tcl",
+        "labels": {"sv": "TCL · Lunar Coordinate Time", "en": "TCL · Lunar Coordinate Time"},
+        "category": "lunar-coordinate",
+        "standard_family": "iau",
+        "reference_system": "LCRS",
+        "status": "standard",
+    },
+    {
         "code": "ltc",
         "labels": {"sv": "LTC · koordinerad måntid", "en": "LTC · Coordinated Lunar Time"},
         "category": "lunar-reference",
