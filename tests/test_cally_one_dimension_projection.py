@@ -64,8 +64,9 @@ def test_interface_language_calendar_language_system_and_timezone_are_independen
     assert "time_zone_is_independent:true" in html
     assert "interface_language_is_independent_projection = true" in html
     assert "svenska huvudmenyer + English kalendertext + kinesisk tideräkning + Asia/Shanghai" in html
-    assert "data-calendar-display-locale=\"sv\"" in html
-    assert "data-calendar-display-locale=\"en\"" in html
+    assert "data-calendar-display-locale" in html
+    assert "{code:'sv'" in html
+    assert "{code:'en'" in html
     assert "callyLangFlag" in html
     assert "calendar_projection" in html
 
