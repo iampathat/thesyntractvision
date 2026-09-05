@@ -42,16 +42,17 @@ def create_mcp_server():
     """Create the Streamable HTTP MCP server used by ChatGPT Apps SDK.
 
     The dependency is optional in the base QCDS package. Install the
-    ``chatgpt`` extra before running this module.
+    ``chatgpt`` extra before running this module. This targets MCP Python SDK
+    2.x, where the server class is ``MCPServer``.
     """
     try:
-        from mcp.server.fastmcp import FastMCP
+        from mcp.server.mcpserver import MCPServer
     except ImportError as exc:  # pragma: no cover - deployment dependency
         raise RuntimeError(
             "MCP support is not installed. Install qcds-fabric[chatgpt]."
         ) from exc
 
-    mcp = FastMCP(CHATGPT_ROBOT_LABEL, stateless_http=True, json_response=True)
+    mcp = MCPServer(CHATGPT_ROBOT_LABEL)
 
     @mcp.tool()
     def get_calendar_space() -> dict[str, Any]:
@@ -128,8 +129,12 @@ def create_mcp_server():
 
 
 def main() -> None:
-    """Run a production-style Streamable HTTP MCP endpoint at /mcp."""
-    create_mcp_server().run(transport="streamable-http")
+    """Run a stateless JSON Streamable HTTP MCP endpoint at /mcp."""
+    create_mcp_server().run(
+        transport="streamable-http",
+        stateless_http=True,
+        json_response=True,
+    )
 
 
 if __name__ == "__main__":  # pragma: no cover
