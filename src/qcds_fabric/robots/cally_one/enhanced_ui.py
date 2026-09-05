@@ -126,6 +126,7 @@ def _stable_interaction_js() -> str:
             _asset("locale_access_ui.js"),
             _asset("qcds_state_control_center.js"),
             _asset("terminology_mode.js"),
+            _asset("time_reference_ui.js"),
         ]
     )
 
@@ -263,6 +264,7 @@ def cally_one_html(*, static_mode: bool = False) -> str:
             _asset("interaction_controller.css"),
             _asset("calendar_layout_hotfix.css"),
             _asset("calendar_display.css"),
+            _asset("time_reference_ui.css"),
             _asset("scandinavian_polish.css"),
             _asset("top_event_control_polish.css"),
             _asset("editor_strict_v2.css"),
