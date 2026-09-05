@@ -1,4 +1,4 @@
-name: Living Logical Robot + Cally.One Pages
+name: Living Logical Robot + Cally.One + Cally ChatGPT Pages
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
       - "web/assets/**"
       - ".github/workflows/pages.yml"
   workflow_run:
-    workflows: ["Cally.One Tribute tests"]
+    workflows: ["Cally.One Tribute tests", "Cally ChatGPT Logical Robot"]
     types: [completed]
   workflow_dispatch:
 
@@ -28,7 +28,7 @@ env:
 
 jobs:
   build:
-    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'tribute')
+    if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && ((github.event.workflow_run.name == 'Cally.One Tribute tests' && github.event.workflow_run.head_branch == 'tribute') || (github.event.workflow_run.name == 'Cally ChatGPT Logical Robot' && github.event.workflow_run.head_branch == 'cally-chatgpt-work')))
     runs-on: ubuntu-latest
     outputs:
       pages_ready: ${{ steps.configure.outcome == 'success' }}
@@ -43,6 +43,12 @@ jobs:
         with:
           ref: tribute
           path: _cally_src
+
+      - name: Checkout Cally ChatGPT product branch
+        uses: actions/checkout@v4
+        with:
+          ref: cally-chatgpt-work
+          path: _cally_chatgpt_src
 
       - uses: actions/setup-python@v5
         with:
@@ -101,7 +107,7 @@ jobs:
 
       - name: Export canonical public QCDS surface
         run: |
-          mkdir -p _site/legal/cases _site/assets _site/cally
+          mkdir -p _site/legal/cases _site/assets _site/cally _site/cally-chatgpt
           python -m qcds_fabric.living_robot_public --export _site/index.html
           cp web/session_core_worker.js _site/session_core_worker.js
           cp robots/legal/sweden_housing/cases/*.json _site/legal/cases/
@@ -185,6 +191,38 @@ jobs:
                   if path.is_file() and path.suffix in {'.py', '.json'}:
                       archive.write(path, path.relative_to(cally_root / 'src'))
           PY
+
+      - name: Build isolated Cally ChatGPT Pages surface
+        run: |
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+          from zipfile import ZIP_DEFLATED, ZipFile
+
+          root = Path('_cally_chatgpt_src').resolve()
+          sys.path.insert(0, str(root / 'src'))
+          from qcds_fabric.robots.cally_chatgpt.chatgpt_projection import cally_chatgpt_html
+
+          out = Path('_site/cally-chatgpt')
+          out.mkdir(parents=True, exist_ok=True)
+          html = cally_chatgpt_html(static_mode=True)
+          html = html.replace("new Worker('../session_core_worker.js')", "new Worker('./session_core_worker.js')")
+          html = html.replace("new URL('../qcds_fabric.zip'", "new URL('./qcds_fabric.zip'")
+          (out / 'index.html').write_text(html, encoding='utf-8')
+
+          worker = (root / 'web' / 'session_core_worker.js').read_text(encoding='utf-8')
+          worker = worker.replace(
+              'from qcds_fabric.robots.cally_one.runtime_v3 import run_cally_one_json',
+              'from qcds_fabric.robots.cally_chatgpt.runtime_v3 import run_cally_one_json',
+          )
+          (out / 'session_core_worker.js').write_text(worker, encoding='utf-8')
+
+          source = root / 'src' / 'qcds_fabric'
+          with ZipFile(out / 'qcds_fabric.zip', 'w', compression=ZIP_DEFLATED) as archive:
+              for path in sorted(source.rglob('*')):
+                  if path.is_file() and path.suffix in {'.py', '.json', '.md'}:
+                      archive.write(path, path.relative_to(root / 'src'))
+          PY
           touch _site/.nojekyll
 
       - name: Validate isolated Cally.One surface
@@ -205,6 +243,20 @@ jobs:
           grep -F 'rider_ids' _site/cally/index.html
           grep -F 'qcds_fabric.robots.cally_one.runtime_v3' _site/cally/session_core_worker.js
           grep -F "msg.type === 'cally_one_run'" _site/cally/session_core_worker.js
+
+      - name: Validate isolated Cally ChatGPT surface
+        run: |
+          test -s _site/cally-chatgpt/index.html
+          test -s _site/cally-chatgpt/session_core_worker.js
+          test -s _site/cally-chatgpt/qcds_fabric.zip
+          grep -F 'data-cally-chatgpt-interface' _site/cally-chatgpt/index.html
+          grep -F 'logical-robot-interface/v1' _site/cally-chatgpt/index.html
+          grep -F 'window.__callyChatGPT' _site/cally-chatgpt/index.html
+          grep -F 'resolve -> QCDS -> Syntract' _site/cally-chatgpt/index.html
+          grep -F "new Worker('./session_core_worker.js')" _site/cally-chatgpt/index.html
+          grep -F "new URL('./qcds_fabric.zip'" _site/cally-chatgpt/index.html
+          grep -F 'qcds_fabric.robots.cally_chatgpt.runtime_v3' _site/cally-chatgpt/session_core_worker.js
+          ! grep -F 'qcds_fabric.robots.cally_one.runtime_v3' _site/cally-chatgpt/session_core_worker.js
 
       - name: Validate Syntract artwork public identity
         run: |
@@ -249,7 +301,7 @@ jobs:
         run: |
           echo '### GitHub Pages is not enabled yet' >> "$GITHUB_STEP_SUMMARY"
           echo '' >> "$GITHUB_STEP_SUMMARY"
-          echo 'The combined Living Logical Robot + Cally.One site was built and uploaded successfully.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'The combined Living Logical Robot + Cally.One + Cally ChatGPT site was built and uploaded successfully.' >> "$GITHUB_STEP_SUMMARY"
 
   deploy:
     if: needs.build.outputs.pages_ready == 'true'
