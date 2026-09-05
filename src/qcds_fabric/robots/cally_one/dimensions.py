@@ -48,6 +48,102 @@ CALENDAR_SYSTEM_VALUES = [
     {"code": "japanese", "labels": {"sv": "Japansk era", "en": "Japanese era"}},
 ]
 
+# A time zone is a civil/local projection (normally an IANA zone on Earth).
+# A time reference is the deeper clock/timescale state used by computers,
+# navigation systems, missions and spacecraft. Keeping these separate avoids
+# pretending that UTC, TAI, Unix time or a spacecraft clock are "time zones".
+TIME_REFERENCE_VALUES = [
+    {
+        "code": "utc",
+        "labels": {"sv": "UTC · koordinerad universell tid", "en": "UTC · Coordinated Universal Time"},
+        "category": "civil-reference",
+        "standard_family": "international",
+    },
+    {
+        "code": "tai",
+        "labels": {"sv": "TAI · internationell atomtid", "en": "TAI · International Atomic Time"},
+        "category": "atomic",
+        "standard_family": "international",
+    },
+    {
+        "code": "gps",
+        "labels": {"sv": "GPS-tid", "en": "GPS Time"},
+        "category": "navigation",
+        "standard_family": "gnss",
+    },
+    {
+        "code": "tt",
+        "labels": {"sv": "TT · terrestrisk tid", "en": "TT · Terrestrial Time"},
+        "category": "relativistic-coordinate",
+        "standard_family": "astronomy",
+    },
+    {
+        "code": "ut1",
+        "labels": {"sv": "UT1 · jordrotationstid", "en": "UT1 · Universal Time 1"},
+        "category": "earth-rotation",
+        "standard_family": "astronomy",
+    },
+    {
+        "code": "tcg",
+        "labels": {"sv": "TCG · geocentrisk koordinattid", "en": "TCG · Geocentric Coordinate Time"},
+        "category": "relativistic-coordinate",
+        "standard_family": "astronomy",
+    },
+    {
+        "code": "tcb",
+        "labels": {"sv": "TCB · barycentrisk koordinattid", "en": "TCB · Barycentric Coordinate Time"},
+        "category": "relativistic-coordinate",
+        "standard_family": "astronomy",
+    },
+    {
+        "code": "tdb",
+        "labels": {"sv": "TDB · barycentrisk dynamisk tid", "en": "TDB · Barycentric Dynamical Time"},
+        "category": "relativistic-coordinate",
+        "standard_family": "astronomy",
+    },
+    {
+        "code": "met",
+        "labels": {"sv": "MET · Mission Elapsed Time", "en": "MET · Mission Elapsed Time"},
+        "category": "mission-relative",
+        "requires_epoch": True,
+    },
+    {
+        "code": "mrt",
+        "labels": {"sv": "MRT · Mission Relative Time", "en": "MRT · Mission Relative Time"},
+        "category": "mission-relative",
+        "requires_epoch": True,
+    },
+    {
+        "code": "sclk",
+        "labels": {"sv": "SCLK · farkostens ombordklocka", "en": "SCLK · Spacecraft Clock"},
+        "category": "onboard-clock",
+        "requires_correlation": True,
+    },
+    {
+        "code": "unix",
+        "labels": {"sv": "Unix/POSIX-tid", "en": "Unix/POSIX time"},
+        "category": "computing-encoding",
+        "epoch": "1970-01-01T00:00:00Z",
+        "physical_timescale": False,
+    },
+    {
+        "code": "ltc",
+        "labels": {"sv": "LTC · koordinerad måntid", "en": "LTC · Coordinated Lunar Time"},
+        "category": "lunar-reference",
+        "status": "standardization-in-progress",
+        "traceable_to": "utc",
+    },
+]
+
+REFERENCE_BODY_VALUES = [
+    {"code": "earth", "labels": {"sv": "Jorden", "en": "Earth"}},
+    {"code": "moon", "labels": {"sv": "Månen", "en": "Moon"}},
+    {"code": "mars", "labels": {"sv": "Mars", "en": "Mars"}},
+    {"code": "solar_system_barycenter", "labels": {"sv": "Solsystemets barycentrum", "en": "Solar-system barycenter"}},
+    {"code": "spacecraft", "labels": {"sv": "Farkost / satellit", "en": "Spacecraft / satellite"}},
+    {"code": "computer", "labels": {"sv": "Datorsystem", "en": "Computer system"}},
+]
+
 ACCOUNT_ROLE_VALUES = [
     {"code": "member", "labels": {"sv": "Medlem", "en": "Member"}},
     {"code": "admin", "labels": {"sv": "Admin", "en": "Admin"}},
@@ -95,6 +191,38 @@ BUILTIN_DIMENSIONS: dict[str, dict[str, Any]] = {
         "value_kind": "time-zone-state",
         "preferred": True,
         "rich_editor": False,
+    },
+    "time_reference": {
+        "labels": {"en": "Time reference / timescale", "sv": "Tidsreferens / tidsskala"},
+        "value_kind": "time-reference-state",
+        "preferred": True,
+        "rich_editor": True,
+        "values": TIME_REFERENCE_VALUES,
+    },
+    "time_epoch": {
+        "labels": {"en": "Time epoch", "sv": "Tidsepok / nollpunkt"},
+        "value_kind": "temporal-epoch-state",
+        "preferred": False,
+        "rich_editor": True,
+    },
+    "reference_body": {
+        "labels": {"en": "Reference body / observer", "sv": "Referenskropp / observatör"},
+        "value_kind": "observer-body-state",
+        "preferred": False,
+        "rich_editor": True,
+        "values": REFERENCE_BODY_VALUES,
+    },
+    "reference_frame": {
+        "labels": {"en": "Reference frame", "sv": "Referensram"},
+        "value_kind": "reference-frame-state",
+        "preferred": False,
+        "rich_editor": True,
+    },
+    "clock_source": {
+        "labels": {"en": "Clock source", "sv": "Klockkälla"},
+        "value_kind": "clock-source-state",
+        "preferred": False,
+        "rich_editor": True,
     },
     "clock_format": {
         "labels": {"en": "Clock format", "sv": "Klockformat"},
@@ -352,6 +480,8 @@ __all__ = [
     "BUILTIN_DIMENSIONS",
     "CALENDAR_SYSTEM_VALUES",
     "LANGUAGE_VALUES",
+    "REFERENCE_BODY_VALUES",
+    "TIME_REFERENCE_VALUES",
     "DimensionStateRegistry",
     "canonical_dimension_key",
 ]
