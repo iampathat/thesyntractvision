@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from tempfile import TemporaryDirectory
 
-from qcds_fabric.robots.cally_one.dimensions import BUILTIN_DIMENSIONS, LANGUAGE_VALUES
+from qcds_fabric.robots.cally_one.dimensions import BUILTIN_DIMENSIONS, LANGUAGE_VALUES, TIME_REFERENCE_VALUES
 from qcds_fabric.robots.cally_one.enhanced_ui import cally_one_html
 from qcds_fabric.robots.cally_one.runtime_v3 import CallyOneService
 
@@ -14,6 +14,11 @@ def test_language_and_calendar_projection_are_canonical_dimension_states() -> No
         "calendar_display_language",
         "calendar_system",
         "time_zone",
+        "time_reference",
+        "time_epoch",
+        "reference_body",
+        "reference_frame",
+        "clock_source",
         "clock_format",
         "account_role",
         "visibility_policy",
@@ -23,6 +28,7 @@ def test_language_and_calendar_projection_are_canonical_dimension_states() -> No
     assert [item["code"] for item in LANGUAGE_VALUES] == ["sv", "en"]
     assert BUILTIN_DIMENSIONS["calendar_display_language"]["value_kind"] == "language-state"
     assert BUILTIN_DIMENSIONS["calendar_system"]["value_kind"] == "calendar-system-state"
+    assert BUILTIN_DIMENSIONS["time_reference"]["value_kind"] == "time-reference-state"
     assert BUILTIN_DIMENSIONS["account_role"]["value_kind"] == "access-role-state"
 
 
@@ -69,6 +75,25 @@ def test_interface_language_calendar_language_system_and_timezone_are_independen
     assert "{code:'en'" in html
     assert "callyLangFlag" in html
     assert "calendar_projection" in html
+
+
+def test_machine_mission_lunar_and_space_time_are_visible_separate_state() -> None:
+    codes = {item["code"] for item in TIME_REFERENCE_VALUES}
+    assert {"utc", "tai", "gps", "tt", "ut1", "tcg", "tcb", "tdb", "met", "mrt", "sclk", "unix", "ltc"}.issubset(codes)
+    html = cally_one_html(static_mode=True)
+    assert "Cally.One machine / mission / space time projection." in html
+    temporal = html.split("Cally.One machine / mission / space time projection.", 1)[1]
+    for code in ("utc", "tai", "gps", "tt", "ut1", "tcg", "tcb", "tdb", "met", "mrt", "sclk", "unix", "ltc"):
+        assert f"code:'{code}'" in temporal
+    assert "callyTimeReference" in temporal
+    assert "callyReferenceBody" in temporal
+    assert "callyTimeEpoch" in temporal
+    assert "callyReferenceFrame" in temporal
+    assert "callyClockSource" in temporal
+    assert "time_reference_is_independent_from_time_zone:true" in temporal
+    assert "machine_and_space_time_are_state:true" in temporal
+    for forbidden in ("/api/infer", "initializeCore", "loadPyodide", "new MutationObserver"):
+        assert forbidden not in temporal
 
 
 def test_language_meanings_are_editable_in_dimension_surface_not_hidden_in_ui_code() -> None:
