@@ -1,0 +1,135 @@
+/* Cally.One Demo Space — same Scandinavian system, clearly separated domain. */
+.demoSpaceBadge{
+  display:inline-flex;
+  align-items:center;
+  min-height:20px;
+  margin-top:5px;
+  padding:4px 7px;
+  border:1px solid #8ca99a;
+  border-radius:6px;
+  background:#edf5ef;
+  color:#174635;
+  font-size:7.5px;
+  line-height:1;
+  font-weight:850;
+  letter-spacing:.12em;
+  white-space:nowrap;
+}
+.demoSpaceMenu{
+  grid-column:1/-1!important;
+  display:grid;
+  gap:7px;
+  margin-top:8px;
+  padding:13px 14px 14px;
+  border-top:1px solid var(--cally-line,var(--line));
+  background:#f4f6f1;
+}
+.demoSpaceMenuKicker{
+  color:var(--cally-accent,#087b58);
+  font-size:7.5px;
+  line-height:1;
+  font-weight:850;
+  letter-spacing:.15em;
+}
+.demoSpaceMenuTitle{
+  color:var(--cally-ink,#14261e);
+  font-size:13px;
+  line-height:1.1;
+  font-weight:790;
+  letter-spacing:-.02em;
+}
+.demoSpaceMenuMeta{
+  max-width:42ch;
+  color:var(--cally-muted,#68736c);
+  font-size:8.5px;
+  line-height:1.45;
+}
+.demoSpaceMenuActions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+  margin-top:2px;
+}
+.demoSpaceMenu button,
+.demoSpaceLaunch{
+  min-height:38px!important;
+  margin:0!important;
+  padding:8px 10px!important;
+  border:1px solid #b8c5bd!important;
+  border-radius:8px!important;
+  background:#fff!important;
+  color:var(--cally-ink,#14261e)!important;
+  font-size:9px!important;
+  line-height:1!important;
+  font-weight:780!important;
+  text-align:center!important;
+}
+.demoSpaceLaunch{
+  width:100%!important;
+  background:var(--cally-accent-dark,#0d3024)!important;
+  border-color:var(--cally-accent-dark,#0d3024)!important;
+  color:#fff!important;
+}
+html[data-cally-space="demo"] .top{
+  box-shadow:inset 0 3px 0 #2e7659!important;
+}
+@media(max-width:760px){
+  .demoSpaceBadge{font-size:7px;margin-top:4px}
+  .demoSpaceMenu{padding:12px 12px 13px}
+}
+@media(max-width:390px){
+  .demoSpaceMenuActions{grid-template-columns:1fr}
+}
+
+/* Global event-control regression guard. The real four-way MOVE_ICON is the
+   movement affordance. A horizontal expand glyph belongs only to overlap
+   clusters and must never be synthesized on an ordinary event card. */
+#callyMoveOverrideBar [data-move-override="free"]::before{
+  content:none!important;
+  display:none!important;
+}
+html body #stage .event.callyCompactControls .callyEventActionMenu .eventMove{
+  display:grid!important;
+  order:-20!important;
+  pointer-events:auto!important;
+  touch-action:none!important;
+  cursor:grab!important;
+}
+html body #stage .event.callyCompactControls .callyEventActionMenu .eventMove:active{
+  cursor:grabbing!important;
+}
+/* beginMove closes the menu before pointer capture; keep that handle rendered
+   for the duration of the drag so capture and pointer-up remain reliable. */
+html body #stage .event.dragging .callyEventActionMenu[hidden]{
+  display:flex!important;
+}
+html body #stage .event.callyCompactControls .callyEventActionMenu::before{
+  content:none!important;
+  display:none!important;
+}
+
+/* Keep every event action inside the visible card edge. Five actions fit even
+   in the narrow 126px dense-overlap card instead of pushing the first one left
+   under the stage/cluster clip. */
+html body #stage .timeline .dayCol .event.callyCompactControls .callyEventActionMenu{
+  left:2px!important;
+  right:2px!important;
+  width:auto!important;
+  min-width:0!important;
+  max-width:calc(100% - 4px)!important;
+  gap:2px!important;
+  padding:2px!important;
+  justify-content:space-between!important;
+  overflow:visible!important;
+}
+html body #stage .timeline .dayCol .event.callyCompactControls .callyEventActionMenu .eventMove,
+html body #stage .timeline .dayCol .event.callyCompactControls .callyEventActionMenu .eventEdit,
+html body #stage .timeline .dayCol .event.callyCompactControls .callyEventActionMenu .pinBtn,
+html body #stage .timeline .dayCol .event.callyCompactControls .callyEventActionMenu .callyEventInfo,
+html body #stage .timeline .dayCol .event.callyCompactControls .callyEventActionMenu .callyEventProjectionAction{
+  flex:0 0 22px!important;
+  width:22px!important;
+  min-width:22px!important;
+  height:22px!important;
+  min-height:22px!important;
+}

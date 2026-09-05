@@ -1,0 +1,33 @@
+/* Cally.One language/account surface — compact Scandinavian menu + sheet. */
+.callyLocaleAccessMenu{display:grid!important;gap:7px!important;padding:12px 10px 10px!important;border-top:1px solid #d9dfda!important;background:#f8f9f5!important}
+.callyLocaleAccessKicker{padding:0 4px!important;color:#6b766f!important;font-size:8px!important;line-height:1!important;font-weight:850!important;letter-spacing:.14em!important}
+.callyLocaleAccessMenu button{min-height:48px!important;display:grid!important;grid-template-columns:34px minmax(0,1fr) auto!important;align-items:center!important;gap:8px!important;padding:8px 10px!important;border:1px solid #d1d8d3!important;border-radius:12px!important;background:#fff!important;color:#153027!important;text-align:left!important;font-size:10px!important;font-weight:780!important}
+.callyLocaleAccessMenu button:hover{background:#f0f5f1!important;border-color:#afc0b6!important}
+.callyLocaleAccessMenu button small{color:#6a766f!important;font-size:7px!important;font-weight:800!important;letter-spacing:.05em!important}
+.callyMenuGlyph{width:30px!important;height:30px!important;display:grid!important;place-items:center!important;border-radius:8px!important;background:#edf3ef!important;color:#0d6f52!important;font-size:13px!important;font-weight:850!important}
+.callyLocaleAccessOverlay{position:fixed!important;inset:0!important;z-index:340!important;display:none!important;place-items:center!important;padding:14px!important;background:rgba(13,29,23,.24)!important;backdrop-filter:blur(13px)!important}
+.callyLocaleAccessOverlay.open{display:grid!important}
+.callyLocaleAccessSheet{width:min(760px,100%)!important;max-height:min(88dvh,820px)!important;overflow:auto!important;border:1px solid #cbd5cf!important;border-radius:18px!important;background:#fbfaf6!important;color:#10231b!important;box-shadow:0 30px 90px rgba(16,35,27,.22)!important}
+.callyLocaleAccessHead{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:18px!important;align-items:start!important;padding:20px!important;border-bottom:1px solid #d9dfda!important}
+.callyLocaleAccessHead .eyebrow{color:#087a59!important;font-size:8px!important;font-weight:860!important;letter-spacing:.15em!important}
+.callyLocaleAccessHead h2{margin:7px 0 5px!important;font-size:clamp(24px,4vw,38px)!important;line-height:1!important;letter-spacing:-.04em!important}
+.callyLocaleAccessHead p{margin:0!important;max-width:68ch!important;color:#647169!important;font-size:10px!important;line-height:1.45!important}
+.callyLocaleAccessHead>button{width:40px!important;height:40px!important;display:grid!important;place-items:center!important;border:1px solid #d0d8d2!important;border-radius:11px!important;background:#f1f3ef!important;color:#10231b!important;font-size:22px!important}
+.callyLanguageChoices{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;padding:18px 20px 22px!important}
+.callyLanguageChoices button{min-height:86px!important;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-rows:auto auto!important;align-items:center!important;gap:4px 10px!important;padding:15px 16px!important;border:1px solid #ced7d1!important;border-radius:14px!important;background:#fff!important;color:#153027!important;text-align:left!important}
+.callyLanguageChoices button.active{border-color:#0b825f!important;box-shadow:inset 0 0 0 1px #0b825f!important;background:#f1f7f3!important}
+.callyLanguageChoices button b{font-size:16px!important;line-height:1!important}
+.callyLanguageChoices button small{color:#6b766f!important;font-size:8px!important;font-weight:800!important;letter-spacing:.08em!important}
+.callyLanguageChoices button span{grid-column:2!important;grid-row:1/3!important;color:#0b825f!important;font-size:18px!important;font-weight:900!important}
+.callyAdminSummary{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:9px!important;padding:16px 20px!important;border-bottom:1px solid #dde2de!important;background:#f7f8f4!important}
+.callyAdminSummary>div{display:grid!important;gap:5px!important;padding:12px!important;border:1px solid #d4dcd6!important;border-radius:12px!important;background:#fff!important}
+.callyAdminSummary small{color:#738078!important;font-size:7px!important;font-weight:850!important;letter-spacing:.08em!important}
+.callyAdminSummary b{font-size:12px!important}
+.callyAdminPeople{display:grid!important;gap:8px!important;padding:18px 20px 24px!important}
+.callyAdminPeopleHead{display:grid!important;gap:4px!important;margin-bottom:4px!important}.callyAdminPeopleHead b{font-size:13px!important}.callyAdminPeopleHead small{color:#6b766f!important;font-size:8px!important;line-height:1.35!important}
+.callyAdminPerson{display:grid!important;grid-template-columns:minmax(150px,1fr) minmax(120px,180px) minmax(170px,auto)!important;gap:10px!important;align-items:center!important;padding:10px 12px!important;border:1px solid #d4dcd6!important;border-radius:12px!important;background:#fff!important}
+.callyAdminPerson>div{display:grid!important;gap:2px!important}.callyAdminPerson>div b{font-size:10px!important}.callyAdminPerson>div small{color:#6b766f!important;font-size:8px!important}
+.callyAdminPerson select{height:38px!important;padding:0 10px!important;border:1px solid #ccd5cf!important;border-radius:9px!important;background:#f9faf7!important;color:#153027!important;font-size:9px!important}
+.callyAdminPerson label{display:flex!important;align-items:center!important;gap:7px!important;color:#40574d!important;font-size:8px!important;font-weight:760!important}
+.callyAdminPerson input{accent-color:#0a7e5c!important}
+@media(max-width:720px){.callyLocaleAccessOverlay{padding:7px!important}.callyLocaleAccessSheet{max-height:94dvh!important;border-radius:14px!important}.callyLanguageChoices{grid-template-columns:1fr!important;padding:14px!important}.callyAdminSummary{grid-template-columns:1fr!important;padding:12px 14px!important}.callyAdminPeople{padding:14px!important}.callyAdminPerson{grid-template-columns:1fr!important;gap:8px!important}.callyAdminPerson select{width:100%!important}.callyLocaleAccessHead{padding:16px 14px!important}}

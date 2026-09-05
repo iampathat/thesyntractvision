@@ -1,0 +1,149 @@
+/* Cally.One calendar/time display dimension — projection only, never inference. */
+.callyCalendarContext{display:inline-flex;align-items:center;gap:5px;margin-left:7px;padding:3px 7px;border:1px solid var(--line,#d8ddd4);border-radius:999px;background:#fffdf8;color:var(--muted,#6c776f);font-size:8px;font-weight:800;vertical-align:middle;white-space:nowrap}
+.callyWeekNumber{display:inline-grid;place-items:center;min-width:35px;min-height:24px;padding:3px 6px;border:1px solid #c8d4cc;border-radius:9px;background:#f2f6f2;color:#385448;font-size:9px;font-weight:900;line-height:1}
+.timeHead .callyWeekNumber{position:absolute;left:7px;top:8px;z-index:2}
+.callyMonthWeek{position:absolute;left:4px;top:32px;z-index:2;font-size:7px;font-weight:900;color:#738078;background:#f4f6f2;border-radius:6px;padding:2px 4px;pointer-events:none}
+.dayCell{position:relative}
+.miniWeekRange{float:right;color:var(--muted,#6c776f);font-size:7px;font-weight:800;margin-top:3px}
+.callyAltDate{display:block;margin-top:3px;color:var(--green,#087b58);font-size:7.5px;font-weight:760;line-height:1.3;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+/* Non-Gregorian projections can add a third date line. Let the shared grid header row grow instead of clipping it at the base 50px Scandinavian header height. */
+.timeline:has(.callyAltDate) .timeHead,.timeline .dayHead:has(.callyAltDate){height:auto!important;min-height:70px!important}
+.timeline .dayHead:has(.callyAltDate){overflow:visible!important;padding-bottom:9px!important}
+.callyCalendarSettings{position:fixed;inset:0;z-index:260;display:none;align-items:flex-end;justify-content:center;padding:14px;background:#17231d66;backdrop-filter:blur(10px) saturate(.92);-webkit-backdrop-filter:blur(10px) saturate(.92)}
+.callyCalendarSettings.open{display:flex}
+.callyCalendarSettingsSheet{width:min(660px,100%);max-height:88dvh;overflow:auto;background:var(--paper,#fffdf8);border:1px solid var(--line,#d8ddd4);border-radius:24px;box-shadow:0 24px 70px #172e2230;padding:20px}
+.callyCalendarSettingsHead{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}.callyCalendarSettingsHead h2{margin:3px 0 5px;font-size:27px;line-height:1.05;letter-spacing:-.03em}.callyCalendarSettingsHead p{margin:0;color:var(--muted,#6c776f);font-size:10px;line-height:1.45}.callyCalendarSettingsClose{width:46px;height:46px;border:1px solid var(--line,#d8ddd4);border-radius:14px;background:#f2f4ee;color:var(--ink,#14261e);font-size:25px;cursor:pointer}
+.callyCalendarSettingsForm{display:grid;gap:14px}.callyCalendarSettingsForm label{display:grid;gap:6px;color:var(--muted,#6c776f);font-size:9px;font-weight:850}.callyCalendarSettingsForm select,.callyCalendarSettingsForm input{width:100%;min-height:48px;border:1px solid var(--line,#d8ddd4);border-radius:14px;background:#fff;padding:10px 12px;color:var(--ink,#14261e);font-size:13px}.callyCalendarSettingsHint{padding:11px 12px;border:1px solid var(--line,#d8ddd4);border-radius:14px;background:#f7faf7;color:var(--muted,#6c776f);font-size:9px;line-height:1.5}.callyCalendarSettingsSave{min-height:50px;border:1px solid var(--green,#087b58);border-radius:14px;background:var(--green,#087b58);color:white;font-weight:850;cursor:pointer}
+.callyDisplayMenuButton{font-weight:800!important}
+@media(max-width:760px){.callyCalendarContext{display:flex;width:max-content;max-width:100%;margin:4px 0 0;font-size:7.5px}.callyCalendarSettings{padding:0}.callyCalendarSettingsSheet{width:100%;max-height:92dvh;border-radius:26px 26px 0 0;padding:18px 16px max(18px,env(safe-area-inset-bottom))}.callyMonthWeek{left:2px;top:29px;font-size:6.5px}.miniWeekRange{font-size:6.5px}.timeline:has(.callyAltDate) .timeHead,.timeline .dayHead:has(.callyAltDate){min-height:72px!important}.callyAltDate{font-size:7px;line-height:1.35}}
+
+/* Overlap containment v5: the normal calendar never becomes an overlap scroller.
+   Horizontal navigation belongs exclusively to the first expanded detail level. */
+html body #stage .timeline .dayCol .callyOverlapCluster.dense:not(.expanded),
+html body #stage .timeline .dayCol .callyOverlapCluster.callyOverlapFan.rail:not(.expanded){
+  overflow-x:hidden!important;
+  overflow-y:visible!important;
+  overscroll-behavior-x:none!important;
+  scroll-snap-type:none!important;
+  scrollbar-width:none!important;
+  max-width:100%!important;
+  padding-bottom:0!important;
+}
+html body #stage .timeline .dayCol .callyOverlapCluster.dense:not(.expanded)::-webkit-scrollbar,
+html body #stage .timeline .dayCol .callyOverlapCluster.callyOverlapFan.rail:not(.expanded)::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
+html body #stage .timeline .dayCol .callyOverlapCluster:not(.expanded) .callyOverlapTrack{
+  width:100%!important;
+  min-width:100%!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+}
+
+/* The stack control belongs to the top of the overlap stack, never between cards. */
+html body #stage .timeline .dayCol .callyOverlapCluster:not(.expanded)>.callyOverlapSpread{
+  top:4px!important;
+  bottom:auto!important;
+  left:50%!important;
+  right:auto!important;
+  transform:translateX(-50%)!important;
+  z-index:118!important;
+  min-width:44px!important;
+  height:24px!important;
+  background:rgba(251,250,246,.97)!important;
+  box-shadow:0 3px 10px rgba(16,35,27,.12)!important;
+}
+
+/* First detail: one contained card rail. The tallest event defines the rail height;
+   card borders/shadows receive a real gutter instead of being cut by the viewport. */
+html body #stage .timeline .dayCol .callyOverlapCluster.expanded{
+  left:0!important;
+  right:0!important;
+  width:auto!important;
+  max-width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  padding:38px 6px 8px!important;
+  border-radius:14px!important;
+  box-sizing:border-box!important;
+}
+html body #stage .timeline .dayCol .callyOverlapCluster.expanded .callyOverlapTrack{
+  position:relative!important;
+  display:flex!important;
+  flex-flow:row nowrap!important;
+  align-items:flex-start!important;
+  gap:8px!important;
+  width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  overscroll-behavior-x:contain!important;
+  scroll-snap-type:x mandatory!important;
+  scroll-padding-inline:10px!important;
+  scrollbar-width:thin!important;
+  scrollbar-color:#789184 rgba(120,145,132,.13)!important;
+  pointer-events:auto!important;
+  padding:8px 10px 12px!important;
+  border-radius:10px!important;
+  background:rgba(247,249,246,.88)!important;
+  box-shadow:inset 0 0 0 1px rgba(151,170,160,.16)!important;
+  box-sizing:border-box!important;
+}
+html body #stage .timeline .dayCol .callyOverlapCluster.expanded .callyOverlapTrack::-webkit-scrollbar{height:5px!important}
+html body #stage .timeline .dayCol .callyOverlapCluster.expanded .callyOverlapTrack::-webkit-scrollbar-track{background:rgba(120,145,132,.13)!important;border-radius:99px!important}
+html body #stage .timeline .dayCol .callyOverlapCluster.expanded .callyOverlapTrack::-webkit-scrollbar-thumb{background:#789184!important;border-radius:99px!important}
+html body #stage .timeline .dayCol .callyOverlapCluster.expanded .event{
+  position:relative!important;
+  left:auto!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:auto!important;
+  flex:0 0 clamp(132px,82%,180px)!important;
+  width:auto!important;
+  max-width:none!important;
+  margin:0!important;
+  align-self:flex-start!important;
+  scroll-snap-align:start!important;
+  scroll-margin-inline:10px!important;
+  box-sizing:border-box!important;
+  transform:none!important;
+  z-index:20!important;
+}
+
+/* Event projection priority + scoped sharing. This is represented event state, not calendar-wide permission. */
+.callyEventActionMenu .callyEventProjectionAction{
+  position:static!important;inset:auto!important;width:26px!important;min-width:26px!important;height:26px!important;min-height:26px!important;margin:0!important;padding:0!important;display:grid!important;place-items:center!important;border:1px solid #b8c7bd!important;border-radius:7px!important;background:#fff!important;color:#2f5042!important;box-shadow:none!important;cursor:pointer!important
+}
+.callyEventProjectionAction svg{width:14px!important;height:14px!important;fill:none!important;stroke:currentColor!important;stroke-width:1.7!important;stroke-linecap:round!important;stroke-linejoin:round!important}
+.callyEventProjectionPanel{
+  position:fixed!important;z-index:235!important;max-height:calc(100dvh - 16px)!important;overflow:auto!important;padding:12px!important;border:1px solid #c7d1ca!important;border-radius:14px!important;background:rgba(255,253,248,.985)!important;color:#10231b!important;box-shadow:0 22px 64px rgba(16,35,27,.20)!important;backdrop-filter:blur(14px)!important;-webkit-backdrop-filter:blur(14px)!important
+}
+.callyProjectionHead{display:flex!important;align-items:flex-start!important;justify-content:space-between!important;gap:12px!important;padding:1px 1px 10px!important;border-bottom:1px solid #d9ddd7!important}
+.callyProjectionHead small{display:block!important;color:#087a59!important;font-size:7px!important;line-height:1!important;font-weight:850!important;letter-spacing:.15em!important}
+.callyProjectionHead strong{display:block!important;margin-top:5px!important;max-width:310px!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;font-size:14px!important;line-height:1.05!important;font-weight:820!important;letter-spacing:-.025em!important}
+.callyProjectionHead button{width:28px!important;min-width:28px!important;height:28px!important;padding:0!important;display:grid!important;place-items:center!important;border:1px solid #d3d9d4!important;border-radius:8px!important;background:#f1f2ee!important;color:#173126!important;font-size:17px!important;line-height:1!important;cursor:pointer!important}
+.callyProjectionSection{display:grid!important;gap:9px!important;padding:11px 1px!important;border-bottom:1px solid #e0e4df!important}
+.callyProjectionSectionTitle{color:#087a59!important;font-size:7.5px!important;line-height:1!important;font-weight:850!important;letter-spacing:.13em!important;text-transform:uppercase!important}
+.callyProjectionSection>label,.callyProjectionTwo label,.callyProjectionThree label{display:grid!important;gap:4px!important;color:#68756e!important;font-size:7.5px!important;line-height:1.2!important;font-weight:770!important}
+.callyProjectionSection select{width:100%!important;height:35px!important;padding:6px 8px!important;border:1px solid #d2d8d3!important;border-radius:8px!important;background:#fff!important;color:#173126!important;font-size:9px!important;box-shadow:none!important}
+.callyProjectionTwo{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important}
+.callyProjectionThree{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:7px!important}
+.callyProjectionSection p{margin:0!important;color:#6b766f!important;font-size:7.5px!important;line-height:1.4!important}
+.callyProjectionToggle{display:flex!important;grid-template-columns:none!important;align-items:flex-start!important;gap:8px!important;padding:8px!important;border:1px solid #dde2de!important;border-radius:9px!important;background:#f8f9f5!important;color:#173126!important}
+.callyProjectionToggle input{margin:2px 0 0!important;accent-color:#087a59!important}
+.callyProjectionToggle span{display:grid!important;gap:2px!important;min-width:0!important}.callyProjectionToggle b{font-size:8.5px!important;line-height:1.2!important}.callyProjectionToggle small{color:#6b766f!important;font-size:7px!important;line-height:1.35!important;font-weight:620!important}
+.callyShareAudience{max-height:150px!important;overflow:auto!important;display:grid!important;gap:4px!important;padding:7px!important;border:1px solid #dce1dd!important;border-radius:9px!important;background:#fff!important;scrollbar-width:thin!important}
+.callyShareAudience[hidden]{display:none!important}.callyShareAudienceTitle{padding:2px 2px 5px!important;color:#596a61!important;font-size:7px!important;font-weight:820!important;text-transform:uppercase!important;letter-spacing:.08em!important}
+.callyShareChoice{display:grid!important;grid-template-columns:18px minmax(0,1fr)!important;align-items:center!important;gap:6px!important;padding:5px 6px!important;border-radius:7px!important;background:#f8faf7!important}.callyShareChoice span{display:grid!important;gap:1px!important}.callyShareChoice b{font-size:8px!important}.callyShareChoice small{color:#718078!important;font-size:6.5px!important;font-weight:620!important}
+.callyProjectionAccessNote{padding:8px 9px!important;border-left:2px solid #72a58c!important;background:#eef5f0!important;color:#496256!important;font-size:7.5px!important;line-height:1.45!important}
+.callyProjectionActions{display:flex!important;justify-content:flex-end!important;gap:6px!important;padding-top:10px!important}.callyProjectionActions button{min-height:34px!important;padding:7px 11px!important;border:1px solid #c9d2cc!important;border-radius:8px!important;background:#fff!important;color:#173126!important;font-size:8.5px!important;font-weight:790!important;cursor:pointer!important}.callyProjectionActions [data-projection-save]{background:#173126!important;border-color:#173126!important;color:#fff!important}.callyProjectionActions button:disabled{opacity:.5!important}
+
+@media(max-width:760px){
+  html body #stage .timeline .dayCol .callyOverlapCluster.expanded{padding:36px 5px 7px!important}
+  html body #stage .timeline .dayCol .callyOverlapCluster.expanded .callyOverlapTrack{gap:7px!important;padding:7px 8px 11px!important;scroll-padding-inline:8px!important}
+  html body #stage .timeline .dayCol .callyOverlapCluster.expanded .event{flex-basis:clamp(126px,84%,168px)!important;scroll-margin-inline:8px!important}
+  html body #stage .timeline .dayCol .callyOverlapCluster:not(.expanded)>.callyOverlapSpread{top:3px!important;height:23px!important}
+  .callyEventProjectionPanel{left:8px!important;right:8px!important;top:auto!important;bottom:max(8px,env(safe-area-inset-bottom))!important;width:auto!important;max-height:82dvh!important;border-radius:15px!important;padding:11px!important}
+  .callyProjectionTwo{grid-template-columns:1fr!important}.callyProjectionThree{grid-template-columns:repeat(3,minmax(0,1fr))!important}.callyProjectionSection select{font-size:16px!important}.callyProjectionHead strong{font-size:13px!important}
+}

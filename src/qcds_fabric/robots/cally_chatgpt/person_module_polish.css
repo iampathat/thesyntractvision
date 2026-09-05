@@ -1,0 +1,409 @@
+/* Cally.One Person module — same compact Scandinavian panel language as quick-add. */
+.personLanes{
+  width:min(760px,100%)!important;
+  margin:0 auto!important;
+  padding:16px!important;
+  gap:6px!important;
+}
+.callyPersonModuleHead{
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:space-between!important;
+  gap:14px!important;
+  padding:2px 2px 12px!important;
+  margin-bottom:4px!important;
+}
+.callyPersonModuleEyebrow{
+  color:var(--cally-accent,#087a59)!important;
+  font-size:7.5px!important;
+  line-height:1!important;
+  font-weight:850!important;
+  letter-spacing:.15em!important;
+}
+.callyPersonModuleHead h2{
+  margin:4px 0 4px!important;
+  font-size:19px!important;
+  line-height:1!important;
+  font-weight:790!important;
+  letter-spacing:-.04em!important;
+}
+.callyPersonModuleHead p{
+  margin:0!important;
+  max-width:520px!important;
+  color:var(--cally-muted,#66736c)!important;
+  font-size:8.5px!important;
+  line-height:1.45!important;
+}
+.personLanes .lane{
+  display:block!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  border:1px solid var(--cally-line,#d9ddd7)!important;
+  border-radius:11px!important;
+  background:var(--cally-paper,#fbfaf6)!important;
+  box-shadow:none!important;
+}
+.callyPersonToggle{
+  width:100%!important;
+  min-height:52px!important;
+  display:grid!important;
+  grid-template-columns:30px minmax(0,1fr) auto 16px!important;
+  align-items:center!important;
+  gap:9px!important;
+  padding:8px 10px!important;
+  border:0!important;
+  background:transparent!important;
+  color:var(--cally-ink,#10231b)!important;
+  text-align:left!important;
+  cursor:pointer!important;
+}
+.callyPersonToggle:hover{background:#f3f5f1!important}
+.callyPersonInitial{
+  width:30px!important;
+  height:30px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:50%!important;
+  background:#e6f0e9!important;
+  color:#174333!important;
+  font-size:10px!important;
+  line-height:1!important;
+  font-weight:850!important;
+}
+.callyPersonIdentity{display:grid!important;gap:2px!important;min-width:0!important}
+.callyPersonIdentity strong{
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  font-size:10.5px!important;
+  line-height:1.1!important;
+  font-weight:790!important;
+  letter-spacing:-.015em!important;
+}
+.callyPersonIdentity small{
+  color:var(--cally-muted,#66736c)!important;
+  font-size:7.5px!important;
+  line-height:1.2!important;
+  font-weight:620!important;
+}
+.callyPersonCount{
+  color:#52645a!important;
+  font-size:7.5px!important;
+  line-height:1!important;
+  font-weight:760!important;
+  white-space:nowrap!important;
+}
+.callyPersonChevron{
+  color:#53645a!important;
+  font-size:16px!important;
+  line-height:1!important;
+  transform:translateY(-1px) rotate(0deg)!important;
+  transition:transform .14s ease!important;
+}
+.lane[data-expanded="1"] .callyPersonChevron{transform:translateY(1px) rotate(180deg)!important}
+.personLanes .laneEvents{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:6px!important;
+  padding:8px 10px 10px!important;
+  overflow:visible!important;
+  border-top:1px solid var(--cally-line,#d9ddd7)!important;
+  background:#f8f8f4!important;
+}
+.personLanes .laneEvents[hidden]{display:none!important}
+.personLanes .laneCard{
+  min-width:0!important;
+  max-width:none!important;
+  min-height:54px!important;
+  padding:9px 34px 9px 10px!important;
+  border:1px solid #c9d6cd!important;
+  border-left:3px solid var(--cally-accent,#087a59)!important;
+  border-radius:8px!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
+.personLanes .laneCard b{
+  display:block!important;
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  font-size:9.5px!important;
+  line-height:1.15!important;
+  font-weight:780!important;
+}
+.personLanes .laneCard small{
+  margin-top:4px!important;
+  color:var(--cally-muted,#66736c)!important;
+  font-size:7.5px!important;
+  line-height:1.25!important;
+}
+.personLanes .laneCard .pinBtn{
+  top:7px!important;
+  right:7px!important;
+  width:23px!important;
+  height:23px!important;
+}
+.personLanes .laneEvents>.tiny{
+  grid-column:1/-1!important;
+  padding:8px 2px!important;
+  color:var(--cally-muted,#66736c)!important;
+  font-size:8px!important;
+}
+
+/* Compact person add uses the exact same popover vocabulary as Event/Hamburger. */
+.callyPersonQuickForm{gap:9px!important}
+.callyPersonQuickLoading{padding:12px 2px;color:var(--cally-muted,#66736c);font-size:9px}
+.callyPersonQuickDetails{
+  border:1px solid var(--cally-line,#d9ddd7);
+  border-radius:9px;
+  background:#f8f8f4;
+  overflow:hidden;
+}
+.callyPersonQuickDetails summary{
+  min-height:34px;
+  display:flex;
+  align-items:center;
+  padding:8px 10px;
+  cursor:pointer;
+  color:#31473d;
+  font-size:8.5px;
+  line-height:1;
+  font-weight:790;
+  list-style:none;
+}
+.callyPersonQuickDetails summary::-webkit-details-marker{display:none}
+.callyPersonQuickDetails summary::after{content:'+';margin-left:auto;font-size:14px;font-weight:600;color:#64736b}
+.callyPersonQuickDetails[open] summary::after{content:'–'}
+.callyPersonQuickDetails[open] summary{border-bottom:1px solid var(--cally-line,#d9ddd7)}
+.callyPersonQuickDims{display:grid;gap:6px;padding:8px 8px 0}
+.callyPersonQuickDimRow{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) 28px;
+  gap:6px;
+  align-items:center;
+}
+.callyPersonQuickDimRow input{
+  min-width:0;
+  height:34px;
+  padding:6px 8px;
+  border:1px solid var(--cally-line,#d9ddd7);
+  border-radius:7px;
+  background:#fff;
+  color:var(--cally-ink,#10231b);
+  font-size:9px;
+}
+.callyPersonQuickDimRemove,.callyPersonQuickAddDim{
+  border:1px solid var(--cally-line,#d9ddd7);
+  background:#fff;
+  color:var(--cally-ink,#10231b);
+  border-radius:7px;
+  min-height:30px;
+  font-size:9px;
+  font-weight:760;
+  cursor:pointer;
+}
+.callyPersonQuickDimRemove{width:28px;height:28px;padding:0;display:grid;place-items:center;font-size:14px;line-height:1}
+.callyPersonQuickAddDim{margin:8px;padding:6px 9px}
+
+/* Logical Robot Level 2 language: one horizontal projection rail with edge arrows. */
+.callyLevel2Rail{
+  position:relative!important;
+  width:100%!important;
+  min-width:0!important;
+  margin-top:10px!important;
+  overflow:hidden!important;
+  border:1px solid var(--cally-line,#d8ddd4)!important;
+  border-radius:16px!important;
+  background:rgba(255,253,248,.94)!important;
+  box-shadow:none!important;
+}
+.callyLevel2Rail .viewbar{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  gap:6px!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  overscroll-behavior-x:contain!important;
+  scroll-behavior:smooth!important;
+  scroll-snap-type:x proximity!important;
+  padding:5px 46px 7px!important;
+  scrollbar-width:thin!important;
+  scrollbar-color:#9ca9a1 #ecefe9!important;
+}
+.callyLevel2Rail .viewbar::-webkit-scrollbar{display:block!important;height:4px!important}
+.callyLevel2Rail .viewbar::-webkit-scrollbar-track{background:#ecefe9!important;border-radius:99px!important}
+.callyLevel2Rail .viewbar::-webkit-scrollbar-thumb{background:#9ca9a1!important;border-radius:99px!important}
+.callyLevel2Rail .view{
+  flex:0 0 auto!important;
+  width:auto!important;
+  min-width:112px!important;
+  max-width:none!important;
+  min-height:42px!important;
+  padding:0 18px!important;
+  display:grid!important;
+  place-items:center!important;
+  scroll-snap-align:center!important;
+  border:1px solid transparent!important;
+  border-radius:11px!important;
+  background:transparent!important;
+  color:var(--cally-ink,#14261e)!important;
+  box-shadow:none!important;
+  font-size:10px!important;
+  line-height:1!important;
+  font-weight:790!important;
+  white-space:nowrap!important;
+  transition:background .14s ease,border-color .14s ease,color .14s ease!important;
+}
+.callyLevel2Rail .view:hover{background:#f0f4ec!important;border-color:#d8ddd4!important}
+.callyLevel2Rail .view.active{
+  background:var(--green,#087b58)!important;
+  border-color:var(--green,#087b58)!important;
+  color:#fff!important;
+}
+.callyLevel2Rail .savedView{border-style:dashed!important;border-color:#cfd5ce!important}
+.callyLevel2Rail .savedView.active{border-style:solid!important;border-color:var(--green,#087b58)!important}
+.callyLevel2Rail .savedView.active .savedStar{color:#fff!important}
+.callyRailArrow{
+  position:absolute!important;
+  top:0!important;
+  bottom:4px!important;
+  z-index:8!important;
+  width:44px!important;
+  min-width:44px!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  border:0!important;
+  color:#173126!important;
+  font-size:24px!important;
+  line-height:1!important;
+  font-weight:500!important;
+  cursor:pointer!important;
+  transition:opacity .12s ease!important;
+}
+.callyRailArrowLeft{left:0!important;background:linear-gradient(90deg,#fffdf8 68%,rgba(255,253,248,0))!important}
+.callyRailArrowRight{right:0!important;background:linear-gradient(270deg,#fffdf8 68%,rgba(255,253,248,0))!important}
+.callyRailArrow:disabled{opacity:.24!important;cursor:default!important}
+
+/* Compact event cards: resize stays permanent; everything else is progressively disclosed. */
+.event.callyCompactControls{
+  overflow:visible!important;
+  padding-right:36px!important;
+}
+.event.callyCompactControls b{padding-right:0!important}
+.event.callyCompactControls small,.event.callyCompactControls .chips{padding-right:0!important}
+.callyEventMore{
+  position:absolute!important;
+  top:6px!important;
+  right:6px!important;
+  z-index:22!important;
+  width:24px!important;
+  min-width:24px!important;
+  height:24px!important;
+  min-height:24px!important;
+  padding:0 0 4px!important;
+  display:grid!important;
+  place-items:center!important;
+  border:1px solid #aebdb4!important;
+  border-radius:7px!important;
+  background:rgba(255,253,248,.96)!important;
+  color:#24483a!important;
+  font-size:18px!important;
+  line-height:1!important;
+  font-weight:700!important;
+  letter-spacing:.03em!important;
+  box-shadow:none!important;
+  cursor:pointer!important;
+}
+.callyEventMore[aria-expanded="true"]{background:#173126!important;border-color:#173126!important;color:#fff!important}
+.callyEventActionMenu{
+  position:absolute!important;
+  top:34px!important;
+  right:6px!important;
+  z-index:24!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:4px!important;
+  padding:4px!important;
+  border:1px solid #c2cdc6!important;
+  border-radius:9px!important;
+  background:#fffdf8!important;
+  box-shadow:0 10px 26px rgba(16,35,27,.16)!important;
+}
+.callyEventActionMenu[hidden]{display:none!important}
+.callyEventActionMenu .eventMove,
+.callyEventActionMenu .eventEdit,
+.callyEventActionMenu .pinBtn,
+.callyEventInfo{
+  position:static!important;
+  inset:auto!important;
+  width:26px!important;
+  min-width:26px!important;
+  height:26px!important;
+  min-height:26px!important;
+  margin:0!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  border:1px solid #b8c7bd!important;
+  border-radius:7px!important;
+  background:#fff!important;
+  color:#2f5042!important;
+  box-shadow:none!important;
+  opacity:1!important;
+  cursor:pointer!important;
+}
+.callyEventActionMenu .eventMove svg,
+.callyEventActionMenu .eventEdit svg,
+.callyEventActionMenu .pinBtn svg{width:13px!important;height:13px!important}
+.callyEventActionMenu .pinBtn.locked{background:#173126!important;border-color:#173126!important;color:#fff!important}
+.callyEventInfo{font-family:Georgia,serif!important;font-size:14px!important;font-weight:700!important;line-height:1!important}
+.callyEventActionMenu .eventMove.locked{opacity:.32!important;cursor:not-allowed!important}
+.resizeHandle{display:block!important;visibility:visible!important;opacity:1!important}
+
+.callyEventPeek{
+  position:fixed!important;
+  z-index:190!important;
+  max-width:calc(100vw - 16px)!important;
+  padding:12px!important;
+  border:1px solid #cbd4ce!important;
+  border-radius:12px!important;
+  background:#fffdf8!important;
+  color:#10231b!important;
+  box-shadow:0 18px 54px rgba(16,35,27,.18)!important;
+}
+.callyEventPeekHead{display:flex!important;align-items:flex-start!important;justify-content:space-between!important;gap:12px!important;padding-bottom:9px!important;border-bottom:1px solid #dde2dc!important}
+.callyEventPeekHead strong{display:block!important;margin-top:4px!important;font-size:15px!important;line-height:1.15!important;font-weight:790!important;letter-spacing:-.025em!important}
+.callyEventPeekEyebrow{color:#087a59!important;font-size:7px!important;line-height:1!important;font-weight:850!important;letter-spacing:.15em!important}
+.callyEventPeekClose{width:28px!important;min-width:28px!important;height:28px!important;min-height:28px!important;padding:0!important;display:grid!important;place-items:center!important;border:1px solid #d0d6d1!important;border-radius:8px!important;background:#f1f2ee!important;color:#173126!important;font-size:16px!important;line-height:1!important;cursor:pointer!important}
+.callyEventPeekTime{display:flex!important;align-items:center!important;gap:6px!important;padding:10px 0 7px!important;color:#304b3f!important;font-size:9px!important;line-height:1.3!important;font-weight:760!important;flex-wrap:wrap!important}
+.callyEventPeekTime span{color:#819087!important;font-weight:500!important}
+.callyEventPeekRow{display:grid!important;grid-template-columns:52px minmax(0,1fr)!important;gap:8px!important;padding:5px 0!important;font-size:8.5px!important;line-height:1.35!important}
+.callyEventPeekRow span{color:#6a766f!important;font-weight:720!important}.callyEventPeekRow b{font-weight:760!important;min-width:0!important}
+.callyEventPeekDims{display:flex!important;flex-wrap:wrap!important;gap:4px!important;margin-top:8px!important;padding-top:8px!important;border-top:1px solid #e2e5e0!important}
+.callyEventPeekDims span{padding:4px 6px!important;border:1px solid #d1d9d3!important;border-radius:999px!important;background:#f7f8f4!important;color:#40544a!important;font-size:7px!important;line-height:1!important;font-weight:690!important}
+
+@media(max-width:760px){
+  .personLanes{padding:10px!important}
+  .callyPersonModuleHead{padding:3px 2px 10px!important}
+  .callyPersonModuleHead h2{font-size:18px!important}
+  .callyPersonModuleHead p{font-size:8px!important}
+  .callyPersonToggle{min-height:50px!important;padding:8px 9px!important;grid-template-columns:28px minmax(0,1fr) auto 14px!important;gap:8px!important}
+  .callyPersonInitial{width:28px!important;height:28px!important}
+  .callyPersonCount{font-size:7px!important}
+  .personLanes .laneEvents{grid-template-columns:1fr!important;padding:7px 9px 9px!important}
+  .callyPersonQuickDimRow{grid-template-columns:1fr 1fr 28px}
+  .callyPersonQuickDimRow input{font-size:16px;height:38px}
+  .callyLevel2Rail{margin-top:8px!important;border-radius:14px!important}
+  .callyLevel2Rail .viewbar{display:flex!important;flex-wrap:nowrap!important;gap:5px!important;overflow-x:auto!important;padding:5px 42px 8px!important}
+  .callyLevel2Rail .view{width:auto!important;min-width:104px!important;min-height:40px!important;padding:0 14px!important;font-size:9.5px!important}
+  .callyRailArrow{width:40px!important;min-width:40px!important;font-size:22px!important}
+  .callyEventActionMenu{right:5px!important;top:33px!important}
+  .callyEventPeek{border-radius:11px!important;padding:11px!important}
+}
