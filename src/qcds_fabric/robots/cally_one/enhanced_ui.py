@@ -125,6 +125,7 @@ def _stable_interaction_js() -> str:
             _asset("overlap_workbench.js"),
             _asset("locale_access_ui.js"),
             _asset("qcds_state_control_center.js"),
+            _asset("terminology_mode.js"),
         ]
     )
 
@@ -272,6 +273,7 @@ def cally_one_html(*, static_mode: bool = False) -> str:
             _asset("overlap_workbench_finish.css"),
             _asset("locale_access_ui.css"),
             _asset("qcds_state_control_center.css"),
+            _asset("terminology_mode.css"),
             _asset("fold_compact.css"),
         ]
     )
