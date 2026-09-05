@@ -22,15 +22,17 @@ qcds-reality-web = "qcds_fabric.public_web_reality:main"
 qcds-reality-grow = "qcds_fabric.continuous_reality:main"
 qcds-domain-lab = "qcds_fabric.domain_lab_cli:main"
 qcds-cally-one = "qcds_fabric.robots.cally_one.live:main"
+qcds-cally-chatgpt = "qcds_fabric.robots.cally_chatgpt.mcp_server:main"
 
 [project.optional-dependencies]
 test = ["pytest>=8"]
+chatgpt = ["mcp>=2,<3"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-qcds_fabric = ["legal_data/*.json", "robots/cally_one/LICENSE.md"]
+qcds_fabric = ["legal_data/*.json", "robots/cally_one/LICENSE.md", "robots/cally_chatgpt/LICENSE.md"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
