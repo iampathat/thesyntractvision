@@ -77,6 +77,22 @@ def test_interface_language_calendar_language_system_and_timezone_are_independen
     assert "calendar_projection" in html
 
 
+def test_earth_time_zone_uses_canonical_iana_choices_not_free_text() -> None:
+    html = cally_one_html(static_mode=True)
+    assert "Cally.One civil Earth time-zone selector." in html
+    civil = html.split("Cally.One civil Earth time-zone selector.", 1)[1]
+    assert "Intl.supportedValuesOf('timeZone')" in civil
+    assert "select.id = 'callyTimeZone'" in civil
+    assert "data.callyCanonicalZones" not in civil
+    assert "dataset.callyCanonicalZones = '1'" in civil
+    assert "Europe/Stockholm" in civil
+    assert "Asia/Shanghai" in civil
+    assert "Jordisk visningstidszon" in civil
+    assert "IANA-tidszoner gäller Jorden" in civil
+    for forbidden in ("/api/infer", "initializeCore", "loadPyodide", "new MutationObserver"):
+        assert forbidden not in civil
+
+
 def test_machine_mission_lunar_and_space_time_are_visible_separate_state() -> None:
     codes = {item["code"] for item in TIME_REFERENCE_VALUES}
     assert {"utc", "tai", "gps", "tt", "ut1", "tcg", "tcb", "tdb", "met", "mrt", "sclk", "unix", "tcl", "ltc"}.issubset(codes)
