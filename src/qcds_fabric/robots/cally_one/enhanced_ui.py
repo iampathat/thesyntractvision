@@ -126,6 +126,7 @@ def _stable_interaction_js() -> str:
             _asset("locale_access_ui.js"),
             _asset("qcds_state_control_center.js"),
             _asset("terminology_mode.js"),
+            _asset("machine_language_ui.js"),
             _asset("time_reference_ui.js"),
             _asset("civil_time_zone_ui.js"),
         ]
