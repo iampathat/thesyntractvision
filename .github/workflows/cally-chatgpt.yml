@@ -1,0 +1,43 @@
+name: Cally ChatGPT Logical Robot
+
+on:
+  push:
+    branches: [cally-chatgpt-work]
+    paths:
+      - "src/qcds_fabric/robots/cally_chatgpt/**"
+      - "tests/test_cally_chatgpt_robot.py"
+      - "pyproject.toml"
+      - ".github/workflows/cally-chatgpt.yml"
+  pull_request:
+    paths:
+      - "src/qcds_fabric/robots/cally_chatgpt/**"
+      - "tests/test_cally_chatgpt_robot.py"
+      - "pyproject.toml"
+
+permissions:
+  contents: read
+
+jobs:
+  chatgpt-robot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip
+      - name: Install test + ChatGPT MCP extras
+        run: python -m pip install -e '.[test,chatgpt]'
+      - name: Test copied robot and ChatGPT/QCDS boundary
+        run: pytest -q tests/test_cally_chatgpt_robot.py
+      - name: Compile ChatGPT robot package
+        run: python -m compileall -q src/qcds_fabric/robots/cally_chatgpt
+      - name: Construct MCP server
+        run: |
+          python - <<'PY'
+          from qcds_fabric.robots.cally_chatgpt.mcp_server import create_mcp_server
+          server = create_mcp_server()
+          assert server is not None
+          print('CALLY CHATGPT MCP READY')
+          PY
