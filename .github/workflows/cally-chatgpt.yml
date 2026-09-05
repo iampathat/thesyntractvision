@@ -33,11 +33,29 @@ jobs:
         run: pytest -q tests/test_cally_chatgpt_robot.py
       - name: Compile ChatGPT robot package
         run: python -m compileall -q src/qcds_fabric/robots/cally_chatgpt
-      - name: Construct MCP server
+      - name: Construct five-port MCP server
         run: |
           python - <<'PY'
           from qcds_fabric.robots.cally_chatgpt.mcp_server import create_mcp_server
+          from qcds_fabric.robots.cally_chatgpt.interface import INTERFACE_VERBS
           server = create_mcp_server()
           assert server is not None
-          print('CALLY CHATGPT MCP READY')
+          assert INTERFACE_VERBS == ('read','write','query','project','resolve')
+          print('CALLY CHATGPT MCP READY:', INTERFACE_VERBS)
           PY
+      - name: Build static ChatGPT calendar projection
+        run: |
+          mkdir -p _chatgpt_preview/cally-chatgpt
+          python - <<'PY'
+          from pathlib import Path
+          from qcds_fabric.robots.cally_chatgpt.chatgpt_projection import cally_chatgpt_html
+          html = cally_chatgpt_html(static_mode=True)
+          out = Path('_chatgpt_preview/cally-chatgpt/index.html')
+          out.write_text(html, encoding='utf-8')
+          assert 'data-cally-chatgpt-interface' in html
+          assert 'logical-robot-interface/v1' in html
+          assert 'window.__callyChatGPT' in html
+          assert 'resolve -> QCDS -> Syntract' in html
+          PY
+      - name: Validate ChatGPT interface JavaScript syntax
+        run: node --check src/qcds_fabric/robots/cally_chatgpt/chatgpt_interface.js
