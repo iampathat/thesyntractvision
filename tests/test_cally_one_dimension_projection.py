@@ -79,11 +79,11 @@ def test_interface_language_calendar_language_system_and_timezone_are_independen
 
 def test_machine_mission_lunar_and_space_time_are_visible_separate_state() -> None:
     codes = {item["code"] for item in TIME_REFERENCE_VALUES}
-    assert {"utc", "tai", "gps", "tt", "ut1", "tcg", "tcb", "tdb", "met", "mrt", "sclk", "unix", "ltc"}.issubset(codes)
+    assert {"utc", "tai", "gps", "tt", "ut1", "tcg", "tcb", "tdb", "met", "mrt", "sclk", "unix", "tcl", "ltc"}.issubset(codes)
     html = cally_one_html(static_mode=True)
     assert "Cally.One machine / mission / space time projection." in html
     temporal = html.split("Cally.One machine / mission / space time projection.", 1)[1]
-    for code in ("utc", "tai", "gps", "tt", "ut1", "tcg", "tcb", "tdb", "met", "mrt", "sclk", "unix", "ltc"):
+    for code in ("utc", "tai", "gps", "tt", "ut1", "tcg", "tcb", "tdb", "met", "mrt", "sclk", "unix", "tcl", "ltc"):
         assert f"code:'{code}'" in temporal
     assert "callyTimeReference" in temporal
     assert "callyReferenceBody" in temporal
@@ -92,6 +92,13 @@ def test_machine_mission_lunar_and_space_time_are_visible_separate_state() -> No
     assert "callyClockSource" in temporal
     assert "time_reference_is_independent_from_time_zone:true" in temporal
     assert "machine_and_space_time_are_state:true" in temporal
+    assert "standard_time_facts_are_read_only_projection:true" in temporal
+    assert "input.readOnly=derived" in temporal
+    assert "data-time-field-badge" in temporal
+    assert "1970-01-01T00:00:00Z" in temporal
+    assert "GCRS · Geocentric Celestial Reference System" in temporal
+    assert "BCRS · Barycentric Celestial Reference System" in temporal
+    assert "LCRS · Lunar Celestial Reference System" in temporal
     for forbidden in ("/api/infer", "initializeCore", "loadPyodide", "new MutationObserver"):
         assert forbidden not in temporal
 
