@@ -140,6 +140,7 @@ def _stable_interaction_js() -> str:
     demo_js = _asset("demo_space.js")
     brand_home_js = _asset("brand_home_polish.js")
     overlap_workbench_js = _asset("overlap_workbench.js")
+    locale_access_js = _asset("locale_access_ui.js")
     return "\n".join(
         [
             event_js,
@@ -155,6 +156,7 @@ def _stable_interaction_js() -> str:
             demo_js,
             brand_home_js,
             overlap_workbench_js,
+            locale_access_js,
         ]
     )
 
@@ -320,6 +322,7 @@ def cally_one_html(*, static_mode: bool = False) -> str:
             _asset("brand_home_polish.css"),
             _asset("overlap_workbench.css"),
             _asset("overlap_workbench_finish.css"),
+            _asset("locale_access_ui.css"),
         ]
     )
     js = _stable_interaction_js()
