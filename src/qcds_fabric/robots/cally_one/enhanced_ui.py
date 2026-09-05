@@ -23,38 +23,16 @@ def _replace_once(source: str, old: str, new: str, label: str) -> str:
 
 
 def _make_today_view_aware(html: str) -> str:
-    """Make Today move the date anchor without changing the active projection."""
-
     old_label = "$('#todayBtn').textContent=state.view==='year'?'Month':state.view==='month'?'Today':'Today';"
-    html = _replace_once(
-        html,
-        old_label,
-        "$('#todayBtn').textContent='Today';",
-        "Today label",
-    )
-
+    html = _replace_once(html, old_label, "$('#todayBtn').textContent='Today';", "Today label")
     old_jump = "function jumpToday(){const n=startOfDay(new Date());state.anchor=n;state.activeSavedView=null;if(state.view==='year')state.view='month';else if(state.view==='month')state.view='day';render()}"
-    html = _replace_once(
-        html,
-        old_jump,
-        "function jumpToday(){state.anchor=startOfDay(new Date());state.activeSavedView=null;render()}",
-        "Today navigation",
-    )
-    return html
+    return _replace_once(html, old_jump, "function jumpToday(){state.anchor=startOfDay(new Date());state.activeSavedView=null;render()}", "Today navigation")
 
 
 def _stable_interaction_js() -> str:
-    """Return product JS with explicit, idempotent UI updates and no broad observer."""
-
     event_js = _asset("enhancements.js")
-    event_js = event_js.replace(
-        "infer.textContent = 'QCDS Resolve';",
-        "infer.dataset.callyCustomerLabel = '1'; infer.textContent = 'Kolla tider';",
-    )
-    event_js = event_js.replace(
-        '<div class="stateCard"><div class="stateKind">',
-        '<div class="stateCard" data-state-entity="${esc(entity.entity_id)}"><div class="stateKind">',
-    )
+    event_js = event_js.replace("infer.textContent = 'QCDS Resolve';", "infer.dataset.callyCustomerLabel = '1'; infer.textContent = 'Kolla tider';")
+    event_js = event_js.replace('<div class="stateCard"><div class="stateKind">', '<div class="stateCard" data-state-entity="${esc(entity.entity_id)}"><div class="stateKind">')
     old_boot = """    const observer = new MutationObserver(() => {
       decorate(stage);
       setupStateUX();
@@ -84,10 +62,7 @@ def _stable_interaction_js() -> str:
         raise RuntimeError("Cally.One observer boot marker not found")
     event_js = event_js.replace(old_boot, new_boot, 1)
 
-    management_js = _asset("state_management.js").replace(
-        "button.textContent = 'Resolve with QCDS';",
-        "button.dataset.callyCustomerLabel = '1';",
-    )
+    management_js = _asset("state_management.js").replace("button.textContent = 'Resolve with QCDS';", "button.dataset.callyCustomerLabel = '1';")
     management_js = _replace_once(
         management_js,
         """    const observer = new MutationObserver(() => {
@@ -133,14 +108,6 @@ def _stable_interaction_js() -> str:
         "dimension-filter observer boot",
     )
 
-    controller_js = _asset("interaction_controller.js")
-    layout_js = _asset("calendar_layout_hotfix.js")
-    person_module_js = _asset("person_module_polish.js")
-    display_js = _asset("calendar_display.js")
-    demo_js = _asset("demo_space.js")
-    brand_home_js = _asset("brand_home_polish.js")
-    overlap_workbench_js = _asset("overlap_workbench.js")
-    locale_access_js = _asset("locale_access_ui.js")
     return "\n".join(
         [
             event_js,
@@ -149,41 +116,29 @@ def _stable_interaction_js() -> str:
             scale_js,
             manual_js,
             dimension_filter_js,
-            controller_js,
-            layout_js,
-            person_module_js,
-            display_js,
-            demo_js,
-            brand_home_js,
-            overlap_workbench_js,
-            locale_access_js,
+            _asset("interaction_controller.js"),
+            _asset("calendar_layout_hotfix.js"),
+            _asset("person_module_polish.js"),
+            _asset("calendar_display.js"),
+            _asset("demo_space.js"),
+            _asset("brand_home_polish.js"),
+            _asset("overlap_workbench.js"),
+            _asset("locale_access_ui.js"),
+            _asset("qcds_state_control_center.js"),
         ]
     )
 
 
 def _make_static_start_lazy(html: str) -> str:
-    """Keep Calendar Space usable without constructing Pyodide/QCDS until required."""
-
-    html = html.replace(
-        "const worker = new Worker('../session_core_worker.js');",
-        "let worker = null;",
-        1,
-    )
+    html = html.replace("const worker = new Worker('../session_core_worker.js');", "let worker = null;", 1)
     html = html.replace(
         "let readyResolve, readyReject;\n  const ready = new Promise((resolve, reject) => { readyResolve = resolve; readyReject = reject; });",
         "let ready = null, readyResolve = null, readyReject = null;",
         1,
     )
-    html = html.replace(
-        "localStorage.getItem('cally.one.state.v1')",
-        "localStorage.getItem(window.__callySpaceStorageKey())",
-        1,
-    )
-    html = html.replace(
-        "localStorage.setItem('cally.one.state.v1', JSON.stringify(state))",
-        "localStorage.setItem(window.__callySpaceStorageKey(), JSON.stringify(state))",
-        1,
-    )
+    html = html.replace("localStorage.getItem('cally.one.state.v1')", "localStorage.getItem(window.__callySpaceStorageKey())", 1)
+    html = html.replace("localStorage.setItem('cally.one.state.v1', JSON.stringify(state))", "localStorage.setItem(window.__callySpaceStorageKey(), JSON.stringify(state))", 1)
+
     old_worker = """  worker.onmessage = (event) => {
     const msg = event.data || {};
     if (msg.type === 'ready') { readyResolve(); return; }
@@ -215,12 +170,7 @@ def _make_static_start_lazy(html: str) -> str:
     if old_worker not in html:
         raise RuntimeError("Cally.One static worker marker not found")
     html = html.replace(old_worker, new_worker, 1)
-
-    html = html.replace(
-        "  async function callCore(payload) {\n    await ready;",
-        "  async function callCore(payload) {\n    ensureWorkerStarted();\n    await ready;",
-        1,
-    )
+    html = html.replace("  async function callCore(payload) {\n    await ready;", "  async function callCore(payload) {\n    ensureWorkerStarted();\n    await ready;", 1)
     html = html.replace(
         "let hydratePromise = null;",
         """let hydratePromise = null;
@@ -260,9 +210,7 @@ def _make_static_start_lazy(html: str) -> str:
         coreStateReady = true;
         window.__callyCoreStateReady = true;
       } catch (error) {
-        try {
-          localStorage.setItem(window.__callySpaceRecoveryKey(), JSON.stringify(stored));
-        } catch (_) {}
+        try { localStorage.setItem(window.__callySpaceRecoveryKey(), JSON.stringify(stored)); } catch (_) {}
         throw error;
       }
     })();"""
@@ -323,6 +271,7 @@ def cally_one_html(*, static_mode: bool = False) -> str:
             _asset("overlap_workbench.css"),
             _asset("overlap_workbench_finish.css"),
             _asset("locale_access_ui.css"),
+            _asset("qcds_state_control_center.css"),
         ]
     )
     js = _stable_interaction_js()
