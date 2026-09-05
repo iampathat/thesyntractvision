@@ -16,8 +16,8 @@ def test_language_picker_lives_under_hamburger_menu():
     assert "#callyMobileMenu" in html
     assert "callyLocaleAccessMenu" in html
     assert "data-cally-language" in html
-    assert "Språk & konto" in html
-    assert "Language & account" in html
+    assert "SPRÅK & KONTO" in html
+    assert "LANGUAGE & ACCOUNT" in html
     assert "location.reload()" in html
 
 
