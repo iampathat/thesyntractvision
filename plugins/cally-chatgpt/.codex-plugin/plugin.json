@@ -1,0 +1,28 @@
+{
+  "name": "cally-logical-robot",
+  "version": "0.1.0",
+  "description": "Cally Logical Robot: conversational Calendar Space with QCDS/Syntract resolution.",
+  "author": {
+    "name": "Patrik Sundblom",
+    "url": "https://syntract.org/"
+  },
+  "homepage": "https://iampathat.github.io/thesyntractvision/cally-chatgpt/",
+  "repository": "https://github.com/iampathat/thesyntractvision",
+  "license": "Cally.One Tribute License 1.0",
+  "keywords": ["calendar", "logical-robot", "qcds", "syntract", "planning"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Cally Logical Robot",
+    "shortDescription": "Calendar Space with QCDS logical resolution",
+    "longDescription": "Talk naturally about people, events, resources, constraints and plans. Cally represents them in Calendar Space; only RESOLVE crosses into QCDS/Syntract inference.",
+    "developerName": "Patrik Sundblom",
+    "category": "Productivity",
+    "capabilities": ["Read", "Write"],
+    "websiteURL": "https://iampathat.github.io/thesyntractvision/cally-chatgpt/",
+    "defaultPrompt": [
+      "Show me my Calendar Space and explain what needs attention.",
+      "Add this event and represent the people, resources and requirements I mention.",
+      "Resolve the best coherent time for this event with QCDS."
+    ]
+  }
+}

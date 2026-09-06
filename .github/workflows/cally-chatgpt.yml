@@ -5,13 +5,23 @@ on:
     branches: [cally-chatgpt-work]
     paths:
       - "src/qcds_fabric/robots/cally_chatgpt/**"
+      - "src/qcds_fabric/hosted_runtime.py"
+      - "src/qcds_fabric/hosted_runtime_mcp.py"
+      - "src/qcds_fabric/hosted_robotics.py"
+      - "plugins/cally-chatgpt/**"
       - "tests/test_cally_chatgpt_robot.py"
+      - "tests/test_qcds_hosted_runtime.py"
       - "pyproject.toml"
       - ".github/workflows/cally-chatgpt.yml"
   pull_request:
     paths:
       - "src/qcds_fabric/robots/cally_chatgpt/**"
+      - "src/qcds_fabric/hosted_runtime.py"
+      - "src/qcds_fabric/hosted_runtime_mcp.py"
+      - "src/qcds_fabric/hosted_robotics.py"
+      - "plugins/cally-chatgpt/**"
       - "tests/test_cally_chatgpt_robot.py"
+      - "tests/test_qcds_hosted_runtime.py"
       - "pyproject.toml"
 
 permissions:
@@ -29,19 +39,59 @@ jobs:
       - run: python -m pip install --upgrade pip
       - name: Install test + ChatGPT MCP extras
         run: python -m pip install -e '.[test,chatgpt]'
-      - name: Test copied robot and ChatGPT/QCDS boundary
-        run: pytest -q tests/test_cally_chatgpt_robot.py
-      - name: Compile ChatGPT robot package
-        run: python -m compileall -q src/qcds_fabric/robots/cally_chatgpt
-      - name: Construct five-port MCP server
+      - name: Test ChatGPT boundary and hosted QCDS runtime
+        run: pytest -q tests/test_cally_chatgpt_robot.py tests/test_qcds_hosted_runtime.py
+      - name: Compile ChatGPT and hosted runtime packages
+        run: |
+          python -m compileall -q src/qcds_fabric/robots/cally_chatgpt
+          python -m py_compile src/qcds_fabric/hosted_runtime.py src/qcds_fabric/hosted_runtime_mcp.py src/qcds_fabric/hosted_robotics.py
+      - name: Construct five-port MCP server on shared hosted runtime
         run: |
           python - <<'PY'
-          from qcds_fabric.robots.cally_chatgpt.mcp_server import create_mcp_server
+          from qcds_fabric.robots.cally_chatgpt.mcp_server import create_mcp_server, hosted_runtime_descriptor
           from qcds_fabric.robots.cally_chatgpt.interface import INTERFACE_VERBS
           server = create_mcp_server()
+          manifest = hosted_runtime_descriptor()
           assert server is not None
           assert INTERFACE_VERBS == ('read','write','query','project','resolve')
-          print('CALLY CHATGPT MCP READY:', INTERFACE_VERBS)
+          assert manifest['system_boundary'] == 'SyntractSystem'
+          assert manifest['single_qcds_architecture'] is True
+          assert {item['robot_id'] for item in manifest['robots']} == {'cally', 'robotics-route'}
+          print('CALLY CHATGPT MCP READY:', INTERFACE_VERBS, manifest['contract'])
+          PY
+      - name: Construct standalone hosted QCDS MCP transport
+        run: |
+          python - <<'PY'
+          from qcds_fabric.hosted_runtime import HostedQCDSRuntime
+          from qcds_fabric.hosted_runtime_mcp import create_hosted_runtime_mcp
+          from qcds_fabric.hosted_robotics import hosted_robotics_adapter
+          from qcds_fabric.robots.cally_chatgpt.hosted_adapter import hosted_cally_adapter
+          runtime = HostedQCDSRuntime()
+          runtime.register(hosted_cally_adapter())
+          runtime.register(hosted_robotics_adapter())
+          server = create_hosted_runtime_mcp(runtime)
+          assert server is not None
+          assert {item['robot_id'] for item in runtime.descriptor()['robots']} == {'cally', 'robotics-route'}
+          print('HOSTED QCDS MCP READY:', runtime.descriptor()['contract'])
+          PY
+      - name: Validate OpenAI plugin package
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path('plugins/cally-chatgpt')
+          manifest = json.loads((root / '.codex-plugin' / 'plugin.json').read_text(encoding='utf-8'))
+          assert manifest['name'] == 'cally-logical-robot'
+          assert manifest['skills'] == './skills/'
+          assert manifest['interface']['developerName'] == 'Patrik Sundblom'
+          skill = (root / 'skills' / 'cally-calendar' / 'SKILL.md').read_text(encoding='utf-8')
+          for verb in ('read', 'write', 'query', 'project', 'resolve'):
+              assert f'`{verb}`' in skill
+          assert 'QCDS by Patrik Sundblom / The Syntract Vision' in skill
+          # .app.json is intentionally absent until ChatGPT creates a real
+          # plugin_asdk_app... MCP connection ID in developer mode.
+          assert not (root / '.app.json').exists()
+          print('OPENAI PLUGIN PACKAGE READY FOR MCP CONNECTION REGISTRATION')
           PY
       - name: Build static ChatGPT calendar projection
         run: |

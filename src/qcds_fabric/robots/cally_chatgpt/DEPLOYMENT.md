@@ -11,7 +11,7 @@ Install the optional MCP runtime:
 python -m pip install -e '.[chatgpt]'
 ```
 
-Run the remote-style MCP endpoint:
+Run the MCP endpoint:
 
 ```bash
 CALLY_CHATGPT_WORKSPACE_ID=developer-preview \
@@ -19,27 +19,23 @@ CALLY_CHATGPT_STORE_ROOT=/tmp/cally-chatgpt \
 qcds-cally-chatgpt
 ```
 
-The MCP Python SDK's Streamable HTTP transport exposes the server endpoint for
-an MCP client.  The current bootstrap is for development only.
+The current bootstrap is for development only.
 
-## Production boundary
+## Production technical boundary
 
-Before public use:
+Before any real multi-user deployment:
 
-1. Deploy the MCP server behind HTTPS.
-2. Derive workspace/customer identity from authenticated app context; remove
-   the environment-only development resolver.
+1. Run the MCP server behind an authenticated transport.
+2. Derive workspace identity from authenticated application/session context; remove the environment-only development resolver.
 3. Persist each workspace in an isolated durable store.
 4. Add authorization around every mutating tool.
-5. Add subscription/license state at the workspace boundary, not inside QCDS.
-6. Package the calendar projection as the ChatGPT Apps SDK UI.
-7. Test the app in ChatGPT Developer Mode.
-8. Prepare privacy policy, developer terms and app-directory submission.
+5. Keep credentials, provider tokens and connection IDs outside source control.
+6. Test the five-port contract end-to-end in the target client.
 
 ## Architecture invariant
 
 ```text
-ChatGPT / Apps SDK
+ChatGPT / client
        │
        ▼
       MCP
@@ -57,5 +53,4 @@ chatgpt_bridge.py
     Syntract
 ```
 
-ChatGPT is never an alternate resolver. `resolve_with_qcds` is the explicit
-boundary into the existing QCDS path.
+ChatGPT is never an alternate resolver. `resolve_with_qcds` is the explicit boundary into the existing QCDS path.

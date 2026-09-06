@@ -14,7 +14,7 @@ another interaction/projection surface around the same logical robot.
 Human conversation
       │
       ▼
-ChatGPT / Apps SDK UI
+ChatGPT / app UI
       │
       ▼
 READ · WRITE · QUERY · PROJECT · RESOLVE
@@ -50,7 +50,7 @@ presentation; it may not change canonical truth. `WRITE` changes represented
 state but does not decide a logical resolution.
 
 The canonical implementation lives in `interface.py`. The same five verbs are
-exposed by `mcp_server.py` to ChatGPT.
+exposed by `mcp_server.py`.
 
 ## Non-negotiable boundary
 
@@ -58,14 +58,26 @@ ChatGPT does **not** contain a second inference engine.
 
 The bridge may translate requests, read/write/query state, project the state,
 synchronize machine languages/APIs, and preserve provenance/fidelity. When a
-logical resolution is requested, `RESOLVE` delegates to the copied robot's
-existing `CallyOneService.infer_placement`, crossing the canonical
+logical resolution is requested, `RESOLVE` crosses the canonical
 `SyntractSystem` / QCDS boundary.
 
 ```text
 READ / WRITE / QUERY / PROJECT  = no inference
 RESOLVE                         = QCDS -> Syntract
 ```
+
+## Host-neutral runtime boundary
+
+`HostedQCDSRuntime` is a deployment boundary, not another intelligence layer.
+It owns one `SyntractSystem` and accepts Logical Robot adapters that form or
+translate domain state before entering the same QCDS path.
+
+The runtime contract is deliberately independent of deployment location. Moving
+it between execution environments must not change QCDS semantics or require a
+second resolver.
+
+Cally and Robotics are currently attached to the same runtime contract to prove
+that the boundary is not calendar-specific.
 
 ## Human languages and machine languages
 
@@ -84,12 +96,12 @@ cannot carry all Calendar Space meaning, translation loss must be explicit.
 ## Workspace isolation
 
 The ChatGPT service is multi-workspace by design. Each authenticated customer
-or ChatGPT workspace resolves to its own store root. Workspace identity must be
-derived from authenticated app/MCP context in production and must never be a
-model-controlled tool argument.
+or workspace resolves to its own store root. Workspace identity must be derived
+from authenticated application/session context in production and must never be
+a model-controlled tool argument.
 
 The current MCP bootstrap uses `CALLY_CHATGPT_WORKSPACE_ID` only for local and
-developer-mode testing. That resolver is replaced when OAuth/account identity
+developer-mode testing. That resolver is replaced when authenticated identity
 is wired.
 
 ## Calendar projection preview
@@ -114,20 +126,19 @@ runtime.
 - `chatgpt_bridge.py` — workspace-bound low-level adapter to the copied robot.
 - `interface.py` — canonical five-port Logical Robot Interface.
 - `mcp_server.py` — five-port Streamable HTTP MCP endpoint.
+- `hosted_adapter.py` / `hosted_interface.py` — Cally ingress to the shared runtime boundary.
 - `chatgpt_interface.js` / `.css` — visible calendar projection interface.
 - `chatgpt_projection.py` — public/static ChatGPT calendar projection builder.
-- `CHATGPT_ARCHITECTURE.md` — this contract.
+- `CHATGPT_ARCHITECTURE.md` — this technical contract.
 
 Everything else began as the known-good Cally.One implementation so work can
 continue here without destabilising `robots/cally_one`.
 
-## Next live milestones
+## Next technical milestones
 
-1. Run the MCP endpoint remotely over HTTPS.
-2. Replace the development workspace resolver with authenticated identity.
-3. Package the calendar projection as the Apps SDK UI inside ChatGPT.
-4. Add subscription/license state for organization workspaces while preserving
-   free private/family use.
-5. Connect real Google/Microsoft/CalDAV/ICS adapters to the machine-language
-   state model.
-6. Test through ChatGPT Developer Mode and prepare directory publication.
+1. Test the five-port contract end-to-end through the current ChatGPT integration path.
+2. Keep the QCDS runtime host-neutral and independently constructible from Cally.
+3. Add authenticated workspace identity at the application boundary.
+4. Add durable isolated storage for production workspaces.
+5. Connect real Google/Microsoft/CalDAV/ICS adapters to the machine-language state model.
+6. Keep Cally as the first calendar projection while preserving the same runtime boundary for additional Logical Robots.
