@@ -39,6 +39,21 @@
   letter-spacing:0!important;
 }
 
+/* Time reference belongs to the same metadata sentence. Never render a second pill. */
+.callyTimeReferenceBadge{display:none!important}
+#dateTitle .callyTimeReferenceInline{
+  display:inline!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:inherit!important;
+  font:inherit!important;
+  letter-spacing:inherit!important;
+  white-space:inherit!important;
+}
+
 /* Jump-to-today is a secondary action beside the browse controls. */
 #todayBtn{
   grid-column:2!important;
