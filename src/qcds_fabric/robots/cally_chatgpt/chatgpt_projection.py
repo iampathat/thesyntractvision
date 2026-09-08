@@ -18,7 +18,7 @@ def _asset(name: str) -> str:
 
 def cally_chatgpt_html(*, static_mode: bool = False) -> str:
     html = cally_one_html(static_mode=static_mode)
-    css = _asset("chatgpt_interface.css")
+    css = "\n".join([_asset("visual_polish_v2.css"), _asset("chatgpt_interface.css")])
     js = _asset("chatgpt_interface.js")
     html = html.replace(
         "</head>",
