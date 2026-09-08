@@ -1,0 +1,54 @@
+/* Cally.One week/day horizontal containment.
+   The calendar canvas owns its horizontal scroll width so the right-hand days
+   can never disappear into blank stage space while panning sideways. */
+
+#stage{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow-x:auto!important;
+  overscroll-behavior-x:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+
+#stage .timeline{
+  box-sizing:border-box!important;
+  max-width:none!important;
+  overflow:visible!important;
+  clip-path:none!important;
+}
+
+/* Day view fills the available canvas. */
+#stage .timeline[style*="--days:1"]{
+  width:100%!important;
+  min-width:100%!important;
+}
+
+/* Week view has a real seven-day scroll surface on narrower screens, but still
+   expands to the full viewport on larger ones. This prevents the grid from
+   ending halfway across the stage after a horizontal pan. */
+#stage .timeline[style*="--days:7"]{
+  width:max(100%,1260px)!important;
+  min-width:max(100%,1260px)!important;
+}
+
+/* Keep the time axis attached to the left edge while the actual days pan. */
+#stage .timeline .timeHead,
+#stage .timeline .timeRail{
+  position:sticky!important;
+  left:0!important;
+  z-index:30!important;
+}
+
+/* The final day must paint all the way to the true scroll edge. */
+#stage .timeline .dayHead:last-of-type,
+#stage .timeline .dayCol:last-child{
+  border-right:1px solid var(--cally-v2-soft-line,rgba(38,70,56,.09))!important;
+}
+
+@media(max-width:760px){
+  #stage .timeline[style*="--days:7"]{
+    width:1240px!important;
+    min-width:1240px!important;
+  }
+}
