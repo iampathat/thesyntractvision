@@ -1,0 +1,173 @@
+/* Cally.One visual polish v2 — presentation only. No state/inference semantics. */
+:root{
+  --cally-v2-ink:#10221b;
+  --cally-v2-deep:#15362b;
+  --cally-v2-green:#087a59;
+  --cally-v2-green-bright:#0c956d;
+  --cally-v2-mint:#dceee5;
+  --cally-v2-paper:#fbfaf6;
+  --cally-v2-panel:#f3f2ed;
+  --cally-v2-line:rgba(38,70,56,.15);
+  --cally-v2-soft-line:rgba(38,70,56,.09);
+  --cally-v2-shadow:0 18px 48px rgba(22,48,38,.10);
+  --cally-v2-shadow-soft:0 7px 22px rgba(22,48,38,.075);
+}
+
+html,body{background:#f4f3ee!important;color:var(--cally-v2-ink)!important}
+body{background-image:radial-gradient(circle at 12% -8%,rgba(12,149,109,.075),transparent 30rem),radial-gradient(circle at 100% 10%,rgba(21,54,43,.035),transparent 34rem)!important}
+
+/* Product chrome: keep the current physical layout, make it feel intentional. */
+.top{
+  background:rgba(251,250,246,.94)!important;
+  border-bottom:1px solid var(--cally-v2-soft-line)!important;
+  box-shadow:0 6px 24px rgba(22,48,38,.045)!important;
+  backdrop-filter:blur(18px) saturate(1.08)!important;
+}
+.callyWordmarkHome{
+  color:var(--cally-v2-ink)!important;
+  text-shadow:0 1px 0 rgba(255,255,255,.8)!important;
+}
+#callyHomeTile,.topActions .btn,.callyMenuButton,.dateNav .btn{
+  border-color:var(--cally-v2-line)!important;
+  background:rgba(255,255,255,.76)!important;
+  box-shadow:0 3px 12px rgba(22,48,38,.035)!important;
+  transition:transform .14s ease,border-color .14s ease,background .14s ease,box-shadow .14s ease!important;
+}
+#callyHomeTile:hover,.topActions .btn:hover,.callyMenuButton:hover,.dateNav .btn:hover{
+  transform:translateY(-1px)!important;
+  border-color:rgba(8,122,89,.30)!important;
+  background:#fff!important;
+  box-shadow:0 7px 18px rgba(22,48,38,.075)!important;
+}
+#eventBtn{
+  background:linear-gradient(180deg,#128665 0%,#087a59 100%)!important;
+  border-color:#087a59!important;
+  color:#fff!important;
+  box-shadow:0 8px 18px rgba(8,122,89,.16)!important;
+}
+#eventBtn:hover{background:linear-gradient(180deg,#15936e 0%,#087a59 100%)!important;border-color:#087a59!important}
+
+.dateNav{
+  border:1px solid var(--cally-v2-soft-line)!important;
+  border-radius:17px!important;
+  background:rgba(255,255,255,.54)!important;
+  box-shadow:0 5px 18px rgba(22,48,38,.035)!important;
+}
+.dateTitle{color:var(--cally-v2-ink)!important;font-weight:760!important;letter-spacing:-.02em!important}
+
+.viewbar{
+  border:1px solid var(--cally-v2-soft-line)!important;
+  border-radius:18px!important;
+  background:rgba(255,255,255,.58)!important;
+  box-shadow:0 5px 18px rgba(22,48,38,.035)!important;
+}
+.view{
+  border-color:transparent!important;
+  background:transparent!important;
+  color:#314c41!important;
+  font-weight:760!important;
+  transition:transform .14s ease,background .14s ease,color .14s ease,box-shadow .14s ease!important;
+}
+.view:hover{background:rgba(8,122,89,.06)!important;transform:translateY(-1px)!important}
+.view.active,.view[aria-selected="true"]{
+  background:linear-gradient(180deg,#0d8b66 0%,#087a59 100%)!important;
+  color:#fff!important;
+  box-shadow:0 9px 22px rgba(8,122,89,.18)!important;
+}
+
+#callyMoveOverrideBar{
+  border-color:var(--cally-v2-soft-line)!important;
+  border-radius:14px!important;
+  background:rgba(255,255,255,.64)!important;
+  box-shadow:0 4px 14px rgba(22,48,38,.03)!important;
+}
+#callyMoveOverrideBar [data-move-override]{border-radius:10px!important;transition:background .14s ease,box-shadow .14s ease,transform .14s ease!important}
+#callyMoveOverrideBar [data-move-override]:hover{transform:translateY(-1px)!important;background:#fff!important}
+#callyMoveOverrideBar [data-move-override].active,#callyMoveOverrideBar [data-move-override][aria-pressed="true"]{box-shadow:0 4px 12px rgba(8,122,89,.08)!important}
+
+/* Calendar canvas. */
+.stage{background:transparent!important}
+.timeline,.month,.year{
+  border:1px solid var(--cally-v2-soft-line)!important;
+  background:rgba(251,250,246,.96)!important;
+  box-shadow:var(--cally-v2-shadow-soft)!important;
+}
+.timeline{border-radius:18px!important;clip-path:inset(0 round 18px)}
+.month,.year{border-radius:18px!important;overflow:hidden!important}
+.timeHead,.timeRail,.hour,.dayHead,.dayCol{background-color:rgba(251,250,246,.96)!important}
+.dayHead{
+  border-bottom-color:var(--cally-v2-soft-line)!important;
+  color:#385247!important;
+  font-weight:760!important;
+}
+.dayCol{
+  background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 58.5px,rgba(56,82,71,.075) 59px,rgba(56,82,71,.075) 59.5px)!important;
+}
+.dayCol.today{background-color:#eef7f1!important;box-shadow:inset 1px 0 0 rgba(8,122,89,.07),inset -1px 0 0 rgba(8,122,89,.07)!important}
+.dayHead.today,.dayHead[data-today="true"]{color:#087a59!important}
+
+/* Event cards: deeper hierarchy, stronger identity, less flat. */
+.event{
+  border:1px solid rgba(8,122,89,.22)!important;
+  border-left:4px solid var(--cally-v2-green)!important;
+  border-radius:12px!important;
+  background:linear-gradient(135deg,rgba(235,246,240,.98) 0%,rgba(224,240,231,.96) 100%)!important;
+  color:var(--cally-v2-ink)!important;
+  box-shadow:0 5px 14px rgba(22,48,38,.08)!important;
+  transition:transform .14s ease,box-shadow .14s ease,border-color .14s ease!important;
+}
+.event:hover{
+  transform:translateY(-1px)!important;
+  border-color:rgba(8,122,89,.34)!important;
+  box-shadow:0 9px 22px rgba(22,48,38,.12)!important;
+}
+.event b{font-weight:820!important;letter-spacing:-.025em!important;color:#12271f!important}
+.event small{color:#526a60!important;font-weight:620!important}
+.event .chip,.event .chips>*{
+  border-color:rgba(8,122,89,.20)!important;
+  background:rgba(255,255,255,.76)!important;
+  color:#315748!important;
+  box-shadow:0 1px 3px rgba(22,48,38,.03)!important;
+}
+.event.conflict{border-left-color:#ad4f4f!important;background:linear-gradient(135deg,#f8eded 0%,#f3e3e3 100%)!important}
+.event.selected,.event:focus-within{box-shadow:0 0 0 2px rgba(8,122,89,.13),0 9px 22px rgba(22,48,38,.12)!important}
+.eventMove,.eventEdit,.event .pinBtn{
+  border-color:rgba(48,80,66,.20)!important;
+  background:rgba(251,250,246,.92)!important;
+  box-shadow:0 2px 7px rgba(22,48,38,.055)!important;
+}
+
+.monthEvent{
+  border-color:rgba(8,122,89,.19)!important;
+  border-left:3px solid var(--cally-v2-green)!important;
+  border-radius:10px!important;
+  background:linear-gradient(135deg,#ecf6f0 0%,#e2f0e8 100%)!important;
+  box-shadow:0 3px 9px rgba(22,48,38,.055)!important;
+}
+.miniMonth{border-color:var(--cally-v2-soft-line)!important;background:rgba(255,255,255,.54)!important;box-shadow:0 5px 16px rgba(22,48,38,.04)!important}
+
+/* Sheets and editors inherit the same surface language. */
+.stateSheet,#modalBack[data-cally-base-editor="1"]>.modal,#modalBack[data-cally-base-editor="1"]>.dialog,#modalBack[data-cally-base-editor="1"]>.card{
+  border-color:var(--cally-v2-line)!important;
+  background:rgba(251,250,246,.985)!important;
+  box-shadow:0 30px 90px rgba(16,35,27,.22)!important;
+  backdrop-filter:blur(18px)!important;
+}
+.sheetHead,.callyEventHead{background:transparent!important}
+.statePrimary,.callyEventActions #saveEvent{
+  background:linear-gradient(180deg,#0f8865 0%,#087a59 100%)!important;
+  box-shadow:0 8px 18px rgba(8,122,89,.16)!important;
+}
+
+/* Small motion only; respect reduced-motion users. */
+@keyframes callyV2Appear{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.event,.monthEvent{animation:callyV2Appear .18s ease both}
+@media(prefers-reduced-motion:reduce){.event,.monthEvent{animation:none!important}.view,#eventBtn,.topActions .btn,.callyMenuButton,.dateNav .btn{transition:none!important}}
+
+@media(max-width:760px){
+  .top{box-shadow:0 5px 18px rgba(22,48,38,.04)!important}
+  .dateNav,.viewbar{border-radius:15px!important}
+  .timeline,.month,.year{border-radius:14px!important}
+  .timeline{clip-path:inset(0 round 14px)}
+  .event{border-radius:11px!important;box-shadow:0 4px 12px rgba(22,48,38,.075)!important}
+}
