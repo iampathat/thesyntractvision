@@ -1,0 +1,35 @@
+/* Calendar-space quick creation: empty calendar fields are creation affordances. */
+.dayCol[data-drop-date],
+.dayCell[data-drop-date],
+.dayHead{
+  cursor:crosshair;
+}
+.dayCol[data-drop-date]{
+  transition:background-color .12s ease,box-shadow .12s ease;
+}
+.dayCol[data-drop-date]:hover{
+  box-shadow:inset 0 0 0 1px rgba(8,122,89,.12);
+}
+.dayCell[data-drop-date]{
+  transition:background-color .12s ease,box-shadow .12s ease;
+}
+.dayCell[data-drop-date]:hover{
+  background-color:#f5f9f5!important;
+  box-shadow:inset 0 0 0 1px rgba(8,122,89,.14);
+}
+.dayHead{
+  transition:background-color .12s ease,color .12s ease;
+}
+.dayHead:hover{
+  background:#f2f7f3!important;
+}
+.event,.monthEvent,.laneCard,[data-event-id],button,input,select,textarea,a{
+  cursor:auto;
+}
+.event:not(.locked),.monthEvent:not(.locked),.laneCard:not(.locked){cursor:grab}
+.event:not(.locked):active,.monthEvent:not(.locked):active,.laneCard:not(.locked):active{cursor:grabbing}
+
+@media(hover:none){
+  .dayCol[data-drop-date],.dayCell[data-drop-date],.dayHead{cursor:default}
+  .dayCol[data-drop-date]:hover,.dayCell[data-drop-date]:hover,.dayHead:hover{box-shadow:none}
+}
