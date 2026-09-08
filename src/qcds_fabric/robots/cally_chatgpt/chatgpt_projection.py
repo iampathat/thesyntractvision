@@ -26,7 +26,13 @@ def cally_chatgpt_html(*, static_mode: bool = False) -> str:
             _asset("chatgpt_interface.css"),
         ]
     )
-    js = "\n".join([_asset("quick_event_create.js"), _asset("chatgpt_interface.js")])
+    js = "\n".join(
+        [
+            _asset("quick_event_create.js"),
+            _asset("time_reference_context_polish.js"),
+            _asset("chatgpt_interface.js"),
+        ]
+    )
     html = html.replace(
         "</head>",
         "<meta name=\"cally-logical-robot\" content=\"cally-chatgpt\">\n"
