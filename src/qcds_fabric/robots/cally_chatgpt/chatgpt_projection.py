@@ -22,6 +22,7 @@ def cally_chatgpt_html(*, static_mode: bool = False) -> str:
         [
             _asset("visual_polish_v2.css"),
             _asset("quick_event_create.css"),
+            _asset("date_navigation_polish.css"),
             _asset("chatgpt_interface.css"),
         ]
     )
