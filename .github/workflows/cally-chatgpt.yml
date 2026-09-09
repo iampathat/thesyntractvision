@@ -105,6 +105,7 @@ jobs:
           assert 'window.__callyChatGPT' in html
           assert 'window.__callyTheme' in html
           assert 'window.__callyIconSystem' in html
+          assert 'Cally.One surface language' in html
           assert 'interface_and_calendar_are_independent' in html
           assert 'resolve -> QCDS -> Syntract' in html
           PY
