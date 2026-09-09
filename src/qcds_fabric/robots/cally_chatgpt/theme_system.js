@@ -77,6 +77,11 @@
 
   function save(){try{localStorage.setItem(PREF_KEY,JSON.stringify(prefs));}catch(_){} apply(); writeState();}
 
+  function syncCommercialNotice(){
+    const notice=qs('.callyMenuAboutLicense');
+    if(notice) notice.textContent='Personal/family free · Commercial terms to be announced.';
+  }
+
   function ensureButton(){
     const label=sv()?'Utseende':'Appearance';
     document.querySelectorAll('.callyWideNav,.callyMobileMenu').forEach(nav=>{
@@ -137,8 +142,8 @@
 
   window.__callyTheme={open,read:()=>JSON.parse(JSON.stringify(prefs)),applyTheme:(scope,theme)=>{if(!['interface','calendar'].includes(scope)||!PRESETS[theme])return false;prefs[scope].theme=theme;save();return true;},presets:()=>Object.keys(PRESETS)};
 
-  const boot=()=>{prefs=read();apply();writeState();ensureButton();};
-  window.addEventListener('cally-one-ui-refresh',()=>{ensureButton();writeState();});
-  window.addEventListener('cally-locale-change',ensureButton);
+  const boot=()=>{prefs=read();apply();writeState();ensureButton();syncCommercialNotice();};
+  window.addEventListener('cally-one-ui-refresh',()=>{ensureButton();writeState();syncCommercialNotice();});
+  window.addEventListener('cally-locale-change',()=>{ensureButton();syncCommercialNotice();});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
