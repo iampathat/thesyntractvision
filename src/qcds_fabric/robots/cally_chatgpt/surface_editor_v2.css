@@ -1,0 +1,393 @@
+/* Cally surface editor v2
+   Direct bridge for the legacy event/person/configuration editors.
+   Calendar Perspectives is the visual reference: restrained hierarchy, thin
+   borders, quiet surfaces, compact controls and content before decoration.
+   Presentation only; no Calendar Space or QCDS semantics are changed. */
+
+/* The event editor was still using the old full-width modal language. Target the
+   real legacy DOM directly instead of relying on enhancement-only attributes. */
+#modalBack{
+  padding:24px!important;
+  align-items:center!important;
+  justify-content:center!important;
+  background:color-mix(in srgb,var(--cally-ui-ink,#10231b) 18%,transparent)!important;
+  backdrop-filter:blur(12px) saturate(.92)!important;
+  -webkit-backdrop-filter:blur(12px) saturate(.92)!important;
+}
+#modalBack>.modal,
+#modalBack>.dialog,
+#modalBack>.card{
+  width:min(760px,calc(100vw - 48px))!important;
+  max-width:760px!important;
+  max-height:min(90dvh,880px)!important;
+  margin:0!important;
+  padding:24px 24px 0!important;
+  overflow:auto!important;
+  overscroll-behavior:contain!important;
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:24px!important;
+  background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  box-shadow:0 26px 76px rgba(15,31,25,.18)!important;
+  scrollbar-width:thin!important;
+}
+
+/* Header mirrors the Perspective panel: quiet kicker, strong title, thin rule. */
+#modalBack .callyEventHead{
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:space-between!important;
+  gap:18px!important;
+  margin:0 0 18px!important;
+  padding:0 0 16px!important;
+  border:0!important;
+  border-bottom:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  background:transparent!important;
+}
+#modalBack .callyEventHead h2,
+#modalBack>.modal>#modalTitle{
+  margin:3px 0 0!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  font-size:26px!important;
+  line-height:1!important;
+  font-weight:790!important;
+  letter-spacing:-.04em!important;
+}
+#modalBack .callyEventHead h2::before{
+  display:block!important;
+  margin:0 0 8px!important;
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  font-size:8px!important;
+  line-height:1!important;
+  font-weight:850!important;
+  letter-spacing:.17em!important;
+  text-transform:uppercase!important;
+}
+#modalBack .callyEventClose,
+#modalBack #closeModal{
+  width:40px!important;
+  min-width:40px!important;
+  height:40px!important;
+  min-height:40px!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:11px!important;
+  background:var(--cally-ui-bg,var(--cally-bg,#f4f3ee))!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  box-shadow:none!important;
+  font-size:21px!important;
+  line-height:1!important;
+}
+
+/* Form rhythm: no giant generic slabs. */
+#modalBack .formGrid{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:12px 14px!important;
+}
+#modalBack .field{
+  min-width:0!important;
+  gap:6px!important;
+}
+#modalBack .field.full{grid-column:1/-1!important}
+#modalBack .field>label,
+#modalBack .callyEventSection .field>label{
+  margin:0!important;
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  font-size:9px!important;
+  line-height:1.15!important;
+  font-weight:750!important;
+  letter-spacing:.01em!important;
+}
+#modalBack input:not([type="checkbox"]):not([type="radio"]),
+#modalBack select,
+#modalBack textarea{
+  width:100%!important;
+  min-width:0!important;
+  min-height:46px!important;
+  padding:9px 12px!important;
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:12px!important;
+  background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  box-shadow:none!important;
+  font-size:13px!important;
+  line-height:1.25!important;
+}
+#modalBack input:focus,
+#modalBack select:focus,
+#modalBack textarea:focus{
+  outline:2px solid color-mix(in srgb,var(--cally-ui-accent,#087a59) 18%,transparent)!important;
+  outline-offset:1px!important;
+  border-color:color-mix(in srgb,var(--cally-ui-accent,#087a59) 55%,var(--cally-ui-line,#d8ddd4))!important;
+}
+#modalBack input::placeholder,
+#modalBack textarea::placeholder{
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  opacity:.68!important;
+}
+
+/* Title is the one deliberate large search/composer field. */
+#modalBack .callyEventTitleField{
+  grid-column:1/-1!important;
+  margin:0!important;
+  padding:0 0 16px!important;
+  border:0!important;
+}
+#modalBack .callyEventTitleField>label{
+  margin-bottom:2px!important;
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  font-size:9px!important;
+  font-weight:750!important;
+}
+#modalBack .callyEventTitleInput,
+#modalBack #fTitle{
+  min-height:54px!important;
+  padding:11px 14px!important;
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:15px!important;
+  background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+  font-size:18px!important;
+  line-height:1.1!important;
+  font-weight:620!important;
+  letter-spacing:-.025em!important;
+}
+
+/* Section headings use the same quiet uppercase grammar as Perspective stack / Filters. */
+#modalBack .callyEventSection{
+  grid-column:1/-1!important;
+  margin:2px 0 0!important;
+  padding:16px 0 0!important;
+  border:0!important;
+  border-top:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  gap:10px 12px!important;
+  background:transparent!important;
+}
+#modalBack .callyEventTitleField + .callyEventSection{border-top:0!important;padding-top:0!important}
+#modalBack .callyEventSection>h3{
+  grid-column:1/-1!important;
+  margin:0 0 2px!important;
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  font-size:8px!important;
+  line-height:1!important;
+  font-weight:850!important;
+  letter-spacing:.16em!important;
+  text-transform:uppercase!important;
+}
+
+/* Time stays scannable, but compact. */
+#modalBack .callyWhenSection{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:14px!important;
+}
+#modalBack .callyWhenSection .field{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:6px!important;
+  margin:0!important;
+}
+#modalBack .callyWhenSection input{
+  min-height:48px!important;
+  font-size:13px!important;
+  font-variant-numeric:tabular-nums!important;
+}
+
+/* People become compact selectable rows/chips, not giant floating capsules. */
+#modalBack .peopleChecks{
+  display:grid!important;
+  grid-template-columns:repeat(auto-fit,minmax(148px,1fr))!important;
+  gap:8px!important;
+  align-items:stretch!important;
+  max-height:190px!important;
+  overflow:auto!important;
+  padding:1px!important;
+  scrollbar-width:thin!important;
+}
+#modalBack .peopleChecks label{
+  min-width:0!important;
+  min-height:42px!important;
+  margin:0!important;
+  padding:8px 10px!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:11px!important;
+  background:transparent!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  font-size:9px!important;
+  line-height:1.2!important;
+  font-weight:700!important;
+  white-space:normal!important;
+}
+#modalBack .peopleChecks label:has(input:checked){
+  border-color:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+  background:color-mix(in srgb,var(--cally-ui-accent,#087a59) 7%,var(--cally-ui-surface,#fbfaf6))!important;
+}
+#modalBack .peopleChecks input[type="checkbox"]{
+  width:17px!important;
+  height:17px!important;
+  min-width:17px!important;
+  accent-color:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+}
+
+/* Dimension rows follow the same compact list grammar. */
+#modalBack .dimensionEditors{gap:7px!important}
+#modalBack .dimEdit{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) 38px!important;
+  gap:7px!important;
+  align-items:center!important;
+}
+#modalBack .dimEdit .miniBtn{
+  width:38px!important;
+  min-width:38px!important;
+  height:38px!important;
+  min-height:38px!important;
+  padding:0!important;
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:10px!important;
+  background:var(--cally-ui-bg,var(--cally-bg,#f4f3ee))!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+}
+
+/* Sticky footer is visually part of the sheet, not a separate toolbar. */
+#modalBack .callyEventActions,
+#modalBack .modalActions{
+  position:sticky!important;
+  bottom:0!important;
+  z-index:5!important;
+  display:flex!important;
+  justify-content:flex-end!important;
+  align-items:center!important;
+  gap:8px!important;
+  margin:18px -24px 0!important;
+  padding:12px 24px 14px!important;
+  border:0!important;
+  border-top:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  background:color-mix(in srgb,var(--cally-ui-surface,#fbfaf6) 94%,transparent)!important;
+  backdrop-filter:blur(14px)!important;
+  -webkit-backdrop-filter:blur(14px)!important;
+  box-shadow:none!important;
+}
+#modalBack .callyEventActions button,
+#modalBack .modalActions button{
+  width:auto!important;
+  min-width:96px!important;
+  min-height:42px!important;
+  padding:0 14px!important;
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:11px!important;
+  background:transparent!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  box-shadow:none!important;
+  font-size:10px!important;
+  line-height:1!important;
+  font-weight:780!important;
+}
+#modalBack .callyEventActions #saveEvent,
+#modalBack .modalActions #saveEvent{
+  background:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+  border-color:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+  color:#fff!important;
+}
+
+/* Person/state editor uses exactly the same physical sheet grammar. */
+.stateOverlay{
+  padding:24px!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+.stateOverlay .stateSheet{
+  width:min(760px,calc(100vw - 48px))!important;
+  max-width:760px!important;
+  max-height:min(90dvh,880px)!important;
+  padding:24px!important;
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:24px!important;
+  background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  box-shadow:0 26px 76px rgba(15,31,25,.18)!important;
+}
+.stateOverlay .sheetHead{
+  margin:0 0 18px!important;
+  padding:0 0 16px!important;
+  border-bottom:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+}
+.stateOverlay .sheetHead .eyebrow{
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  font-size:8px!important;
+  letter-spacing:.16em!important;
+}
+.stateOverlay .sheetHead h2{font-size:26px!important;font-weight:790!important;letter-spacing:-.04em!important}
+.stateOverlay .sheetHead p{max-width:54ch!important;font-size:9px!important;color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important}
+.stateOverlay .stateForm{gap:12px!important}
+.stateOverlay .stateInput{min-height:46px!important;border-radius:12px!important}
+.stateOverlay .statePrimary{min-height:42px!important;border-radius:11px!important;box-shadow:none!important}
+
+/* Other configuration sheets share the same size/radius so the app stops looking
+   like separate UI generations even before their internals are opened. */
+.callyCalendarSettingsSheet,
+.callyThemeSheet,
+.callyTerminologySheet,
+.callyQcdsStateSheet,
+.callyLocaleAccessSheet,
+.manageSheet{
+  width:min(760px,calc(100vw - 48px))!important;
+  max-width:760px!important;
+  border-radius:24px!important;
+  box-shadow:0 26px 76px rgba(15,31,25,.18)!important;
+}
+
+/* Foldables are a first-class layout: centered sheet, real two-column form,
+   compact people grid, no giant full-screen desktop modal. */
+@media(min-width:560px) and (max-width:980px){
+  #modalBack,.stateOverlay{padding:12px!important}
+  #modalBack>.modal,#modalBack>.dialog,#modalBack>.card,.stateOverlay .stateSheet{
+    width:min(720px,calc(100vw - 24px))!important;
+    max-width:720px!important;
+    max-height:92dvh!important;
+    border-radius:22px!important;
+  }
+  #modalBack>.modal,#modalBack>.dialog,#modalBack>.card{padding:20px 20px 0!important}
+  #modalBack .callyEventActions,#modalBack .modalActions{margin-left:-20px!important;margin-right:-20px!important;padding-left:20px!important;padding-right:20px!important}
+  #modalBack .peopleChecks{grid-template-columns:repeat(2,minmax(0,1fr))!important;max-height:174px!important}
+  #modalBack .callyEventHead h2,.stateOverlay .sheetHead h2{font-size:24px!important}
+}
+
+/* Phones remain bottom sheets, but use the same visual grammar. */
+@media(max-width:559px){
+  #modalBack,.stateOverlay{
+    padding:0!important;
+    align-items:flex-end!important;
+    justify-content:center!important;
+  }
+  #modalBack>.modal,#modalBack>.dialog,#modalBack>.card,.stateOverlay .stateSheet{
+    width:100%!important;
+    max-width:none!important;
+    max-height:94dvh!important;
+    border-radius:22px 22px 0 0!important;
+  }
+  #modalBack>.modal,#modalBack>.dialog,#modalBack>.card{padding:18px 16px 0!important}
+  .stateOverlay .stateSheet{padding:18px 16px max(18px,env(safe-area-inset-bottom))!important}
+  #modalBack .formGrid,#modalBack .callyWhenSection{grid-template-columns:1fr!important;gap:10px!important}
+  #modalBack .callyEventHead{margin-bottom:14px!important;padding-bottom:13px!important}
+  #modalBack .callyEventHead h2,#modalBack>.modal>#modalTitle,.stateOverlay .sheetHead h2{font-size:23px!important}
+  #modalBack .callyEventTitleInput,#modalBack #fTitle{min-height:50px!important;font-size:17px!important}
+  #modalBack input:not([type="checkbox"]):not([type="radio"]),#modalBack select,#modalBack textarea{font-size:16px!important}
+  #modalBack .peopleChecks{grid-template-columns:repeat(2,minmax(0,1fr))!important;max-height:166px!important}
+  #modalBack .peopleChecks label{font-size:8.5px!important;padding:7px 8px!important}
+  #modalBack .dimEdit{grid-template-columns:minmax(0,1fr)!important}
+  #modalBack .dimEdit .miniBtn{justify-self:end!important}
+  #modalBack .callyEventActions,#modalBack .modalActions{
+    margin-left:-16px!important;
+    margin-right:-16px!important;
+    padding:11px 16px max(11px,env(safe-area-inset-bottom))!important;
+  }
+}
+
+@media(max-width:390px){
+  #modalBack .peopleChecks{grid-template-columns:1fr!important}
+  #modalBack .callyEventActions button,#modalBack .modalActions button{min-width:88px!important;padding-inline:11px!important}
+}
