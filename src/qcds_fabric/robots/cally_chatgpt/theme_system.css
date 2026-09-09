@@ -1,0 +1,60 @@
+/* Cally.One appearance system. Interface and calendar palettes are intentionally independent. */
+:root{
+  --cally-ui-bg:#f4f3ee;--cally-ui-surface:#fbfaf6;--cally-ui-ink:#10221b;--cally-ui-muted:#617269;--cally-ui-accent:#087a59;--cally-ui-line:#d9ddd7;
+  --cally-cal-bg:#f4f3ee;--cally-cal-surface:#fbfaf6;--cally-cal-ink:#10221b;--cally-cal-muted:#617269;--cally-cal-accent:#087a59;--cally-cal-line:#d9ddd7;--cally-cal-event:#e8f1eb;--cally-cal-today:#eef7f1;
+}
+
+/* Interface palette */
+html,body{background:var(--cally-ui-bg)!important;color:var(--cally-ui-ink)!important}
+body{background-image:none!important}
+.top,.leftSide,.rightSide,.callyMobileMenu,.callyQuickAdd,.callyCalendarSettingsSheet,.callyQcdsStateSheet,.callyLocaleAccessSheet,.manageSheet,.stateSheet{background:var(--cally-ui-surface)!important;color:var(--cally-ui-ink)!important;border-color:var(--cally-ui-line)!important}
+.brand h1,.callyWordmarkHome,.dateTitle,.topActions .btn,.callyMenuButton,.view,.callyMobileMenu button{color:var(--cally-ui-ink)!important}
+.brandText::after,.callyCalendarContext,.tiny,.callyMobileMenu button::after{color:var(--cally-ui-muted)!important}
+.mark,#eventBtn,.view.active,.statePrimary,.callyEventActions #saveEvent{background:var(--cally-ui-accent)!important;border-color:var(--cally-ui-accent)!important;color:#fff!important}
+.dateNav,.viewbar,#callyMoveOverrideBar,.topActions .btn,.callyMenuButton,.callyMobileMenu button,.callyQuickAdd{border-color:var(--cally-ui-line)!important;background:var(--cally-ui-surface)!important}
+#todayBtn{background:var(--cally-ui-surface)!important;color:var(--cally-ui-accent)!important;border-color:var(--cally-ui-line)!important}
+
+/* ChatGPT is part of the interface surface, not the calendar palette. */
+.callyChatGPTBadge{background:var(--cally-ui-accent)!important;border-color:var(--cally-ui-line)!important;color:#fff!important}
+.callyChatGPTBadge .spark{background:var(--cally-ui-surface)!important;color:var(--cally-ui-accent)!important;box-shadow:none!important}
+.callyChatGPTPanel{background:var(--cally-ui-surface)!important;color:var(--cally-ui-ink)!important;border-color:var(--cally-ui-line)!important}
+.callyChatGPTPanel header,.callyChatGPTPorts article,.callyChatGPTBoundary>div,.callyChatGPTFlow{border-color:var(--cally-ui-line)!important}
+.callyChatGPTPanel header b,.callyChatGPTPorts b,.callyChatGPTBoundary b{color:var(--cally-ui-ink)!important}
+.callyChatGPTPanel header span,.callyChatGPTStatus{color:var(--cally-ui-accent)!important}
+.callyChatGPTPorts article,.callyChatGPTBoundary>div,.callyChatGPTFlow{background:var(--cally-ui-bg)!important;color:var(--cally-ui-ink)!important}
+.callyChatGPTPorts .resolve{background:var(--cally-ui-surface)!important;border-color:var(--cally-ui-accent)!important}.callyChatGPTPorts .resolve::before{background:var(--cally-ui-accent)!important}.callyChatGPTPorts .resolve b{color:var(--cally-ui-accent)!important}
+
+/* Calendar palette */
+.stage,.timeline,.month,.year,.timeHead,.timeRail,.dayHead,.dayCol,.dayCell,.miniMonth{background:var(--cally-cal-surface)!important;color:var(--cally-cal-ink)!important}
+.stage{background:var(--cally-cal-bg)!important}
+.timeline,.month,.miniMonth,.dayHead,.dayCol,.dayCell,.timeHead,.timeRail,.hour{border-color:var(--cally-cal-line)!important}
+.dayHead b,.dayNum,.monthJump,.miniDay{color:var(--cally-cal-ink)!important}.dayHead span,.hour,.miniWeekRange{color:var(--cally-cal-muted)!important}
+.dayCol{background-color:var(--cally-cal-surface)!important;background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 58.5px,var(--cally-cal-line) 59px,var(--cally-cal-line) 59.5px)!important}
+.dayCol.today,.dayCell.today,.miniDay.today{background-color:var(--cally-cal-today)!important}
+.event,.monthEvent,.laneCard,.pEvent,.callyYearEvent{background:var(--cally-cal-event)!important;color:var(--cally-cal-ink)!important;border-color:var(--cally-cal-line)!important;border-left-color:var(--cally-cal-accent)!important}
+.event b,.monthEvent,.laneCard b,.pEvent b{color:var(--cally-cal-ink)!important}.event small,.laneCard small,.pEvent small{color:var(--cally-cal-muted)!important}
+.event .chip,.event .chips>*{background:var(--cally-cal-surface)!important;color:var(--cally-cal-ink)!important;border-color:var(--cally-cal-line)!important}
+.nowline{border-top-color:var(--cally-cal-accent)!important}
+.callyWeekNumber,.callyMonthWeek{color:var(--cally-cal-accent)!important;border-color:var(--cally-cal-line)!important;background:var(--cally-cal-surface)!important}
+
+/* Appearance editor */
+.callyThemeSettings{position:fixed;inset:0;z-index:10150;display:none;align-items:flex-end;justify-content:center;padding:14px;background:rgba(8,18,14,.46);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.callyThemeSettings.open{display:flex}
+.callyThemeSheet{width:min(900px,100%);max-height:92dvh;overflow:auto;background:var(--cally-ui-surface);color:var(--cally-ui-ink);border:1px solid var(--cally-ui-line);border-radius:24px;box-shadow:0 28px 90px rgba(0,0,0,.22);padding:20px}
+.callyThemeSheet>header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding-bottom:16px;border-bottom:1px solid var(--cally-ui-line)}
+.callyThemeSheet>header h2{margin:4px 0 5px;font-size:28px;line-height:1.05;letter-spacing:-.04em}.callyThemeSheet>header p{margin:0;max-width:660px;color:var(--cally-ui-muted);font-size:10px;line-height:1.45}
+.callyThemeEyebrow{color:var(--cally-ui-accent);font-size:8px;font-weight:850;letter-spacing:.16em}.callyThemeSheet>header>button{width:42px;height:42px;border:1px solid var(--cally-ui-line);border-radius:12px;background:var(--cally-ui-bg);color:var(--cally-ui-ink);font-size:24px;cursor:pointer}
+.callyThemeBody{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.callyThemeSection{min-width:0;padding:14px;border:1px solid var(--cally-ui-line);border-radius:16px;background:var(--cally-ui-bg)}
+.callyThemeSectionHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:11px}.callyThemeSectionHead h3{margin:0;font-size:16px;letter-spacing:-.03em}.callyThemeSectionHead p{margin:4px 0 0;color:var(--cally-ui-muted);font-size:8px;line-height:1.4}
+.callyThemeCustomToggle{display:flex;align-items:center;gap:6px;white-space:nowrap;color:var(--cally-ui-muted);font-size:8px;font-weight:760}.callyThemeCustomToggle input{accent-color:var(--cally-ui-accent)}
+.callyThemePresets{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}.callyThemePreset{min-width:0;min-height:68px;padding:8px 6px;border:1px solid var(--cally-ui-line);border-radius:11px;background:var(--cally-ui-surface);color:var(--cally-ui-ink);cursor:pointer}.callyThemePreset.active{outline:2px solid var(--cally-ui-accent);outline-offset:1px}.callyThemePreset b{display:block;margin-top:6px;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.callyThemeSwatches{display:grid;grid-template-columns:repeat(4,1fr);height:22px;overflow:hidden;border:1px solid var(--cally-ui-line);border-radius:7px}.callyThemeSwatches i{display:block}
+.callyThemeCustom{display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:11px;padding-top:11px;border-top:1px solid var(--cally-ui-line)}.callyThemeCustom.open{display:grid}.callyThemeCustom label{display:grid;grid-template-columns:1fr 34px auto;align-items:center;gap:7px;min-width:0;color:var(--cally-ui-muted);font-size:8px;font-weight:760}.callyThemeCustom input[type=color]{width:34px;height:30px;padding:2px;border:1px solid var(--cally-ui-line);border-radius:7px;background:var(--cally-ui-surface)}.callyThemeCustom code{color:var(--cally-ui-muted);font-size:7px}
+.callyThemeSheet>footer{display:flex;justify-content:flex-end;gap:7px;margin-top:14px;padding-top:14px;border-top:1px solid var(--cally-ui-line)}.callyThemeSheet>footer button{min-height:40px;padding:8px 12px;border:1px solid var(--cally-ui-line);border-radius:10px;background:var(--cally-ui-surface);color:var(--cally-ui-ink);font-size:9px;font-weight:780;cursor:pointer}.callyThemeSheet>footer .primary{background:var(--cally-ui-accent);border-color:var(--cally-ui-accent);color:#fff}
+
+/* Keep theme access integrated with existing navigation. */
+.callyMobileMenu button[data-cally-theme-settings]::after{content:"Gränssnitt, kalender och egna färger"}
+
+@media(max-width:760px){
+  .callyThemeSettings{padding:0}.callyThemeSheet{width:100%;max-height:94dvh;border-radius:24px 24px 0 0;padding:16px}.callyThemeSheet>header h2{font-size:24px}.callyThemeBody{grid-template-columns:1fr}.callyThemePresets{grid-template-columns:repeat(5,minmax(72px,1fr));overflow-x:auto;padding-bottom:3px}.callyThemePreset{min-width:72px}.callyThemeCustom{grid-template-columns:1fr 1fr}.callyThemeSheet>footer{position:sticky;bottom:-16px;margin-left:-16px;margin-right:-16px;padding:12px 16px max(12px,env(safe-area-inset-bottom));background:var(--cally-ui-surface);z-index:2}.callyThemeSheet>footer button{flex:1;padding-inline:7px}
+}
+@media(max-width:420px){.callyThemeCustom{grid-template-columns:1fr}.callyThemeSectionHead{display:grid}.callyThemeCustomToggle{justify-self:start}}
