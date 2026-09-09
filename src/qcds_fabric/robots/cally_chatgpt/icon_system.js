@@ -42,19 +42,20 @@
     if(menu){menu.innerHTML=icon('menu');menu.dataset.callyIcon='menu';}
   }
 
+  function decorateThemeButton(theme){
+    if(!theme)return;
+    const label=sv()?'Utseende':'Appearance';
+    const sub=sv()?'Gränssnitt, kalender och egna färger':'Interface, calendar and custom colors';
+    theme.innerHTML=`<span class="callySystemIcon">${icon('palette')}</span><span class="callySystemCopy"><b>${label}</b><small>${sub}</small></span>`;
+    theme.dataset.callyIconified='1';
+    theme.setAttribute('aria-label',label);
+  }
+
   function decorateSystemMenu(){
     const map={display:'calendar',language:'globe',dimensions:'network',admin:'shield'};
-    Object.entries(map).forEach(([action,name])=>setIcon(qs(`[data-system-action="${action}"] .callySystemIcon`),name));
-    setIcon(qs('[data-terminology-settings] .callySystemIcon'),'language');
-
-    const theme=qs('[data-cally-theme-settings]');
-    if(theme){
-      const label=sv()?'Utseende':'Appearance';
-      const sub=sv()?'Gränssnitt, kalender och egna färger':'Interface, calendar and custom colors';
-      theme.innerHTML=`<span class="callySystemIcon">${icon('palette')}</span><span class="callySystemCopy"><b>${label}</b><small>${sub}</small></span>`;
-      theme.dataset.callyIconified='1';
-      theme.setAttribute('aria-label',label);
-    }
+    Object.entries(map).forEach(([action,name])=>qsa(`[data-system-action="${action}"] .callySystemIcon`).forEach(host=>setIcon(host,name)));
+    qsa('[data-terminology-settings] .callySystemIcon').forEach(host=>setIcon(host,'language'));
+    qsa('[data-cally-theme-settings]').forEach(decorateThemeButton);
   }
 
   function decorate(){decorateTop();decorateSystemMenu();}
