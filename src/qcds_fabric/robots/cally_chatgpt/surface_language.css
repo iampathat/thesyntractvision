@@ -1,0 +1,457 @@
+/* Cally.One surface language
+   Visual grammar taken from the Calendar Perspectives composer: quiet surfaces,
+   deliberate hierarchy, thin borders, restrained accent, text before decoration.
+   Presentation only — no state or inference semantics. */
+:root{
+  --cally-surface-radius:18px;
+  --cally-surface-radius-lg:24px;
+  --cally-surface-gap:10px;
+  --cally-surface-pad:18px;
+  --cally-surface-shadow:0 22px 64px rgba(15,31,25,.14);
+}
+
+/* -----------------------------
+   SETTINGS MENU = COMPOSER SHEET
+   ----------------------------- */
+.callyMobileMenu{
+  width:min(760px,calc(100vw - 24px))!important;
+  max-height:min(92dvh,920px)!important;
+  padding:24px 24px max(24px,env(safe-area-inset-bottom))!important;
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:24px!important;
+  background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+  box-shadow:var(--cally-surface-shadow)!important;
+  overflow:auto!important;
+  overscroll-behavior:contain!important;
+  scrollbar-width:thin!important;
+  row-gap:10px!important;
+  column-gap:10px!important;
+}
+.callyMobileMenu>*{min-width:0!important}
+
+/* The old big blue menu heading becomes the same quiet kicker used by Perspectives. */
+.callyMobileMenu::before{
+  margin:0 2px 10px!important;
+  padding:0!important;
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  font-size:12px!important;
+  line-height:1!important;
+  font-weight:850!important;
+  letter-spacing:.16em!important;
+  text-transform:uppercase!important;
+}
+.callyMobileMenu .callySystemMenuKicker{
+  margin:2px 2px 8px!important;
+  padding:0!important;
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  font-size:8px!important;
+  line-height:1!important;
+  font-weight:850!important;
+  letter-spacing:.16em!important;
+  text-transform:uppercase!important;
+}
+
+/* Every settings destination is now one stack-row language. */
+.callyMobileMenu .callySystemMenu>button,
+.callyMobileMenu>button[data-cally-theme-settings]{
+  position:relative!important;
+  min-height:88px!important;
+  padding:14px 15px!important;
+  display:grid!important;
+  grid-template-columns:30px minmax(0,1fr)!important;
+  grid-template-rows:auto!important;
+  align-items:center!important;
+  align-content:center!important;
+  gap:12px!important;
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:16px!important;
+  background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  box-shadow:none!important;
+  text-align:left!important;
+  transition:border-color .14s ease,background .14s ease,transform .14s ease!important;
+}
+.callyMobileMenu .callySystemMenu>button:hover,
+.callyMobileMenu>button[data-cally-theme-settings]:hover{
+  transform:translateY(-1px)!important;
+  border-color:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+  background:var(--cally-ui-bg,var(--cally-bg,#f4f3ee))!important;
+}
+.callyMobileMenu .callySystemMenu>button:focus-visible,
+.callyMobileMenu>button[data-cally-theme-settings]:focus-visible{
+  outline:2px solid var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+  outline-offset:2px!important;
+}
+.callyMobileMenu .callySystemMenu>button>span:nth-child(2),
+.callyMobileMenu>button[data-cally-theme-settings] .callySystemCopy{
+  min-width:0!important;
+  display:grid!important;
+  gap:4px!important;
+}
+.callyMobileMenu .callySystemMenu>button b,
+.callyMobileMenu>button[data-cally-theme-settings] b{
+  margin:0!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  font-size:15px!important;
+  line-height:1.08!important;
+  font-weight:800!important;
+  letter-spacing:-.025em!important;
+}
+.callyMobileMenu .callySystemMenu>button small,
+.callyMobileMenu>button[data-cally-theme-settings] small{
+  margin:0!important;
+  max-width:42ch!important;
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  font-size:9px!important;
+  line-height:1.35!important;
+  font-weight:620!important;
+  letter-spacing:0!important;
+}
+
+/* One restrained icon treatment; content remains more important than symbol. */
+.callyMobileMenu .callySystemIcon{
+  width:30px!important;
+  height:30px!important;
+  min-width:30px!important;
+  display:grid!important;
+  place-items:center!important;
+  align-self:center!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+}
+.callyMobileMenu .callySystemIcon .callyIcon{width:23px!important;height:23px!important}
+
+/* The semantic divider works like a Perspective section divider, not a card gap. */
+.callyMobileMenu .callyTerminologyDivider{
+  grid-column:1/-1!important;
+  height:1px!important;
+  margin:8px 2px!important;
+  background:var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border:0!important;
+}
+
+/* Domain section: editorial block, not another giant tinted card. */
+.callyMobileMenu>.demoSpaceMenu{
+  margin:8px 0 0!important;
+  padding:18px 4px 4px!important;
+  border:0!important;
+  border-top:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.callyMobileMenu .demoSpaceMenuKicker{
+  color:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+  font-size:8px!important;
+  line-height:1!important;
+  font-weight:850!important;
+  letter-spacing:.15em!important;
+  text-transform:uppercase!important;
+}
+.callyMobileMenu .demoSpaceMenuTitle{
+  margin-top:7px!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  font-size:17px!important;
+  line-height:1.05!important;
+  font-weight:810!important;
+  letter-spacing:-.03em!important;
+}
+.callyMobileMenu .demoSpaceMenuMeta{
+  margin-top:7px!important;
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  font-size:9px!important;
+  line-height:1.45!important;
+}
+.callyMobileMenu .demoSpaceMenu button{
+  min-height:42px!important;
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:13px!important;
+  background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  box-shadow:none!important;
+  font-size:9px!important;
+  font-weight:760!important;
+}
+
+/* About is footer information, deliberately quiet. */
+.callyMobileMenu>.callyMenuAbout{
+  margin:8px 0 0!important;
+  padding:18px 4px 4px!important;
+  border:0!important;
+  border-top:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  background:transparent!important;
+}
+.callyMenuAboutEyebrow{
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  font-size:8px!important;
+  font-weight:850!important;
+  letter-spacing:.15em!important;
+}
+.callyMenuAboutName{font-size:15px!important;font-weight:810!important;letter-spacing:-.025em!important}
+.callyMenuAboutCredit{font-size:8.5px!important;color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important}
+.callyMenuAboutLicense{font-size:8px!important;color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important}
+
+/* --------------------------------------
+   ALL CONFIGURATION SHEETS SHARE A FAMILY
+   -------------------------------------- */
+.callyCalendarSettings,
+.callyThemeSettings,
+.callyTerminologyOverlay,
+.callyQcdsStateCenter,
+.callyLocaleAccess,
+.stateOverlay,
+.manageOverlay{
+  backdrop-filter:blur(12px) saturate(.92)!important;
+  -webkit-backdrop-filter:blur(12px) saturate(.92)!important;
+}
+.callyCalendarSettingsSheet,
+.callyThemeSheet,
+.callyTerminologySheet,
+.callyQcdsStateSheet,
+.callyLocaleAccessSheet,
+.stateSheet,
+.manageSheet{
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:22px!important;
+  background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  box-shadow:var(--cally-surface-shadow)!important;
+}
+
+/* Headings: same hierarchy as Calendar Perspectives. */
+.callyCalendarSettingsHead,
+.callyThemeSheet>header,
+.callyTerminologyHead,
+.callyQcdsStateHead,
+.callyLocaleAccessHead,
+.sheetHead{
+  border-color:var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+}
+.callyCalendarSettingsHead h2,
+.callyThemeSheet>header h2,
+.callyTerminologyHead h2,
+.callyQcdsStateHead h2,
+.callyLocaleAccessHead h2,
+.sheetHead h2{
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  font-weight:800!important;
+  letter-spacing:-.035em!important;
+}
+.callyCalendarSettingsHead p,
+.callyThemeSheet>header p,
+.callyTerminologyHead p,
+.callyQcdsStateHead p,
+.callyLocaleAccessHead p,
+.sheetHead p{
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  line-height:1.45!important;
+}
+.callyQcdsStateHead small,
+.callyStatePaneIntro small,
+.callyLogicalRobotHero small,
+.callyTerminologyHead small,
+.callyThemeSheet>header small,
+.callyLocaleAccessHead small{
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  font-size:8px!important;
+  font-weight:850!important;
+  letter-spacing:.15em!important;
+  text-transform:uppercase!important;
+}
+
+/* Close controls are quiet square controls, identical across sheets. */
+.callyCalendarSettingsClose,
+.callyTerminologyHead>button,
+.callyQcdsStateHead>button,
+.callyThemeSheet>header>button,
+.callyLocaleAccessHead>button,
+.sheetHead>button{
+  width:40px!important;
+  min-width:40px!important;
+  height:40px!important;
+  min-height:40px!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:0!important;
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:11px!important;
+  background:var(--cally-ui-bg,var(--cally-bg,#f4f3ee))!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  box-shadow:none!important;
+}
+
+/* Form controls follow the Perspectives search field: large, calm, readable. */
+.callyCalendarSettingsForm label,
+.callyThemeSection label,
+.callyTerminologyChoices label,
+.callyStatePane label,
+.callyDimensionEditor label,
+.manageSheet label,
+.stateSheet label{
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  font-weight:700!important;
+}
+.callyCalendarSettingsForm input,
+.callyCalendarSettingsForm select,
+.callyThemeSheet input,
+.callyThemeSheet select,
+.callyQcdsStateSheet input,
+.callyQcdsStateSheet select,
+.callyQcdsStateSheet textarea,
+.callyLocaleAccessSheet input,
+.callyLocaleAccessSheet select,
+.stateSheet input,.stateSheet select,.stateSheet textarea,
+.manageSheet input,.manageSheet select,.manageSheet textarea{
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:13px!important;
+  background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  box-shadow:none!important;
+}
+
+/* State centre becomes rows/chips rather than a second dashboard language. */
+.callyStateTabs{
+  gap:6px!important;
+  border-color:var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+}
+.callyStateTabs button{
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:999px!important;
+  background:transparent!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  box-shadow:none!important;
+}
+.callyStateTabs button.active{
+  border-color:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+  background:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+  color:#fff!important;
+}
+.callyDimensionCard,
+.callyMeaningCard,
+.callyProjectionStateRows>div,
+.callyModelFacts>div,
+.callyTerminologyChoices>button{
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:15px!important;
+  background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  box-shadow:none!important;
+}
+.callyDimensionCard:hover,
+.callyMeaningCard:hover,
+.callyTerminologyChoices>button:hover{
+  border-color:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+}
+
+/* Appearance presets keep their swatches, but the chrome matches the rest. */
+.callyThemeSection{
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:16px!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.callyThemePreset{
+  border-color:var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:12px!important;
+  background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+  box-shadow:none!important;
+}
+.callyThemePreset.active{
+  outline:2px solid var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+  outline-offset:1px!important;
+}
+
+/* Primary/secondary action grammar. */
+.callyCalendarSettingsSave,
+.callyThemeSheet>footer .primary,
+.callyStatePrimary,
+.statePrimary{
+  border-color:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+  border-radius:12px!important;
+  background:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+  color:#fff!important;
+  box-shadow:none!important;
+}
+
+/* Calendar Perspectives remains the visual benchmark, but now follows themes too. */
+#rightSide{
+  background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  border-color:var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+}
+#rightSide h3{color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important}
+#rightSide .search,
+#rightSide .stack>*,
+#rightSide .toolActions .btn{
+  border-color:var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  box-shadow:none!important;
+}
+#rightSide .tiny,#rightSide .count{color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important}
+
+/* -----------------------------
+   FOLD / PHONE RESPONSIVENESS
+   ----------------------------- */
+@media(min-width:560px) and (max-width:980px){
+  .callyMobileMenu{
+    width:min(720px,calc(100vw - 18px))!important;
+    max-height:calc(100dvh - 18px)!important;
+    padding:20px!important;
+    border-radius:22px!important;
+  }
+  .callyMobileMenu .callySystemMenu>button,
+  .callyMobileMenu>button[data-cally-theme-settings]{
+    min-height:76px!important;
+    padding:12px 13px!important;
+    grid-template-columns:27px minmax(0,1fr)!important;
+    gap:10px!important;
+  }
+  .callyMobileMenu .callySystemIcon{width:27px!important;height:27px!important;min-width:27px!important}
+  .callyMobileMenu .callySystemIcon .callyIcon{width:21px!important;height:21px!important}
+  .callyMobileMenu .callySystemMenu>button b,
+  .callyMobileMenu>button[data-cally-theme-settings] b{font-size:13px!important}
+  .callyMobileMenu .callySystemMenu>button small,
+  .callyMobileMenu>button[data-cally-theme-settings] small{font-size:8px!important}
+}
+
+@media(max-width:559px){
+  .callyMobileMenu{
+    width:calc(100vw - 12px)!important;
+    max-height:calc(100dvh - 12px)!important;
+    padding:18px 14px max(18px,env(safe-area-inset-bottom))!important;
+    border-radius:20px!important;
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  .callyMobileMenu .callySystemMenuKicker,
+  .callyMobileMenu .callyTerminologyDivider,
+  .callyMobileMenu>.demoSpaceMenu,
+  .callyMobileMenu>.callyMenuAbout,
+  .callyMobileMenu>.callyLocaleAccessMenu{grid-column:1!important}
+  .callyMobileMenu .callySystemMenu>button,
+  .callyMobileMenu>button[data-cally-theme-settings]{
+    min-height:72px!important;
+    padding:12px!important;
+    grid-template-columns:28px minmax(0,1fr)!important;
+    gap:10px!important;
+  }
+  .callyMobileMenu .callySystemMenu>button b,
+  .callyMobileMenu>button[data-cally-theme-settings] b{font-size:14px!important}
+  .callyMobileMenu .callySystemMenu>button small,
+  .callyMobileMenu>button[data-cally-theme-settings] small{font-size:9px!important}
+
+  .callyCalendarSettingsSheet,
+  .callyThemeSheet,
+  .callyTerminologySheet,
+  .callyQcdsStateSheet,
+  .callyLocaleAccessSheet,
+  .stateSheet,
+  .manageSheet{border-radius:22px 22px 0 0!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .callyMobileMenu .callySystemMenu>button,
+  .callyMobileMenu>button[data-cally-theme-settings]{transition:none!important}
+}
