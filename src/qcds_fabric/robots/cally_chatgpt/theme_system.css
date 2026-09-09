@@ -4,38 +4,148 @@
   --cally-cal-bg:#f4f3ee;--cally-cal-surface:#fbfaf6;--cally-cal-ink:#10221b;--cally-cal-muted:#617269;--cally-cal-accent:#087a59;--cally-cal-line:#d9ddd7;--cally-cal-event:#e8f1eb;--cally-cal-today:#eef7f1;
 }
 
+/* Bridge the older presentation tokens into the new independent projections.
+   The shell receives interface state; the calendar stage overrides it with calendar state. */
+.shell,
+.callyThemeSettings,.callyChatGPTSheet,.callyCalendarSettings,.callyQcdsStateCenter,.callyLocaleAccess,.stateOverlay,.manageOverlay,#modalBack{
+  --bg:var(--cally-ui-bg);--paper:var(--cally-ui-surface);--ink:var(--cally-ui-ink);--muted:var(--cally-ui-muted);--line:var(--cally-ui-line);--soft:var(--cally-ui-bg);--green:var(--cally-ui-accent);--green2:var(--cally-ui-bg);
+  --cally-ink:var(--cally-ui-ink);--cally-paper:var(--cally-ui-surface);--cally-muted:var(--cally-ui-muted);--cally-line:var(--cally-ui-line);--cally-accent:var(--cally-ui-accent);--cally-accent-dark:var(--cally-ui-accent);
+  --cally-v2-ink:var(--cally-ui-ink);--cally-v2-deep:var(--cally-ui-ink);--cally-v2-green:var(--cally-ui-accent);--cally-v2-green-bright:var(--cally-ui-accent);--cally-v2-mint:var(--cally-ui-bg);--cally-v2-paper:var(--cally-ui-surface);--cally-v2-panel:var(--cally-ui-bg);--cally-v2-line:var(--cally-ui-line);--cally-v2-soft-line:var(--cally-ui-line);
+}
+.stage{
+  --bg:var(--cally-cal-bg);--paper:var(--cally-cal-surface);--ink:var(--cally-cal-ink);--muted:var(--cally-cal-muted);--line:var(--cally-cal-line);--soft:var(--cally-cal-bg);--green:var(--cally-cal-accent);--green2:var(--cally-cal-event);
+  --cally-ink:var(--cally-cal-ink);--cally-paper:var(--cally-cal-surface);--cally-muted:var(--cally-cal-muted);--cally-line:var(--cally-cal-line);--cally-accent:var(--cally-cal-accent);--cally-accent-dark:var(--cally-cal-accent);
+  --cally-v2-ink:var(--cally-cal-ink);--cally-v2-deep:var(--cally-cal-ink);--cally-v2-green:var(--cally-cal-accent);--cally-v2-green-bright:var(--cally-cal-accent);--cally-v2-mint:var(--cally-cal-event);--cally-v2-paper:var(--cally-cal-surface);--cally-v2-panel:var(--cally-cal-bg);--cally-v2-line:var(--cally-cal-line);--cally-v2-soft-line:var(--cally-cal-line);
+}
+html[data-cally-ui-theme="dark"]{color-scheme:dark}
+
 /* Interface palette */
 html,body{background:var(--cally-ui-bg)!important;color:var(--cally-ui-ink)!important}
 body{background-image:none!important}
-.top,.leftSide,.rightSide,.callyMobileMenu,.callyQuickAdd,.callyCalendarSettingsSheet,.callyQcdsStateSheet,.callyLocaleAccessSheet,.manageSheet,.stateSheet{background:var(--cally-ui-surface)!important;color:var(--cally-ui-ink)!important;border-color:var(--cally-ui-line)!important}
-.brand h1,.callyWordmarkHome,.dateTitle,.topActions .btn,.callyMenuButton,.view,.callyMobileMenu button{color:var(--cally-ui-ink)!important}
-.brandText::after,.callyCalendarContext,.tiny,.callyMobileMenu button::after{color:var(--cally-ui-muted)!important}
-.mark,#eventBtn,.view.active,.statePrimary,.callyEventActions #saveEvent{background:var(--cally-ui-accent)!important;border-color:var(--cally-ui-accent)!important;color:#fff!important}
-.dateNav,.viewbar,#callyMoveOverrideBar,.topActions .btn,.callyMenuButton,.callyMobileMenu button,.callyQuickAdd{border-color:var(--cally-ui-line)!important;background:var(--cally-ui-surface)!important}
-#todayBtn{background:var(--cally-ui-surface)!important;color:var(--cally-ui-accent)!important;border-color:var(--cally-ui-line)!important}
+.shell,.top,.leftSide,.rightSide,.side,.callyMobileMenu,.callyWideNav,.callyQuickAdd,.callyCalendarSettingsSheet,.callyQcdsStateSheet,.callyLocaleAccessSheet,.manageSheet,.stateSheet{color:var(--cally-ui-ink)!important;border-color:var(--cally-ui-line)!important}
+.top,.leftSide,.rightSide,.side,.callyMobileMenu,.callyWideNav,.callyQuickAdd,.callyCalendarSettingsSheet,.callyQcdsStateSheet,.callyLocaleAccessSheet,.manageSheet,.stateSheet{background:var(--cally-ui-surface)!important}
 
-/* ChatGPT is part of the interface surface, not the calendar palette. */
-.callyChatGPTBadge{background:var(--cally-ui-accent)!important;border-color:var(--cally-ui-line)!important;color:#fff!important}
+.brand h1,.callyWordmarkHome,.dateTitle,.topActions .btn,.callyMenuButton,.view,.callyMobileMenu button,.callyWideNav button,.callyMobileMenu h1,.callyMobileMenu h2,.callyMobileMenu h3,.callyMobileMenu b,.callyMobileMenu strong{color:var(--cally-ui-ink)!important}
+.brandText::after,.callyCalendarContext,.tiny,.side h3,.callyMobileMenu button::after,.callyMobileMenu p,.callyMobileMenu small,.callyMenuAboutLicense,.callyMenuAboutCredit{color:var(--cally-ui-muted)!important}
+.callyMobileMenu [class*="Kicker"],.callyMobileMenu [class*="Eyebrow"],.callyMobileMenu .eyebrow,.callyMenuAboutEyebrow,.demoSpaceMenuKicker{color:var(--cally-ui-accent)!important}
+
+html body #callyHomeTile,
+html body .topActions .btn,
+html body .callyMenuButton,
+html body .dateNav .btn,
+html body .callyMobileMenu button,
+html body .callyWideNav button{
+  border-color:var(--cally-ui-line)!important;background:var(--cally-ui-surface)!important;color:var(--cally-ui-ink)!important;box-shadow:none!important
+}
+html body #callyHomeTile{color:var(--cally-ui-accent)!important}
+html body #callyHomeTile:hover,
+html body .topActions .btn:hover,
+html body .callyMenuButton:hover,
+html body .dateNav .btn:hover,
+html body .callyMobileMenu button:hover,
+html body .callyWideNav button:hover{background:var(--cally-ui-bg)!important;border-color:var(--cally-ui-accent)!important;color:var(--cally-ui-ink)!important}
+
+html body #eventBtn,
+html body .btn.primary,
+html body .statePrimary,
+html body .callyStatePrimary,
+html body .callyEventActions #saveEvent,
+html body .callyCalendarSettingsSave{
+  background:var(--cally-ui-accent)!important;border-color:var(--cally-ui-accent)!important;color:#fff!important;box-shadow:none!important
+}
+html body #eventBtn:hover,
+html body .btn.primary:hover,
+html body .statePrimary:hover,
+html body .callyStatePrimary:hover{background:var(--cally-ui-accent)!important;border-color:var(--cally-ui-accent)!important;color:#fff!important}
+
+.dateNav,.viewbar,#callyMoveOverrideBar{border-color:var(--cally-ui-line)!important;background:var(--cally-ui-surface)!important;box-shadow:none!important}
+.view{background:transparent!important;color:var(--cally-ui-ink)!important}
+.view:hover{background:var(--cally-ui-bg)!important;color:var(--cally-ui-ink)!important}
+html body .shell .view.active,
+html body .shell .view[aria-selected="true"]{background:var(--cally-ui-accent)!important;border-color:var(--cally-ui-accent)!important;color:#fff!important;box-shadow:none!important}
+#todayBtn{background:var(--cally-ui-surface)!important;color:var(--cally-ui-accent)!important;border-color:var(--cally-ui-line)!important}
+#callyMoveOverrideBar [data-move-override]{color:var(--cally-ui-ink)!important}
+#callyMoveOverrideBar [data-move-override].active,#callyMoveOverrideBar [data-move-override][aria-pressed="true"]{border-color:var(--cally-ui-accent)!important;color:var(--cally-ui-accent)!important;background:var(--cally-ui-bg)!important}
+
+/* Demo/domain and menu surfaces follow the interface palette too. */
+.demoSpaceBadge{background:var(--cally-ui-bg)!important;color:var(--cally-ui-accent)!important;border-color:var(--cally-ui-accent)!important}
+.demoSpaceMenu{background:var(--cally-ui-bg)!important;border-color:var(--cally-ui-line)!important;color:var(--cally-ui-ink)!important}
+.demoSpaceMenuTitle,.callyMenuAboutName{color:var(--cally-ui-ink)!important}
+.demoSpaceMenuMeta{color:var(--cally-ui-muted)!important}
+.demoSpaceMenu button,.demoSpaceLaunch{background:var(--cally-ui-surface)!important;border-color:var(--cally-ui-line)!important;color:var(--cally-ui-ink)!important}
+.demoSpaceLaunch{background:var(--cally-ui-accent)!important;border-color:var(--cally-ui-accent)!important;color:#fff!important}
+.callyMenuAbout{border-color:var(--cally-ui-line)!important;color:var(--cally-ui-muted)!important}
+html[data-cally-space="demo"] .top{box-shadow:inset 0 3px 0 var(--cally-ui-accent)!important}
+
+/* Interface sheets, cards and form controls. */
+.stateCard,.callyStatePane,.callyMeaningCard,.callyDimensionCard,.callyProjectionStateRows>div,.callyModelFacts>div,.callyLogicalRobotHero,.callyStateNote,.callyCalendarSettingsHint{
+  background:var(--cally-ui-bg)!important;color:var(--cally-ui-ink)!important;border-color:var(--cally-ui-line)!important
+}
+.stateMeta span,.stateRelations span,.linkChoice,.kindTabs button,.stateActions button,.smallStateBtn,
+.callyCalendarSettingsSheet input,.callyCalendarSettingsSheet select,.callyQcdsStateSheet input,.callyQcdsStateSheet select,.callyQcdsStateSheet textarea,.stateSheet input,.stateSheet select,.stateSheet textarea,.manageSheet input,.manageSheet select,.manageSheet textarea{
+  background:var(--cally-ui-surface)!important;color:var(--cally-ui-ink)!important;border-color:var(--cally-ui-line)!important
+}
+.eyebrow,.stateKind,.callyStatePaneIntro small,.callyLogicalRobotHero small{color:var(--cally-ui-accent)!important}
+.sheetHead p,.callyStatePaneIntro p,.callyStateNote,.callyDimensionCard small,.stateMeta,.stateRelations,.linkedHint,.linkedEmpty{color:var(--cally-ui-muted)!important}
+input::placeholder,textarea::placeholder{color:var(--cally-ui-muted)!important;opacity:.75}
+input[type="checkbox"],input[type="radio"]{accent-color:var(--cally-ui-accent)!important}
+
+/* ChatGPT remains part of the interface surface and follows that palette. */
+.callyChatGPTBadge{background:var(--cally-ui-accent)!important;border-color:var(--cally-ui-line)!important;color:#fff!important;box-shadow:0 12px 34px rgba(0,0,0,.16)!important}
+.callyChatGPTBadge:hover{border-color:var(--cally-ui-surface)!important;box-shadow:0 15px 40px rgba(0,0,0,.20)!important}
 .callyChatGPTBadge .spark{background:var(--cally-ui-surface)!important;color:var(--cally-ui-accent)!important;box-shadow:none!important}
+.callyChatGPTBadge .spark::after{border-color:var(--cally-ui-line)!important}
 .callyChatGPTPanel{background:var(--cally-ui-surface)!important;color:var(--cally-ui-ink)!important;border-color:var(--cally-ui-line)!important}
 .callyChatGPTPanel header,.callyChatGPTPorts article,.callyChatGPTBoundary>div,.callyChatGPTFlow{border-color:var(--cally-ui-line)!important}
 .callyChatGPTPanel header b,.callyChatGPTPorts b,.callyChatGPTBoundary b{color:var(--cally-ui-ink)!important}
 .callyChatGPTPanel header span,.callyChatGPTStatus{color:var(--cally-ui-accent)!important}
-.callyChatGPTPorts article,.callyChatGPTBoundary>div,.callyChatGPTFlow{background:var(--cally-ui-bg)!important;color:var(--cally-ui-ink)!important}
-.callyChatGPTPorts .resolve{background:var(--cally-ui-surface)!important;border-color:var(--cally-ui-accent)!important}.callyChatGPTPorts .resolve::before{background:var(--cally-ui-accent)!important}.callyChatGPTPorts .resolve b{color:var(--cally-ui-accent)!important}
+.callyChatGPTPanel header button{background:var(--cally-ui-bg)!important;color:var(--cally-ui-ink)!important;border-color:var(--cally-ui-line)!important}
+.callyChatGPTPorts article,.callyChatGPTBoundary>div,.callyChatGPTFlow,.callyChatGPTFlow span{background:var(--cally-ui-bg)!important;color:var(--cally-ui-ink)!important}
+.callyChatGPTFlow strong,.callyChatGPTTest{background:var(--cally-ui-accent)!important;border-color:var(--cally-ui-accent)!important;color:#fff!important}
+.callyChatGPTPorts .resolve{background:var(--cally-ui-surface)!important;border-color:var(--cally-ui-accent)!important}.callyChatGPTPorts .resolve::before{background:var(--cally-ui-accent)!important;box-shadow:none!important}.callyChatGPTPorts .resolve b{color:var(--cally-ui-accent)!important}
+.callyChatGPTStatus .dot{background:var(--cally-ui-accent)!important;box-shadow:none!important}.callyChatGPTStatus .dot::after{border-color:var(--cally-ui-accent)!important}
+#callyChatGPTReadOutput{background:var(--cally-ui-bg)!important;color:var(--cally-ui-ink)!important;border-color:var(--cally-ui-line)!important}
 
-/* Calendar palette */
-.stage,.timeline,.month,.year,.timeHead,.timeRail,.dayHead,.dayCol,.dayCell,.miniMonth{background:var(--cally-cal-surface)!important;color:var(--cally-cal-ink)!important}
-.stage{background:var(--cally-cal-bg)!important}
-.timeline,.month,.miniMonth,.dayHead,.dayCol,.dayCell,.timeHead,.timeRail,.hour{border-color:var(--cally-cal-line)!important}
-.dayHead b,.dayNum,.monthJump,.miniDay{color:var(--cally-cal-ink)!important}.dayHead span,.hour,.miniWeekRange{color:var(--cally-cal-muted)!important}
-.dayCol{background-color:var(--cally-cal-surface)!important;background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 58.5px,var(--cally-cal-line) 59px,var(--cally-cal-line) 59.5px)!important}
-.dayCol.today,.dayCell.today,.miniDay.today{background-color:var(--cally-cal-today)!important}
-.event,.monthEvent,.laneCard,.pEvent,.callyYearEvent{background:var(--cally-cal-event)!important;color:var(--cally-cal-ink)!important;border-color:var(--cally-cal-line)!important;border-left-color:var(--cally-cal-accent)!important}
-.event b,.monthEvent,.laneCard b,.pEvent b{color:var(--cally-cal-ink)!important}.event small,.laneCard small,.pEvent small{color:var(--cally-cal-muted)!important}
-.event .chip,.event .chips>*{background:var(--cally-cal-surface)!important;color:var(--cally-cal-ink)!important;border-color:var(--cally-cal-line)!important}
-.nowline{border-top-color:var(--cally-cal-accent)!important}
-.callyWeekNumber,.callyMonthWeek{color:var(--cally-cal-accent)!important;border-color:var(--cally-cal-line)!important;background:var(--cally-cal-surface)!important}
+/* Calendar palette. Strong selectors deliberately beat the older fixed Scandinavian polish. */
+.stage{background:var(--cally-cal-bg)!important;color:var(--cally-cal-ink)!important}
+html body #stage .timeline,
+html body #stage .month,
+html body #stage .year,
+html body #stage .timeHead,
+html body #stage .timeRail,
+html body #stage .dayHead,
+html body #stage .dayCol,
+html body #stage .dayCell,
+html body #stage .miniMonth{background-color:var(--cally-cal-surface)!important;color:var(--cally-cal-ink)!important;border-color:var(--cally-cal-line)!important;box-shadow:none!important}
+html body #stage .timeline,html body #stage .month,html body #stage .year{background:var(--cally-cal-surface)!important;border-color:var(--cally-cal-line)!important}
+html body #stage .dayHead b,html body #stage .dayNum,html body #stage .monthJump,html body #stage .miniDay,html body #stage .monthDow{color:var(--cally-cal-ink)!important}
+html body #stage .dayHead span,html body #stage .hour,html body #stage .miniWeekRange,html body #stage .laneCard small,html body #stage .pEvent small{color:var(--cally-cal-muted)!important}
+html body #stage .hour{border-color:var(--cally-cal-line)!important}
+html body #stage .dayCol{background-color:var(--cally-cal-surface)!important;background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 58.5px,var(--cally-cal-line) 59px,var(--cally-cal-line) 59.5px)!important}
+html body #stage .dayCol.today,html body #stage .dayCell.today,html body #stage .miniDay.today{background-color:var(--cally-cal-today)!important}
+html body #stage .dayHead.today,html body #stage .dayHead[data-today="true"]{color:var(--cally-cal-accent)!important}
+
+html body #stage .event,
+html body #stage .monthEvent,
+html body #stage .laneCard,
+html body #stage .pEvent,
+html body #stage .callyYearEvent{
+  background:var(--cally-cal-event)!important;color:var(--cally-cal-ink)!important;border-color:var(--cally-cal-line)!important;border-left-color:var(--cally-cal-accent)!important;box-shadow:none!important
+}
+html body #stage .event:hover,html body #stage .monthEvent:hover,html body #stage .laneCard:hover,html body #stage .pEvent:hover{border-color:var(--cally-cal-accent)!important;border-left-color:var(--cally-cal-accent)!important;box-shadow:none!important}
+html body #stage .event b,html body #stage .monthEvent,html body #stage .laneCard b,html body #stage .pEvent b{color:var(--cally-cal-ink)!important}
+html body #stage .event small,html body #stage .laneCard small,html body #stage .pEvent small{color:var(--cally-cal-muted)!important}
+html body #stage .event .chip,html body #stage .event .chips>*{background:var(--cally-cal-surface)!important;color:var(--cally-cal-ink)!important;border-color:var(--cally-cal-line)!important}
+html body #stage .eventMove,html body #stage .eventEdit,html body #stage .event .pinBtn,html body #stage .callyEventActionMenu button{background:var(--cally-cal-surface)!important;color:var(--cally-cal-ink)!important;border-color:var(--cally-cal-line)!important}
+html body #stage .event.selected,html body #stage .event:focus-within{box-shadow:0 0 0 2px var(--cally-cal-accent)!important}
+html body #stage .nowline{border-top-color:var(--cally-cal-accent)!important}
+html body #stage .callyWeekNumber,html body #stage .callyMonthWeek{color:var(--cally-cal-accent)!important;border-color:var(--cally-cal-line)!important;background:var(--cally-cal-surface)!important}
+html body #stage .miniDay.has{background:var(--cally-cal-event)!important}
+html body #stage .miniDay.today{box-shadow:inset 0 0 0 1px var(--cally-cal-accent)!important}
+html body #stage .monthJump:hover,html body #stage .miniDay:hover,html body #stage .dayNum:hover{background:var(--cally-cal-bg)!important}
+
+/* Semantic conflict/error colors intentionally remain semantic, not brand colors. */
+html body #stage .event.conflict{border-left-color:#ad4f4f!important;background:#f3e3e3!important}
 
 /* Appearance editor */
 .callyThemeSettings{position:fixed;inset:0;z-index:10150;display:none;align-items:flex-end;justify-content:center;padding:14px;background:rgba(8,18,14,.46);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
