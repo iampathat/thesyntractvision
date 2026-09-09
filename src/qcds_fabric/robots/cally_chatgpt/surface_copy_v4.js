@@ -12,13 +12,23 @@
   const txt=(node,value)=>{if(node&&value!=null&&node.textContent!==value)node.textContent=value;};
   const placeholder=(node,value)=>{if(node&&value!=null&&node.placeholder!==value)node.placeholder=value;};
 
+  function setLabelText(label,value){
+    if(!label||label.tagName!=='LABEL'||value==null)return;
+    const textNode=[...label.childNodes].find(node=>node.nodeType===Node.TEXT_NODE && node.nodeValue.trim());
+    if(textNode){ textNode.nodeValue=value; return; }
+    label.insertBefore(document.createTextNode(value),label.firstChild||null);
+  }
+
   function labelFor(field,sv,en){
-    const label=field?.querySelector?.(':scope > label') || field?.previousElementSibling;
-    if(label && label.tagName==='LABEL') txt(label,isSv()?sv:en);
+    if(!field)return;
+    const value=isSv()?sv:en;
+    if(field.tagName==='LABEL'){setLabelText(field,value);return;}
+    const label=field.querySelector?.(':scope > label');
+    if(label)setLabelText(label,value);
   }
 
   function polishTop(){
-    txt(qs('#personBtn .actionText'), isSv()?'Person':'Person');
+    txt(qs('#personBtn .actionText'), 'Person');
     txt(qs('#eventBtn .actionText'), isSv()?'Händelse':'Event');
     qs('#personBtn')?.setAttribute('aria-label',isSv()?'Ny person':'New person');
     qs('#eventBtn')?.setAttribute('aria-label',isSv()?'Ny händelse':'New event');
@@ -31,16 +41,17 @@
     if(!back || back.style.display==='none') return;
 
     const title=qs('#modalTitle',back) || qs('.callyEventHead h2',back);
+    let editing=false;
     if(title){
+      const raw=title.textContent||'';
+      editing=/state|redigera|edit/i.test(raw) && !/new|ny/i.test(raw);
       title.dataset.callyKicker=isSv()?'HÄNDELSE':'EVENT';
-      const editing=/state/i.test(title.textContent||'');
       txt(title,isSv()?(editing?'Händelse':'Ny händelse'):(editing?'Event':'New event'));
     }
 
     const titleInput=qs('#fTitle',back);
     placeholder(titleInput,isSv()?'Fotboll, middag, möte …':'Football, dinner, meeting …');
-    const titleField=titleInput?.closest('.field');
-    labelFor(titleField,'Titel','Title');
+    labelFor(titleInput?.closest('.field'),'Titel','Title');
 
     const start=qs('#fStart',back), end=qs('#fEnd',back), loc=qs('#fLocation',back), people=qs('#fPeople',back);
     labelFor(start?.closest('.field'),'Start','Start');
@@ -53,7 +64,7 @@
     placeholder(search,isSv()?'Sök personer…':'Search people…');
 
     txt(qs('#closeModal',back), '×');
-    txt(qs('#saveEvent',back), isSv()?'Lägg till':'Add');
+    txt(qs('#saveEvent',back), isSv()?(editing?'Spara':'Lägg till'):(editing?'Save':'Add'));
     const cancel=qs('#cancelEvent',back) || qsa('button',back).find(b=>/^(Avbryt|Cancel)$/i.test((b.textContent||'').trim()));
     txt(cancel,isSv()?'Avbryt':'Cancel');
 
@@ -78,7 +89,7 @@
     const name=qs('#personStateName',sheet);
     if(!name) return;
 
-    txt(qs('.sheetHead .eyebrow',sheet), isSv()?'PERSON':'PERSON');
+    txt(qs('.sheetHead .eyebrow',sheet), 'PERSON');
     txt(qs('.sheetHead h2',sheet), isSv()?'Ny person':'New person');
     const intro=qs('.sheetHead p',sheet); if(intro) intro.hidden=true;
 
@@ -94,7 +105,7 @@
     placeholder(team,isSv()?'Valfritt':'Optional');
 
     txt(qs('.stateLabel',sheet), isSv()?'Fler dimensioner':'Additional dimensions');
-    txt(qs('#addPersonDimension',sheet), isSv()?'+ Dimension':'+ Dimension');
+    txt(qs('#addPersonDimension',sheet), '+ Dimension');
     txt(qs('#savePersonState',sheet), isSv()?'Lägg till':'Add');
   }
 
