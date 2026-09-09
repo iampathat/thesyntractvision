@@ -137,5 +137,8 @@ def test_chatgpt_projection_contains_visible_five_port_interface() -> None:
     assert "Cally surface editor v3" in html
     assert "#modalBack>.modal" in html
     assert "Calendar Perspectives is the canonical visual reference" in html
-    assert "--cally-drawer-w:min(720px,52vw)" in html
-    assert "justify-content:flex-end!important" in html
+    assert "Cally.One surface unification v4" in html
+    assert "--cally-drawer-w:540px" in html
+    assert "#personBtn .actionIcon" in html
+    assert "window.__callySurfaceCopyV4" in html
+    assert "Kopplade resurser och saker" in html
