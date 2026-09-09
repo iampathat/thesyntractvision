@@ -27,6 +27,7 @@ def cally_chatgpt_html(*, static_mode: bool = False) -> str:
             _asset("chatgpt_interface.css"),
             _asset("theme_system.css"),
             _asset("theme_menu_polish.css"),
+            _asset("icon_system.css"),
         ]
     )
     js = "\n".join(
@@ -35,6 +36,7 @@ def cally_chatgpt_html(*, static_mode: bool = False) -> str:
             _asset("time_reference_context_polish.js"),
             _asset("theme_system.js"),
             _asset("chatgpt_interface.js"),
+            _asset("icon_system.js"),
         ]
     )
     html = html.replace(
