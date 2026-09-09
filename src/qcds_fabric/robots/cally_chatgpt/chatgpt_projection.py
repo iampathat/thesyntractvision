@@ -26,6 +26,7 @@ def cally_chatgpt_html(*, static_mode: bool = False) -> str:
             _asset("week_scroll_containment.css"),
             _asset("chatgpt_interface.css"),
             _asset("theme_system.css"),
+            _asset("theme_menu_polish.css"),
         ]
     )
     js = "\n".join(
