@@ -88,8 +88,6 @@ jobs:
           for verb in ('read', 'write', 'query', 'project', 'resolve'):
               assert f'`{verb}`' in skill
           assert 'QCDS by Patrik Sundblom / The Syntract Vision' in skill
-          # .app.json is intentionally absent until ChatGPT creates a real
-          # plugin_asdk_app... MCP connection ID in developer mode.
           assert not (root / '.app.json').exists()
           print('OPENAI PLUGIN PACKAGE READY FOR MCP CONNECTION REGISTRATION')
           PY
@@ -105,7 +103,11 @@ jobs:
           assert 'data-cally-chatgpt-interface' in html
           assert 'logical-robot-interface/v1' in html
           assert 'window.__callyChatGPT' in html
+          assert 'window.__callyTheme' in html
+          assert 'interface_and_calendar_are_independent' in html
           assert 'resolve -> QCDS -> Syntract' in html
           PY
-      - name: Validate ChatGPT interface JavaScript syntax
-        run: node --check src/qcds_fabric/robots/cally_chatgpt/chatgpt_interface.js
+      - name: Validate ChatGPT and appearance JavaScript syntax
+        run: |
+          node --check src/qcds_fabric/robots/cally_chatgpt/chatgpt_interface.js
+          node --check src/qcds_fabric/robots/cally_chatgpt/theme_system.js
