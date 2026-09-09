@@ -1,0 +1,455 @@
+/* Cally.One surface unification v4
+   Canonical presentation pass for the ChatGPT manifestation.
+   Goal: Calendar Perspectives is the visual grammar for every drawer/editor.
+   Presentation only; Calendar Space state and QCDS semantics are untouched. */
+
+:root{
+  --cally-control-h:52px;
+  --cally-control-r:14px;
+  --cally-drawer-w:540px;
+  --cally-drawer-gap:10px;
+}
+
+/* ---------------------------------------------------------
+   TOP BAR — ONE CONTROL SYSTEM, NOT FIVE DIFFERENT BUTTONS
+   --------------------------------------------------------- */
+.topActions{
+  gap:8px!important;
+  align-items:center!important;
+}
+#callyHomeTile,
+#perspectiveBtn,
+#personBtn,
+#eventBtn,
+#callyMenuButton{
+  min-height:var(--cally-control-h)!important;
+  height:var(--cally-control-h)!important;
+  border-radius:var(--cally-control-r)!important;
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  box-shadow:none!important;
+  font-size:14px!important;
+  line-height:1!important;
+  font-weight:760!important;
+  letter-spacing:-.015em!important;
+}
+#callyHomeTile,
+#perspectiveBtn,
+#callyMenuButton{
+  width:var(--cally-control-h)!important;
+  min-width:var(--cally-control-h)!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+  color:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+}
+#personBtn,
+#eventBtn{
+  min-width:118px!important;
+  width:auto!important;
+  padding:0 16px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+}
+#personBtn{
+  background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+}
+#eventBtn{
+  background:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+  border-color:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+  color:#fff!important;
+}
+#personBtn .actionIcon,
+#eventBtn .actionIcon{
+  display:inline-grid!important;
+  place-items:center!important;
+  width:20px!important;
+  height:20px!important;
+  flex:0 0 20px!important;
+}
+#personBtn .actionIcon .callyIcon,
+#eventBtn .actionIcon .callyIcon,
+#callyHomeTile .callyIcon,
+#perspectiveBtn .callyIcon,
+#callyMenuButton .callyIcon{
+  width:22px!important;
+  height:22px!important;
+  stroke-width:1.7!important;
+}
+#personBtn .actionText,
+#eventBtn .actionText{
+  display:inline!important;
+  font:inherit!important;
+  color:inherit!important;
+}
+
+/* ---------------------------------------------------------
+   DRAWERS — PERSPECTIVE, EVENT, PERSON = SAME PHYSICAL MODEL
+   --------------------------------------------------------- */
+@media (min-width:760px){
+  .rightSide,
+  #modalBack,
+  .stateOverlay{
+    top:var(--cally-drawer-gap)!important;
+    right:var(--cally-drawer-gap)!important;
+    bottom:var(--cally-drawer-gap)!important;
+  }
+
+  .rightSide{
+    width:min(var(--cally-drawer-w),48vw)!important;
+    height:auto!important;
+    padding:22px 22px 26px!important;
+    border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+    border-radius:22px!important;
+    background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+    box-shadow:-18px 0 48px rgba(15,31,25,.10)!important;
+    overflow:auto!important;
+  }
+
+  #modalBack,
+  .stateOverlay{
+    left:auto!important;
+    width:min(var(--cally-drawer-w),48vw)!important;
+    height:auto!important;
+    padding:0!important;
+    align-items:stretch!important;
+    justify-content:stretch!important;
+    background:transparent!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+    pointer-events:none!important;
+  }
+  #modalBack>.modal,
+  #modalBack>.dialog,
+  #modalBack>.card,
+  .stateOverlay .stateSheet{
+    width:100%!important;
+    max-width:none!important;
+    height:100%!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:22px 22px 0!important;
+    border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+    border-radius:22px!important;
+    background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+    box-shadow:-18px 0 48px rgba(15,31,25,.10)!important;
+    overflow:auto!important;
+    pointer-events:auto!important;
+  }
+  .stateOverlay .stateSheet{padding-bottom:22px!important}
+}
+
+/* The three headers now share one rhythm. */
+.rightTop,
+#modalBack .callyEventHead,
+#modalBack>.modal>#modalTitle,
+.stateOverlay .sheetHead{
+  margin-top:0!important;
+}
+.rightTop,
+#modalBack .callyEventHead,
+.stateOverlay .sheetHead{
+  min-height:52px!important;
+  padding:0 0 15px!important;
+  margin-bottom:16px!important;
+  border-bottom:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  background:transparent!important;
+}
+.rightTop h3,
+#modalBack .callyEventHead h2,
+#modalBack>.modal>#modalTitle,
+.stateOverlay .sheetHead h2{
+  margin:0!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  font-size:25px!important;
+  line-height:1.04!important;
+  font-weight:790!important;
+  letter-spacing:-.035em!important;
+  text-transform:none!important;
+}
+.rightTop h3{
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  font-size:11px!important;
+  line-height:1!important;
+  font-weight:850!important;
+  letter-spacing:.16em!important;
+  text-transform:uppercase!important;
+}
+#modalBack .callyEventHead h2::before,
+#modalBack>.modal>#modalTitle::before,
+.stateOverlay .sheetHead .eyebrow{
+  display:block!important;
+  margin:0 0 8px!important;
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  font-size:10px!important;
+  line-height:1!important;
+  font-weight:850!important;
+  letter-spacing:.16em!important;
+  text-transform:uppercase!important;
+}
+#modalBack>.modal>#modalTitle::before{
+  content:attr(data-cally-kicker)!important;
+}
+#modalBack .callyEventHead h2::before{
+  content:attr(data-cally-kicker)!important;
+}
+.stateOverlay .sheetHead p{
+  display:none!important;
+}
+
+/* Close buttons are identical everywhere. */
+.closePanel,
+#closeModal,
+.callyEventClose,
+.stateOverlay .sheetClose,
+.stateOverlay [data-close-state]{
+  width:42px!important;
+  min-width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  border:0!important;
+  border-radius:12px!important;
+  background:var(--cally-ui-bg,var(--cally-bg,#f4f3ee))!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  box-shadow:none!important;
+  font-size:22px!important;
+  line-height:1!important;
+}
+
+/* ---------------------------------------------------------
+   EVENT EDITOR — PERSPECTIVE-LIKE CONTENT RHYTHM
+   --------------------------------------------------------- */
+#modalBack .formGrid{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:12px!important;
+}
+#modalBack .field{gap:6px!important;min-width:0!important}
+#modalBack .field.full{grid-column:1/-1!important}
+#modalBack .field>label,
+#modalBack .stateLabel{
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  font-size:10px!important;
+  line-height:1.2!important;
+  font-weight:760!important;
+  letter-spacing:.01em!important;
+}
+#modalBack input:not([type="checkbox"]):not([type="radio"]),
+#modalBack select,
+#modalBack textarea,
+.stateOverlay .stateInput{
+  min-height:44px!important;
+  padding:9px 11px!important;
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:12px!important;
+  background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  box-shadow:none!important;
+  font-size:14px!important;
+  line-height:1.2!important;
+}
+#modalBack #fTitle{
+  min-height:54px!important;
+  padding:10px 12px!important;
+  font-size:18px!important;
+  font-weight:620!important;
+  border-radius:13px!important;
+}
+#modalBack input::placeholder,
+.stateOverlay input::placeholder{
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  opacity:.68!important;
+}
+
+#modalBack .peopleChecks{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:7px!important;
+  max-height:218px!important;
+  overflow:auto!important;
+  padding:1px!important;
+}
+#modalBack .peopleChecks label{
+  min-height:42px!important;
+  margin:0!important;
+  padding:8px 10px!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:11px!important;
+  background:transparent!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  font-size:11px!important;
+  line-height:1.2!important;
+  font-weight:690!important;
+}
+#modalBack .peopleChecks label:has(input:checked){
+  border-color:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+  background:color-mix(in srgb,var(--cally-ui-accent,#087a59) 7%,var(--cally-ui-surface,#fbfaf6))!important;
+}
+#modalBack .peopleChecks input[type="checkbox"]{
+  width:16px!important;
+  height:16px!important;
+  min-width:16px!important;
+  accent-color:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+}
+
+#modalBack .linkedStates,
+#modalBack .callyEventSection{
+  padding-top:14px!important;
+  border-top:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+}
+#modalBack .linkedStateGrid{
+  grid-template-columns:1fr!important;
+  gap:10px!important;
+}
+#modalBack .linkedHint{
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  font-size:9px!important;
+}
+
+#modalBack .modalActions,
+#modalBack .callyEventActions{
+  position:sticky!important;
+  bottom:0!important;
+  z-index:6!important;
+  display:flex!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+  margin:18px -22px 0!important;
+  padding:12px 22px max(12px,env(safe-area-inset-bottom))!important;
+  border-top:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  background:color-mix(in srgb,var(--cally-ui-surface,#fbfaf6) 95%,transparent)!important;
+  backdrop-filter:blur(12px)!important;
+  -webkit-backdrop-filter:blur(12px)!important;
+}
+#modalBack .modalActions button,
+#modalBack .callyEventActions button,
+.stateOverlay .statePrimary{
+  width:auto!important;
+  min-width:96px!important;
+  min-height:40px!important;
+  padding:0 14px!important;
+  border-radius:10px!important;
+  box-shadow:none!important;
+  font-size:11px!important;
+  line-height:1!important;
+  font-weight:760!important;
+}
+
+/* ---------------------------------------------------------
+   PERSON/STATE EDITOR — SAME TYPOGRAPHY, SAME DENSITY
+   --------------------------------------------------------- */
+.stateOverlay .stateSheet .sheetHead{
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:space-between!important;
+  gap:16px!important;
+}
+.stateOverlay .stateForm{
+  display:grid!important;
+  gap:12px!important;
+}
+.stateOverlay .stateForm label{
+  display:grid!important;
+  gap:6px!important;
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  font-size:10px!important;
+  line-height:1.2!important;
+  font-weight:760!important;
+}
+.stateOverlay .stateFormTwo{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:10px!important;
+}
+.stateOverlay .stateLabel{
+  margin:3px 0 5px!important;
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  font-size:10px!important;
+  font-weight:760!important;
+}
+.stateOverlay .smallStateBtn{
+  min-height:38px!important;
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:10px!important;
+  background:transparent!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  box-shadow:none!important;
+  font-size:10px!important;
+  font-weight:730!important;
+}
+.stateOverlay .statePrimary{
+  justify-self:end!important;
+  background:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+  border-color:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+  color:#fff!important;
+}
+
+/* ---------------------------------------------------------
+   LANGUAGE + CREDIT DETAILS
+   --------------------------------------------------------- */
+.callyMenuAboutCredit{
+  display:block!important;
+  margin-top:9px!important;
+  line-height:1.35!important;
+}
+.callyMenuAboutLicense{margin-top:5px!important}
+
+/* No hard-coded green/blue editorial kickers inside drawers. Theme drives accents. */
+#modalBack .callyEventHead h2::before,
+#modalBack>.modal>#modalTitle::before,
+.stateOverlay .sheetHead .eyebrow,
+.rightTop h3{
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+}
+
+/* ---------------------------------------------------------
+   FOLD / TABLET — KEEP DRAWERS, DON'T EXPAND INTO DESKTOP MODALS
+   --------------------------------------------------------- */
+@media (min-width:560px) and (max-width:980px){
+  :root{--cally-drawer-w:500px;--cally-drawer-gap:8px}
+  #personBtn,#eventBtn{min-width:104px!important;padding:0 13px!important;font-size:13px!important}
+  #callyHomeTile,#perspectiveBtn,#callyMenuButton,#personBtn,#eventBtn{
+    min-height:48px!important;height:48px!important;border-radius:13px!important;
+  }
+  #callyHomeTile,#perspectiveBtn,#callyMenuButton{width:48px!important;min-width:48px!important}
+  #modalBack>.modal,#modalBack>.dialog,#modalBack>.card,.stateOverlay .stateSheet,.rightSide{padding-left:18px!important;padding-right:18px!important}
+  #modalBack .modalActions,#modalBack .callyEventActions{margin-left:-18px!important;margin-right:-18px!important;padding-left:18px!important;padding-right:18px!important}
+}
+
+/* Phone: one bottom-sheet family, still same typography. */
+@media (max-width:559px){
+  #personBtn,#eventBtn{min-width:44px!important;width:44px!important;padding:0!important}
+  #personBtn .actionText,#eventBtn .actionText{display:none!important}
+  #personBtn .actionIcon,#eventBtn .actionIcon{display:inline-grid!important}
+  #modalBack,.stateOverlay{
+    inset:0!important;
+    padding:0!important;
+    align-items:flex-end!important;
+    justify-content:center!important;
+    background:rgba(16,35,27,.14)!important;
+    pointer-events:auto!important;
+  }
+  #modalBack>.modal,#modalBack>.dialog,#modalBack>.card,.stateOverlay .stateSheet{
+    width:100%!important;
+    max-width:none!important;
+    height:auto!important;
+    max-height:92dvh!important;
+    margin:0!important;
+    padding:18px 15px 0!important;
+    border-radius:20px 20px 0 0!important;
+  }
+  .stateOverlay .stateSheet{padding-bottom:max(18px,env(safe-area-inset-bottom))!important}
+  #modalBack .formGrid,.stateOverlay .stateFormTwo{grid-template-columns:1fr!important}
+  #modalBack .peopleChecks{grid-template-columns:repeat(2,minmax(0,1fr))!important;max-height:170px!important}
+  #modalBack input:not([type="checkbox"]):not([type="radio"]),#modalBack select,#modalBack textarea,.stateOverlay .stateInput{font-size:16px!important}
+  #modalBack .modalActions,#modalBack .callyEventActions{margin-left:-15px!important;margin-right:-15px!important;padding-left:15px!important;padding-right:15px!important}
+}
