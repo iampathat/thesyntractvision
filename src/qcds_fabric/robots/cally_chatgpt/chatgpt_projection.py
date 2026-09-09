@@ -29,9 +29,10 @@ def cally_chatgpt_html(*, static_mode: bool = False) -> str:
             _asset("theme_menu_polish.css"),
             _asset("icon_system.css"),
             _asset("surface_language.css"),
-            # Keep the canonical editor layer last. It deliberately owns the
-            # physical drawer geometry for event/person/settings surfaces.
             _asset("surface_editor_v2.css"),
+            # Final visual authority for Cally ChatGPT. Keep last so older
+            # generations cannot re-expand or recolor the drawers afterwards.
+            _asset("surface_unification_v4.css"),
         ]
     )
     js = "\n".join(
@@ -42,6 +43,8 @@ def cally_chatgpt_html(*, static_mode: bool = False) -> str:
             _asset("chatgpt_interface.js"),
             _asset("icon_system.js"),
             _asset("surface_language.js"),
+            # Final copy normalizer: one language per visible surface.
+            _asset("surface_copy_v4.js"),
         ]
     )
     html = html.replace(
