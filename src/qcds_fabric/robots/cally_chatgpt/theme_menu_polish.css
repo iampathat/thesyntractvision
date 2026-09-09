@@ -17,8 +17,7 @@
 .callyMobileMenu>.callyMenuAbout,
 .callyMobileMenu>.callyLocaleAccessMenu{grid-column:1/-1!important}
 
-/* Stable visual order. Calendar display and Appearance are peers; terminology
-   and Appearance form a complete row instead of leaving a dead grid cell. */
+/* Stable visual order. */
 .callyMobileMenu .callySystemMenuKicker{order:1!important}
 .callyMobileMenu [data-system-action="display"]{order:2!important}
 .callyMobileMenu [data-system-action="language"]{order:3!important}
@@ -29,36 +28,9 @@
   width:100%!important;
   min-width:0!important;
   min-height:86px!important;
-  display:grid!important;
-  grid-template-columns:34px minmax(0,1fr)!important;
-  grid-template-rows:auto auto!important;
-  align-content:center!important;
-  align-items:center!important;
-  column-gap:12px!important;
-  row-gap:3px!important;
   padding:15px!important;
   text-align:left!important;
   overflow:hidden!important;
-}
-.callyMobileMenu>button[data-cally-theme-settings]::before{
-  content:"◐";
-  grid-column:1!important;
-  grid-row:1/3!important;
-  width:34px!important;
-  height:34px!important;
-  display:grid!important;
-  place-items:center!important;
-  color:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
-  font-size:22px!important;
-  line-height:1!important;
-}
-.callyMobileMenu>button[data-cally-theme-settings]::after{
-  grid-column:2!important;
-  grid-row:2!important;
-  display:block!important;
-  min-width:0!important;
-  margin:0!important;
-  overflow-wrap:anywhere!important;
 }
 .callyMobileMenu .callyTerminologyDivider{order:6!important}
 .callyMobileMenu [data-system-action="dimensions"]{order:7!important}
@@ -100,8 +72,7 @@
     min-height:68px!important;
     align-self:stretch!important;
   }
-  .callyMobileMenu>button[data-cally-theme-settings]{grid-template-columns:30px minmax(0,1fr)!important;padding:10px!important;column-gap:9px!important}
-  .callyMobileMenu>button[data-cally-theme-settings]::before{width:30px!important;height:30px!important;font-size:20px!important}
+  .callyMobileMenu>button[data-cally-theme-settings]{padding:10px!important}
 }
 
 @media(max-width:390px){
