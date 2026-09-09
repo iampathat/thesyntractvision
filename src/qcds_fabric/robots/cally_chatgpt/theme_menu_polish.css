@@ -29,18 +29,23 @@
   width:100%!important;
   min-width:0!important;
   min-height:86px!important;
-  display:flex!important;
+  display:grid!important;
+  grid-template-columns:34px minmax(0,1fr)!important;
+  grid-template-rows:auto auto!important;
+  align-content:center!important;
   align-items:center!important;
-  gap:12px!important;
+  column-gap:12px!important;
+  row-gap:3px!important;
   padding:15px!important;
   text-align:left!important;
   overflow:hidden!important;
 }
 .callyMobileMenu>button[data-cally-theme-settings]::before{
   content:"◐";
+  grid-column:1!important;
+  grid-row:1/3!important;
   width:34px!important;
   height:34px!important;
-  flex:0 0 34px!important;
   display:grid!important;
   place-items:center!important;
   color:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
@@ -48,8 +53,11 @@
   line-height:1!important;
 }
 .callyMobileMenu>button[data-cally-theme-settings]::after{
+  grid-column:2!important;
+  grid-row:2!important;
   display:block!important;
   min-width:0!important;
+  margin:0!important;
   overflow-wrap:anywhere!important;
 }
 .callyMobileMenu .callyTerminologyDivider{order:6!important}
@@ -92,8 +100,8 @@
     min-height:68px!important;
     align-self:stretch!important;
   }
-  .callyMobileMenu>button[data-cally-theme-settings]{padding:10px!important;gap:9px!important}
-  .callyMobileMenu>button[data-cally-theme-settings]::before{width:30px!important;height:30px!important;flex-basis:30px!important;font-size:20px!important}
+  .callyMobileMenu>button[data-cally-theme-settings]{grid-template-columns:30px minmax(0,1fr)!important;padding:10px!important;column-gap:9px!important}
+  .callyMobileMenu>button[data-cally-theme-settings]::before{width:30px!important;height:30px!important;font-size:20px!important}
 }
 
 @media(max-width:390px){
