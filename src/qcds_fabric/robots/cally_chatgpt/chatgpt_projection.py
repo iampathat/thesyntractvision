@@ -38,6 +38,7 @@ def cally_chatgpt_html(*, static_mode: bool = False) -> str:
             _asset("theme_system.js"),
             _asset("chatgpt_interface.js"),
             _asset("icon_system.js"),
+            _asset("surface_language.js"),
         ]
     )
     html = html.replace(
