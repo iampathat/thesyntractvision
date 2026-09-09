@@ -25,12 +25,14 @@ def cally_chatgpt_html(*, static_mode: bool = False) -> str:
             _asset("date_navigation_polish.css"),
             _asset("week_scroll_containment.css"),
             _asset("chatgpt_interface.css"),
+            _asset("theme_system.css"),
         ]
     )
     js = "\n".join(
         [
             _asset("quick_event_create.js"),
             _asset("time_reference_context_polish.js"),
+            _asset("theme_system.js"),
             _asset("chatgpt_interface.js"),
         ]
     )
