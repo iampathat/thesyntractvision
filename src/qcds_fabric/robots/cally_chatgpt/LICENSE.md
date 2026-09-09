@@ -21,14 +21,11 @@ Academic publications should cite the relevant QCDS / Syntract work where reason
 
 ## Organizational, institutional, professional and commercial use
 
-Use by or on behalf of a company, partnership, association, foundation, government body, public authority, institution, professional practice, consultancy, employer, customer-facing service or other organization requires a paid license unless the academic exception above applies.
+Use by or on behalf of a company, partnership, association, foundation, government body, public authority, institution, professional practice, consultancy, employer, customer-facing service or other organization requires separate permission unless the academic exception above applies.
 
-Standard internal-use pricing:
+**Commercial terms will be announced.**
 
-- **EUR 99 per month per organization**, or
-- **EUR 990 per year per organization**.
-
-Prices exclude VAT and other applicable taxes.
+Until commercial terms are published, organizational, institutional, professional and commercial use requires separate written permission from the copyright holder.
 
 Redistribution, resale, hosted commercial service, white-label use, embedded/OEM use or incorporation into another commercial product requires a separate written license.
 
