@@ -134,3 +134,6 @@ def test_chatgpt_projection_contains_visible_five_port_interface() -> None:
         assert verb in html
     assert "resolve -> QCDS -> Syntract" in html
     assert "window.__callyChatGPT" in html
+    assert "Cally surface editor v2" in html
+    assert "#modalBack>.modal" in html
+    assert "Calendar Perspectives is the visual reference" in html
