@@ -1,0 +1,89 @@
+/* One icon grammar for Cally.One: outline, rounded geometry, currentColor. */
+.callyIcon{
+  width:22px!important;
+  height:22px!important;
+  display:block!important;
+  flex:0 0 auto!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.8!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+  overflow:visible!important;
+}
+
+/* Top shell: remove letter/pseudo-icon leftovers and use the same SVG grammar. */
+#callyHomeTile{font-size:0!important}
+#callyHomeTile .callyIcon{width:21px!important;height:21px!important}
+#perspectiveBtn .actionIcon,
+#personBtn .actionIcon,
+#eventBtn .actionIcon{
+  width:22px!important;
+  height:22px!important;
+  display:grid!important;
+  place-items:center!important;
+  background:none!important;
+  font-size:0!important;
+}
+#perspectiveBtn .actionIcon::before,
+#personBtn .actionIcon::before,
+#eventBtn .actionIcon::before{content:none!important;display:none!important}
+#perspectiveBtn .actionIcon{background:none!important}
+#callyMenuButton::before{content:none!important;display:none!important}
+#callyMenuButton .callyIcon{width:23px!important;height:23px!important}
+
+/* System/settings cards all use one icon box and one geometry. */
+.callySystemIcon{
+  width:38px!important;
+  height:38px!important;
+  min-width:38px!important;
+  flex-basis:38px!important;
+  display:grid!important;
+  place-items:center!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  color:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+  font-size:0!important;
+}
+.callySystemIcon .callyIcon{width:25px!important;height:25px!important}
+.callyTerminologyGlyph{letter-spacing:0!important}
+
+/* Appearance is a peer of the other system cards, not a separate button language. */
+.callyMobileMenu button[data-cally-theme-settings]{
+  display:grid!important;
+  grid-template-columns:38px minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:12px!important;
+  text-align:left!important;
+}
+.callyMobileMenu button[data-cally-theme-settings]::before,
+.callyMobileMenu button[data-cally-theme-settings]::after{content:none!important;display:none!important}
+.callyMobileMenu button[data-cally-theme-settings] .callySystemCopy{
+  min-width:0!important;
+  display:grid!important;
+  gap:4px!important;
+}
+.callyMobileMenu button[data-cally-theme-settings] .callySystemCopy b{
+  margin:0!important;
+  font-size:inherit!important;
+  line-height:1.08!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+}
+.callyMobileMenu button[data-cally-theme-settings] .callySystemCopy small{
+  margin:0!important;
+  color:var(--cally-ui-muted,var(--cally-muted,#66736c))!important;
+  line-height:1.28!important;
+}
+
+/* Keep icon scale stable on foldables and phones. */
+@media(min-width:560px) and (max-width:980px){
+  .callySystemIcon{width:32px!important;height:32px!important;min-width:32px!important;flex-basis:32px!important}
+  .callySystemIcon .callyIcon{width:22px!important;height:22px!important}
+  .callyMobileMenu button[data-cally-theme-settings]{grid-template-columns:32px minmax(0,1fr)!important;gap:9px!important}
+}
+@media(max-width:559px){
+  .callySystemIcon{width:34px!important;height:34px!important;min-width:34px!important;flex-basis:34px!important}
+  .callySystemIcon .callyIcon{width:23px!important;height:23px!important}
+  .callyMobileMenu button[data-cally-theme-settings]{grid-template-columns:34px minmax(0,1fr)!important;gap:10px!important}
+}
