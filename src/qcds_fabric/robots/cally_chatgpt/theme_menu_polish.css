@@ -35,6 +35,27 @@
       "time theme"!important;
   }
 }
+
+/* Foldables get a deliberate utility row near the top. Appearance and calendar
+   projection are peers, so they should look and behave like peers too. */
+@media(min-width:560px) and (max-width:980px){
+  .callyMobileMenu{
+    grid-template-areas:
+      "head head"
+      "space space"
+      "time theme"
+      "perspective dimensions"
+      "people organizations"
+      "resources things"
+      "add add"!important;
+  }
+  .callyMobileMenu button[data-cally-display-settings],
+  .callyMobileMenu button[data-cally-theme-settings]{
+    min-height:48px!important;
+    align-self:stretch!important;
+  }
+}
+
 @media(max-width:390px){
   .callyMobileMenu{
     grid-template-areas:
