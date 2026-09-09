@@ -1,5 +1,28 @@
 /* Appearance access belongs beside Calendar & time in the existing Cally menu. */
 .callyMobileMenu button[data-cally-theme-settings]{grid-area:theme!important}
+.callyMobileMenu{scroll-padding-bottom:118px!important}
+
+/* ChatGPT stays visible, but it must never sit on top of the Appearance control. */
+@media(min-width:701px){
+  body:has(#callyMobileMenu:not([hidden])) .callyChatGPTBadge{
+    left:18px!important;
+    right:auto!important;
+  }
+}
+@media(max-width:700px){
+  #callyMobileMenu{padding-bottom:max(112px,calc(96px + env(safe-area-inset-bottom)))!important}
+  body:has(#callyMobileMenu:not([hidden])) .callyChatGPTBadge{
+    right:10px!important;
+    bottom:14px!important;
+    width:52px!important;
+    height:52px!important;
+    padding:7px!important;
+    justify-content:center!important;
+  }
+  body:has(#callyMobileMenu:not([hidden])) .callyChatGPTBadge>span:last-child{display:none!important}
+  body:has(#callyMobileMenu:not([hidden])) .callyChatGPTBadge .spark{width:36px!important;height:36px!important}
+}
+
 @media(min-width:391px){
   .callyMobileMenu{
     grid-template-areas:
