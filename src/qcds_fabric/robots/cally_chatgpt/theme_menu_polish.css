@@ -1,0 +1,30 @@
+/* Appearance access belongs beside Calendar & time in the existing Cally menu. */
+.callyMobileMenu button[data-cally-theme-settings]{grid-area:theme!important}
+@media(min-width:391px){
+  .callyMobileMenu{
+    grid-template-areas:
+      "head head"
+      "space space"
+      "perspective dimensions"
+      "people organizations"
+      "resources things"
+      "add add"
+      "time theme"!important;
+  }
+}
+@media(max-width:390px){
+  .callyMobileMenu{
+    grid-template-areas:
+      "head"
+      "space"
+      "perspective"
+      "dimensions"
+      "people"
+      "organizations"
+      "resources"
+      "things"
+      "add"
+      "time"
+      "theme"!important;
+  }
+}
