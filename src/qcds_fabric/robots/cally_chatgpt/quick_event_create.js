@@ -22,8 +22,15 @@
 
   function openPrefilled(start, source) {
     if (!(start instanceof Date) || Number.isNaN(start.getTime())) return;
-    if (typeof window.openEvent !== 'function') return;
 
+    /* Canonical route when available. Calendar cells only contribute context;
+       they never choose a different event editor than the top Event button. */
+    if (typeof window.__callyOpenNewEvent === 'function') {
+      window.__callyOpenNewEvent({start:new Date(start), source:source || 'calendar'});
+      return;
+    }
+
+    if (typeof window.openEvent !== 'function') return;
     const end = new Date(start.getTime() + 60 * 60 * 1000);
     window.openEvent();
 

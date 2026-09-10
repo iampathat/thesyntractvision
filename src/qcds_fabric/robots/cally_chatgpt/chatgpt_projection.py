@@ -55,6 +55,9 @@ def cally_chatgpt_html(*, static_mode: bool = False) -> str:
             # Narrow compatibility bridge only. Keeps the pre-existing menu
             # layout and synchronizes its legacy hidden state with v5 .open.
             _asset("hamburger_bridge.js"),
+            # Loaded last on purpose: every new-event trigger (top button,
+            # calendar cell, empty-state action) resolves to one editor path.
+            _asset("event_entry_bridge.js"),
         ]
     )
     html = html.replace(
