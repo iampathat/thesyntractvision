@@ -1,0 +1,637 @@
+/* Cally.One surface contract v5
+   One visual/physical interaction grammar for the ChatGPT manifestation.
+   Calendar Perspectives remains the reference. Presentation only. */
+
+:root{
+  --cally-v5-drawer-w:560px;
+  --cally-v5-edge:10px;
+  --cally-v5-radius:22px;
+  --cally-v5-control:52px;
+  --cally-v5-label:11px;
+  --cally-v5-body:14px;
+  --cally-v5-title:28px;
+  --cally-v5-kicker:11px;
+  --cally-v5-shadow:-20px 0 54px rgba(12,28,22,.12);
+}
+
+/* =========================================================
+   TOP ACTION STRIP — EVERY ACTION USES THE SAME COMPONENT
+   ========================================================= */
+.topActions{
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+}
+#callyHomeTile,
+#perspectiveBtn,
+#personBtn,
+#eventBtn,
+#callyMenuButton{
+  box-sizing:border-box!important;
+  min-height:var(--cally-v5-control)!important;
+  height:var(--cally-v5-control)!important;
+  width:auto!important;
+  min-width:var(--cally-v5-control)!important;
+  margin:0!important;
+  padding:0 14px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:14px!important;
+  background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  box-shadow:none!important;
+  font:inherit!important;
+  font-size:13px!important;
+  line-height:1!important;
+  font-weight:760!important;
+  letter-spacing:-.015em!important;
+}
+#callyHomeTile:hover,
+#perspectiveBtn:hover,
+#personBtn:hover,
+#callyMenuButton:hover{
+  border-color:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+  background:color-mix(in srgb,var(--cally-ui-accent,#087a59) 5%,var(--cally-ui-surface,#fbfaf6))!important;
+}
+#eventBtn{
+  border-color:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+  background:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+  color:#fff!important;
+}
+.callyTopActionIcon{
+  width:23px!important;
+  height:23px!important;
+  flex:0 0 23px!important;
+  display:grid!important;
+  place-items:center!important;
+  color:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+}
+#eventBtn .callyTopActionIcon{color:#fff!important}
+.callyTopActionIcon .callyIcon{
+  width:23px!important;
+  height:23px!important;
+  stroke-width:1.7!important;
+}
+.callyTopActionLabel{
+  display:inline!important;
+  color:inherit!important;
+  font:inherit!important;
+  white-space:nowrap!important;
+}
+
+/* =========================================================
+   ONE DRAWER SHELL FOR EVERY NON-PHONE SURFACE
+   This explicitly starts at 560px. Previous generations had a 560–759px
+   gap, which is why Fold devices showed legacy full-screen modals while the
+   Perspective composer slid in correctly.
+   ========================================================= */
+@media (min-width:560px){
+  :root{--cally-v5-drawer-w:min(560px,72vw)}
+
+  /* Perspective is itself the panel. */
+  #rightSide{
+    position:fixed!important;
+    top:var(--cally-v5-edge)!important;
+    right:var(--cally-v5-edge)!important;
+    bottom:var(--cally-v5-edge)!important;
+    left:auto!important;
+    width:var(--cally-v5-drawer-w)!important;
+    max-width:calc(100vw - (var(--cally-v5-edge) * 2))!important;
+    height:auto!important;
+    margin:0!important;
+    padding:24px 24px 28px!important;
+    z-index:10005!important;
+    overflow:auto!important;
+    overscroll-behavior:contain!important;
+    border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+    border-radius:var(--cally-v5-radius)!important;
+    background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+    color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+    box-shadow:var(--cally-v5-shadow)!important;
+    transform:translateX(calc(100% + 20px))!important;
+    opacity:0!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+    transition:transform .22s cubic-bezier(.2,.75,.25,1),opacity .16s ease,visibility 0s linear .22s!important;
+  }
+  #rightSide.open{
+    transform:none!important;
+    opacity:1!important;
+    visibility:visible!important;
+    pointer-events:auto!important;
+    transition-delay:0s!important;
+  }
+
+  /* Overlay roots become narrow right-hand rails, not full-screen worlds. */
+  #modalBack,
+  .stateOverlay,
+  #callyCalendarSettings,
+  #callyThemeSettings,
+  .callyTerminologyOverlay,
+  .callyQcdsStateCenter,
+  .callyLocaleAccess,
+  .manageOverlay{
+    position:fixed!important;
+    top:var(--cally-v5-edge)!important;
+    right:var(--cally-v5-edge)!important;
+    bottom:var(--cally-v5-edge)!important;
+    left:auto!important;
+    width:var(--cally-v5-drawer-w)!important;
+    max-width:calc(100vw - (var(--cally-v5-edge) * 2))!important;
+    height:auto!important;
+    margin:0!important;
+    padding:0!important;
+    z-index:10010!important;
+    overflow:visible!important;
+    background:transparent!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+    border:0!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    transform:translateX(calc(100% + 20px))!important;
+    opacity:0!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+    transition:transform .22s cubic-bezier(.2,.75,.25,1),opacity .16s ease,visibility 0s linear .22s!important;
+  }
+  #modalBack.callySurfaceOpen,
+  .stateOverlay.open,
+  #callyCalendarSettings.open,
+  #callyThemeSettings.open,
+  .callyTerminologyOverlay.open,
+  .callyQcdsStateCenter.open,
+  .callyLocaleAccess.open,
+  .manageOverlay.open{
+    transform:none!important;
+    opacity:1!important;
+    visibility:visible!important;
+    pointer-events:auto!important;
+    transition-delay:0s!important;
+  }
+
+  /* Settings menu itself follows the same physical rail. */
+  .callyMobileMenu{
+    position:fixed!important;
+    top:var(--cally-v5-edge)!important;
+    right:var(--cally-v5-edge)!important;
+    bottom:var(--cally-v5-edge)!important;
+    left:auto!important;
+    width:var(--cally-v5-drawer-w)!important;
+    max-width:calc(100vw - (var(--cally-v5-edge) * 2))!important;
+    height:auto!important;
+    max-height:none!important;
+    margin:0!important;
+    z-index:10008!important;
+    overflow:auto!important;
+    border-radius:var(--cally-v5-radius)!important;
+    box-shadow:var(--cally-v5-shadow)!important;
+    transform:translateX(calc(100% + 20px))!important;
+    opacity:0!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+    transition:transform .22s cubic-bezier(.2,.75,.25,1),opacity .16s ease,visibility 0s linear .22s!important;
+  }
+  .callyMobileMenu.open{
+    transform:none!important;
+    opacity:1!important;
+    visibility:visible!important;
+    pointer-events:auto!important;
+    transition-delay:0s!important;
+  }
+
+  /* Every inner sheet is literally the same sheet. */
+  #modalBack>.modal,
+  #modalBack>.dialog,
+  #modalBack>.card,
+  .stateOverlay>.stateSheet,
+  .stateOverlay .stateSheet,
+  #callyCalendarSettings>.callyCalendarSettingsSheet,
+  #callyThemeSettings>.callyThemeSheet,
+  .callyTerminologyOverlay>.callyTerminologySheet,
+  .callyQcdsStateCenter>.callyQcdsStateSheet,
+  .callyLocaleAccess>.callyLocaleAccessSheet,
+  .manageOverlay>.manageSheet{
+    box-sizing:border-box!important;
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    height:100%!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:24px 24px 0!important;
+    overflow:auto!important;
+    overscroll-behavior:contain!important;
+    border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+    border-radius:var(--cally-v5-radius)!important;
+    background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+    color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+    box-shadow:var(--cally-v5-shadow)!important;
+  }
+  .stateOverlay .stateSheet,
+  .callyTerminologyOverlay>.callyTerminologySheet,
+  .callyQcdsStateCenter>.callyQcdsStateSheet,
+  .callyLocaleAccess>.callyLocaleAccessSheet,
+  .manageOverlay>.manageSheet{padding-bottom:24px!important}
+
+  /* Keep ChatGPT visible, but never on top of an open drawer. */
+  body.callyDrawerActive .callyChatGPTBadge{
+    right:auto!important;
+    left:max(12px,env(safe-area-inset-left))!important;
+    bottom:max(12px,env(safe-area-inset-bottom))!important;
+  }
+}
+
+/* =========================================================
+   TYPOGRAPHY + HEADER GRAMMAR — SHARED BY ALL SURFACES
+   ========================================================= */
+.rightTop,
+#modalBack .callyEventHead,
+.stateOverlay .sheetHead,
+.callyCalendarSettingsHead,
+.callyThemeSheet>header,
+.callyTerminologyHead,
+.callyQcdsStateHead,
+.callyLocaleAccessHead,
+.manageSheet .sheetHead{
+  min-height:58px!important;
+  margin:0 0 18px!important;
+  padding:0 0 16px!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:space-between!important;
+  gap:16px!important;
+  border:0!important;
+  border-bottom:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  background:transparent!important;
+}
+.rightTop h3,
+#modalBack .callyEventHead h2,
+#modalBack #modalTitle,
+.stateOverlay .sheetHead h2,
+.callyCalendarSettingsHead h2,
+.callyThemeSheet>header h2,
+.callyTerminologyHead h2,
+.callyQcdsStateHead h2,
+.callyLocaleAccessHead h2,
+.manageSheet .sheetHead h2{
+  margin:0!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  font-size:var(--cally-v5-title)!important;
+  line-height:1.03!important;
+  font-weight:790!important;
+  letter-spacing:-.04em!important;
+  text-transform:none!important;
+}
+.rightTop h3{
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  font-size:var(--cally-v5-kicker)!important;
+  line-height:1!important;
+  font-weight:850!important;
+  letter-spacing:.16em!important;
+  text-transform:uppercase!important;
+}
+#modalBack .callyEventHead h2::before,
+#modalBack #modalTitle::before,
+.stateOverlay .sheetHead .eyebrow,
+.callyCalendarSettingsHead .eyebrow,
+.callyThemeEyebrow,
+.callyTerminologyHead small,
+.callyQcdsStateHead small,
+.callyLocaleAccessHead small,
+.manageSheet .eyebrow{
+  display:block!important;
+  margin:0 0 8px!important;
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  font-size:var(--cally-v5-kicker)!important;
+  line-height:1!important;
+  font-weight:850!important;
+  letter-spacing:.16em!important;
+  text-transform:uppercase!important;
+}
+.stateOverlay .sheetHead p,
+.callyCalendarSettingsHead p,
+.callyThemeSheet>header p,
+.callyTerminologyHead p,
+.callyQcdsStateHead p,
+.callyLocaleAccessHead p{
+  margin:7px 0 0!important;
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  font-size:12px!important;
+  line-height:1.45!important;
+}
+
+.closePanel,
+#closeModal,
+.callyEventClose,
+.stateOverlay .sheetClose,
+.stateOverlay [data-close-state],
+.callyCalendarSettingsClose,
+.callyThemeSheet [data-theme-close],
+.callyTerminologyHead>button,
+.callyQcdsStateHead>button,
+.callyLocaleAccessHead>button,
+.manageSheet [data-close-manage]{
+  width:44px!important;
+  min-width:44px!important;
+  height:44px!important;
+  min-height:44px!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  border:0!important;
+  border-radius:13px!important;
+  background:var(--cally-ui-bg,var(--cally-bg,#f4f3ee))!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  box-shadow:none!important;
+  font-size:22px!important;
+  line-height:1!important;
+}
+
+/* Labels, inputs, chips and buttons share one scale. */
+#modalBack label,
+.stateOverlay label,
+.callyCalendarSettings label,
+.callyThemeSettings label,
+.callyTerminologyOverlay label,
+.callyQcdsStateCenter label,
+.callyLocaleAccess label,
+.manageOverlay label{
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  font-size:var(--cally-v5-label)!important;
+  line-height:1.25!important;
+  font-weight:720!important;
+}
+#modalBack input:not([type="checkbox"]):not([type="radio"]),
+#modalBack select,#modalBack textarea,
+.stateOverlay input:not([type="checkbox"]):not([type="radio"]),
+.stateOverlay select,.stateOverlay textarea,
+.callyCalendarSettings input,.callyCalendarSettings select,
+.callyThemeSettings input:not([type="color"]),.callyThemeSettings select,
+.callyTerminologyOverlay input,.callyTerminologyOverlay select,
+.callyQcdsStateCenter input,.callyQcdsStateCenter select,.callyQcdsStateCenter textarea,
+.callyLocaleAccess input,.callyLocaleAccess select,
+.manageOverlay input,.manageOverlay select,.manageOverlay textarea{
+  min-height:46px!important;
+  padding:10px 12px!important;
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:12px!important;
+  background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  box-shadow:none!important;
+  font-size:15px!important;
+  line-height:1.2!important;
+}
+#modalBack input:focus,
+.stateOverlay input:focus,
+.callyCalendarSettings input:focus,
+.callyThemeSettings input:focus,
+.callyTerminologyOverlay input:focus,
+.callyQcdsStateCenter input:focus,
+.callyLocaleAccess input:focus,
+.manageOverlay input:focus{
+  outline:2px solid color-mix(in srgb,var(--cally-ui-accent,#087a59) 18%,transparent)!important;
+  outline-offset:1px!important;
+  border-color:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+}
+
+/* Calendar Space directory: same quiet stack rows as Perspective. */
+.stateOverlay .directoryTools{display:grid!important;gap:10px!important}
+.stateOverlay .kindTabs,
+.stateOverlay .stateActions{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:7px!important;
+}
+.stateOverlay .kindTabs button,
+.stateOverlay .stateActions button,
+#rightSide .suggestion,
+#rightSide .miniBtn{
+  min-height:36px!important;
+  padding:0 12px!important;
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:999px!important;
+  background:transparent!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  box-shadow:none!important;
+  font-size:12px!important;
+  line-height:1!important;
+  font-weight:690!important;
+}
+.stateOverlay .kindTabs button.active{
+  border-color:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+  background:color-mix(in srgb,var(--cally-ui-accent,#087a59) 8%,var(--cally-ui-surface,#fbfaf6))!important;
+  color:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+}
+.stateOverlay .stateActions button{border-style:dashed!important}
+.stateOverlay .stateDirectory{display:grid!important;gap:8px!important;margin-top:14px!important}
+.stateOverlay .stateCard{
+  padding:14px!important;
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:14px!important;
+  background:transparent!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  box-shadow:none!important;
+}
+.stateOverlay .stateCard .stateKind{
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  font-size:10px!important;
+  font-weight:850!important;
+  letter-spacing:.14em!important;
+  text-transform:uppercase!important;
+}
+.stateOverlay .stateCard>b{display:block!important;margin:5px 0 8px!important;font-size:17px!important;line-height:1.1!important}
+.stateOverlay .stateMeta,.stateOverlay .stateRelations{display:flex!important;flex-wrap:wrap!important;gap:6px!important}
+.stateOverlay .stateMeta span,.stateOverlay .stateRelations span{
+  padding:5px 8px!important;
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:999px!important;
+  background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+  color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;
+  font-size:10px!important;
+  line-height:1!important;
+}
+
+/* Event and person editors use compact content, never giant pill belts. */
+#modalBack .formGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+#modalBack .field.full{grid-column:1/-1!important}
+#modalBack #fTitle{min-height:54px!important;font-size:18px!important;font-weight:620!important}
+#modalBack .peopleChecks{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:7px!important;
+  max-height:210px!important;
+  overflow:auto!important;
+  padding:1px!important;
+}
+#modalBack .peopleChecks label{
+  min-height:40px!important;
+  margin:0!important;
+  padding:8px 10px!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  border-radius:11px!important;
+  background:transparent!important;
+  color:var(--cally-ui-ink,var(--cally-ink,#10231b))!important;
+  font-size:11px!important;
+  font-weight:680!important;
+}
+.stateOverlay .stateForm{display:grid!important;gap:12px!important}
+.stateOverlay .stateFormTwo{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
+.stateOverlay .stateLabel{color:var(--cally-ui-muted,var(--cally-muted,#68756f))!important;font-size:11px!important;font-weight:720!important}
+
+/* Primary action is the only filled accent inside a surface. */
+#modalBack .callyEventActions,
+#modalBack .modalActions,
+.callyThemeSheet>footer{
+  position:sticky!important;
+  bottom:0!important;
+  z-index:5!important;
+  display:flex!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+  margin:18px -24px 0!important;
+  padding:12px 24px max(12px,env(safe-area-inset-bottom))!important;
+  border-top:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+  background:color-mix(in srgb,var(--cally-ui-surface,#fbfaf6) 95%,transparent)!important;
+  backdrop-filter:blur(12px)!important;
+}
+#modalBack .callyEventActions button,
+#modalBack .modalActions button,
+.stateOverlay .statePrimary,
+.callyCalendarSettingsSave,
+.callyThemeSheet>footer button,
+.callyTerminologyOverlay button,
+.callyQcdsStateCenter button,
+.callyLocaleAccess button,
+.manageOverlay button{
+  min-height:40px!important;
+  padding:0 14px!important;
+  border-radius:10px!important;
+  box-shadow:none!important;
+  font-size:11px!important;
+  line-height:1!important;
+  font-weight:750!important;
+}
+.stateOverlay .statePrimary,
+.callyCalendarSettingsSave,
+.callyThemeSheet>footer .primary,
+#modalBack #saveEvent{
+  border-color:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+  background:var(--cally-ui-accent,var(--cally-accent,#087a59))!important;
+  color:#fff!important;
+}
+
+/* =========================================================
+   FOLD / TABLET TOP STRIP — IF SPACE IS TIGHT, ALL FIVE BECOME
+   IDENTICAL ICON BUTTONS. NEVER MIX ICON-ONLY AND TEXT BUTTONS.
+   ========================================================= */
+@media (min-width:560px) and (max-width:980px){
+  :root{--cally-v5-edge:8px;--cally-v5-control:48px}
+  #callyHomeTile,#perspectiveBtn,#personBtn,#eventBtn,#callyMenuButton{
+    width:48px!important;
+    min-width:48px!important;
+    padding:0!important;
+    border-radius:13px!important;
+  }
+  .callyTopActionLabel{display:none!important}
+  .topActions{gap:6px!important}
+  #modalBack>.modal,#modalBack>.dialog,#modalBack>.card,
+  .stateOverlay .stateSheet,
+  #callyCalendarSettings>.callyCalendarSettingsSheet,
+  #callyThemeSettings>.callyThemeSheet,
+  .callyTerminologyOverlay>.callyTerminologySheet,
+  .callyQcdsStateCenter>.callyQcdsStateSheet,
+  .callyLocaleAccess>.callyLocaleAccessSheet,
+  .manageOverlay>.manageSheet,
+  #rightSide{padding-left:20px!important;padding-right:20px!important}
+  #modalBack .callyEventActions,#modalBack .modalActions,.callyThemeSheet>footer{
+    margin-left:-20px!important;margin-right:-20px!important;padding-left:20px!important;padding-right:20px!important;
+  }
+}
+
+/* =========================================================
+   PHONE — EVERY SURFACE IS THE SAME BOTTOM SHEET
+   ========================================================= */
+@media (max-width:559px){
+  :root{--cally-v5-control:44px;--cally-v5-title:24px}
+  #callyHomeTile,#perspectiveBtn,#personBtn,#eventBtn,#callyMenuButton{
+    width:44px!important;min-width:44px!important;height:44px!important;min-height:44px!important;padding:0!important;border-radius:12px!important;
+  }
+  .callyTopActionLabel{display:none!important}
+  .callyTopActionIcon,.callyTopActionIcon .callyIcon{width:21px!important;height:21px!important;flex-basis:21px!important}
+
+  #rightSide,
+  #modalBack,
+  .stateOverlay,
+  #callyCalendarSettings,
+  #callyThemeSettings,
+  .callyTerminologyOverlay,
+  .callyQcdsStateCenter,
+  .callyLocaleAccess,
+  .manageOverlay,
+  .callyMobileMenu{
+    position:fixed!important;
+    inset:0!important;
+    width:100%!important;
+    max-width:none!important;
+    height:100%!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    border-radius:0!important;
+    background:rgba(16,35,27,.16)!important;
+    backdrop-filter:blur(6px)!important;
+    -webkit-backdrop-filter:blur(6px)!important;
+  }
+  #rightSide{
+    top:auto!important;
+    height:min(92dvh,760px)!important;
+    padding:18px 16px max(18px,env(safe-area-inset-bottom))!important;
+    border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+    border-radius:20px 20px 0 0!important;
+    background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+    box-shadow:0 -18px 50px rgba(12,28,22,.16)!important;
+  }
+  #modalBack,.stateOverlay,#callyCalendarSettings,#callyThemeSettings,.callyTerminologyOverlay,.callyQcdsStateCenter,.callyLocaleAccess,.manageOverlay{
+    align-items:flex-end!important;
+    justify-content:center!important;
+  }
+  #modalBack>.modal,#modalBack>.dialog,#modalBack>.card,
+  .stateOverlay .stateSheet,
+  #callyCalendarSettings>.callyCalendarSettingsSheet,
+  #callyThemeSettings>.callyThemeSheet,
+  .callyTerminologyOverlay>.callyTerminologySheet,
+  .callyQcdsStateCenter>.callyQcdsStateSheet,
+  .callyLocaleAccess>.callyLocaleAccessSheet,
+  .manageOverlay>.manageSheet,
+  .callyMobileMenu{
+    position:absolute!important;
+    left:0!important;right:0!important;bottom:0!important;top:auto!important;
+    width:100%!important;
+    max-width:none!important;
+    height:auto!important;
+    max-height:92dvh!important;
+    margin:0!important;
+    padding:18px 16px max(18px,env(safe-area-inset-bottom))!important;
+    overflow:auto!important;
+    border:1px solid var(--cally-ui-line,var(--cally-line,#d8ddd4))!important;
+    border-radius:20px 20px 0 0!important;
+    background:var(--cally-ui-surface,var(--cally-paper,#fbfaf6))!important;
+    box-shadow:0 -18px 50px rgba(12,28,22,.16)!important;
+  }
+  #modalBack .formGrid,.stateOverlay .stateFormTwo{grid-template-columns:1fr!important}
+  #modalBack .peopleChecks{grid-template-columns:1fr!important;max-height:180px!important}
+  #modalBack input:not([type="checkbox"]):not([type="radio"]),#modalBack select,#modalBack textarea,
+  .stateOverlay input:not([type="checkbox"]):not([type="radio"]),.stateOverlay select,.stateOverlay textarea{font-size:16px!important}
+  body.callyDrawerActive .callyChatGPTBadge{transform:scale(.88)!important;transform-origin:right bottom!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  #rightSide,#modalBack,.stateOverlay,#callyCalendarSettings,#callyThemeSettings,.callyTerminologyOverlay,.callyQcdsStateCenter,.callyLocaleAccess,.manageOverlay,.callyMobileMenu{transition:none!important}
+}
