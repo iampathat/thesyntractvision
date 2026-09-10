@@ -30,9 +30,11 @@ def cally_chatgpt_html(*, static_mode: bool = False) -> str:
             _asset("icon_system.css"),
             _asset("surface_language.css"),
             _asset("surface_editor_v2.css"),
-            # Final visual authority for Cally ChatGPT. Keep last so older
-            # generations cannot re-expand or recolor the drawers afterwards.
             _asset("surface_unification_v4.css"),
+            # Canonical visual authority. This is deliberately last: every
+            # visible Cally surface follows the same top-control, drawer,
+            # typography and Fold/phone contract.
+            _asset("surface_contract_v5.css"),
         ]
     )
     js = "\n".join(
@@ -43,8 +45,10 @@ def cally_chatgpt_html(*, static_mode: bool = False) -> str:
             _asset("chatgpt_interface.js"),
             _asset("icon_system.js"),
             _asset("surface_language.js"),
-            # Final copy normalizer: one language per visible surface.
             _asset("surface_copy_v4.js"),
+            # Final presentation normalizer: one top strip, one drawer family,
+            # one interface language. No state/inference semantics live here.
+            _asset("surface_contract_v5.js"),
         ]
     )
     html = html.replace(
