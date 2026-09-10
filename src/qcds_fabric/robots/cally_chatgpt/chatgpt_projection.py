@@ -49,6 +49,9 @@ def cally_chatgpt_html(*, static_mode: bool = False) -> str:
             # Final presentation normalizer: one top strip, one drawer family,
             # one interface language. No state/inference semantics live here.
             _asset("surface_contract_v5.js"),
+            # Narrow compatibility bridge only. Keeps the pre-existing menu
+            # layout and synchronizes its legacy hidden state with v5 .open.
+            _asset("hamburger_bridge.js"),
         ]
     )
     html = html.replace(
