@@ -134,11 +134,12 @@ def test_chatgpt_projection_contains_visible_five_port_interface() -> None:
         assert verb in html
     assert "resolve -> QCDS -> Syntract" in html
     assert "window.__callyChatGPT" in html
-    assert "Cally surface editor v3" in html
-    assert "#modalBack>.modal" in html
-    assert "Calendar Perspectives is the canonical visual reference" in html
-    assert "Cally.One surface unification v4" in html
-    assert "--cally-drawer-w:540px" in html
-    assert "#personBtn .actionIcon" in html
-    assert "window.__callySurfaceCopyV4" in html
+    assert "Cally.One surface contract v5" in html
+    assert "@media (min-width:560px)" in html
+    assert "#modalBack.callySurfaceOpen" in html
+    assert ".stateOverlay.open" in html
+    assert "#rightSide.open" in html
+    assert "callyTopActionLabel" in html
+    assert "window.__callySurfaceContractV5" in html
+    assert "Sök i Calendar Space" in html
     assert "Kopplade resurser och saker" in html
