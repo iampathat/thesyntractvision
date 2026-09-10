@@ -35,6 +35,9 @@ def cally_chatgpt_html(*, static_mode: bool = False) -> str:
             # visible Cally surface follows the same top-control, drawer,
             # typography and Fold/phone contract.
             _asset("surface_contract_v5.css"),
+            # Narrow menu-only guard. Do not let the hamburger panel collapse
+            # into a short floating box on Fold/tablet.
+            _asset("hamburger_bridge.css"),
         ]
     )
     js = "\n".join(
