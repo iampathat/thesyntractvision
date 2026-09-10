@@ -1,0 +1,25 @@
+/* Cally.One hamburger menu viewport guard.
+   Narrow scope: only the hamburger menu. It must never collapse into a short
+   floating box on Fold/tablet. Other drawers/modals keep their existing UI. */
+@media (min-width:560px){
+  #callyMobileMenu.callyMobileMenu{
+    top:10px!important;
+    right:10px!important;
+    bottom:10px!important;
+    left:auto!important;
+    height:calc(100dvh - 20px)!important;
+    max-height:calc(100dvh - 20px)!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    overscroll-behavior:contain!important;
+  }
+}
+
+@media (max-width:559px){
+  #callyMobileMenu.callyMobileMenu{
+    max-height:92dvh!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    overscroll-behavior:contain!important;
+  }
+}
