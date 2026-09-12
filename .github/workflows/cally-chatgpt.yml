@@ -109,6 +109,9 @@ jobs:
           assert 'Cally.One surface language' in html
           assert 'interface_and_calendar_are_independent' in html
           assert 'resolve -> QCDS -> Syntract' in html
+          assert '__callyCanonicalEventEntry' in html
+          assert '__callySurfaceIntegrityV6' in html
+          assert 'only one top-level Cally surface' in html
           PY
       - name: Validate ChatGPT, appearance, icon and surface JavaScript syntax
         run: |
@@ -116,3 +119,6 @@ jobs:
           node --check src/qcds_fabric/robots/cally_chatgpt/theme_system.js
           node --check src/qcds_fabric/robots/cally_chatgpt/icon_system.js
           node --check src/qcds_fabric/robots/cally_chatgpt/surface_language.js
+          node --check src/qcds_fabric/robots/cally_chatgpt/hamburger_bridge.js
+          node --check src/qcds_fabric/robots/cally_chatgpt/event_entry_bridge.js
+          node --check src/qcds_fabric/robots/cally_chatgpt/surface_integrity_v6.js
