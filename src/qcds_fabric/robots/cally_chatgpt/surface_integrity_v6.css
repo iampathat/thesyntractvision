@@ -1,0 +1,189 @@
+/* Cally.One surface integrity v6
+   Narrow final authority for layer hygiene and theme fidelity.
+   It does not introduce a new layout language: Perspective remains the reference.
+   It removes legacy green glows/shadows and makes Person quick-add obey the same
+   drawer/bottom-sheet geometry as the other top-level surfaces. */
+
+:root{
+  --cally-v6-shadow: -16px 0 42px color-mix(in srgb,var(--cally-ui-ink,#102033) 12%,transparent);
+  --cally-v6-shadow-up: 0 -16px 42px color-mix(in srgb,var(--cally-ui-ink,#102033) 12%,transparent);
+  --cally-v6-focus: color-mix(in srgb,var(--cally-ui-ink,#102033) 13%,transparent);
+}
+
+/* No surface may carry an old green-tinted depth treatment. */
+html body #rightSide,
+html body #callyMobileMenu,
+html body #modalBack>.modal,
+html body #modalBack>.dialog,
+html body #modalBack>.card,
+html body #callyStateOverlay .stateSheet,
+html body .stateOverlay .stateSheet,
+html body #callyCalendarSettings>.callyCalendarSettingsSheet,
+html body #callyThemeSettings>.callyThemeSheet,
+html body .callyTerminologyOverlay>.callyTerminologySheet,
+html body .callyQcdsStateCenter>.callyQcdsStateSheet,
+html body .callyLocaleAccess>.callyLocaleAccessSheet,
+html body .manageOverlay>.manageSheet,
+html body #callyQuickAdd{
+  border-color:var(--cally-ui-line,#d8e1ec)!important;
+  background:var(--cally-ui-surface,#fbfdff)!important;
+  color:var(--cally-ui-ink,#102033)!important;
+  box-shadow:var(--cally-v6-shadow)!important;
+}
+
+/* The currently selected interface palette owns all functional surface colour. */
+html body .eyebrow,
+html body .manageEyebrow,
+html body .callyQuickEyebrow,
+html body .callyThemeEyebrow,
+html body .callyPersonModuleEyebrow,
+html body .callyEventSection>h3,
+html body #modalBack .callyEventHead h2::before,
+html body #modalBack #modalTitle::before,
+html body .stateOverlay .stateKind{
+  color:var(--cally-ui-accent,#2f6feb)!important;
+}
+
+/* Old modules used #fff and greenish fills directly. Force them back through
+   interface palette variables so Blue/Dark/Modern are complete themes. */
+html body #modalBack input:not([type="checkbox"]):not([type="radio"]),
+html body #modalBack select,
+html body #modalBack textarea,
+html body .stateOverlay input:not([type="checkbox"]):not([type="radio"]),
+html body .stateOverlay select,
+html body .stateOverlay textarea,
+html body .manageOverlay input:not([type="checkbox"]):not([type="radio"]),
+html body .manageOverlay select,
+html body .manageOverlay textarea,
+html body #callyQuickAdd input:not([type="checkbox"]):not([type="radio"]),
+html body #callyQuickAdd select,
+html body #callyQuickAdd textarea{
+  background:var(--cally-ui-surface,#fbfdff)!important;
+  color:var(--cally-ui-ink,#102033)!important;
+  border-color:var(--cally-ui-line,#d8e1ec)!important;
+  box-shadow:none!important;
+}
+
+/* Accessible focus without the old mint/green halo. */
+html body #modalBack input:focus,
+html body #modalBack select:focus,
+html body #modalBack textarea:focus,
+html body .stateOverlay input:focus,
+html body .stateOverlay select:focus,
+html body .stateOverlay textarea:focus,
+html body .manageOverlay input:focus,
+html body .manageOverlay select:focus,
+html body .manageOverlay textarea:focus,
+html body #callyQuickAdd input:focus,
+html body #callyQuickAdd select:focus,
+html body #callyQuickAdd textarea:focus{
+  outline:2px solid var(--cally-v6-focus)!important;
+  outline-offset:1px!important;
+  border-color:color-mix(in srgb,var(--cally-ui-accent,#2f6feb) 58%,var(--cally-ui-line,#d8e1ec))!important;
+  box-shadow:none!important;
+}
+
+html body .stateOverlay .stateForm,
+html body .stateOverlay .stateFormTwo,
+html body #callyQuickAdd .callyQuickForm{
+  color:var(--cally-ui-ink,#102033)!important;
+}
+html body .stateOverlay .smallStateBtn,
+html body #callyQuickAdd button:not(.callyQuickSave),
+html body .manageOverlay button:not(.managePrimary){
+  background:var(--cally-ui-surface,#fbfdff)!important;
+  color:var(--cally-ui-ink,#102033)!important;
+  border-color:var(--cally-ui-line,#d8e1ec)!important;
+  box-shadow:none!important;
+}
+html body .stateOverlay .statePrimary,
+html body #callyQuickAdd .callyQuickSave,
+html body .manageOverlay .managePrimary{
+  background:var(--cally-ui-accent,#2f6feb)!important;
+  color:#fff!important;
+  border-color:var(--cally-ui-accent,#2f6feb)!important;
+  box-shadow:none!important;
+}
+html body #callyQuickAdd .callyPersonQuickDetails,
+html body #callyQuickAdd .callyPersonQuickDetails summary{
+  background:transparent!important;
+  color:var(--cally-ui-ink,#102033)!important;
+  border-color:var(--cally-ui-line,#d8e1ec)!important;
+  box-shadow:none!important;
+}
+
+/* Person quick-add used to be a separate popover generation. Keep its logic,
+   but physically present it as the same drawer as Perspective/Event/States. */
+@media (min-width:560px){
+  html body #callyQuickAdd:not([hidden]){
+    position:fixed!important;
+    top:var(--cally-v5-edge,10px)!important;
+    right:var(--cally-v5-edge,10px)!important;
+    bottom:var(--cally-v5-edge,10px)!important;
+    left:auto!important;
+    width:min(560px,72vw)!important;
+    max-width:calc(100vw - (var(--cally-v5-edge,10px) * 2))!important;
+    height:auto!important;
+    max-height:none!important;
+    padding:24px!important;
+    overflow:auto!important;
+    overscroll-behavior:contain!important;
+    border:1px solid var(--cally-ui-line,#d8e1ec)!important;
+    border-radius:var(--cally-v5-radius,22px)!important;
+    z-index:10020!important;
+    transform:none!important;
+  }
+  html body #callyQuickAdd .callyQuickHead{
+    min-height:58px!important;
+    margin:0 0 18px!important;
+    padding:0 0 16px!important;
+    display:flex!important;
+    align-items:flex-start!important;
+    justify-content:space-between!important;
+    gap:16px!important;
+    border-bottom:1px solid var(--cally-ui-line,#d8e1ec)!important;
+    background:transparent!important;
+  }
+  html body #callyQuickAdd .callyQuickTitle{
+    margin:0!important;
+    color:var(--cally-ui-ink,#102033)!important;
+    font-size:var(--cally-v5-title,28px)!important;
+    line-height:1.03!important;
+    font-weight:790!important;
+    letter-spacing:-.04em!important;
+  }
+  html body #callyQuickAdd .callyQuickClose{
+    width:44px!important;min-width:44px!important;height:44px!important;min-height:44px!important;
+    padding:0!important;display:grid!important;place-items:center!important;
+    border:0!important;border-radius:13px!important;
+    background:var(--cally-ui-bg,#f1f5f9)!important;color:var(--cally-ui-ink,#102033)!important;
+    box-shadow:none!important;font-size:22px!important;line-height:1!important;
+  }
+}
+
+@media (max-width:559px){
+  html body #callyQuickAdd:not([hidden]){
+    position:fixed!important;
+    left:0!important;right:0!important;bottom:0!important;top:auto!important;
+    width:100%!important;max-width:none!important;height:auto!important;max-height:92dvh!important;
+    padding:18px 16px max(18px,env(safe-area-inset-bottom))!important;
+    overflow:auto!important;
+    border:1px solid var(--cally-ui-line,#d8e1ec)!important;
+    border-radius:20px 20px 0 0!important;
+    box-shadow:var(--cally-v6-shadow-up)!important;
+    z-index:10020!important;
+  }
+}
+
+/* Defensive visual rule while JS resolves competing legacy open states: never
+   display the settings panel underneath another active surface. */
+body:has(#modalBack.callySurfaceOpen) #callyMobileMenu.open,
+body:has(#callyStateOverlay.open) #callyMobileMenu.open,
+body:has(#callyCalendarSettings.open) #callyMobileMenu.open,
+body:has(#callyThemeSettings.open) #callyMobileMenu.open,
+body:has(.manageOverlay.open) #callyMobileMenu.open,
+body:has(#callyQuickAdd:not([hidden])) #callyMobileMenu.open{
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
