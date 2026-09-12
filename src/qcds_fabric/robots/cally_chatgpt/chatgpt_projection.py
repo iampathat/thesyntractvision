@@ -38,6 +38,9 @@ def cally_chatgpt_html(*, static_mode: bool = False) -> str:
             # Narrow menu-only guard. Do not let the hamburger panel collapse
             # into a short floating box on Fold/tablet.
             _asset("hamburger_bridge.css"),
+            # Final narrow authority: remove legacy green depth/focus artifacts
+            # and make Person quick-add use the same physical surface grammar.
+            _asset("surface_integrity_v6.css"),
         ]
     )
     js = "\n".join(
@@ -55,9 +58,11 @@ def cally_chatgpt_html(*, static_mode: bool = False) -> str:
             # Narrow compatibility bridge only. Keeps the pre-existing menu
             # layout and synchronizes its legacy hidden state with v5 .open.
             _asset("hamburger_bridge.js"),
-            # Loaded last on purpose: every new-event trigger (top button,
-            # calendar cell, empty-state action) resolves to one editor path.
+            # Every new-event trigger resolves to the same editor path.
             _asset("event_entry_bridge.js"),
+            # Loaded last: legacy modules may own their content, but never more
+            # than one top-level Cally surface is allowed to remain visible.
+            _asset("surface_integrity_v6.js"),
         ]
     )
     html = html.replace(
