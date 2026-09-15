@@ -13,11 +13,18 @@ def make_oracle(cycle, previous):
 
 
 def test_parent_is_fresh_executable_inference_not_vote_count():
-    _, bound = Fabric42CellEngine(tuple("ABCDEFGH"), make_oracle(1, None)).run()
+    dims = tuple("ABCDEFGH")
+    target = 173
+    clauses = []
+    for bit_index, dim in enumerate(dims):
+        bit = (target >> bit_index) & 1
+        clauses.append(OracleClause(dim, frozenset({dim}), lambda a, dim=dim, bit=bit: a[dim] == bit))
+    _, bound = Fabric42CellEngine(dims, SemanticOracle(clauses)).run()
     parent = ParentInferenceEngine(max_candidates=8).run(bound)
     assert parent.provenance["child_full_distribution_consumed"] is True
-    assert parent.grover.state_count in (2, 4, 8)
-    assert parent.state_index_to_canonical
+    assert parent.grover.state_count == 8
+    assert parent.grover.iterations > 0
+    assert parent.state_index_to_canonical[parent.grover.top_state] == target
 
 
 def test_recursive_run_executes_at_least_two_cycles_with_oracle_versions():
