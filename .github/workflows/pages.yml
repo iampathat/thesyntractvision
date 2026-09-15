@@ -1,10 +1,11 @@
-name: Living Logical Robot + Cally.One + Cally ChatGPT Pages
+name: Living Logical Robot + Cally.One + Cally ChatGPT + Fabric 4.2 Pages
 
 on:
   push:
     branches: [main]
     paths:
       - "src/qcds_fabric/**"
+      - "qcds_fabric_4_2/**"
       - "robots/legal/sweden_housing/**"
       - "web/session_core_worker.js"
       - "web/assets/**"
@@ -164,6 +165,37 @@ jobs:
           page.write_text(html, encoding='utf-8')
           PY
 
+      - name: Build QCDS Fabric 4.2 proof surface
+        run: |
+          python - <<'PY'
+          import shutil
+          from pathlib import Path
+
+          source = Path('qcds_fabric_4_2')
+          out = Path('_site/qcds-fabric-4-2')
+          (out / 'results').mkdir(parents=True, exist_ok=True)
+          (out / 'docs').mkdir(parents=True, exist_ok=True)
+
+          for name in ('index.html', 'style.css', 'app.js'):
+              shutil.copy2(source / 'proof' / name, out / name)
+
+          index = out / 'index.html'
+          html = index.read_text(encoding='utf-8')
+          html = html.replace('../results/validation.json', './results/validation.json')
+          html = html.replace('../docs/CANONICAL_SPEC.md', './docs/CANONICAL_SPEC.md')
+          index.write_text(html, encoding='utf-8')
+
+          app = out / 'app.js'
+          js = app.read_text(encoding='utf-8')
+          js = js.replace("fetch('../results/validation.json'", "fetch('./results/validation.json'")
+          app.write_text(js, encoding='utf-8')
+
+          shutil.copy2(source / 'results' / 'validation.json', out / 'results' / 'validation.json')
+          shutil.copy2(source / 'results' / 'VALIDATION.md', out / 'results' / 'VALIDATION.md')
+          shutil.copy2(source / 'docs' / 'CANONICAL_SPEC.md', out / 'docs' / 'CANONICAL_SPEC.md')
+          shutil.copy2(source / 'docs' / 'ARCHITECTURE.md', out / 'docs' / 'ARCHITECTURE.md')
+          PY
+
       - name: Build isolated Cally.One Pages surface from tribute
         run: |
           python - <<'PY'
@@ -224,6 +256,29 @@ jobs:
                       archive.write(path, path.relative_to(root / 'src'))
           PY
           touch _site/.nojekyll
+
+      - name: Validate QCDS Fabric 4.2 proof surface
+        run: |
+          test -s _site/qcds-fabric-4-2/index.html
+          test -s _site/qcds-fabric-4-2/style.css
+          test -s _site/qcds-fabric-4-2/app.js
+          test -s _site/qcds-fabric-4-2/results/validation.json
+          test -s _site/qcds-fabric-4-2/docs/CANONICAL_SPEC.md
+          grep -F 'QCDS Fabric 4.2' _site/qcds-fabric-4-2/index.html
+          grep -F 'The peak is not iteration 3.' _site/qcds-fabric-4-2/index.html
+          grep -F './results/validation.json' _site/qcds-fabric-4-2/index.html
+          grep -F "fetch('./results/validation.json'" _site/qcds-fabric-4-2/app.js
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path('_site/qcds-fabric-4-2/results/validation.json').read_text(encoding='utf-8'))
+          assert data['status'] == 'PASS'
+          assert data['grover_256_single_target']['peak_iteration'] == 12
+          assert data['grover_256_single_target']['max_iterations'] == 40
+          assert data['parent_inference']['parent_iterations'] > 0
+          assert data['large_fabric_schedule']['max_width'] == 512
+          assert data['large_fabric_schedule']['depth'] == 12
+          PY
 
       - name: Validate isolated Cally.One surface
         run: |
@@ -301,7 +356,7 @@ jobs:
         run: |
           echo '### GitHub Pages is not enabled yet' >> "$GITHUB_STEP_SUMMARY"
           echo '' >> "$GITHUB_STEP_SUMMARY"
-          echo 'The combined Living Logical Robot + Cally.One + Cally ChatGPT site was built and uploaded successfully.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'The combined Living Logical Robot + Cally.One + Cally ChatGPT + QCDS Fabric 4.2 site was built and uploaded successfully.' >> "$GITHUB_STEP_SUMMARY"
 
   deploy:
     if: needs.build.outputs.pages_ready == 'true'
