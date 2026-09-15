@@ -32,13 +32,18 @@ def main() -> None:
     peak_run = run_grover(256, {173}, max_iterations=max_iterations)
 
     dims = tuple("ABCDEFGH")
-    oracle = SemanticOracle(
-        [
-            OracleClause("A_and_D", frozenset({"A", "D"}), lambda a: a["A"] == 1 and a["D"] == 1),
-            OracleClause("F", frozenset({"F"}), lambda a: a["F"] == 1),
-        ],
-        version="validation-v1",
-    )
+    target_state = 173
+    clauses = []
+    for bit_index, dim in enumerate(dims):
+        target_bit = (target_state >> bit_index) & 1
+        clauses.append(
+            OracleClause(
+                f"target_{dim}",
+                frozenset({dim}),
+                lambda assignment, dim=dim, target_bit=target_bit: assignment[dim] == target_bit,
+            )
+        )
+    oracle = SemanticOracle(clauses, version="validation-v1")
     t0 = time.perf_counter()
     lanes, bound = Fabric42CellEngine(dims, oracle, max_workers=8).run(bank_id=0)
     cell_ms = (time.perf_counter() - t0) * 1000
