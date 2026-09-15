@@ -70,6 +70,17 @@ REQUIRED_PACKAGE_FILES = (
 )
 
 
+def publish_static_companions(site: str | Path) -> None:
+    """Copy standalone public surfaces into the final Pages artifact when present."""
+    root = Path(site)
+    source = Path("superintelligence-asi") / "index.html"
+    if not source.is_file():
+        return
+    target = root / "superintelligence-asi" / "index.html"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+
+
 def validate_public_site(site: str | Path) -> None:
     root = Path(site)
     errors: list[str] = []
@@ -190,6 +201,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Validate the exact static public QCDS release before Pages upload.")
     parser.add_argument("--site", required=True, help="Built static site directory")
     args = parser.parse_args()
+    publish_static_companions(args.site)
     validate_public_site(args.site)
     print(f"PUBLIC RELEASE OK · BUILD {PUBLIC_BUILD}")
     return 0
