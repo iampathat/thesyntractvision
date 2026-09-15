@@ -1,0 +1,158 @@
+{
+  "adaptive_rotation": {
+    "request_count": 11,
+    "second_order_requests": 3
+  },
+  "architecture_author": "Patrik Sundblom",
+  "claims": {
+    "hardware_qpu_validation_complete": false,
+    "held_out_adversarial_suite_complete": false,
+    "high_peak_equals_external_truth": false,
+    "local_registers_are_one_global_quantum_register": false,
+    "rotation_automatically_removes_bias": false
+  },
+  "grover_256_single_target": {
+    "envelope": [
+      0.00390625,
+      0.034790992736816,
+      0.094637722009793,
+      0.179720628257257,
+      0.284742802032651,
+      0.403165997654157,
+      0.527617677308424,
+      0.650349994727914,
+      0.763722144018591,
+      0.860676044597172,
+      0.935175748063381,
+      0.982583211354746,
+      0.999947042103274,
+      0.986186240103673,
+      0.942157495910118,
+      0.87060185682958,
+      0.775974080666146,
+      0.664165300945616,
+      0.542136269335161,
+      0.417484008066389,
+      0.297968850787624,
+      0.191031316323595,
+      0.103328892781803,
+      0.040321569909113,
+      0.005931922737881,
+      0.002300908306357,
+      0.029654578538377,
+      0.086290007186587,
+      0.168681306969422,
+      0.271699136713876,
+      0.388930032898263,
+      0.513075685335321,
+      0.636407299744912,
+      0.75124676048386,
+      0.850444638233701,
+      0.927825283866942,
+      0.978571298790692,
+      0.999523446236019,
+      0.98937733225796,
+      0.948764611901537,
+      0.880213664974096
+    ],
+    "explicit_iteration_40_probability": 0.8802136649740957,
+    "marked_count": 1,
+    "max_iterations": 40,
+    "peak_iteration": 12,
+    "peak_probability": 0.9999470421032736,
+    "peak_run_marked_mass": 0.9999470421032738,
+    "peak_run_top_state": 173,
+    "state_count": 256
+  },
+  "implementation_assistance": "ChatGPT",
+  "large_fabric_schedule": {
+    "coherent_register_claim": false,
+    "completed_nodes": 2037,
+    "depth": 12,
+    "expands_after_contraction": true,
+    "layer_barriers": 11,
+    "max_width": 512,
+    "parallel_layers": 11,
+    "provenance_count": 2037,
+    "scheduler_runtime_ms": 61.551,
+    "widths": [
+      512,
+      512,
+      256,
+      128,
+      256,
+      128,
+      64,
+      128,
+      32,
+      16,
+      4,
+      1
+    ]
+  },
+  "nisq_mapping": {
+    "a_physical_positions": [
+      "q0",
+      "q1",
+      "q2",
+      "q3",
+      "q4",
+      "q5",
+      "q6",
+      "q7"
+    ],
+    "mapping_count": 8
+  },
+  "parent_inference": {
+    "candidate_count": 8,
+    "full_child_distribution_consumed": true,
+    "parent_iterations": 0,
+    "parent_state_count": 8
+  },
+  "rotational_cell": {
+    "bound_state_count": 256,
+    "bound_top_probability": 0.031196686322934684,
+    "bound_top_state": 41,
+    "cell_runtime_ms": 5.527,
+    "contradictions": [
+      "complementary views disagree on lifted top state: 41:5, 0:2, 9:1"
+    ],
+    "dimension_influence": {
+      "A": 0.8732939623339099,
+      "B": 0.0014924146192151287,
+      "C": 0.0014924146192151287,
+      "D": 0.8732939623339099,
+      "E": 0.0014924146192151287,
+      "F": 0.49849630337167045,
+      "G": 0.0014924146192151287,
+      "H": 0.0014924146192151287
+    },
+    "dimensional_necessity": {
+      "A": 0.027290436322934684,
+      "B": 0.0,
+      "C": 0.0,
+      "D": 0.027290436322934684,
+      "E": 0.0,
+      "F": 0.015571686322934684,
+      "G": 0.0,
+      "H": 0.0
+    },
+    "excluded_dimensions": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H"
+    ],
+    "full_distributions": true,
+    "lane_state_count": 128,
+    "lanes": 8,
+    "semantic_dimensions": 8
+  },
+  "schema": "qcds-fabric-4.2-validation-v1",
+  "status": "PASS",
+  "version": "4.2.0-alpha.1"
+}
