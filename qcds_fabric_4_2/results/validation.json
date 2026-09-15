@@ -74,7 +74,7 @@
     "max_width": 512,
     "parallel_layers": 11,
     "provenance_count": 2037,
-    "scheduler_runtime_ms": 61.551,
+    "scheduler_runtime_ms": 72.773,
     "widths": [
       512,
       512,
@@ -106,36 +106,36 @@
   "parent_inference": {
     "candidate_count": 8,
     "full_child_distribution_consumed": true,
-    "parent_iterations": 0,
+    "parent_iterations": 6,
     "parent_state_count": 8
   },
   "rotational_cell": {
     "bound_state_count": 256,
-    "bound_top_probability": 0.031196686322934684,
-    "bound_top_state": 41,
-    "cell_runtime_ms": 5.527,
+    "bound_top_probability": 0.9989447714587656,
+    "bound_top_state": 173,
+    "cell_runtime_ms": 6.726,
     "contradictions": [
-      "complementary views disagree on lifted top state: 41:5, 0:2, 9:1"
+      "complementary views disagree on lifted top state: 173:3, 172:1, 169:1, 165:1, 141:1, 45:1"
     ],
     "dimension_influence": {
-      "A": 0.8732939623339099,
-      "B": 0.0014924146192151287,
-      "C": 0.0014924146192151287,
-      "D": 0.8732939623339099,
-      "E": 0.0014924146192151287,
-      "F": 0.49849630337167045,
-      "G": 0.0014924146192151287,
-      "H": 0.0014924146192151287
+      "A": 0.49974724554514566,
+      "B": 0.49974724554514566,
+      "C": 0.49974724554514566,
+      "D": 0.49974724554514566,
+      "E": 0.49974724554514566,
+      "F": 0.49974724554514566,
+      "G": 0.49974724554514566,
+      "H": 0.49974724554514566
     },
     "dimensional_necessity": {
-      "A": 0.027290436322934684,
-      "B": 0.0,
-      "C": 0.0,
-      "D": 0.027290436322934684,
-      "E": 0.0,
-      "F": 0.015571686322934684,
-      "G": 0.0,
-      "H": 0.0
+      "A": 0.4991798605874771,
+      "B": 0.4991798605874771,
+      "C": 0.4991798605874771,
+      "D": 0.4991798605874771,
+      "E": 0.4991798605874771,
+      "F": 0.4991798605874771,
+      "G": 0.4991798605874771,
+      "H": 0.4991798605874771
     },
     "excluded_dimensions": [
       "A",
