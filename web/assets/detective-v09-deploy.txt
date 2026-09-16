@@ -1,0 +1,2 @@
+Detective v0.9 deploy trigger
+Camera status top-right; compact Camera/Voice pills; Photo/Film mode; video capture support.
