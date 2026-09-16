@@ -1,0 +1,95 @@
+name: Patch Detective v0.9 camera UI
+
+on:
+  push:
+    paths:
+      - '.github/workflows/detective-v09-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch Detective
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('web/detective/index.html')
+          s = p.read_text()
+
+          def rep(old, new, label):
+              global s
+              if old not in s:
+                  raise SystemExit(f'Missing patch target: {label}')
+              s = s.replace(old, new, 1)
+
+          rep('.camera.off:before{content:"Kamera av";color:#6f8499;font-weight:800}', '', 'remove centered camera-off text')
+
+          rep('.voicePill.on,.cameraPill.on{border-color:#22d3ee;color:#a5f3fc}', '.voicePill.on,.cameraPill.on{border-color:#22d3ee;color:#a5f3fc}.cameraStatus .pill{padding:5px 8px;font-size:.68rem;line-height:1}.modeSwitch{display:flex;border:1px solid #94a3b83d;border-radius:999px;overflow:hidden;background:#020812e0}.modeBtn{border:0;background:transparent;color:#8fa5b9;padding:5px 8px;font-size:.68rem;font-weight:850;cursor:pointer}.modeBtn.on{background:#164e63;color:#ecfeff}.modeBtn:disabled{opacity:.55;cursor:not-allowed}.shutter.recording{background:#ef4444;border-color:#fecaca}.shutter.recording:after{inset:18px;border-radius:7px;background:#7f1d1d;border:0}', 'compact camera status and mode styles')
+
+          rep('<div class="cameraStatus"><span id="cameraPill" class="pill cameraPill">Kamera av</span><span id="voicePill" class="pill voicePill">Röst av</span></div>', '<div class="cameraStatus"><span id="cameraPill" class="pill cameraPill">Kamera av</span><span id="voicePill" class="pill voicePill">Röst av</span><div class="modeSwitch"><button id="photoModeBtn" class="modeBtn on" type="button">Foto</button><button id="filmModeBtn" class="modeBtn" type="button">Film</button></div></div>', 'top-right status and photo-film switch')
+
+          rep('<input id="cameraInput" class="hidden" type="file" accept="image/*" capture="environment">', '<input id="cameraInput" class="hidden" type="file" accept="image/*" capture="environment"><input id="filmInput" class="hidden" type="file" accept="video/*" capture="environment">', 'film fallback input')
+
+          rep("cameraPill:$('cameraPill'),voice:$('voiceBtn')", "cameraPill:$('cameraPill'),photoMode:$('photoModeBtn'),filmMode:$('filmModeBtn'),voice:$('voiceBtn')", 'mode elements')
+          rep("cameraInput:$('cameraInput'),audio:$('audioBtn')", "cameraInput:$('cameraInput'),filmInput:$('filmInput'),audio:$('audioBtn')", 'film input element')
+
+          rep("let db,stream=null,recorder=null,audioChunks=[],activeSeries=null", "let db,stream=null,recorder=null,audioChunks=[],cameraMode='photo',videoRecorder=null,videoChunks=[],filmAudioStream=null,activeSeries=null", 'film state')
+
+          old_camera = '''async function cameraOn(){try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:2560},height:{ideal:1920}},audio:false});el.video.srcObject=stream;el.cameraBox.classList.remove('off');el.shutter.disabled=false;el.camera.textContent='Kamera';el.camera.classList.add('on');el.cameraPill.textContent='Kamera på';el.cameraPill.classList.add('on');status('Kameran är aktiv.')}catch(e){console.warn(e);el.cameraPill.textContent='Kamera av';el.cameraPill.classList.remove('on');status('Direktkamera kunde inte öppnas. Öppnar mobilens kamera istället.');el.cameraInput.click()}}function cameraOff(){stream?.getTracks().forEach(t=>t.stop());stream=null;el.video.srcObject=null;el.cameraBox.classList.add('off');el.shutter.disabled=true;el.camera.textContent='Kamera';el.camera.classList.remove('on');el.cameraPill.textContent='Kamera av';el.cameraPill.classList.remove('on');status('Kameran av.')}function toggleCamera(){stream?cameraOff():cameraOn()}function capture(){if(!stream||!el.video.videoWidth){el.cameraInput.click();return}const c=el.canvas;c.width=el.video.videoWidth;c.height=el.video.videoHeight;c.getContext('2d').drawImage(el.video,0,0,c.width,c.height);c.toBlob(b=>{if(b)queueIngest(b,`capture-${Date.now()}.jpg`,'camera')},'image/jpeg',.94)}'''
+          new_camera = '''function cameraUI(){const on=!!stream;el.cameraPill.textContent=on?'Kamera på':'Kamera av';el.cameraPill.classList.toggle('on',on);el.camera.classList.toggle('on',on);el.camera.textContent='Kamera';el.cameraBox.classList.toggle('off',!on);el.shutter.disabled=!on;el.photoMode.classList.toggle('on',cameraMode==='photo');el.filmMode.classList.toggle('on',cameraMode==='film');el.photoMode.disabled=!!videoRecorder;el.filmMode.disabled=!!videoRecorder;el.shutter.title=cameraMode==='photo'?'Ta foto':videoRecorder?'Stoppa film':'Starta film';el.shutter.setAttribute('aria-label',el.shutter.title);el.shutter.classList.toggle('recording',!!videoRecorder)}
+async function cameraOn(){try{if(stream)return;stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:2560},height:{ideal:1920}},audio:false});el.video.srcObject=stream;cameraUI();status('Kameran är aktiv.')}catch(e){console.warn(e);stream=null;cameraUI();status('Direktkamera kunde inte öppnas. Öppnar mobilens kamera istället.');(cameraMode==='film'?el.filmInput:el.cameraInput).click()}}
+async function cameraOff(){if(videoRecorder)await stopFilm();stream?.getTracks().forEach(t=>t.stop());stream=null;el.video.srcObject=null;cameraUI();status('Kameran av.')}
+function toggleCamera(){stream?cameraOff():cameraOn()}
+function setCameraMode(mode){if(videoRecorder)return;cameraMode=mode==='film'?'film':'photo';cameraUI();status(cameraMode==='photo'?'Fotoläge.':'Filmläge. Tryck på slutaren för start/stop.')}
+function capturePhoto(){if(!stream||!el.video.videoWidth){el.cameraInput.click();return}const c=el.canvas;c.width=el.video.videoWidth;c.height=el.video.videoHeight;c.getContext('2d').drawImage(el.video,0,0,c.width,c.height);c.toBlob(b=>{if(b)queueIngest(b,`foto-${Date.now()}.jpg`,'camera-photo')},'image/jpeg',.94)}
+function preferredVideoMime(){for(const t of ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'])if(MediaRecorder.isTypeSupported?.(t))return t;return ''}
+async function startFilm(){if(!stream){el.filmInput.click();return}try{let tracks=[...stream.getVideoTracks()];try{filmAudioStream=await navigator.mediaDevices.getUserMedia({audio:true});tracks.push(...filmAudioStream.getAudioTracks())}catch{filmAudioStream=null;status('Film spelas in utan ljud eftersom mikrofonen inte gavs åtkomst.')}const filmStream=new MediaStream(tracks),mime=preferredVideoMime();videoChunks=[];videoRecorder=new MediaRecorder(filmStream,mime?{mimeType:mime}:undefined);videoRecorder.ondataavailable=e=>{if(e.data.size)videoChunks.push(e.data)};videoRecorder.onstop=()=>{const type=videoRecorder?.mimeType||mime||'video/webm',blob=new Blob(videoChunks,{type});filmAudioStream?.getTracks().forEach(t=>t.stop());filmAudioStream=null;videoRecorder=null;videoChunks=[];cameraUI();if(blob.size)queueIngest(blob,`film-${new Date().toISOString().replace(/[:.]/g,'-')}.webm`,'camera-film')};videoRecorder.start(1000);cameraUI();status('Filminspelning pågår…')}catch(e){videoRecorder=null;cameraUI();status(`Kunde inte starta film: ${e.message}`)}}
+async function stopFilm(){if(videoRecorder&&videoRecorder.state!=='inactive'){videoRecorder.stop();status('Filmen avslutas och sparas…')}}
+function shutterAction(){cameraMode==='film'?(videoRecorder?stopFilm():startFilm()):capturePhoto()}'''
+          rep(old_camera, new_camera, 'camera and film behavior')
+
+          rep("if(exactCommand('photo',low)){capture();return}", "if(exactCommand('photo',low)){if(cameraMode!=='photo')setCameraMode('photo');capturePhoto();return}", 'voice photo behavior')
+
+          rep("el.camera.onclick=toggleCamera;el.shutter.onclick=capture;el.voice.onclick=toggleVoice;", "el.camera.onclick=toggleCamera;el.shutter.onclick=shutterAction;el.photoMode.onclick=()=>setCameraMode('photo');el.filmMode.onclick=()=>setCameraMode('film');el.voice.onclick=toggleVoice;", 'camera controls binding')
+          rep("el.cameraInput.onchange=()=>{const f=el.cameraInput.files?.[0];if(f)queueIngest(f,f.name||`capture-${Date.now()}.jpg`,'camera');el.cameraInput.value=''};", "el.cameraInput.onchange=()=>{const f=el.cameraInput.files?.[0];if(f)queueIngest(f,f.name||`foto-${Date.now()}.jpg`,'camera-photo');el.cameraInput.value=''};el.filmInput.onchange=()=>{const f=el.filmInput.files?.[0];if(f)queueIngest(f,f.name||`film-${Date.now()}.mp4`,'camera-film');el.filmInput.value=''};", 'camera file fallbacks')
+
+          rep("if(source==='camera')name=`${a.name} · sida ${pageNo}`", "if(source==='camera'||source==='camera-photo')name=`${a.name} · foto ${pageNo}`;if(source==='camera-film')name=`${a.name} · film ${pageNo}`", 'series naming for photo and film')
+
+          rep('Detective v0.8 · clear camera and voice status · metadata control · local-first evidence capture', 'Detective v0.9 · foto/film · tydlig kamerastatus · metadata control · local-first evidence capture', 'footer version')
+          rep("voiceUI();renderVoiceGuide();await render();", "voiceUI();cameraUI();renderVoiceGuide();await render();", 'initial camera UI')
+          rep("status('Redo. Metadata kan granskas och rensas per objekt.')", "status('Redo. Kamera, röst och Foto/Film visas uppe till höger.')", 'ready message')
+
+          p.write_text(s)
+          PY
+
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('web/detective/index.html').read_text()
+          a=s.index('<script>')+8
+          b=s.index('</script>')
+          Path('/tmp/detective.js').write_text(s[a:b])
+          PY
+          node --check /tmp/detective.js
+          grep -q 'camera.off:before' web/detective/index.html && { echo 'Centered camera text still exists'; exit 1; } || true
+          grep -q 'id="filmModeBtn"' web/detective/index.html
+          grep -q 'function startFilm' web/detective/index.html
+
+      - name: Commit patch
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo 'No changes to commit'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add web/detective/index.html
+          git commit -m 'Fix Detective camera status and add photo-film mode'
+          git push
