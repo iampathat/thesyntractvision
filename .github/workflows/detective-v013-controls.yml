@@ -1,0 +1,44 @@
+name: Build Detective Collector v0.13 controls
+
+on:
+  push:
+    paths:
+      - '.github/workflows/detective-v013-controls.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply control cleanup
+        run: python tools/patch_detective_collector_v013.py
+      - name: Validate Collector controls
+        shell: bash
+        run: |
+          grep -q 'Röststyrning av' web/detective/index.html
+          grep -q 'Spela in ljudspår' web/detective/index.html
+          grep -q '<div class="cameraDock"><button id="shutterBtn"' web/detective/index.html
+          grep -q 'el.cameraPill.onclick=toggleCamera' web/detective/index.html
+          grep -q 'el.voicePill.onclick=toggleVoice' web/detective/index.html
+          grep -q 'Detective Collector v0.13' web/detective/index.html
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('web/detective/index.html').read_text()
+          a=s.index('<script>')+8
+          b=s.index('</script>')
+          Path('/tmp/detective.js').write_text(s[a:b])
+          PY
+          node --check /tmp/detective.js
+      - name: Commit cleanup
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add web/detective/index.html
+          git commit -m 'Simplify Detective Collector capture controls'
+          git push
