@@ -1,0 +1,42 @@
+name: Build Detective Collector v0.21 destination-first
+on:
+  push:
+    paths:
+      - 'tools/patch_detective_collector_v021.py'
+      - '.github/workflows/detective-v021-destination-first.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply destination-first UX
+        run: python tools/patch_detective_collector_v021.py
+      - name: Validate Collector
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('web/detective/index.html').read_text()
+          assert 'Ingen serie vald' in s
+          assert 'Välj befintlig serie' in s
+          assert '＋ Ny serie' in s
+          assert 'changeSeriesBtn' in s
+          assert 'existingSeriesSelect' in s
+          assert 'Detective Collector v0.21' in s
+          assert s.count('id="fileInput"') == 1
+          assert s.count('id="cameraInput"') == 1
+          assert s.count('id="filmInput"') == 1
+          assert s.index('class="card setupCard simpleSetup"') < s.index('id="cameraBox"')
+          js=re.search(r'<script>([\s\S]*)</script>',s).group(1)
+          Path('/tmp/detective.js').write_text(js)
+          PY
+          node --check /tmp/detective.js
+      - name: Commit destination-first UX
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add web/detective/index.html
+          git commit -m 'Simplify Detective Collector series destination'
+          git push
