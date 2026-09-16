@@ -1,246 +1,68 @@
 <!doctype html>
 <html lang="sv">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#111827">
-  <title>Detective — UOS Capture</title>
-  <style>
-    :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#f8fafc;background:#0b1020;color-scheme:dark}
-    *{box-sizing:border-box} body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#1f2937 0,#0b1020 38%,#050816 100%);color:#f8fafc}
-    button,input,textarea{font:inherit} button{cursor:pointer}.wrap{max-width:980px;margin:auto;padding:18px 14px 48px}.top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:16px}
-    h1{font-size:clamp(2rem,7vw,4rem);line-height:.95;margin:0 0 6px;letter-spacing:-.055em}.sub{margin:0;color:#b9c3d5;max-width:620px}.badge{display:inline-flex;gap:8px;align-items:center;padding:8px 11px;border:1px solid #2e3b55;border-radius:999px;background:#101827;color:#cbd5e1;font-size:.84rem}.dot{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 0 4px rgba(52,211,153,.1)}
-    .card{background:rgba(15,23,42,.84);border:1px solid #26334a;border-radius:22px;padding:16px;box-shadow:0 22px 80px rgba(0,0,0,.25);backdrop-filter:blur(12px);margin:14px 0}.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:14px}@media(max-width:760px){.grid{grid-template-columns:1fr}}
-    .camera{position:relative;aspect-ratio:4/3;border-radius:18px;overflow:hidden;background:#020617;border:1px solid #334155;display:grid;place-items:center}.camera video{width:100%;height:100%;object-fit:cover}.camera .hint{position:absolute;inset:auto 12px 12px;background:rgba(2,6,23,.75);padding:8px 10px;border-radius:12px;color:#cbd5e1;font-size:.85rem}.camera.off video{display:none}.camera.off:before{content:"Kamera av";color:#64748b;font-weight:700}
-    .actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.btn{border:0;border-radius:15px;padding:13px 14px;font-weight:800;background:#25324a;color:#f8fafc}.btn.primary{background:#f8fafc;color:#0f172a}.btn.accent{background:#67e8f9;color:#083344}.btn.warn{background:#3f1d2e;color:#fecdd3}.btn:disabled{opacity:.45;cursor:not-allowed}.btn.link{display:inline-flex;text-decoration:none;align-items:center;justify-content:center}
-    .small{font-size:.84rem;color:#94a3b8}.status{margin-top:10px;padding:10px 12px;background:#0b1325;border:1px solid #26344d;border-radius:13px;color:#cbd5e1;min-height:42px}.status strong{color:#f8fafc}
-    .section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.section-head h2{margin:0;font-size:1.15rem}.count{font-variant-numeric:tabular-nums;color:#93c5fd}.items{display:grid;gap:10px}.item{border:1px solid #29364d;background:#0c1426;border-radius:16px;padding:11px;display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}.thumb{width:56px;height:56px;border-radius:12px;background:#111c31;border:1px solid #334155;overflow:hidden;display:grid;place-items:center;color:#94a3b8;font-size:.8rem}.thumb img{width:100%;height:100%;object-fit:cover}.item h3{margin:0 0 4px;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52vw}.meta{color:#94a3b8;font-size:.78rem;line-height:1.45}.item-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mini{border:1px solid #334155;background:#172033;color:#e2e8f0;padding:7px 9px;border-radius:10px;font-size:.78rem;font-weight:700}.mini.danger{border-color:#5b2637;color:#fda4af;background:#2a1320}
-    .archive-row{display:flex;gap:8px}.archive-row input{flex:1;min-width:0;background:#08101f;border:1px solid #334155;color:#f8fafc;padding:12px;border-radius:13px}.archive{border:1px solid #29364d;border-radius:16px;padding:12px;margin-top:10px;background:#0b1324}.archive header{display:flex;justify-content:space-between;gap:12px;align-items:center}.archive h3{margin:0;font-size:1rem}.archive textarea{width:100%;margin-top:9px;min-height:70px;background:#08101f;border:1px solid #334155;color:#f8fafc;border-radius:12px;padding:10px;resize:vertical}.archive-items{color:#94a3b8;font-size:.83rem;margin-top:7px}.picker{display:flex;align-items:center;gap:8px}.picker input{width:18px;height:18px}
-    .storage{display:flex;gap:10px;flex-wrap:wrap;margin-top:9px}.storage span{font-size:.78rem;color:#94a3b8}.footer{color:#64748b;font-size:.78rem;text-align:center;margin-top:18px}.hidden{display:none!important}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#08111f">
+<title>Detective — Capture</title>
+<style>
+:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color-scheme:dark;color:#f8fafc;background:#050816}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#17233a 0,#08111f 42%,#050816 100%);color:#f8fafc}button,input,textarea{font:inherit}button{cursor:pointer}.wrap{max-width:980px;margin:auto;padding:16px 14px 56px}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px}h1{font-size:clamp(2.25rem,8vw,4.5rem);line-height:.92;letter-spacing:-.055em;margin:0 0 7px}.sub{margin:0;color:#aebbd0;max-width:680px}.badge{display:inline-flex;align-items:center;gap:8px;border:1px solid #293850;background:#0c1728;padding:8px 11px;border-radius:999px;color:#cbd5e1;font-size:.82rem}.dot{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 0 4px #34d3991a}.card{background:#0d1728df;border:1px solid #26364e;border-radius:22px;padding:15px;margin:13px 0;box-shadow:0 18px 70px #0004;backdrop-filter:blur(12px)}.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:13px}@media(max-width:760px){.grid{grid-template-columns:1fr}}.camera{position:relative;aspect-ratio:4/3;background:#020617;border:1px solid #334155;border-radius:19px;overflow:hidden;display:grid;place-items:center}.camera video{width:100%;height:100%;object-fit:cover}.camera.off video{display:none}.camera.off:before{content:"Kamera av";color:#64748b;font-weight:800}.hint{position:absolute;left:11px;right:11px;bottom:11px;border-radius:12px;background:#020617c9;padding:8px 10px;font-size:.82rem;color:#cbd5e1}.series{border:1px solid #36506f;background:#0b1c30;border-radius:17px;padding:12px;margin-bottom:11px}.series-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:#7dd3fc;font-weight:900}.series-row{display:flex;gap:8px;margin-top:7px}.series-row input{flex:1;min-width:0;background:#06101f;border:1px solid #3a4b65;color:#fff;border-radius:13px;padding:12px;font-weight:750}.btn{border:0;border-radius:14px;padding:12px 13px;font-weight:850;background:#233149;color:#f8fafc}.btn.primary{background:#f8fafc;color:#0f172a}.btn.accent{background:#67e8f9;color:#083344}.btn.voice{background:#1e3a5f;color:#dbeafe;white-space:nowrap}.btn.warn{background:#3a1725;color:#fecdd3}.btn:disabled{opacity:.42;cursor:not-allowed}.actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}.actions .wide{grid-column:1/-1}.status{margin-top:10px;border:1px solid #2a3b55;background:#081321;border-radius:13px;padding:10px 11px;min-height:43px;color:#cbd5e1}.status strong{color:#fff}.small{font-size:.81rem;color:#8fa0b8;line-height:1.45}.active{color:#a7f3d0}.section-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}.section-head h2{margin:0;font-size:1.12rem}.count{color:#93c5fd;font-variant-numeric:tabular-nums}.items{display:grid;gap:9px}.item{border:1px solid #293950;background:#091426;border-radius:16px;padding:10px;display:grid;grid-template-columns:60px 1fr auto;gap:10px;align-items:center}.thumb{width:60px;height:60px;border-radius:12px;background:#101c31;border:1px solid #334155;overflow:hidden;display:grid;place-items:center;color:#94a3b8;font-size:.74rem;text-align:center}.thumb img{width:100%;height:100%;object-fit:cover}.item h3{margin:0 0 3px;font-size:.94rem}.meta{font-size:.75rem;color:#91a0b6;line-height:1.45}.item-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.mini{border:1px solid #334155;background:#172033;color:#e2e8f0;border-radius:10px;padding:7px 8px;font-size:.75rem;font-weight:800}.mini.danger{border-color:#5b2637;color:#fda4af;background:#2a1320}.archive{border:1px solid #2b3b53;background:#091426;border-radius:16px;padding:12px;margin-top:9px}.archive header{display:flex;justify-content:space-between;gap:10px;align-items:center}.archive h3{margin:0;font-size:.96rem}.archive .pages{margin-top:5px;color:#93c5fd;font-size:.78rem}.archive textarea{width:100%;min-height:58px;margin-top:9px;border:1px solid #334155;background:#06101f;color:#fff;border-radius:11px;padding:9px;resize:vertical}.storage{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}.storage span{font-size:.75rem;color:#8293aa}.hidden{display:none!important}.footer{text-align:center;color:#64748b;font-size:.75rem;margin-top:16px}@media(max-width:520px){.item{grid-template-columns:52px 1fr}.thumb{width:52px;height:52px}.item-actions{grid-column:1/-1;justify-content:flex-start}.series-row{flex-wrap:wrap}.series-row input{flex-basis:100%}.btn.voice{flex:1}}
+</style>
 </head>
 <body>
 <main class="wrap">
-  <div class="top">
-    <div>
-      <h1>Detective</h1>
-      <p class="sub">Ett löst, lokalt stöd för UOS steg 1. Fånga material först — organisera och forska på det sedan.</p>
-    </div>
-    <div class="badge"><span class="dot"></span> Privat lokalt arkiv</div>
-  </div>
-
-  <section class="grid">
-    <div class="card">
-      <div id="cameraBox" class="camera off">
-        <video id="video" playsinline autoplay muted></video>
-        <div class="hint">Kameran aktiveras först när du trycker på knappen.</div>
-      </div>
-      <canvas id="captureCanvas" class="hidden"></canvas>
-    </div>
-    <div class="card">
-      <div class="actions">
-        <button id="cameraBtn" class="btn primary">Aktivera kamera</button>
-        <button id="snapBtn" class="btn accent" disabled>Ta foto</button>
-        <button id="fileBtn" class="btn">Lägg till filer</button>
-        <button id="audioBtn" class="btn">Spela in ljud</button>
-      </div>
-      <input id="fileInput" class="hidden" type="file" multiple accept="image/*,application/pdf,audio/*,video/*,.txt,.md,.csv,.json,.doc,.docx,.odt,.epub,.mobi,.rtf">
-      <input id="cameraInput" class="hidden" type="file" accept="image/*" capture="environment">
-      <div id="status" class="status">Redo. Inget material lämnar enheten i den här prototypen.</div>
-      <div class="storage">
-        <span id="storageText">Lagring: kontrollerar…</span>
-        <span id="persistText"></span>
-      </div>
-      <p class="small">Alla filer får ett SHA‑256-fingeravtryck. Bilder får dessutom en separat, förbättrad dokumentkopia. Originalet bevaras oförändrat.</p>
-      <a class="btn link" style="margin-top:8px;width:100%" href="https://github.com/iampathat/thesyntractvision/actions/workflows/pages.yml" target="_blank" rel="noopener">Publicera senaste GitHub-version</a>
-      <p class="small">Knappen öppnar GitHub Actions. Den publicerar bara appkoden — aldrig ditt lokala arkiv.</p>
-    </div>
-  </section>
-
-  <section class="card">
-    <div class="section-head"><h2>Originalarkiv</h2><span id="itemCount" class="count">0 objekt</span></div>
-    <div id="items" class="items"></div>
-    <p id="emptyItems" class="small">Arkivet är tomt. Ta ett foto eller lägg till en fil.</p>
-  </section>
-
-  <section class="card">
-    <div class="section-head"><h2>Forskningsarkiv</h2><span class="small">Skapas direkt från valda original</span></div>
-    <div class="archive-row">
-      <input id="archiveName" placeholder="Namn, t.ex. Forstena / källarfönster">
-      <button id="createArchiveBtn" class="btn primary">Skapa</button>
-    </div>
-    <p class="small">Markera objekt i originalarkivet och skapa sedan ett forskningsarkiv. Det blir en separat struktur som pekar tillbaka på originalmaterialet.</p>
-    <div id="archives"></div>
-    <p id="emptyArchives" class="small">Inga forskningsarkiv ännu.</p>
-  </section>
-
-  <div class="footer">Detective v0.1 · local-first ingestion prototype · UOS / QCDS / Syntract direction</div>
+<div class="top"><div><h1>Detective</h1><p class="sub">Säg vad materialet är en gång. Fota sedan sida efter sida — Detective bygger dokumentet automatiskt.</p></div><div class="badge"><span class="dot"></span> Privat lokalt arkiv</div></div>
+<section class="grid">
+<div class="card"><div id="cameraBox" class="camera off"><video id="video" playsinline autoplay muted></video><div class="hint">Aktivera kameran och fota nästa sida. Originalet bevaras.</div></div><canvas id="captureCanvas" class="hidden"></canvas></div>
+<div class="card">
+<div class="series"><div class="series-label">Aktiv dokumentserie</div><div class="series-row"><input id="seriesTitle" placeholder="T.ex. Stadgar 2023" autocomplete="off"><button id="voiceTitleBtn" class="btn voice">🎙 Säg rubrik</button></div><div id="seriesInfo" class="small" style="margin-top:7px">Skriv eller säg en rubrik. Alla följande foton läggs automatiskt under den.</div></div>
+<div class="actions"><button id="cameraBtn" class="btn primary">Aktivera kamera</button><button id="snapBtn" class="btn accent" disabled>📷 Fota nästa sida</button><button id="fileBtn" class="btn">Lägg till filer</button><button id="audioBtn" class="btn">Spela in ljud</button><button id="newSeriesBtn" class="btn wide">Ny dokumentserie</button></div>
+<input id="fileInput" class="hidden" type="file" multiple accept="image/*,application/pdf,audio/*,video/*,.txt,.md,.csv,.json,.doc,.docx,.odt,.epub,.mobi,.rtf">
+<input id="cameraInput" class="hidden" type="file" accept="image/*" capture="environment">
+<div id="status" class="status">Redo. Sätt en rubrik och börja fotografera.</div><div class="storage"><span id="storageText">Lagring: kontrollerar…</span><span id="persistText"></span></div>
+<p class="small">Rubriken följer med automatiskt. Bilder numreras sida 1, 2, 3… och läggs även i ett forskningsarkiv med samma namn. SHA‑256 beräknas för varje original.</p>
+</div>
+</section>
+<section class="card"><div class="section-head"><h2>Originalarkiv</h2><span id="itemCount" class="count">0 objekt</span></div><div id="items" class="items"></div><p id="emptyItems" class="small">Arkivet är tomt.</p></section>
+<section class="card"><div class="section-head"><h2>Forskningsarkiv</h2><span class="small">Byggs automatiskt per dokumentserie</span></div><div id="archives"></div><p id="emptyArchives" class="small">Inga forskningsarkiv ännu.</p></section>
+<div class="footer">Detective v0.2 · continuous capture · UOS ingress prototype</div>
 </main>
 <script>
-(() => {
-  'use strict';
-  const DB_NAME = 'detective-private-archive';
-  const DB_VERSION = 1;
-  const $ = (id) => document.getElementById(id);
-  const els = {
-    video: $('video'), cameraBox: $('cameraBox'), canvas: $('captureCanvas'), cameraBtn: $('cameraBtn'), snapBtn: $('snapBtn'),
-    fileBtn: $('fileBtn'), fileInput: $('fileInput'), cameraInput: $('cameraInput'), audioBtn: $('audioBtn'), status: $('status'),
-    items: $('items'), itemCount: $('itemCount'), emptyItems: $('emptyItems'), archiveName: $('archiveName'), createArchiveBtn: $('createArchiveBtn'),
-    archives: $('archives'), emptyArchives: $('emptyArchives'), storageText: $('storageText'), persistText: $('persistText')
-  };
-  let db, cameraStream = null, recorder = null, audioChunks = [], selected = new Set();
-
-  const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`);
-  const fmtBytes = (n=0) => n < 1024 ? `${n} B` : n < 1048576 ? `${(n/1024).toFixed(1)} KB` : n < 1073741824 ? `${(n/1048576).toFixed(1)} MB` : `${(n/1073741824).toFixed(2)} GB`;
-  const fmtDate = (iso) => new Intl.DateTimeFormat('sv-SE',{dateStyle:'short',timeStyle:'short'}).format(new Date(iso));
-  const kindFromType = (type='', name='') => type.startsWith('image/') ? 'bild' : type === 'application/pdf' ? 'pdf' : type.startsWith('audio/') ? 'ljud' : type.startsWith('video/') ? 'video' : /\.(epub|mobi)$/i.test(name) ? 'bok' : /\.(txt|md|csv|json|rtf)$/i.test(name) ? 'text' : 'fil';
-  const setStatus = (msg, strong='') => { els.status.innerHTML = strong ? `<strong>${escapeHtml(strong)}</strong> ${escapeHtml(msg)}` : escapeHtml(msg); };
-  const escapeHtml = (s='') => String(s).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-
-  function openDb(){
-    return new Promise((resolve,reject)=>{
-      const req = indexedDB.open(DB_NAME, DB_VERSION);
-      req.onupgradeneeded = () => {
-        const d = req.result;
-        if(!d.objectStoreNames.contains('items')) d.createObjectStore('items',{keyPath:'id'});
-        if(!d.objectStoreNames.contains('archives')) d.createObjectStore('archives',{keyPath:'id'});
-      };
-      req.onsuccess = () => resolve(req.result); req.onerror = () => reject(req.error);
-    });
-  }
-  function txStore(name, mode='readonly'){ return db.transaction(name, mode).objectStore(name); }
-  function getAll(name){ return new Promise((res,rej)=>{ const r=txStore(name).getAll(); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
-  function put(name, value){ return new Promise((res,rej)=>{ const r=txStore(name,'readwrite').put(value); r.onsuccess=()=>res(value); r.onerror=()=>rej(r.error); }); }
-  function del(name, key){ return new Promise((res,rej)=>{ const r=txStore(name,'readwrite').delete(key); r.onsuccess=()=>res(); r.onerror=()=>rej(r.error); }); }
-  function getOne(name,key){ return new Promise((res,rej)=>{ const r=txStore(name).get(key); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
-
-  async function sha256(blob){
-    const hash = await crypto.subtle.digest('SHA-256', await blob.arrayBuffer());
-    return [...new Uint8Array(hash)].map(b=>b.toString(16).padStart(2,'0')).join('');
-  }
-
-  async function enhanceImage(blob){
-    const bitmap = await createImageBitmap(blob);
-    const max = 2200, scale = Math.min(1, max/Math.max(bitmap.width, bitmap.height));
-    const w = Math.max(1, Math.round(bitmap.width*scale)), h = Math.max(1, Math.round(bitmap.height*scale));
-    const c = document.createElement('canvas'); c.width=w; c.height=h;
-    const ctx = c.getContext('2d',{willReadFrequently:true}); ctx.drawImage(bitmap,0,0,w,h); bitmap.close?.();
-    const img = ctx.getImageData(0,0,w,h), d=img.data;
-    let min=255,maxv=0;
-    for(let i=0;i<d.length;i+=Math.max(4,Math.floor(d.length/200000/4)*4||4)){
-      const y=.299*d[i]+.587*d[i+1]+.114*d[i+2]; min=Math.min(min,y); maxv=Math.max(maxv,y);
-    }
-    const range=Math.max(48,maxv-min), lo=Math.max(0,min-8), gain=255/range;
-    for(let i=0;i<d.length;i+=4){ const y=.299*d[i]+.587*d[i+1]+.114*d[i+2]; const v=Math.max(0,Math.min(255,(y-lo)*gain)); d[i]=d[i+1]=d[i+2]=v; }
-    ctx.putImageData(img,0,0);
-    return new Promise(resolve=>c.toBlob(resolve,'image/jpeg',.88));
-  }
-
-  async function ingest(blob, name){
-    const type = blob.type || 'application/octet-stream';
-    setStatus(`Bearbetar ${name}…`);
-    const item = {id:uuid(),name:name||`capture-${Date.now()}`,type,kind:kindFromType(type,name),size:blob.size,createdAt:new Date().toISOString(),sha256:await sha256(blob),originalBlob:blob,processedBlob:null,processedType:null,processing:'fingerprinted'};
-    if(type.startsWith('image/')){
-      try{ item.processedBlob = await enhanceImage(blob); item.processedType='image/jpeg'; item.processing='image-enhanced'; }catch(e){ console.warn(e); item.processing='fingerprinted'; }
-    } else if(type.startsWith('text/') || /\.(txt|md|csv|json|rtf)$/i.test(name)) {
-      try{ item.textPreview=(await blob.text()).slice(0,50000); item.processing='text-indexed'; }catch(e){ console.warn(e); }
-    }
-    await put('items',item); selected.add(item.id); await render(); await updateStorage();
-    setStatus(`${name} är sparad lokalt.`, 'Klart.');
-  }
-
-  async function startCamera(){
-    if(cameraStream){ cameraStream.getTracks().forEach(t=>t.stop()); cameraStream=null; els.video.srcObject=null; els.cameraBox.classList.add('off'); els.snapBtn.disabled=true; els.cameraBtn.textContent='Aktivera kamera'; return; }
-    try{
-      cameraStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:2200}},audio:false});
-      els.video.srcObject=cameraStream; els.cameraBox.classList.remove('off'); els.snapBtn.disabled=false; els.cameraBtn.textContent='Stäng kamera'; setStatus('Kameran är aktiv. Sikta på dokumentet och ta foto.');
-    }catch(e){ console.warn(e); setStatus('Kameratillstånd nekades eller stöds inte här. Jag öppnar mobilens vanliga kameraväljare istället.'); els.cameraInput.click(); }
-  }
-
-  async function snap(){
-    if(!cameraStream) return;
-    const track = cameraStream.getVideoTracks()[0], settings=track.getSettings();
-    const w=els.video.videoWidth||settings.width||1600, h=els.video.videoHeight||settings.height||1200;
-    els.canvas.width=w; els.canvas.height=h; els.canvas.getContext('2d').drawImage(els.video,0,0,w,h);
-    const blob = await new Promise(r=>els.canvas.toBlob(r,'image/jpeg',.94));
-    await ingest(blob,`Detective-${new Date().toISOString().replace(/[:.]/g,'-')}.jpg`);
-  }
-
-  async function toggleAudio(){
-    if(recorder && recorder.state==='recording'){ recorder.stop(); els.audioBtn.textContent='Spela in ljud'; return; }
-    try{
-      const stream=await navigator.mediaDevices.getUserMedia({audio:true}); audioChunks=[]; recorder=new MediaRecorder(stream);
-      recorder.ondataavailable=e=>{ if(e.data.size) audioChunks.push(e.data); };
-      recorder.onstop=async()=>{ const blob=new Blob(audioChunks,{type:recorder.mimeType||'audio/webm'}); stream.getTracks().forEach(t=>t.stop()); await ingest(blob,`Detective-audio-${new Date().toISOString().replace(/[:.]/g,'-')}.webm`); };
-      recorder.start(); els.audioBtn.textContent='Stoppa ljud'; setStatus('Ljudinspelning pågår lokalt.');
-    }catch(e){ console.warn(e); setStatus('Mikrofontillstånd nekades eller ljudinspelning stöds inte.'); }
-  }
-
-  function objectUrl(blob){ return URL.createObjectURL(blob); }
-  async function downloadItem(id, processed=false){
-    const item=await getOne('items',id); if(!item) return; const blob=processed&&item.processedBlob?item.processedBlob:item.originalBlob;
-    const a=document.createElement('a'); a.href=objectUrl(blob); a.download=processed&&item.processedBlob?`processed-${item.name.replace(/\.[^.]+$/,'.jpg')}`:item.name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),3000);
-  }
-  async function deleteItem(id){
-    await del('items',id); selected.delete(id); const archives=await getAll('archives'); for(const a of archives){ if(a.itemIds.includes(id)){ a.itemIds=a.itemIds.filter(x=>x!==id); await put('archives',a); } } await render(); await updateStorage();
-  }
-
-  async function renderItems(){
-    const items=(await getAll('items')).sort((a,b)=>b.createdAt.localeCompare(a.createdAt)); els.items.innerHTML=''; els.itemCount.textContent=`${items.length} objekt`; els.emptyItems.classList.toggle('hidden',items.length>0);
-    for(const item of items){
-      const row=document.createElement('div'); row.className='item';
-      const thumb=document.createElement('div'); thumb.className='thumb';
-      if(item.type.startsWith('image/')){ const img=document.createElement('img'); const u=objectUrl(item.processedBlob||item.originalBlob); img.src=u; img.onload=()=>URL.revokeObjectURL(u); thumb.appendChild(img); } else thumb.textContent=item.kind.toUpperCase();
-      const body=document.createElement('div');
-      const title=document.createElement('h3'); title.textContent=item.name; body.appendChild(title);
-      const meta=document.createElement('div'); meta.className='meta'; meta.textContent=`${item.kind} · ${fmtBytes(item.size)} · ${fmtDate(item.createdAt)} · SHA ${item.sha256.slice(0,12)}… · ${item.processing}`; body.appendChild(meta);
-      const pick=document.createElement('label'); pick.className='picker small'; const cb=document.createElement('input'); cb.type='checkbox'; cb.checked=selected.has(item.id); cb.onchange=()=>cb.checked?selected.add(item.id):selected.delete(item.id); pick.append(cb,document.createTextNode(' välj')); body.appendChild(pick);
-      const act=document.createElement('div'); act.className='item-actions';
-      const dl=document.createElement('button'); dl.className='mini'; dl.textContent='Original'; dl.onclick=()=>downloadItem(item.id,false); act.appendChild(dl);
-      if(item.processedBlob){ const dp=document.createElement('button'); dp.className='mini'; dp.textContent='Bearbetad'; dp.onclick=()=>downloadItem(item.id,true); act.appendChild(dp); }
-      const rm=document.createElement('button'); rm.className='mini danger'; rm.textContent='Radera'; rm.onclick=()=>deleteItem(item.id); act.appendChild(rm);
-      row.append(thumb,body,act); els.items.appendChild(row);
-    }
-  }
-
-  async function createArchive(){
-    const name=els.archiveName.value.trim(); if(!name){ setStatus('Skriv ett namn på forskningsarkivet.'); return; }
-    const archive={id:uuid(),name,createdAt:new Date().toISOString(),itemIds:[...selected],notes:''}; await put('archives',archive); els.archiveName.value=''; selected.clear(); await render(); setStatus(`Forskningsarkivet “${name}” skapades med ${archive.itemIds.length} objekt.`);
-  }
-  async function saveArchiveNotes(id, notes){ const a=await getOne('archives',id); if(!a)return; a.notes=notes; await put('archives',a); }
-  async function addSelectedToArchive(id){ const a=await getOne('archives',id); if(!a)return; a.itemIds=[...new Set([...a.itemIds,...selected])]; await put('archives',a); selected.clear(); await render(); }
-  async function deleteArchive(id){ await del('archives',id); await renderArchives(); }
-  async function exportManifest(id){
-    const a=await getOne('archives',id); const items=await getAll('items'); const map=new Map(items.map(i=>[i.id,i]));
-    const manifest={format:'Detective Research Archive Manifest v0.1',exportedAt:new Date().toISOString(),archive:{id:a.id,name:a.name,createdAt:a.createdAt,notes:a.notes,items:a.itemIds.map(x=>map.get(x)).filter(Boolean).map(i=>({id:i.id,name:i.name,type:i.type,kind:i.kind,size:i.size,createdAt:i.createdAt,sha256:i.sha256,processing:i.processing}))}};
-    const blob=new Blob([JSON.stringify(manifest,null,2)],{type:'application/json'}), url=objectUrl(blob), link=document.createElement('a'); link.href=url; link.download=`detective-${a.name.replace(/[^a-z0-9-_]+/gi,'-').toLowerCase()}.json`; link.click(); setTimeout(()=>URL.revokeObjectURL(url),3000);
-  }
-  async function renderArchives(){
-    const list=(await getAll('archives')).sort((a,b)=>b.createdAt.localeCompare(a.createdAt)); els.archives.innerHTML=''; els.emptyArchives.classList.toggle('hidden',list.length>0);
-    for(const a of list){
-      const box=document.createElement('div'); box.className='archive'; const head=document.createElement('header'); const h=document.createElement('h3'); h.textContent=a.name; const tools=document.createElement('div'); tools.className='item-actions';
-      [['Lägg till valda',()=>addSelectedToArchive(a.id)],['Manifest',()=>exportManifest(a.id)]].forEach(([t,f])=>{const b=document.createElement('button');b.className='mini';b.textContent=t;b.onclick=f;tools.appendChild(b)});
-      const rm=document.createElement('button');rm.className='mini danger';rm.textContent='Radera';rm.onclick=()=>deleteArchive(a.id);tools.appendChild(rm); head.append(h,tools);
-      const meta=document.createElement('div');meta.className='archive-items';meta.textContent=`${a.itemIds.length} objekt · skapad ${fmtDate(a.createdAt)}`;
-      const ta=document.createElement('textarea');ta.placeholder='Forskningsanteckningar…';ta.value=a.notes||'';let timer;ta.oninput=()=>{clearTimeout(timer);timer=setTimeout(()=>saveArchiveNotes(a.id,ta.value),350)};
-      box.append(head,meta,ta); els.archives.appendChild(box);
-    }
-  }
-  async function render(){ await Promise.all([renderItems(),renderArchives()]); }
-
-  async function updateStorage(){
-    if(!navigator.storage?.estimate) return; const e=await navigator.storage.estimate(); els.storageText.textContent=`Lagring: ${fmtBytes(e.usage||0)} av cirka ${fmtBytes(e.quota||0)}`;
-  }
-  async function requestPersistence(){
-    if(!navigator.storage?.persist) return; try{ const ok=await navigator.storage.persist(); els.persistText.textContent=ok?'· beständig lagring beviljad':'· webbläsaren kan rensa data vid lagringsbrist'; }catch(e){console.warn(e)}
-  }
-
-  els.cameraBtn.onclick=startCamera; els.snapBtn.onclick=snap; els.fileBtn.onclick=()=>els.fileInput.click(); els.audioBtn.onclick=toggleAudio; els.createArchiveBtn.onclick=createArchive;
-  els.fileInput.onchange=async()=>{ for(const f of els.fileInput.files) await ingest(f,f.name); els.fileInput.value=''; };
-  els.cameraInput.onchange=async()=>{ const f=els.cameraInput.files[0]; if(f) await ingest(f,f.name||`Detective-${Date.now()}.jpg`); els.cameraInput.value=''; };
-  window.addEventListener('pagehide',()=>cameraStream?.getTracks().forEach(t=>t.stop()));
-
-  (async()=>{ try{ db=await openDb(); await render(); await updateStorage(); await requestPersistence(); }catch(e){ console.error(e); setStatus('Kunde inte öppna det lokala arkivet. Kontrollera webbläsarens lagringsinställningar.'); } })();
+(()=>{'use strict';
+const DB_NAME='detective-private-archive',DB_VERSION=1,$=id=>document.getElementById(id);
+const e={video:$('video'),cameraBox:$('cameraBox'),canvas:$('captureCanvas'),cameraBtn:$('cameraBtn'),snapBtn:$('snapBtn'),fileBtn:$('fileBtn'),fileInput:$('fileInput'),cameraInput:$('cameraInput'),audioBtn:$('audioBtn'),status:$('status'),seriesTitle:$('seriesTitle'),voiceTitleBtn:$('voiceTitleBtn'),newSeriesBtn:$('newSeriesBtn'),seriesInfo:$('seriesInfo'),items:$('items'),itemCount:$('itemCount'),emptyItems:$('emptyItems'),archives:$('archives'),emptyArchives:$('emptyArchives'),storageText:$('storageText'),persistText:$('persistText')};
+let db,cameraStream=null,recorder=null,audioChunks=[],activeSeriesId=localStorage.getItem('detective-active-series-id')||'',lastTitle=localStorage.getItem('detective-active-series-title')||'';
+e.seriesTitle.value=lastTitle;
+const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
+const uuid=()=>crypto.randomUUID?crypto.randomUUID():`${Date.now()}-${Math.random().toString(16).slice(2)}`;
+const fmtBytes=n=>n<1024?`${n} B`:n<1048576?`${(n/1024).toFixed(1)} KB`:n<1073741824?`${(n/1048576).toFixed(1)} MB`:`${(n/1073741824).toFixed(2)} GB`;
+const fmtDate=x=>new Intl.DateTimeFormat('sv-SE',{dateStyle:'short',timeStyle:'short'}).format(new Date(x));
+const kind=(t='',n='')=>t.startsWith('image/')?'bild':t==='application/pdf'?'pdf':t.startsWith('audio/')?'ljud':t.startsWith('video/')?'video':/\.(epub|mobi)$/i.test(n)?'bok':/\.(txt|md|csv|json|rtf)$/i.test(n)?'text':'fil';
+const status=(m,s='')=>e.status.innerHTML=s?`<strong>${esc(s)}</strong> ${esc(m)}`:esc(m);
+function openDb(){return new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,DB_VERSION);r.onupgradeneeded=()=>{const d=r.result;if(!d.objectStoreNames.contains('items'))d.createObjectStore('items',{keyPath:'id'});if(!d.objectStoreNames.contains('archives'))d.createObjectStore('archives',{keyPath:'id'})};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+function store(n,m='readonly'){return db.transaction(n,m).objectStore(n)}
+function all(n){return new Promise((res,rej)=>{const r=store(n).getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+function put(n,v){return new Promise((res,rej)=>{const r=store(n,'readwrite').put(v);r.onsuccess=()=>res(v);r.onerror=()=>rej(r.error)})}
+function get(n,k){return new Promise((res,rej)=>{const r=store(n).get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+function del(n,k){return new Promise((res,rej)=>{const r=store(n,'readwrite').delete(k);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+async function hash(blob){const h=await crypto.subtle.digest('SHA-256',await blob.arrayBuffer());return[...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,'0')).join('')}
+async function enhance(blob){const bm=await createImageBitmap(blob),mx=2200,sc=Math.min(1,mx/Math.max(bm.width,bm.height)),w=Math.max(1,Math.round(bm.width*sc)),h=Math.max(1,Math.round(bm.height*sc)),c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(bm,0,0,w,h);bm.close?.();const im=x.getImageData(0,0,w,h),d=im.data;let mn=255,mxv=0;for(let i=0;i<d.length;i+=Math.max(4,Math.floor(d.length/200000/4)*4||4)){const y=.299*d[i]+.587*d[i+1]+.114*d[i+2];mn=Math.min(mn,y);mxv=Math.max(mxv,y)}const range=Math.max(48,mxv-mn),lo=Math.max(0,mn-8),gain=255/range;for(let i=0;i<d.length;i+=4){const y=.299*d[i]+.587*d[i+1]+.114*d[i+2],v=Math.max(0,Math.min(255,(y-lo)*gain));d[i]=d[i+1]=d[i+2]=v}x.putImageData(im,0,0);return new Promise(r=>c.toBlob(r,'image/jpeg',.88))}
+function cleanSpokenTitle(text){return text.trim().replace(/^(det här är|detta är|rubrik|dokument|lägg som|kalla den|kalla det)\s+/i,'').replace(/\s+som rubrik$/i,'').replace(/[.!?]+$/,'').trim()}
+async function activateSeries(forceNew=false){const title=e.seriesTitle.value.trim();if(!title){status('Skriv eller säg först vad dokumentet heter.','Rubrik behövs.');e.seriesTitle.focus();return null}if(forceNew||!activeSeriesId||lastTitle!==title){activeSeriesId=uuid();lastTitle=title;localStorage.setItem('detective-active-series-id',activeSeriesId);localStorage.setItem('detective-active-series-title',title)}await updateSeriesInfo();return{id:activeSeriesId,title}}
+async function updateSeriesInfo(){const title=e.seriesTitle.value.trim();if(!title){e.seriesInfo.textContent='Skriv eller säg en rubrik. Alla följande foton läggs automatiskt under den.';return}if(lastTitle!==title){e.seriesInfo.textContent=`Ny serie redo: ${title} · nästa foto blir sida 1`;return}const items=await all('items'),n=items.filter(x=>x.seriesId===activeSeriesId&&x.kind==='bild').length;e.seriesInfo.innerHTML=`<span class="active">Aktiv:</span> ${esc(title)} · ${n} foton · nästa blir sida ${n+1}`}
+async function ensureArchive(series,itemId){let arcs=await all('archives'),a=arcs.find(x=>x.seriesId===series.id);if(!a){a={id:uuid(),seriesId:series.id,name:series.title,createdAt:new Date().toISOString(),updatedAt:new Date().toISOString(),itemIds:[],notes:''}}if(!a.itemIds.includes(itemId))a.itemIds.push(itemId);a.updatedAt=new Date().toISOString();await put('archives',a)}
+async function ingest(blob,name,opts={}){const type=blob.type||'application/octet-stream',series=opts.noSeries?null:await activateSeries(false);if(!series&&!opts.noSeries)return;let pageNumber=null;if(series&&type.startsWith('image/')){const items=await all('items');pageNumber=items.filter(x=>x.seriesId===series.id&&x.kind==='bild').length+1}const displayName=series&&pageNumber?`${series.title} · sida ${pageNumber}`:(series?`${series.title} · ${name}`:name);status(`Bearbetar ${displayName}…`);const item={id:uuid(),name:displayName,sourceName:name||displayName,type,kind:kind(type,name),size:blob.size,createdAt:new Date().toISOString(),sha256:await hash(blob),originalBlob:blob,processedBlob:null,processedType:null,processing:'fingerprinted',seriesId:series?.id||null,seriesTitle:series?.title||null,pageNumber};if(type.startsWith('image/')){try{item.processedBlob=await enhance(blob);item.processedType='image/jpeg';item.processing='image-enhanced'}catch(err){console.warn(err)}}await put('items',item);if(series)await ensureArchive(series,item.id);status(pageNumber?`Sida ${pageNumber} sparad. Fortsätt bara fotografera.`:`${displayName} sparad.`,series?.title||'Sparat');await render();await updateSeriesInfo();await storageInfo()}
+async function startCamera(){try{cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:2560},height:{ideal:1920}},audio:false});e.video.srcObject=cameraStream;e.cameraBox.classList.remove('off');e.cameraBtn.textContent='Stäng kamera';e.snapBtn.disabled=false;status('Kameran är klar. Fota sida efter sida.')}catch(err){console.warn(err);status('Webbkameraläget kunde inte starta. Öppnar mobilens vanliga kamera.');e.cameraInput.click()}}
+function stopCamera(){cameraStream?.getTracks().forEach(t=>t.stop());cameraStream=null;e.video.srcObject=null;e.cameraBox.classList.add('off');e.cameraBtn.textContent='Aktivera kamera';e.snapBtn.disabled=true}
+async function snap(){const series=await activateSeries(false);if(!series)return;if(!cameraStream){e.cameraInput.click();return}const v=e.video;if(!v.videoWidth)return;const c=e.canvas;c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);const b=await new Promise(r=>c.toBlob(r,'image/jpeg',.94));await ingest(b,`capture-${Date.now()}.jpg`)}
+function download(blob,name){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+async function render(){const items=(await all('items')).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));e.itemCount.textContent=`${items.length} objekt`;e.emptyItems.classList.toggle('hidden',!!items.length);e.items.innerHTML='';for(const it of items){const row=document.createElement('div');row.className='item';let thumb=`<div class="thumb">${esc(it.kind)}</div>`;if(it.type?.startsWith('image/')){const u=URL.createObjectURL(it.processedBlob||it.originalBlob);thumb=`<div class="thumb"><img src="${u}" alt=""></div>`;setTimeout(()=>URL.revokeObjectURL(u),10000)}row.innerHTML=`${thumb}<div><h3>${esc(it.name)}</h3><div class="meta">${it.seriesTitle?`${esc(it.seriesTitle)}${it.pageNumber?` · sida ${it.pageNumber}`:''}<br>`:''}${fmtDate(it.createdAt)} · ${fmtBytes(it.size)}<br>SHA‑256 ${esc(it.sha256.slice(0,16))}…</div></div><div class="item-actions"><button class="mini" data-original="${it.id}">Original</button>${it.processedBlob?`<button class="mini" data-processed="${it.id}">Bearbetad</button>`:''}<button class="mini danger" data-delete="${it.id}">Ta bort</button></div>`;e.items.append(row)}e.items.querySelectorAll('[data-original]').forEach(b=>b.onclick=async()=>{const x=await get('items',b.dataset.original);download(x.originalBlob,x.sourceName||x.name)});e.items.querySelectorAll('[data-processed]').forEach(b=>b.onclick=async()=>{const x=await get('items',b.dataset.processed);download(x.processedBlob,`${(x.name||'document').replace(/[^a-z0-9åäö_-]+/gi,'-')}-processed.jpg`)});e.items.querySelectorAll('[data-delete]').forEach(b=>b.onclick=async()=>{const id=b.dataset.delete;await del('items',id);const arcs=await all('archives');for(const a of arcs){if(a.itemIds?.includes(id)){a.itemIds=a.itemIds.filter(x=>x!==id);a.updatedAt=new Date().toISOString();await put('archives',a)}}await render();await updateSeriesInfo()});await renderArchives()}
+async function renderArchives(){const arcs=(await all('archives')).sort((a,b)=>new Date(b.updatedAt||b.createdAt)-new Date(a.updatedAt||a.createdAt));e.emptyArchives.classList.toggle('hidden',!!arcs.length);e.archives.innerHTML='';for(const a of arcs){const box=document.createElement('div');box.className='archive';box.innerHTML=`<header><div><h3>${esc(a.name)}</h3><div class="pages">${a.itemIds?.length||0} objekt</div></div><button class="mini" data-export="${a.id}">Exportera manifest</button></header><textarea data-notes="${a.id}" placeholder="Anteckningar om detta material…">${esc(a.notes||'')}</textarea>`;e.archives.append(box)}e.archives.querySelectorAll('[data-notes]').forEach(t=>t.onchange=async()=>{const a=await get('archives',t.dataset.notes);a.notes=t.value;a.updatedAt=new Date().toISOString();await put('archives',a)});e.archives.querySelectorAll('[data-export]').forEach(b=>b.onclick=async()=>{const a=await get('archives',b.dataset.export),items=[];for(const id of a.itemIds||[]){const x=await get('items',id);if(x)items.push({id:x.id,name:x.name,sourceName:x.sourceName,type:x.type,size:x.size,createdAt:x.createdAt,sha256:x.sha256,seriesTitle:x.seriesTitle,pageNumber:x.pageNumber,processing:x.processing})}download(new Blob([JSON.stringify({...a,items},null,2)],{type:'application/json'}),`${a.name.replace(/[^a-z0-9åäö_-]+/gi,'-')}-manifest.json`)})}
+async function storageInfo(){if(!navigator.storage)return;try{const q=await navigator.storage.estimate();e.storageText.textContent=`Lagring: ${fmtBytes(q.usage||0)} av cirka ${fmtBytes(q.quota||0)}`;if(navigator.storage.persist){const p=await navigator.storage.persist();e.persistText.textContent=p?'· beständig lagring':'· webbläsaren styr lagring'}}catch{}}
+function speechTitle(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){status('Taligenkänning stöds inte här. Skriv rubriken i fältet.');e.seriesTitle.focus();return}const r=new SR();r.lang='sv-SE';r.interimResults=false;r.maxAlternatives=1;status('Lyssnar… säg exempelvis “Det här är Stadgar 2023”.');r.onresult=ev=>{const raw=ev.results[0][0].transcript,title=cleanSpokenTitle(raw);e.seriesTitle.value=title;activeSeriesId='';lastTitle='';localStorage.removeItem('detective-active-series-id');localStorage.removeItem('detective-active-series-title');activateSeries(true);status('Rubriken är satt. Nu är det bara att fotografera.',''+title)};r.onerror=()=>status('Kunde inte höra rubriken. Försök igen eller skriv den.');r.start()}
+e.cameraBtn.onclick=()=>cameraStream?stopCamera():startCamera();e.snapBtn.onclick=snap;e.fileBtn.onclick=async()=>{if(await activateSeries(false))e.fileInput.click()};e.fileInput.onchange=async()=>{for(const f of e.fileInput.files)await ingest(f,f.name);e.fileInput.value=''};e.cameraInput.onchange=async()=>{const f=e.cameraInput.files?.[0];if(f)await ingest(f,f.name||`camera-${Date.now()}.jpg`);e.cameraInput.value=''};e.voiceTitleBtn.onclick=speechTitle;e.seriesTitle.onchange=()=>{if(e.seriesTitle.value.trim()!==lastTitle){activeSeriesId='';localStorage.removeItem('detective-active-series-id')}updateSeriesInfo()};e.newSeriesBtn.onclick=()=>{activeSeriesId='';lastTitle='';e.seriesTitle.value='';localStorage.removeItem('detective-active-series-id');localStorage.removeItem('detective-active-series-title');e.seriesTitle.focus();updateSeriesInfo();status('Ny serie. Säg eller skriv nästa rubrik.')};e.audioBtn.onclick=async()=>{if(recorder&&recorder.state==='recording'){recorder.stop();return}const series=await activateSeries(false);if(!series)return;try{const s=await navigator.mediaDevices.getUserMedia({audio:true});audioChunks=[];recorder=new MediaRecorder(s);recorder.ondataavailable=x=>x.data.size&&audioChunks.push(x.data);recorder.onstop=async()=>{const b=new Blob(audioChunks,{type:recorder.mimeType||'audio/webm'});s.getTracks().forEach(t=>t.stop());e.audioBtn.textContent='Spela in ljud';await ingest(b,`anteckning-${Date.now()}.webm`)};recorder.start();e.audioBtn.textContent='Stoppa ljud';status('Spelar in ljud…')}catch{status('Mikrofonen kunde inte startas.')}};
+(async()=>{if(!('indexedDB'in window)){status('Den här webbläsaren saknar lokalt arkivstöd.');return}db=await openDb();await render();await updateSeriesInfo();await storageInfo()})().catch(err=>{console.error(err);status(`Fel: ${err.message}`)});
 })();
 </script>
 </body>
