@@ -73,12 +73,15 @@ REQUIRED_PACKAGE_FILES = (
 def publish_static_companions(site: str | Path) -> None:
     """Copy standalone public surfaces into the final Pages artifact when present."""
     root = Path(site)
-    source = Path("superintelligence-asi") / "index.html"
-    if not source.is_file():
-        return
-    target = root / "superintelligence-asi" / "index.html"
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
+    companions = (
+        (Path("superintelligence-asi") / "index.html", root / "superintelligence-asi" / "index.html"),
+        (Path("web") / "detective" / "index.html", root / "detective" / "index.html"),
+    )
+    for source, target in companions:
+        if not source.is_file():
+            continue
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(source.read_text(encoding="utf-8"), encoding="utf-8")
 
 
 def validate_public_site(site: str | Path) -> None:
