@@ -1,0 +1,37 @@
+name: Build Detective Collector v0.20 collection-first
+on:
+  push:
+    paths:
+      - 'tools/patch_detective_collector_v020.py'
+      - '.github/workflows/detective-v020-collection-first.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply collection-first UX
+        run: python tools/patch_detective_collector_v020.py
+      - name: Validate Collector
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('web/detective/index.html').read_text()
+          assert 'Välj mapp och serie' in s
+          assert 'Innehåll i aktiv serie' in s
+          assert 'archiveCard' in s
+          assert 'Detective Collector v0.20' in s
+          assert s.index('class="card setupCard"') < s.index('id="cameraBox"')
+          js=re.search(r'<script>([\s\S]*)</script>',s).group(1)
+          Path('/tmp/detective.js').write_text(js)
+          PY
+          node --check /tmp/detective.js
+      - name: Commit collection-first UX
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add web/detective/index.html
+          git commit -m 'Move Detective series setup ahead of capture'
+          git push
