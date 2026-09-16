@@ -1,0 +1,52 @@
+name: Patch Detective v0.10 preview and mode selector
+
+on:
+  push:
+    paths:
+      - '.github/workflows/detective-v010-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch preview and mode selector
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('web/detective/index.html')
+          s = p.read_text()
+          changes = [
+              ('.camera video{width:100%;height:100%;object-fit:cover}', '.camera video{width:100%;height:100%;object-fit:contain;background:#000}'),
+              ('.cameraStatus{margin-left:auto;display:flex;gap:6px;min-width:0}', '.cameraStatus{margin-left:auto;display:flex;gap:6px;min-width:0;pointer-events:auto}'),
+              ('Detective v0.9 · foto/film · tydlig kamerastatus', 'Detective v0.10 · full preview · foto/film · tydlig kamerastatus'),
+          ]
+          for old, new in changes:
+              if old not in s:
+                  raise SystemExit(f'Missing patch target: {old}')
+              s = s.replace(old, new, 1)
+          p.write_text(s)
+          PY
+      - name: Validate
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('web/detective/index.html').read_text()
+          a=s.index('<script>')+8
+          b=s.index('</script>')
+          Path('/tmp/detective.js').write_text(s[a:b])
+          assert 'object-fit:contain;background:#000' in s
+          assert 'pointer-events:auto' in s
+          assert 'id="photoModeBtn"' in s and 'id="filmModeBtn"' in s
+          PY
+          node --check /tmp/detective.js
+      - name: Commit patch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add web/detective/index.html
+          git commit -m 'Fit Detective camera preview and enable photo-film selector'
+          git push
