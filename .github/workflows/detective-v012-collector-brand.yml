@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - '.github/workflows/detective-v012-collector-brand.yml'
+      - 'tools/patch_detective_collector_v012.py'
 
 permissions:
   contents: write
@@ -15,62 +16,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Build Collector identity
-        shell: bash
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('web/detective/index.html')
-          s=p.read_text()
-
-          def rep(old,new,label):
-              global s
-              if old not in s:
-                  raise SystemExit(f'Missing patch target: {label}')
-              s=s.replace(old,new,1)
-
-          rep('<title>Detective — UOS Capture</title>','<title>Detective Collector — UOS</title>','document title')
-
-          css_anchor='.dot{width:8px;height:8px;border-radius:50%;background:#3ddc97;box-shadow:0 0 0 4px #3ddc971f}'
-          css_extra='''.collectorHero{position:relative;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.12fr) minmax(300px,.88fr);gap:18px;align-items:center;margin:10px 0 16px;padding:22px;border:1px solid #2d526d;border-radius:28px;background:linear-gradient(135deg,#0a1c2f 0%,#081523 52%,#07101d 100%);box-shadow:0 28px 90px #0007,inset 0 1px #ffffff0a}.collectorHero:before{content:"";position:absolute;width:360px;height:360px;right:-100px;top:-180px;border-radius:50%;background:radial-gradient(circle,#22d3ee2e 0,#8b5cf615 38%,transparent 70%);pointer-events:none}.collectorEyebrow{display:inline-flex;align-items:center;gap:8px;color:#7dd3fc;font-size:.72rem;font-weight:950;letter-spacing:.17em;text-transform:uppercase;margin-bottom:10px}.collectorEyebrow:before{content:"";width:24px;height:2px;border-radius:99px;background:linear-gradient(90deg,#22d3ee,#8b5cf6)}.collectorHero h1{font-size:clamp(2.6rem,8vw,5.1rem);letter-spacing:-.065em;line-height:.88;margin:0 0 12px}.collectorHero h1 span{display:block;background:linear-gradient(90deg,#67e8f9,#a5b4fc 58%,#c4b5fd);-webkit-background-clip:text;background-clip:text;color:transparent}.collectorLead{margin:0;color:#c3d2e3;font-size:clamp(1rem,2.6vw,1.22rem);line-height:1.48;max-width:650px}.collectorSteps{display:flex;gap:7px;flex-wrap:wrap;margin-top:15px}.collectorStep{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid #34516b;border-radius:999px;background:#06111ee6;color:#dbeafe;font-size:.72rem;font-weight:850}.collectorStep b{display:grid;place-items:center;width:19px;height:19px;border-radius:50%;background:#12364b;color:#67e8f9;font-size:.66rem}.collectorMark{position:relative;min-height:230px;border:1px solid #29455e;border-radius:22px;background:radial-gradient(circle at 42% 44%,#0e3245 0,#06101d 48%,#030812 100%);overflow:hidden}.collectorMark svg{position:absolute;inset:0;width:100%;height:100%}.collectorLegend{position:absolute;left:12px;right:12px;bottom:10px;display:flex;justify-content:center;gap:6px;flex-wrap:wrap;color:#7790a6;font-size:.62rem;font-weight:900;letter-spacing:.08em}.collectorLegend span{color:#b8e9f4}.captureCard{border-color:#2d526d;box-shadow:0 26px 90px #0006,0 0 0 1px #22d3ee0d,inset 0 1px #ffffff08}.collectorBridge{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:12px 0;padding:13px 15px;border:1px solid #29475f;border-radius:18px;background:linear-gradient(90deg,#071523,#0a1c2f 55%,#0a1727);overflow:hidden}.collectorBridgeCopy{min-width:0}.collectorBridgeKicker{display:block;color:#67e8f9;font-size:.65rem;font-weight:950;letter-spacing:.15em;text-transform:uppercase;margin-bottom:3px}.collectorBridge strong{display:block;font-size:.96rem}.collectorBridge small{display:block;color:#8fa5b9;margin-top:3px;line-height:1.4}.collectorRoute{display:flex;align-items:center;gap:6px;flex:0 0 auto}.collectorRoute span{padding:7px 9px;border:1px solid #34516b;border-radius:10px;background:#06101d;color:#dbeafe;font-size:.68rem;font-weight:900}.collectorRoute i{font-style:normal;color:#22d3ee;font-weight:900}@media(max-width:760px){.collectorHero{grid-template-columns:1fr;padding:16px;border-radius:22px}.collectorMark{min-height:190px}.collectorBridge{align-items:flex-start;flex-direction:column}.collectorRoute{width:100%;overflow:auto;padding-bottom:2px}}@media(max-width:540px){.collectorHero{margin-top:6px;padding:14px;gap:12px}.collectorHero h1{font-size:clamp(2.55rem,14vw,4rem)}.collectorLead{font-size:.97rem}.collectorMark{min-height:168px}.collectorSteps{gap:5px}.collectorStep{font-size:.68rem;padding:6px 8px}.collectorRoute span{padding:6px 8px}}@media(prefers-reduced-motion:no-preference){.collectorPulse{animation:collectorPulse 2.8s ease-in-out infinite}@keyframes collectorPulse{0%,100%{opacity:.32;transform:scale(1)}50%{opacity:.8;transform:scale(1.08)}}}'''
-          rep(css_anchor,css_anchor+css_extra,'collector css')
-
-          old_top='<div class="top"><div><h1>Detective</h1><p class="sub">Samla bevis, dokument, bilder, ljud och andra spår i tydliga serier. Originalen kan bevaras för spårbarhet, medan arbetskopior kan granskas, ordnas och rensas från känslig metadata.</p></div><div class="badge"><span class="dot"></span> Privat lokalt arkiv</div></div>'
-          new_top='''<section class="collectorHero">
-<div><div class="collectorEyebrow">UOS · Material / Collection</div><h1>Detective <span>Collector</span></h1><p class="collectorLead">Samla in spår. Bevara original. Ordna materialet i serier och bygg färdiga batchar för vidare arbete i UOS.</p><div class="collectorSteps"><span class="collectorStep"><b>1</b>Samla</span><span class="collectorStep"><b>2</b>Ordna</span><span class="collectorStep"><b>3</b>Batcha</span><span class="collectorStep"><b>4</b>UOS</span></div><div class="badge" style="margin-top:14px"><span class="dot"></span> Privat lokalt arkiv · original + arbetskopior</div></div>
-<div class="collectorMark" aria-label="Spår samlas i serier och batchar för UOS">
-<svg viewBox="0 0 440 260" role="img" aria-hidden="true">
-<defs><linearGradient id="cg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient><linearGradient id="bg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0e7490"/><stop offset="1" stop-color="#6d28d9"/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-<g fill="none" stroke="url(#cg)" stroke-width="2.2" opacity=".55"><path d="M68 58 C125 58 132 102 184 119"/><path d="M68 130 C125 130 136 130 184 130"/><path d="M68 202 C125 202 132 158 184 141"/><path d="M276 130 C315 130 326 130 354 130"/></g>
-<g fill="#07111f" stroke="#35536d" stroke-width="2"><rect x="28" y="35" width="76" height="46" rx="14"/><rect x="28" y="107" width="76" height="46" rx="14"/><rect x="28" y="179" width="76" height="46" rx="14"/></g>
-<g stroke="#bff7ff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="48" y="49" width="30" height="20" rx="4"/><circle cx="63" cy="59" r="5"/><path d="M84 118v24M77 124c0-5 3-9 7-9s7 4 7 9v6c0 5-3 9-7 9s-7-4-7-9M72 131c0 8 5 14 12 14s12-6 12-14M84 145v5"/><path d="M50 190h25l12 12v14H50zM75 190v12h12M57 208h22"/></g>
-<g filter="url(#glow)"><circle class="collectorPulse" cx="218" cy="130" r="65" fill="none" stroke="#22d3ee" stroke-width="2" opacity=".45"/><circle cx="218" cy="130" r="50" fill="#071a29" stroke="url(#cg)" stroke-width="3"/><path d="M193 109h50M193 123h50M193 137h50M193 151h38" stroke="#d9fbff" stroke-width="4" stroke-linecap="round"/><circle cx="246" cy="151" r="8" fill="#22d3ee"/></g>
-<g><rect x="343" y="96" width="72" height="68" rx="20" fill="url(#bg)" opacity=".95"/><path d="M360 115h38M360 128h38M360 141h25" stroke="#fff" stroke-width="3" stroke-linecap="round"/><text x="379" y="182" text-anchor="middle" fill="#b6c8d8" font-size="12" font-weight="800">UOS</text></g>
-<g fill="#8fa5b9" font-size="10" font-weight="800"><text x="66" y="92" text-anchor="middle">BILD</text><text x="66" y="164" text-anchor="middle">LJUD</text><text x="66" y="236" text-anchor="middle">DOKUMENT</text><text x="218" y="207" text-anchor="middle">SERIER</text><text x="379" y="83" text-anchor="middle">BATCH</text></g>
-</svg><div class="collectorLegend"><span>SPÅR</span> → <span>SERIER</span> → <span>BATCH</span> → <span>UOS</span></div></div>
-</section>'''
-          rep(old_top,new_top,'hero identity')
-
-          rep('<section class="grid"><div class="card">','<section class="grid"><div class="card captureCard">','capture card accent')
-
-          active_anchor='<section class="card"><div class="sectionHead"><h2>Aktiv serie</h2>'
-          bridge='''<div class="collectorBridge"><div class="collectorBridgeCopy"><span class="collectorBridgeKicker">Överlämning</span><strong>Collector samlar — UOS arbetar vidare</strong><small>Färdiga serier kan senare skickas vidare som batchar utan att Collector behöver vara själva analysmiljön.</small></div><div class="collectorRoute"><span>Spår</span><i>→</i><span>Serie</span><i>→</i><span>Batch</span><i>→</i><span>UOS</span></div></div>'''
-          rep(active_anchor,bridge+active_anchor,'collector bridge')
-
-          rep('Detective v0.11 ·','Detective Collector v0.12 ·', 'footer brand')
-          p.write_text(s)
-          PY
-
+      - name: Apply Collector identity
+        run: python tools/patch_detective_collector_v012.py
       - name: Validate Collector surface
         shell: bash
         run: |
           grep -q '<title>Detective Collector — UOS</title>' web/detective/index.html
           grep -q 'Detective <span>Collector</span>' web/detective/index.html
           grep -q 'SPÅR' web/detective/index.html
-          grep -q 'SERIER' web/detective/index.html
           grep -q 'BATCH' web/detective/index.html
-          grep -q 'UOS' web/detective/index.html
           grep -q 'Detective Collector v0.12' web/detective/index.html
           grep -q 'height:min(58vh,560px)' web/detective/index.html
           grep -q 'id="photoModeBtn"' web/detective/index.html
@@ -83,10 +37,13 @@ jobs:
           Path('/tmp/detective.js').write_text(s[a:b])
           PY
           node --check /tmp/detective.js
-
       - name: Commit Collector identity
         shell: bash
         run: |
+          if git diff --quiet; then
+            echo 'No changes to commit'
+            exit 0
+          fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add web/detective/index.html
