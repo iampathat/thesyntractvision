@@ -1,0 +1,2 @@
+Detective v0.4 deployment marker.
+Unified camera controls, configurable voice commands, editable series contents.
