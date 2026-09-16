@@ -1,0 +1,2 @@
+Detective v0.3 deployment marker.
+In-camera shutter, continuous Swedish voice commands, nested folder/category/series archive browser.
