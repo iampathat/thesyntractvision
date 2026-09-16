@@ -1,0 +1,2 @@
+Detective v0.5 deployment marker.
+Scalable series navigation: Top X + A-Z/ÅÄÖ/# + search, including move-to-series target picker.
