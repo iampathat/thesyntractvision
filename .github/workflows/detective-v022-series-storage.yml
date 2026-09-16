@@ -23,7 +23,7 @@ jobs:
           assert 'Byt serie' in s
           assert 'Skapa ny serie' in s
           assert 'GB totalt' in s
-          assert '% använt' in s
+          assert 'pctText} använt' in s
           assert 'Detective Collector v0.22' in s
           js=re.search(r'<script>([\s\S]*)</script>',s).group(1)
           Path('/tmp/detective.js').write_text(js)
