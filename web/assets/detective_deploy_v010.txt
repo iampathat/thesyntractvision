@@ -1,0 +1,2 @@
+Detective v0.10 deployment marker.
+Camera preview fits inside the existing camera window with black letterboxing when needed. Foto/Film selector is clickable and active.
