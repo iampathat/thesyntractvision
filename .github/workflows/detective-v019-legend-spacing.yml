@@ -1,0 +1,35 @@
+name: Build Detective Collector v0.19 legend spacing
+on:
+  push:
+    paths:
+      - 'tools/patch_detective_collector_v019.py'
+      - '.github/workflows/detective-v019-legend-spacing.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply legend spacing
+        run: python tools/patch_detective_collector_v019.py
+      - name: Validate Collector
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('web/detective/index.html').read_text()
+          assert 'height:calc(100% - 44px)' in s
+          assert '.collectorMark{min-height:190px}' in s
+          assert 'Detective Collector v0.19' in s
+          js=re.search(r'<script>([\s\S]*)</script>',s).group(1)
+          Path('/tmp/detective.js').write_text(js)
+          PY
+          node --check /tmp/detective.js
+      - name: Commit spacing fix
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add web/detective/index.html
+          git commit -m 'Add breathing room below Detective Collector illustration'
+          git push
