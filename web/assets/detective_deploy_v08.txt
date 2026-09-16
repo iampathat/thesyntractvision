@@ -1,0 +1,2 @@
+Detective v0.8 deploy marker
+Camera status pill aligned with voice status.
