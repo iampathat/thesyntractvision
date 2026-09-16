@@ -1,0 +1,36 @@
+name: Build Detective Collector v0.18 share flow
+on:
+  push:
+    paths:
+      - 'tools/patch_detective_collector_v018.py'
+      - '.github/workflows/detective-v018-share-flow.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply share flow
+        run: python tools/patch_detective_collector_v018.py
+      - name: Validate Collector
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('web/detective/index.html').read_text()
+          assert '<b>4</b>Dela till' in s
+          assert '<span>DELA TILL</span>' in s
+          assert 'gap:30px' in s
+          assert 'Detective Collector v0.18' in s
+          js=re.search(r'<script>([\s\S]*)</script>',s).group(1)
+          Path('/tmp/detective.js').write_text(js)
+          PY
+          node --check /tmp/detective.js
+      - name: Commit share flow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add web/detective/index.html
+          git commit -m 'Open Detective Collector sharing flow beyond UOS'
+          git push
