@@ -1,0 +1,2 @@
+Detective v0.2 deployment marker.
+Continuous capture series: title once, capture pages automatically.
