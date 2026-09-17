@@ -22,25 +22,16 @@
 @media(max-width:760px){.collectorHero.simpleHero{grid-template-columns:minmax(0,1fr) 210px;gap:16px;padding:16px}.simpleHero .collectorMark{height:145px;min-height:145px;max-width:210px}.simpleArchiveBadge{margin-top:13px}}
 @media(max-width:540px){.collectorHero.simpleHero{grid-template-columns:minmax(0,1fr) 118px;gap:10px;padding:13px}.simpleHero h1{font-size:clamp(2.2rem,11vw,3.2rem);margin-bottom:8px}.simpleHero .collectorLead{font-size:.9rem;line-height:1.38}.simpleHero .collectorMark{height:108px;min-height:108px;max-width:118px}.simpleArchiveBadge{grid-column:1/-1;margin-top:12px;font-size:.72rem;padding:7px 9px}.simpleHeroCopy{display:contents}.simpleHeroCopy h1,.simpleHeroCopy .collectorLead{grid-column:1}.simpleHeroCopy .simpleArchiveBadge{grid-column:1/-1}}
 
+
+/* v0.24 title-only intro */
+.titleOnlyHero{margin:8px 0 14px;padding:14px 4px 6px}.titleOnlyHero h1{font-size:clamp(2.8rem,8vw,5.2rem);letter-spacing:-.065em;line-height:.86;margin:0}.titleOnlyHero h1 span{display:block;background:linear-gradient(90deg,#67e8f9,#a5b4fc 58%,#c4b5fd);-webkit-background-clip:text;background-clip:text;color:transparent}@media(max-width:540px){.titleOnlyHero{margin-top:4px;padding:10px 2px 4px}.titleOnlyHero h1{font-size:clamp(2.6rem,14vw,4rem)}}
+
 </style>
 </head>
 <body>
 <main class="wrap">
-<section class="collectorHero simpleHero">
-<div class="simpleHeroCopy">
+<section class="titleOnlyHero">
   <h1>Detective <span>Collector</span></h1>
-  <p class="collectorLead">Samla spår. Bevara original. Ordna i serier och dela vidare när du vill.</p>
-  <div class="badge simpleArchiveBadge"><span class="dot"></span> Privat lokalt arkiv · original + arbetskopior</div>
-</div>
-<div class="collectorMark" aria-label="Spår samlas i serier och batchar för vidare delning">
-<svg viewBox="0 0 440 260" role="img" aria-hidden="true">
-<defs><linearGradient id="cg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient><linearGradient id="bg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0e7490"/><stop offset="1" stop-color="#6d28d9"/></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-<g fill="none" stroke="url(#cg)" stroke-width="2.2" opacity=".55"><path d="M68 58 C125 58 132 102 184 119"/><path d="M68 130 C125 130 136 130 184 130"/><path d="M68 202 C125 202 132 158 184 141"/><path d="M276 130 C315 130 326 130 354 130"/></g>
-<g fill="#07111f" stroke="#35536d" stroke-width="2"><rect x="28" y="35" width="76" height="46" rx="14"/><rect x="28" y="107" width="76" height="46" rx="14"/><rect x="28" y="179" width="76" height="46" rx="14"/></g>
-<g stroke="#bff7ff" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="48" y="49" width="30" height="20" rx="4"/><circle cx="63" cy="59" r="5"/><path d="M84 118v24M77 124c0-5 3-9 7-9s7 4 7 9v6c0 5-3 9-7 9s-7-4-7-9M72 131c0 8 5 14 12 14s12-6 12-14M84 145v5"/><path d="M50 190h25l12 12v14H50zM75 190v12h12M57 208h22"/></g>
-<g filter="url(#glow)"><circle class="collectorPulse" cx="218" cy="130" r="65" fill="none" stroke="#22d3ee" stroke-width="2" opacity=".45"/><circle cx="218" cy="130" r="50" fill="#071a29" stroke="url(#cg)" stroke-width="3"/><path d="M193 109h50M193 123h50M193 137h50M193 151h38" stroke="#d9fbff" stroke-width="4" stroke-linecap="round"/><circle cx="246" cy="151" r="8" fill="#22d3ee"/></g>
-<g><rect x="343" y="96" width="72" height="68" rx="20" fill="url(#bg)" opacity=".95"/><path d="M360 115h38M360 128h38M360 141h25" stroke="#fff" stroke-width="3" stroke-linecap="round"/></g>
-</svg></div>
 </section>
 </section>
 <section class="card setupCard simpleSetup">
@@ -79,7 +70,7 @@
 </section>
 <div class="collectorBridge"><div class="collectorBridgeCopy"><span class="collectorBridgeKicker">Överlämning</span><strong>Collector samlar — du väljer nästa mål</strong><small>Färdiga serier kan delas vidare som batchar till exempelvis UOS, export eller andra arbetsflöden.</small></div><div class="collectorRoute"><span>Spår</span><i>→</i><span>Serie</span><i>→</i><span>Batch</span><i>→</i><span>Dela till</span></div></div><section class="card"><div class="sectionHead"><h2>Innehåll i aktiv serie</h2><span id="activePageCount" class="small">0 objekt</span></div><div id="activePages" class="activePages"></div><div id="previewNote" class="previewNote"></div><p id="noActivePages" class="small">När du fotograferar eller lägger till material byggs serien här.</p></section>
 <section class="card archiveCard"><div class="sectionHead"><h2>Arkiv</h2><input id="archiveSearch" class="search" placeholder="Skriv början på en serie, mapp eller ett sökord…"></div><div class="archiveTools"><div class="topRow"><label>Snabbåtkomst:</label><select id="topXSelect"><option>5</option><option selected>8</option><option>12</option><option>20</option></select><span class="small">senast använda serier</span></div><div id="topSeries" class="topSeries"></div><div id="archiveResultTitle" class="resultTitle">Skriv i sökfältet för att hitta äldre serier.</div></div><div id="archiveTree"></div><p id="emptyArchive" class="small">Inga serier ännu.</p><details class="originals"><summary class="small">Tekniskt originalarkiv</summary><div id="originalList"></div></details></section>
-<div class="footer">Detective Collector v0.23 · förenklad introduktion · privat lokalt arkiv · mindre illustration · metadata control · local-first evidence capture · UOS / QCDS / Syntract direction</div>
+<div class="footer">Detective Collector v0.24 · title only · less is more · metadata control · local-first evidence capture · UOS / QCDS / Syntract direction</div>
 </main>
 <dialog id="voiceDialog"><div class="dialogHead"><h2>Röstkommandon</h2><button id="closeVoiceDialog" class="mini">Stäng</button></div><div class="dialogBody"><div class="field"><label>Språk</label><select id="voiceLanguage"><option value="sv-SE">Svenska</option><option value="en-US">English (US)</option><option value="en-GB">English (UK)</option><option value="de-DE">Deutsch</option><option value="fr-FR">Français</option><option value="es-ES">Español</option></select></div><div class="small">Skriv flera varianter med kommatecken. För “ny serie” och “mapp” kan namnet sägas direkt efter kommandot.</div><div class="field"><label>Fota</label><input id="cmdPhoto" placeholder="fota, fotografera, ta foto"></div><div class="field"><label>Ny serie</label><input id="cmdNewSeries" placeholder="ny serie"></div><div class="field"><label>Klar / avsluta serie</label><input id="cmdEndSeries" placeholder="klar serie, avsluta serie"></div><div class="field"><label>Byt / sätt mapp</label><input id="cmdFolder" placeholder="mapp"></div><div class="field"><label>Aktivera kamera</label><input id="cmdCamera" placeholder="kamera på, starta kamera"></div><div class="field"><label>Stäng av röst</label><input id="cmdVoiceOff" placeholder="röst av"></div></div><div class="dialogActions"><button id="resetVoiceConfig" class="btn ghost">Standard</button><button id="saveVoiceConfig" class="btn primary">Spara</button></div></dialog>
 <dialog id="moveDialog"><div class="dialogHead"><h2>Flytta till annan serie</h2><button id="closeMoveDialog" class="mini">Stäng</button></div><div class="dialogBody"><input id="moveSearch" class="search" placeholder="Skriv början på målserien eller ett sökord…"><div class="small">Senast använda serier visas först. Skriv några tecken för att filtrera resten.</div><div id="moveTopSeries" class="topSeries"></div><div id="moveResultTitle" class="resultTitle"></div><div id="moveTargets" class="moveTargets"></div></div></dialog>
