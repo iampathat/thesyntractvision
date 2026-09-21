@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 560" role="img" aria-labelledby="t2 d2">
+<title id="t2">QCDS core for threat modelling</title><desc id="d2">Four QCDS phases mapped to threat modelling.</desc>
+<defs><style>
+.bg{fill:#0b0f14}.phase{fill:#111821;stroke:#2d3945;stroke-width:2}.accent{fill:#132011;stroke:#8bbf32;stroke-width:2}.last{fill:#0c1a1d;stroke:#3aa9bc;stroke-width:2}
+.n{fill:#586675;font:800 16px system-ui}.h{fill:#f4f7fb;font:800 24px system-ui}.s{fill:#9aa7b6;font:500 15px system-ui}.a{stroke:#607080;stroke-width:4;fill:none;marker-end:url(#m)}
+</style><marker id="m" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0l10 5-10 5z" fill="#748493"/></marker></defs>
+<rect class="bg" width="1200" height="560" rx="28"/>
+<g transform="translate(80,90)">
+<rect class="phase" width="230" height="300" rx="22"/><text class="n" x="22" y="42">01</text><text class="h" x="22" y="90">Condition</text><text class="h" x="22" y="121">Formation</text><text class="s" x="22" y="175">System facts</text><text class="s" x="22" y="201">Assets</text><text class="s" x="22" y="227">Trust boundaries</text><text class="s" x="22" y="253">Permissions</text>
+<path class="a" d="M240 150h65"/>
+<g transform="translate(315)"><rect class="accent" width="230" height="300" rx="22"/><text class="n" x="22" y="42">02</text><text class="h" x="22" y="90">Conditional</text><text class="h" x="22" y="121">Evolution</text><text class="s" x="22" y="175">Oracle constraints</text><text class="s" x="22" y="201">Threat hypotheses</text><text class="s" x="22" y="227">Framework lenses</text><text class="s" x="22" y="253">Attack paths</text></g>
+<path class="a" d="M555 150h65"/>
+<g transform="translate(630)"><rect class="phase" width="230" height="300" rx="22"/><text class="n" x="22" y="42">03</text><text class="h" x="22" y="90">Recursive</text><text class="h" x="22" y="121">Inference</text><text class="s" x="22" y="175">Control → bypass</text><text class="s" x="22" y="201">Parallel branches</text><text class="s" x="22" y="227">Rotation</text><text class="s" x="22" y="253">Dimension exclusion</text></g>
+<path class="a" d="M870 150h65"/>
+<g transform="translate(945)"><rect class="last" width="230" height="300" rx="22"/><text class="n" x="22" y="42">04</text><text class="h" x="22" y="90">Truth-Alignment</text><text class="h" x="22" y="121">Verification</text><text class="s" x="22" y="175">Evidence</text><text class="s" x="22" y="201">Counter-tests</text><text class="s" x="22" y="227">Convergence</text><text class="s" x="22" y="253">Verified findings</text></g>
+</g>
+<text class="s" x="80" y="455">Same four QCDS phases. Threat modelling is simply another problem space.</text>
+</svg>
