@@ -205,6 +205,8 @@ jobs:
           cp qcds-security-lab/README.md _site/qcds-security-lab/README.md
           cp qcds-security-lab/LICENSE.md _site/qcds-security-lab/LICENSE.md
           cp qcds-security-lab/ARCHITECTURE.md _site/qcds-security-lab/ARCHITECTURE.md
+          cp qcds-security-lab/METHODOLOGY.md _site/qcds-security-lab/METHODOLOGY.md
+          cp qcds-security-lab/PERSPECTIVES.md _site/qcds-security-lab/PERSPECTIVES.md
 
       - name: Build isolated Cally.One Pages surface from tribute
         run: |
@@ -296,8 +298,13 @@ jobs:
           test -s _site/qcds-security-lab/style.css
           test -s _site/qcds-security-lab/LICENSE.md
           test -s _site/qcds-security-lab/ARCHITECTURE.md
+          test -s _site/qcds-security-lab/METHODOLOGY.md
+          test -s _site/qcds-security-lab/PERSPECTIVES.md
           grep -F 'QCDS Security Lab' _site/qcds-security-lab/index.html
           grep -F 'COMMERCIAL LICENSE REQUIRED' _site/qcds-security-lab/index.html
+          grep -F 'START STUPIDLY SIMPLE' _site/qcds-security-lab/index.html
+          grep -F 'ORACLES' _site/qcds-security-lab/index.html
+          grep -F 'STRIDE is useful.' _site/qcds-security-lab/index.html
           grep -F 'Commercial license required' _site/qcds-security-lab/LICENSE.md
 
       - name: Validate isolated Cally.One surface
