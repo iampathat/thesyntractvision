@@ -11,10 +11,15 @@
   <div class="noise"></div>
   <header class="nav">
     <a class="brand" href="./"><span class="mark">Q★</span><span>QCDS Security Lab</span></a>
-    <div class="nav-right">
-      <span class="license-pill">COMMERCIAL LICENSE REQUIRED</span>
+    <nav class="nav-right" aria-label="Security Lab">
+      <a href="#workbench">Run</a>
+      <a href="#method">Method</a>
+      <a href="#qcds-core">QCDS Core</a>
+      <a href="#perspective-map">Perspectives</a>
+      <a href="#license">License</a>
       <a href="https://github.com/iampathat/thesyntractvision/tree/main/qcds-security-lab">Source</a>
-    </div>
+      <span class="license-pill">COMMERCIAL LICENSE REQUIRED</span>
+    </nav>
   </header>
 
   <main>
@@ -23,8 +28,8 @@
       <h1>AI threat modelling<br><span>that keeps going.</span></h1>
       <p class="lead">From system map to attack surface. From attack surface to vulnerability. From control to bypass. From hypothesis to verified finding.</p>
       <div class="actions">
-        <a class="button primary" href="#architecture">Explore the architecture</a>
-        <a class="button ghost" href="./METHODOLOGY.md">Read the method</a>
+        <a class="button primary" href="#workbench">Run the threat modeler</a>
+        <a class="button ghost" href="#method">How it works</a>
         <a class="button ghost" href="https://github.com/iampathat/thesyntractvision/issues/new?title=QCDS%20Security%20Lab%20License%20Inquiry">License inquiry</a>
       </div>
       <div class="hero-meta">
@@ -108,9 +113,26 @@
     </section>
 
 
-    <section class="primer">
-      <div class="section-kicker">START STUPIDLY SIMPLE</div>
-      <h2>You do not need to know security terminology.<br><span>Start with intent.</span></h2>
+
+    <section class="reference-nav" aria-label="Security Lab reference">
+      <div>
+        <small>REFERENCE</small>
+        <strong>Need the explanation?</strong>
+        <span>The working tool stays above. Use these sections when you want to inspect the method behind a result.</span>
+      </div>
+      <nav>
+        <a href="#method">Method</a>
+        <a href="#qcds-core">QCDS Core</a>
+        <a href="#oracles">Oracles</a>
+        <a href="#perspective-map">Perspectives</a>
+        <a href="#rotation">Rotation</a>
+        <a href="#license">License</a>
+      </nav>
+    </section>
+
+    <section class="primer" id="method">
+      <div class="section-kicker">METHOD · 01</div>
+      <h2>Start with five questions.</h2>
       <div class="question-grid">
         <article><small>01 · GOAL</small><blockquote>“I am the attacker. I want to ______.”</blockquote><p>Steal data? Change a decision? Trigger an action? Break availability? Impersonate someone?</p></article>
         <article><small>02 · PATH</small><blockquote>“How would I try?”</blockquote><p>Input, identity, retrieval, model context, tool call, API, dependency, human approval — follow the route.</p></article>
@@ -120,10 +142,10 @@
       </div>
     </section>
 
-    <section class="interview">
+    <section class="interview" id="interview">
       <div>
-        <div class="section-kicker">AI-ASSISTED THREAT MODELING</div>
-        <h2>The LLM interviews.<br><span>QCDS structures the search.</span></h2>
+        <div class="section-kicker">METHOD · 02</div>
+        <h2>Questions become Conditions.</h2>
         <p class="copy">The conversation is adaptive. Every answer changes the next question. The user only needs to understand the system; the AI can translate plain language into security structure.</p>
         <div class="chat">
           <div class="bubble ai"><b>AI</b><span>What are you building?</span></div>
@@ -144,9 +166,9 @@
       </div>
     </section>
 
-    <section class="qcds-stack">
-      <div class="section-kicker">FROM CONVERSATION TO QCDS</div>
-      <h2>The threat model becomes an inference system.</h2>
+    <section class="qcds-stack" id="qcds-core">
+      <div class="section-kicker">QCDS CORE</div>
+      <h2>Conditions become an inference system.</h2>
       <div class="stack-flow">
         <div class="stage"><small>HUMAN LANGUAGE</small><strong>Interview + architecture + code</strong></div>
         <b>↓</b>
@@ -164,7 +186,7 @@
       </div>
     </section>
 
-    <section class="oracles">
+    <section class="oracles" id="oracles">
       <div class="section-kicker">ORACLES</div>
       <h2>Every candidate path has to pass tests.</h2>
       <p class="section-copy">An Oracle is not “the answer.” It is a constraint, test or evidence function that rejects, retains, weights or narrows a candidate threat path.</p>
@@ -176,9 +198,9 @@
       </div>
     </section>
 
-    <section class="perspectives">
-      <div class="section-kicker">PERSPECTIVES, NOT PRISONS</div>
-      <h2>STRIDE is useful.<br><span>It is still only one lens.</span></h2>
+    <section class="perspectives" id="perspective-map">
+      <div class="section-kicker">PERSPECTIVE MAP</div>
+      <h2>STRIDE is one lens among several.</h2>
       <p class="section-copy">Named frameworks feed QCDS with question families and Oracles. They do not define the edge of the search space.</p>
       <div class="lens-grid">
         <article><b>STRIDE</b><p>Spoofing · Tampering · Repudiation · Information disclosure · Denial of service · Elevation of privilege</p></article>
@@ -191,10 +213,10 @@
       <div class="lens-note"><strong>QCDS ≠ STRIDE + more checklists.</strong><span>QCDS is the inference architecture that can run, rotate, exclude, combine and challenge those perspectives.</span></div>
     </section>
 
-    <section class="rotation">
+    <section class="rotation" id="rotation">
       <div class="rotation-copy">
-        <div class="section-kicker">PARALLELISM + ROTATION</div>
-        <h2>Make the branches disagree.</h2>
+        <div class="section-kicker">ROTATION CHECK</div>
+        <h2>Do independent paths rediscover the same finding?</h2>
         <p>One branch may call prompt injection the primary risk. Another may discover that excessive tool authority is the structural weakness. A third may invalidate both because authorization blocks the path.</p>
         <p>The contradiction is not noise to average away. It is evidence to investigate.</p>
       </div>
@@ -210,67 +232,18 @@
     </section>
 
     <section class="recursive">
-      <div class="section-kicker">THE RECURSIVE CORE</div>
-      <h2>Finding a control is not the finish line.</h2>
+      <div class="section-kicker">RECURSIVE SEARCH</div>
+      <h2>A control becomes the next question.</h2>
       <div class="recursive-chain">
         <div>THREAT</div><b>→</b><div>ATTACK PATH</div><b>→</b><div>CONTROL</div><b>→</b><div class="hot">CAN IT FAIL?</div><b>→</b><div>BYPASS</div><b>→</b><div>NEW CONTROL</div><b>→</b><div>EVIDENCE</div>
       </div>
       <p class="center-copy">Then run it again. Rotate the perspective. Exclude the dominant dimension. Attempt falsification. Keep the paths that survive.</p>
     </section>
 
-    <section class="grid" id="architecture">
-      <article class="card accent">
-        <div class="num">01</div>
-        <h2>Condition Formation</h2>
-        <p>Map the actual system: assets, models, identities, data, tools, trust boundaries, permissions, external inputs and hidden assumptions.</p>
-      </article>
-      <article class="card">
-        <div class="num">02</div>
-        <h2>Conditional Evolution</h2>
-        <p>Generate constrained threat hypotheses across the full observable attack surface instead of stopping at a predefined checklist.</p>
-      </article>
-      <article class="card">
-        <div class="num">03</div>
-        <h2>Recursive Inference</h2>
-        <p>Search combinations, second-order effects and bypasses. A control becomes a new object to challenge, not the end of the analysis.</p>
-      </article>
-      <article class="card accent2">
-        <div class="num">04</div>
-        <h2>Truth-Alignment Verification</h2>
-        <p>Bind claims to evidence, attempt falsification, rotate perspectives and track which findings remain stable under repeated challenge.</p>
-      </article>
-    </section>
-
-    <section class="flow">
-      <div class="section-kicker">CONVERGENCE</div>
-      <h2>Not “what threats are on the list?”<br><span>What survives when the system attacks its own conclusions?</span></h2>
-      <div class="flowline">
-        <div><small>INPUT</small><strong>System</strong></div><b>→</b>
-        <div><small>MAP</small><strong>Attack surface</strong></div><b>→</b>
-        <div><small>SEARCH</small><strong>Parallel hypotheses</strong></div><b>→</b>
-        <div><small>ROTATE</small><strong>Bias reduction</strong></div><b>→</b>
-        <div><small>CHALLENGE</small><strong>Control bypass</strong></div><b>→</b>
-        <div><small>VERIFY</small><strong>Evidence binding</strong></div>
-      </div>
-    </section>
-
-    <section class="capabilities">
-      <div class="section-kicker">FIRST COMMERCIAL DOMAIN</div>
-      <h2>AI Security & Vulnerability Discovery</h2>
-      <div class="cap-grid">
-        <div><b>AI Threat Modeling</b><p>Interactive system interrogation, trust-boundary mapping and adaptive threat generation.</p></div>
-        <div><b>Vulnerability Discovery</b><p>Search observable code, architecture and integration surfaces for individual and compound weaknesses.</p></div>
-        <div><b>Attack-Path Search</b><p>Reason across component chains instead of reviewing isolated components one at a time.</p></div>
-        <div><b>Control Bypass Analysis</b><p>Treat every mitigation as a new hypothesis: what conditions defeat it, weaken it or route around it?</p></div>
-        <div><b>Recursive Verification</b><p>Repeat discovery, counter-analysis and falsification until new inference paths stop producing material findings.</p></div>
-        <div><b>Substrate Independence</b><p>The base model can change. The QCDS inference architecture is the persistent differentiator.</p></div>
-      </div>
-    </section>
-
-    <section class="license">
+    <section class="license" id="license">
       <div>
         <div class="section-kicker">LICENSE</div>
-        <h2>Visible does not mean free.</h2>
+        <h2>Commercial use requires a license.</h2>
         <p>This new QCDS Security Lab surface is published for evaluation and provenance. New material in this directory is reserved for commercial licensing by agreement.</p>
         <p class="fine">No operational use, copying, modification, deployment, integration, service provision, model training, redistribution or commercialization is granted merely because the repository is public. Pre-existing QCDS material previously released under CC BY 4.0 / MIT keeps those earlier grants.</p>
       </div>
