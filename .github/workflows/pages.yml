@@ -1,4 +1,4 @@
-name: Living Logical Robot + Cally.One + Cally ChatGPT + Fabric 4.2 Pages
+name: Living Logical Robot + Cally.One + Cally ChatGPT + Fabric 4.2 + Security Lab Pages
 
 on:
   push:
@@ -6,6 +6,7 @@ on:
     paths:
       - "src/qcds_fabric/**"
       - "qcds_fabric_4_2/**"
+      - "qcds-security-lab/**"
       - "robots/legal/sweden_housing/**"
       - "web/session_core_worker.js"
       - "web/assets/**"
@@ -196,6 +197,15 @@ jobs:
           shutil.copy2(source / 'docs' / 'ARCHITECTURE.md', out / 'docs' / 'ARCHITECTURE.md')
           PY
 
+      - name: Build QCDS Security Lab commercial surface
+        run: |
+          mkdir -p _site/qcds-security-lab
+          cp qcds-security-lab/index.html _site/qcds-security-lab/index.html
+          cp qcds-security-lab/style.css _site/qcds-security-lab/style.css
+          cp qcds-security-lab/README.md _site/qcds-security-lab/README.md
+          cp qcds-security-lab/LICENSE.md _site/qcds-security-lab/LICENSE.md
+          cp qcds-security-lab/ARCHITECTURE.md _site/qcds-security-lab/ARCHITECTURE.md
+
       - name: Build isolated Cally.One Pages surface from tribute
         run: |
           python - <<'PY'
@@ -279,6 +289,16 @@ jobs:
           assert data['large_fabric_schedule']['max_width'] == 512
           assert data['large_fabric_schedule']['depth'] == 12
           PY
+
+      - name: Validate QCDS Security Lab commercial surface
+        run: |
+          test -s _site/qcds-security-lab/index.html
+          test -s _site/qcds-security-lab/style.css
+          test -s _site/qcds-security-lab/LICENSE.md
+          test -s _site/qcds-security-lab/ARCHITECTURE.md
+          grep -F 'QCDS Security Lab' _site/qcds-security-lab/index.html
+          grep -F 'COMMERCIAL LICENSE REQUIRED' _site/qcds-security-lab/index.html
+          grep -F 'Commercial license required' _site/qcds-security-lab/LICENSE.md
 
       - name: Validate isolated Cally.One surface
         run: |
