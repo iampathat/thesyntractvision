@@ -306,10 +306,13 @@ jobs:
           grep -F 'COMMERCIAL LICENSE REQUIRED' _site/qcds-security-lab/index.html
           grep -F 'START STUPIDLY SIMPLE' _site/qcds-security-lab/index.html
           grep -F 'ORACLES' _site/qcds-security-lab/index.html
-          grep -F 'STRIDE is useful.' _site/qcds-security-lab/index.html
+          grep -F 'STRIDE is one lens among several.' _site/qcds-security-lab/index.html
+          grep -F 'Run' _site/qcds-security-lab/index.html
+          grep -F 'QCDS Core' _site/qcds-security-lab/index.html
           grep -F 'Run QCDS threat model' _site/qcds-security-lab/index.html
           grep -F 'buildFindings' _site/qcds-security-lab/app.js
           grep -F 'rotationResults' _site/qcds-security-lab/app.js
+          grep -F 'aNum - bNum' _site/qcds-security-lab/app.js
           grep -F 'Commercial license required' _site/qcds-security-lab/LICENSE.md
 
       - name: Validate isolated Cally.One surface
