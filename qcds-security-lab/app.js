@@ -612,8 +612,11 @@
         "\n\nThe next required topic is: "+topic+
         ". Ask ONE short follow-up question in plain English. Do not give advice, findings, examples of exploits, or multiple questions.";
       const response = await session.prompt(prompt);
-      const text = String(response || "").trim();
-      return text || fallback;
+      const raw = typeof response === "string"
+        ? response
+        : (response?.text || response?.output || response?.content || "");
+      const text = String(raw || "").trim();
+      return text && text !== "[object Object]" ? text : fallback;
     }catch(_err){
       miniSetProvider("Adaptive demo");
       return fallback;
