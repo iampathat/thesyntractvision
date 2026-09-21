@@ -235,8 +235,9 @@
     },conditions,lenses);
 
     return f.sort((a,b)=>{
-      const order={CRITICAL:4,HIGH:3,MEDIUM:2,LOW:1};
-      return (order[b.severity]-order[a.severity]) || (b.rediscovery-a.rediscovery);
+      const aNum = Number(String(a.id).replace(/\D/g,"")) || 0;
+      const bNum = Number(String(b.id).replace(/\D/g,"")) || 0;
+      return aNum - bNum;
     });
   }
 
