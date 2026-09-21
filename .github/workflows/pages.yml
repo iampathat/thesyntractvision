@@ -199,7 +199,7 @@ jobs:
 
       - name: Build QCDS Security Lab commercial surface
         run: |
-          mkdir -p _site/qcds-security-lab
+          mkdir -p _site/qcds-security-lab/assets
           cp qcds-security-lab/index.html _site/qcds-security-lab/index.html
           cp qcds-security-lab/style.css _site/qcds-security-lab/style.css
           cp qcds-security-lab/app.js _site/qcds-security-lab/app.js
@@ -208,6 +208,7 @@ jobs:
           cp qcds-security-lab/ARCHITECTURE.md _site/qcds-security-lab/ARCHITECTURE.md
           cp qcds-security-lab/METHODOLOGY.md _site/qcds-security-lab/METHODOLOGY.md
           cp qcds-security-lab/PERSPECTIVES.md _site/qcds-security-lab/PERSPECTIVES.md
+          cp qcds-security-lab/assets/*.svg _site/qcds-security-lab/assets/
 
       - name: Build isolated Cally.One Pages surface from tribute
         run: |
@@ -302,6 +303,9 @@ jobs:
           test -s _site/qcds-security-lab/ARCHITECTURE.md
           test -s _site/qcds-security-lab/METHODOLOGY.md
           test -s _site/qcds-security-lab/PERSPECTIVES.md
+          test -s _site/qcds-security-lab/assets/threat-loop.svg
+          test -s _site/qcds-security-lab/assets/qcds-core.svg
+          test -s _site/qcds-security-lab/assets/rotation.svg
           grep -F 'QCDS Security Lab' _site/qcds-security-lab/index.html
           grep -F 'COMMERCIAL LICENSE REQUIRED' _site/qcds-security-lab/index.html
           grep -F 'START STUPIDLY SIMPLE' _site/qcds-security-lab/index.html
@@ -310,6 +314,9 @@ jobs:
           grep -F 'Run' _site/qcds-security-lab/index.html
           grep -F 'QCDS Core' _site/qcds-security-lab/index.html
           grep -F 'Run QCDS threat model' _site/qcds-security-lab/index.html
+          grep -F 'Mini AI Interviewer' _site/qcds-security-lab/index.html
+          grep -F 'Three pictures explain the whole thing.' _site/qcds-security-lab/index.html
+          grep -F 'miniBrowserSession' _site/qcds-security-lab/app.js
           grep -F 'buildFindings' _site/qcds-security-lab/app.js
           grep -F 'rotationResults' _site/qcds-security-lab/app.js
           grep -F 'aNum - bNum' _site/qcds-security-lab/app.js
