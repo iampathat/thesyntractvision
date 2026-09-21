@@ -39,6 +39,75 @@
     </section>
 
 
+
+    <section class="workbench" id="workbench">
+      <div class="workbench-head">
+        <div>
+          <div class="section-kicker">RUN IT</div>
+          <h2>Build a threat model now.</h2>
+          <p>This is the first functional QCDS Security Lab proof: a deterministic browser engine. Your answers become Conditions; perspective families generate candidate paths; Oracles challenge them; rotation checks whether findings survive without their first lens.</p>
+        </div>
+        <div class="proof-note">
+          <b>What it is</b>
+          <span>A real local inference workflow running in your browser.</span>
+          <b>What it is not yet</b>
+          <span>A full LLM-connected autonomous vulnerability scanner. Evidence verification still requires actual system data and tests.</span>
+        </div>
+      </div>
+
+      <form id="qtm_form" class="qtm-form" onsubmit="return false;">
+        <div class="qtm-fields">
+          <label>
+            <span>System name</span>
+            <input id="qtm_name" type="text" placeholder="e.g. Customer Support AI">
+          </label>
+          <label class="wide">
+            <span>What are you building?</span>
+            <textarea id="qtm_description" rows="4" placeholder="Describe the system in plain language. No security terminology needed."></textarea>
+          </label>
+          <label>
+            <span>I am the attacker. I want to…</span>
+            <input id="qtm_goal" type="text" placeholder="e.g. cause an unauthorized action">
+          </label>
+          <label>
+            <span>What matters most?</span>
+            <input id="qtm_assets" type="text" placeholder="customer data, payments, source code">
+            <small>Comma-separated assets are enough.</small>
+          </label>
+        </div>
+
+        <div class="qtm-question-title">
+          <b>Tell QCDS what is true about the system.</b>
+          <span>These become explicit Conditions. Select only what you actually know.</span>
+        </div>
+
+        <div class="qtm-checks">
+          <label><input id="qtm_external_input" type="checkbox"><span><b>External input</b>Users or external systems can submit content.</span></label>
+          <label><input id="qtm_untrusted_content" type="checkbox"><span><b>Untrusted content</b>The system reads web, email, files or retrieved content it does not control.</span></label>
+          <label><input id="qtm_rag" type="checkbox"><span><b>Retrieval / RAG</b>The system retrieves knowledge from connected sources.</span></label>
+          <label><input id="qtm_sensitive_data" type="checkbox"><span><b>Sensitive data</b>Confidential or protected information is reachable.</span></label>
+          <label><input id="qtm_cross_user" type="checkbox"><span><b>Multiple principals</b>Users, tenants or identities share an application boundary.</span></label>
+          <label><input id="qtm_tools" type="checkbox"><span><b>Tools / APIs</b>The model or application can call external tools.</span></label>
+          <label><input id="qtm_high_impact" type="checkbox"><span><b>Consequential actions</b>At least one action can meaningfully change the outside world.</span></label>
+          <label><input id="qtm_human_approval" type="checkbox"><span><b>Human approval</b>A person approves at least one consequential action.</span></label>
+          <label><input id="qtm_authorization" type="checkbox"><span><b>Explicit authorization</b>Resource/action access is checked independently of model text.</span></label>
+          <label><input id="qtm_third_party" type="checkbox"><span><b>Third parties</b>Models, packages, services or data come from outside your control.</span></label>
+          <label><input id="qtm_secrets" type="checkbox"><span><b>Secrets / privileged tokens</b>The application holds credentials with meaningful authority.</span></label>
+          <label><input id="qtm_logging" type="checkbox"><span><b>Security logging</b>Important actions are durably logged.</span></label>
+          <label><input id="qtm_rollback" type="checkbox"><span><b>Rollback / containment</b>Consequential actions can be undone or contained.</span></label>
+        </div>
+
+        <div class="qtm-actions">
+          <button type="button" id="qtm_run" class="button primary">Run QCDS threat model</button>
+          <button type="button" id="qtm_example" class="button ghost">Load example system</button>
+          <button type="button" id="qtm_reset" class="button ghost">Reset</button>
+        </div>
+      </form>
+
+      <div id="qtm_results" class="qtm-results" hidden></div>
+    </section>
+
+
     <section class="primer">
       <div class="section-kicker">START STUPIDLY SIMPLE</div>
       <h2>You do not need to know security terminology.<br><span>Start with intent.</span></h2>
@@ -220,5 +289,6 @@
     <div>QCDS · substrate-independent epistemic architecture<br>Commercial surface · 2026</div>
     <div><a href="https://zenodo.org/records/15455541">Canonical QCDS record</a></div>
   </footer>
+  <script defer src="./app.js"></script>
 </body>
 </html>
