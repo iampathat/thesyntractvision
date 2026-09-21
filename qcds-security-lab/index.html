@@ -24,6 +24,7 @@
       <p class="lead">From system map to attack surface. From attack surface to vulnerability. From control to bypass. From hypothesis to verified finding.</p>
       <div class="actions">
         <a class="button primary" href="#architecture">Explore the architecture</a>
+        <a class="button ghost" href="./METHODOLOGY.md">Read the method</a>
         <a class="button ghost" href="https://github.com/iampathat/thesyntractvision/issues/new?title=QCDS%20Security%20Lab%20License%20Inquiry">License inquiry</a>
       </div>
       <div class="hero-meta">
@@ -35,6 +36,117 @@
 
     <section class="ticker" aria-label="Capabilities">
       <span>AI THREAT MODELING</span><i>×</i><span>VULNERABILITY DISCOVERY</span><i>×</i><span>ATTACK-PATH INFERENCE</span><i>×</i><span>CONTROL BYPASS ANALYSIS</span><i>×</i><span>TRUTH-ALIGNMENT VERIFICATION</span>
+    </section>
+
+
+    <section class="primer">
+      <div class="section-kicker">START STUPIDLY SIMPLE</div>
+      <h2>You do not need to know security terminology.<br><span>Start with intent.</span></h2>
+      <div class="question-grid">
+        <article><small>01 · GOAL</small><blockquote>“I am the attacker. I want to ______.”</blockquote><p>Steal data? Change a decision? Trigger an action? Break availability? Impersonate someone?</p></article>
+        <article><small>02 · PATH</small><blockquote>“How would I try?”</blockquote><p>Input, identity, retrieval, model context, tool call, API, dependency, human approval — follow the route.</p></article>
+        <article><small>03 · CONTROL</small><blockquote>“What would stop me?”</blockquote><p>Authentication, authorization, isolation, validation, approval, rate limits, logging, rollback or another boundary.</p></article>
+        <article><small>04 · BYPASS</small><blockquote>“How could I get around that?”</blockquote><p>The mitigation is not the end. It becomes the next object QCDS challenges.</p></article>
+        <article><small>05 · EVIDENCE</small><blockquote>“What would prove this path is real?”</blockquote><p>Architecture, code, permissions, logs, tests, reproducible behavior and counter-evidence.</p></article>
+      </div>
+    </section>
+
+    <section class="interview">
+      <div>
+        <div class="section-kicker">AI-ASSISTED THREAT MODELING</div>
+        <h2>The LLM interviews.<br><span>QCDS structures the search.</span></h2>
+        <p class="copy">The conversation is adaptive. Every answer changes the next question. The user only needs to understand the system; the AI can translate plain language into security structure.</p>
+        <div class="chat">
+          <div class="bubble ai"><b>AI</b><span>What are you building?</span></div>
+          <div class="bubble human"><b>YOU</b><span>An assistant that reads customer email and drafts replies.</span></div>
+          <div class="bubble ai"><b>AI</b><span>Can it only draft, or can it also send?</span></div>
+          <div class="bubble human"><b>YOU</b><span>It can send after approval.</span></div>
+          <div class="bubble ai"><b>AI</b><span>Who can send email into the system, and what else can the model access?</span></div>
+        </div>
+      </div>
+      <div class="conditions-panel">
+        <div class="panel-title">CONDITION FORMATION</div>
+        <div class="condition"><code>C1</code><span>External users can submit arbitrary text</span></div>
+        <div class="condition"><code>C2</code><span>Model reads untrusted content</span></div>
+        <div class="condition"><code>C3</code><span>Model can prepare an external action</span></div>
+        <div class="condition"><code>C4</code><span>Human approval exists before send</span></div>
+        <div class="condition"><code>C5</code><span>Approval quality must be independently tested</span></div>
+        <p>Answers become explicit Conditions — the observable logical space, not the conclusion.</p>
+      </div>
+    </section>
+
+    <section class="qcds-stack">
+      <div class="section-kicker">FROM CONVERSATION TO QCDS</div>
+      <h2>The threat model becomes an inference system.</h2>
+      <div class="stack-flow">
+        <div class="stage"><small>HUMAN LANGUAGE</small><strong>Interview + architecture + code</strong></div>
+        <b>↓</b>
+        <div class="stage bright"><small>CONDITIONS</small><strong>Facts, assets, boundaries, permissions, assumptions</strong></div>
+        <b>↓</b>
+        <div class="stage"><small>ORACLES</small><strong>Constraints, tests and evidence functions</strong></div>
+        <b>↓</b>
+        <div class="stage"><small>PARALLEL PERSPECTIVES</small><strong>Multiple independent attack hypotheses</strong></div>
+        <b>↓</b>
+        <div class="stage"><small>ROTATION</small><strong>Dimension exclusion + bias control</strong></div>
+        <b>↓</b>
+        <div class="stage"><small>RECURSIVE INFERENCE</small><strong>Threat → control → bypass → new path</strong></div>
+        <b>↓</b>
+        <div class="stage verified"><small>TRUTH-ALIGNMENT</small><strong>Evidence-bound, counter-tested surviving findings</strong></div>
+      </div>
+    </section>
+
+    <section class="oracles">
+      <div class="section-kicker">ORACLES</div>
+      <h2>Every candidate path has to pass tests.</h2>
+      <p class="section-copy">An Oracle is not “the answer.” It is a constraint, test or evidence function that rejects, retains, weights or narrows a candidate threat path.</p>
+      <div class="oracle-grid">
+        <article><span>BOUNDARY</span><h3>Did the path cross trust?</h3><p>External → internal, user A → user B, data → instruction, model → privileged tool.</p></article>
+        <article><span>AUTHORITY</span><h3>Can this actor actually do it?</h3><p>Check identity, token scope, role, tool permissions and the exact action context.</p></article>
+        <article><span>CONTROL</span><h3>Does a mitigation really stop it?</h3><p>Do not accept “we have approval” or “we validate input” without testing the failure conditions.</p></article>
+        <article><span>EVIDENCE</span><h3>What binds the claim to reality?</h3><p>Code, configuration, logs, architecture, tests, reproducibility and counter-evidence.</p></article>
+      </div>
+    </section>
+
+    <section class="perspectives">
+      <div class="section-kicker">PERSPECTIVES, NOT PRISONS</div>
+      <h2>STRIDE is useful.<br><span>It is still only one lens.</span></h2>
+      <p class="section-copy">Named frameworks feed QCDS with question families and Oracles. They do not define the edge of the search space.</p>
+      <div class="lens-grid">
+        <article><b>STRIDE</b><p>Spoofing · Tampering · Repudiation · Information disclosure · Denial of service · Elevation of privilege</p></article>
+        <article><b>OWASP / GenAI</b><p>Prompt, retrieval, model-output, tool-use and application-boundary failure modes.</p></article>
+        <article><b>IDENTITY</b><p>Principals, tokens, delegated authority, confused-deputy paths and privilege expansion.</p></article>
+        <article><b>AGENT / TOOL CHAIN</b><p>Where a model decision becomes an external action with greater consequence.</p></article>
+        <article><b>CIA / PRIVACY / SUPPLY CHAIN</b><p>Security properties, sensitive relationships, dependencies, datasets, models and services.</p></article>
+        <article class="open"><b>OPEN SEARCH</b><p>Remove the named framework entirely. Start from assets, permissions, attacker goals, consequences or reversed data flow.</p></article>
+      </div>
+      <div class="lens-note"><strong>QCDS ≠ STRIDE + more checklists.</strong><span>QCDS is the inference architecture that can run, rotate, exclude, combine and challenge those perspectives.</span></div>
+    </section>
+
+    <section class="rotation">
+      <div class="rotation-copy">
+        <div class="section-kicker">PARALLELISM + ROTATION</div>
+        <h2>Make the branches disagree.</h2>
+        <p>One branch may call prompt injection the primary risk. Another may discover that excessive tool authority is the structural weakness. A third may invalidate both because authorization blocks the path.</p>
+        <p>The contradiction is not noise to average away. It is evidence to investigate.</p>
+      </div>
+      <div class="branch-map">
+        <div class="root-node">SAME SYSTEM</div>
+        <div class="branch-row">
+          <div>PROMPT / DATA</div><div>IDENTITY</div><div>TOOLS</div><div>OPEN SEARCH</div>
+        </div>
+        <div class="cross">↘ &nbsp; ↙ &nbsp; ↘ &nbsp; ↙</div>
+        <div class="root-node lower">CROSS-EXAMINATION</div>
+        <div class="rotate-row"><span>RUN A · ALL</span><span>RUN B · –PROMPT</span><span>RUN C · –IDENTITY</span><span>RUN D · REVERSE GRAPH</span></div>
+      </div>
+    </section>
+
+    <section class="recursive">
+      <div class="section-kicker">THE RECURSIVE CORE</div>
+      <h2>Finding a control is not the finish line.</h2>
+      <div class="recursive-chain">
+        <div>THREAT</div><b>→</b><div>ATTACK PATH</div><b>→</b><div>CONTROL</div><b>→</b><div class="hot">CAN IT FAIL?</div><b>→</b><div>BYPASS</div><b>→</b><div>NEW CONTROL</div><b>→</b><div>EVIDENCE</div>
+      </div>
+      <p class="center-copy">Then run it again. Rotate the perspective. Exclude the dominant dimension. Attempt falsification. Keep the paths that survive.</p>
     </section>
 
     <section class="grid" id="architecture">
@@ -61,8 +173,8 @@
     </section>
 
     <section class="flow">
-      <div class="section-kicker">THE DISCOVERY LOOP</div>
-      <h2>Not “what threats are on the list?”<br><span>What survives when the model attacks its own conclusions?</span></h2>
+      <div class="section-kicker">CONVERGENCE</div>
+      <h2>Not “what threats are on the list?”<br><span>What survives when the system attacks its own conclusions?</span></h2>
       <div class="flowline">
         <div><small>INPUT</small><strong>System</strong></div><b>→</b>
         <div><small>MAP</small><strong>Attack surface</strong></div><b>→</b>
