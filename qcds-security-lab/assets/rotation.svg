@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 570" role="img" aria-labelledby="t3 d3">
+<title id="t3">Perspective rotation</title><desc id="d3">One system is viewed through several security lenses, then one lens is removed to test whether the finding survives.</desc>
+<defs><style>
+.bg{fill:#0b0f14}.root{fill:#132011;stroke:#8bbf32;stroke-width:2}.lens{fill:#111821;stroke:#2c3945;stroke-width:2}.out{fill:#0d1a1d;stroke:#3aa9bc;stroke-width:2}
+.h{fill:#f4f7fb;font:800 24px system-ui}.s{fill:#9aa7b6;font:500 15px system-ui}.k{fill:#b8ff39;font:800 12px system-ui;letter-spacing:1px}.a{stroke:#617181;stroke-width:3;fill:none;marker-end:url(#m)}
+</style><marker id="m" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0l10 5-10 5z" fill="#748493"/></marker></defs>
+<rect class="bg" width="1200" height="570" rx="28"/>
+<rect class="root" x="470" y="45" width="260" height="85" rx="18"/><text class="k" x="500" y="78">SAME SYSTEM</text><text class="h" x="500" y="108">One reality</text>
+<path class="a" d="M600 140v45"/><path class="a" d="M600 165L195 230"/><path class="a" d="M600 165L465 230"/><path class="a" d="M600 165L735 230"/><path class="a" d="M600 165L1005 230"/>
+<g transform="translate(80,230)"><rect class="lens" width="230" height="115" rx="18"/><text class="k" x="20" y="35">LENS A</text><text class="h" x="20" y="72">STRIDE</text><text class="s" x="20" y="97">known threat classes</text></g>
+<g transform="translate(350,230)"><rect class="lens" width="230" height="115" rx="18"/><text class="k" x="20" y="35">LENS B</text><text class="h" x="20" y="72">OWASP / AI</text><text class="s" x="20" y="97">AI failure modes</text></g>
+<g transform="translate(620,230)"><rect class="lens" width="230" height="115" rx="18"/><text class="k" x="20" y="35">LENS C</text><text class="h" x="20" y="72">Identity</text><text class="s" x="20" y="97">authority + principals</text></g>
+<g transform="translate(890,230)"><rect class="lens" width="230" height="115" rx="18"/><text class="k" x="20" y="35">LENS D</text><text class="h" x="20" y="72">Open search</text><text class="s" x="20" y="97">no named framework</text></g>
+<path class="a" d="M195 355L510 420"/><path class="a" d="M465 355L555 420"/><path class="a" d="M735 355L645 420"/><path class="a" d="M1005 355L690 420"/>
+<rect class="out" x="410" y="420" width="380" height="100" rx="20"/><text class="k" x="440" y="454">ROTATE / EXCLUDE / REDISCOVER</text><text class="h" x="440" y="490">Does the finding survive?</text>
+</svg>
