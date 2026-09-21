@@ -4,7 +4,17 @@
   const $ = (sel, root=document) => root.querySelector(sel);
   const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
 
-  const state = { model: null };
+  const state = {
+    model: null,
+    mini: {
+      step: 0,
+      answers: [],
+      flags: {},
+      session: null,
+      provider: "Adaptive demo",
+      initializing: false
+    }
+  };
 
   const CONDITION_DEFS = [
     ["external_input","External users or systems can submit content"],
@@ -484,7 +494,209 @@
     });
   }
 
+
+  const MINI_TOPICS = [
+    "system",
+    "inputs",
+    "attacker goal",
+    "assets",
+    "actions",
+    "controls"
+  ];
+
+  const MINI_FALLBACK_QUESTIONS = [
+    "Tell me what you are building. One or two sentences is enough.",
+    "Who or what can feed data into it, and what outside sources does it read?",
+    "What would an attacker most want to make this system do — or reveal?",
+    "What data or capability would hurt most if it was exposed, changed, deleted or misused?",
+    "What can the system actually do outside the conversation — send, delete, pay, deploy, retrieve files or call APIs?",
+    "What currently stops a bad action — permissions, human approval, isolation, logging, rollback or something else?"
+  ];
+
+  function miniAppend(role, text){
+    const box = $("#mini_messages");
+    if(!box) return;
+    const div = document.createElement("div");
+    div.className = "mini-msg " + (role === "user" ? "human" : "ai");
+    const b = document.createElement("b");
+    b.textContent = role === "user" ? "YOU" : "MINI AI";
+    const span = document.createElement("span");
+    span.textContent = text;
+    div.append(b, span);
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function miniSetProvider(label){
+    state.mini.provider = label;
+    const el = $("#mini_provider");
+    if(el) el.textContent = label;
+  }
+
+  function miniDetect(text){
+    const s = String(text || "").toLowerCase();
+    const hit = (key, words) => {
+      if(words.some(w => s.includes(w))) state.mini.flags[key] = true;
+    };
+
+    hit("external_input", ["customer","user","public","external","email","upload","form","chat","message","website"]);
+    hit("untrusted_content", ["email","web","website","internet","upload","file","document","attachment","customer message","retriev"]);
+    hit("rag", ["rag","retriev","knowledge base","internal document","internal docs","vector","sharepoint","search documents","search our"]);
+    hit("sensitive_data", ["customer data","personal data","pii","confidential","medical","payment","financial","source code","internal document","secret"]);
+    hit("cross_user", ["users","customers","tenants","accounts","different people","multiple users"]);
+    hit("tools", ["api","tool","send","email","jira","slack","payment","database","delete","deploy","create","execute","write"]);
+    hit("high_impact", ["send","delete","pay","payment","transfer","deploy","execute","approve","change","write","close ticket","create ticket"]);
+    hit("human_approval", ["human approval","human approves","approval","approve before","review before","person approves"]);
+    hit("authorization", ["authorization","authorisation","permission","permissions","role","roles","access control","rbac","login"]);
+    hit("third_party", ["third party","third-party","vendor","openai","anthropic","cloud","external api","saas"]);
+    hit("secrets", ["secret","api key","token","credential","service account","password"]);
+    hit("logging", ["logging","logs","audit","audit trail","monitoring"]);
+    hit("rollback", ["rollback","roll back","undo","revert","restore","containment"]);
+    renderMiniDetected();
+  }
+
+  function renderMiniDetected(){
+    const el = $("#mini_detected");
+    if(!el) return;
+    const active = CONDITION_DEFS.filter(([key]) => state.mini.flags[key]);
+    if(!active.length){
+      el.innerHTML = "<small>QCDS Conditions will appear here as the interview learns about the system.</small>";
+      return;
+    }
+    el.innerHTML = "<small>DETECTED CONDITIONS</small><div>" +
+      active.map(([key,label]) => '<span title="'+esc(label)+'">'+esc(key.replaceAll("_"," "))+"</span>").join("") +
+      "</div>";
+  }
+
+  async function miniBrowserSession(){
+    if(state.mini.session || state.mini.initializing) return state.mini.session;
+    state.mini.initializing = true;
+    try{
+      let factory = null;
+      if(globalThis.LanguageModel && typeof globalThis.LanguageModel.create === "function"){
+        factory = globalThis.LanguageModel;
+      }else if(globalThis.ai?.languageModel && typeof globalThis.ai.languageModel.create === "function"){
+        factory = globalThis.ai.languageModel;
+      }
+      if(!factory){
+        miniSetProvider("Adaptive demo");
+        return null;
+      }
+      miniSetProvider("Local LLM loading…");
+      const session = await factory.create({
+        systemPrompt: "You are a tiny security interviewer inside QCDS Security Lab. Ask exactly one short plain-English question at a time. Never produce findings, attack instructions or advice. Your only job is to clarify system facts for defensive threat modelling."
+      });
+      state.mini.session = session;
+      miniSetProvider("Browser-local LLM");
+      return session;
+    }catch(_err){
+      miniSetProvider("Adaptive demo");
+      return null;
+    }finally{
+      state.mini.initializing = false;
+    }
+  }
+
+  async function miniQuestionForStep(step){
+    const fallback = MINI_FALLBACK_QUESTIONS[step] || "Anything else about permissions, controls or recovery that matters?";
+    const session = await miniBrowserSession();
+    if(!session || typeof session.prompt !== "function") return fallback;
+
+    try{
+      const history = state.mini.answers.map((answer, i) =>
+        "Q: "+MINI_FALLBACK_QUESTIONS[i]+"\nA: "+answer
+      ).join("\n\n");
+      const topic = MINI_TOPICS[step] || "remaining system facts";
+      const prompt =
+        "Interview so far:\n"+history+
+        "\n\nThe next required topic is: "+topic+
+        ". Ask ONE short follow-up question in plain English. Do not give advice, findings, examples of exploits, or multiple questions.";
+      const response = await session.prompt(prompt);
+      const text = String(response || "").trim();
+      return text || fallback;
+    }catch(_err){
+      miniSetProvider("Adaptive demo");
+      return fallback;
+    }
+  }
+
+  function miniInferName(description){
+    const clean = String(description || "").replace(/\s+/g," ").trim();
+    if(!clean) return "Interviewed system";
+    const first = clean.split(/[.!?]/)[0].trim();
+    if(first.length <= 52) return first;
+    return first.slice(0,49).trim()+"…";
+  }
+
+  async function miniSend(){
+    const input = $("#mini_input");
+    const btn = $("#mini_send");
+    const text = input?.value.trim();
+    if(!text) return;
+
+    if(btn) btn.disabled = true;
+    miniAppend("user", text);
+    state.mini.answers[state.mini.step] = text;
+    miniDetect(text);
+    if(input) input.value = "";
+
+    state.mini.step += 1;
+    if(state.mini.step >= MINI_FALLBACK_QUESTIONS.length){
+      miniAppend("ai","Good. I have enough for a first threat-model pass. I have not decided what is vulnerable; I have only extracted system facts. Send these Conditions to the QCDS builder below.");
+      const apply = $("#mini_apply");
+      if(apply) apply.disabled = false;
+      if(btn) btn.disabled = true;
+      return;
+    }
+
+    const q = await miniQuestionForStep(state.mini.step);
+    miniAppend("ai", q);
+    if(btn) btn.disabled = false;
+    input?.focus();
+  }
+
+  function miniApply(){
+    const answers = state.mini.answers;
+    const set = (id, value) => { const el=$("#"+id); if(el) el.value=value || ""; };
+
+    set("qtm_name", miniInferName(answers[0]));
+    set("qtm_description", answers[0] || "");
+    set("qtm_goal", answers[2] || "");
+    set("qtm_assets", answers[3] || "");
+
+    CONDITION_DEFS.forEach(([key]) => {
+      const el = $("#qtm_"+key);
+      if(el) el.checked = Boolean(state.mini.flags[key]);
+    });
+
+    const wb = $("#workbench");
+    wb?.scrollIntoView({behavior:"smooth", block:"start"});
+    setTimeout(() => $("#qtm_run")?.focus(), 500);
+  }
+
+  function miniRestart(){
+    state.mini.step = 0;
+    state.mini.answers = [];
+    state.mini.flags = {};
+    const box=$("#mini_messages");
+    if(box) box.innerHTML = '<div class="mini-msg ai"><b>MINI AI</b><span>'+esc(MINI_FALLBACK_QUESTIONS[0])+'</span></div>';
+    const input=$("#mini_input"); if(input) input.value="";
+    const send=$("#mini_send"); if(send) send.disabled=false;
+    const apply=$("#mini_apply"); if(apply) apply.disabled=true;
+    renderMiniDetected();
+    input?.focus();
+  }
+
   function init(){
+    $("#mini_send")?.addEventListener("click", miniSend);
+    $("#mini_input")?.addEventListener("keydown", event => {
+      if(event.key === "Enter" && !event.shiftKey){
+        event.preventDefault();
+        miniSend();
+      }
+    });
+    $("#mini_apply")?.addEventListener("click", miniApply);
+    $("#mini_restart")?.addEventListener("click", miniRestart);
     $("#qtm_run")?.addEventListener("click",()=>render(buildModel(readInput())));
     $("#qtm_example")?.addEventListener("click",loadExample);
     $("#qtm_reset")?.addEventListener("click",()=>{
