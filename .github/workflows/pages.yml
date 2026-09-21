@@ -202,6 +202,7 @@ jobs:
           mkdir -p _site/qcds-security-lab
           cp qcds-security-lab/index.html _site/qcds-security-lab/index.html
           cp qcds-security-lab/style.css _site/qcds-security-lab/style.css
+          cp qcds-security-lab/app.js _site/qcds-security-lab/app.js
           cp qcds-security-lab/README.md _site/qcds-security-lab/README.md
           cp qcds-security-lab/LICENSE.md _site/qcds-security-lab/LICENSE.md
           cp qcds-security-lab/ARCHITECTURE.md _site/qcds-security-lab/ARCHITECTURE.md
@@ -296,6 +297,7 @@ jobs:
         run: |
           test -s _site/qcds-security-lab/index.html
           test -s _site/qcds-security-lab/style.css
+          test -s _site/qcds-security-lab/app.js
           test -s _site/qcds-security-lab/LICENSE.md
           test -s _site/qcds-security-lab/ARCHITECTURE.md
           test -s _site/qcds-security-lab/METHODOLOGY.md
@@ -305,6 +307,9 @@ jobs:
           grep -F 'START STUPIDLY SIMPLE' _site/qcds-security-lab/index.html
           grep -F 'ORACLES' _site/qcds-security-lab/index.html
           grep -F 'STRIDE is useful.' _site/qcds-security-lab/index.html
+          grep -F 'Run QCDS threat model' _site/qcds-security-lab/index.html
+          grep -F 'buildFindings' _site/qcds-security-lab/app.js
+          grep -F 'rotationResults' _site/qcds-security-lab/app.js
           grep -F 'Commercial license required' _site/qcds-security-lab/LICENSE.md
 
       - name: Validate isolated Cally.One surface
