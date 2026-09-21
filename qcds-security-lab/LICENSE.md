@@ -4,7 +4,7 @@ Copyright © 2026 Patrik Sundblom. All rights reserved.
 
 ## 1. Scope
 
-This notice applies to original material contained in the `qcds-security-lab/` directory, including without limitation its source code, website code, documentation, diagrams, written architecture, examples, workflows, tests, specifications, extensions and future additions, except where a file expressly states otherwise.
+Notwithstanding the repository-level MIT license, this notice applies to original material contained in the `qcds-security-lab/` directory, including without limitation its source code, website code, documentation, diagrams, written architecture, examples, workflows, tests, specifications, extensions and future additions, except where a file expressly states otherwise.
 
 ## 2. Limited evaluation permission
 
