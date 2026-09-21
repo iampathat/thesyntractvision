@@ -12,8 +12,9 @@
   <header class="nav">
     <a class="brand" href="./"><span class="mark">Q★</span><span>QCDS Security Lab</span></a>
     <nav class="nav-right" aria-label="Security Lab">
-      <a href="#workbench">Run</a>
-      <a href="#method">Method</a>
+      <a href="#mini-ai">Mini AI</a>
+      <a href="#workbench">Build</a>
+      <a href="#visual-guide">Visual guide</a>
       <a href="#qcds-core">QCDS Core</a>
       <a href="#perspective-map">Perspectives</a>
       <a href="#license">License</a>
@@ -28,8 +29,8 @@
       <h1>AI threat modelling<br><span>that keeps going.</span></h1>
       <p class="lead">From system map to attack surface. From attack surface to vulnerability. From control to bypass. From hypothesis to verified finding.</p>
       <div class="actions">
-        <a class="button primary" href="#workbench">Run the threat modeler</a>
-        <a class="button ghost" href="#method">How it works</a>
+        <a class="button primary" href="#mini-ai">Talk to Mini AI</a>
+        <a class="button ghost" href="#workbench">Build manually</a>
         <a class="button ghost" href="https://github.com/iampathat/thesyntractvision/issues/new?title=QCDS%20Security%20Lab%20License%20Inquiry">License inquiry</a>
       </div>
       <div class="hero-meta">
@@ -45,11 +46,63 @@
 
 
 
+
+    <section class="mini-ai" id="mini-ai">
+      <div class="mini-ai-copy">
+        <div class="section-kicker">EASIEST START</div>
+        <h2>Just describe it.<br><span>Mini AI asks the next question.</span></h2>
+        <p>You do not need to know threat modelling. Answer a few plain-language questions and the answers are transferred into the QCDS workbench as Conditions.</p>
+        <div class="mini-rule">
+          <b>Important</b>
+          <span>The interviewer may use a browser-local language model when one is available. If not, it uses the built-in adaptive demo interviewer. Either way, the language model does not decide what is true — QCDS still structures and tests the result.</span>
+        </div>
+        <img class="explain-svg compact-svg" src="./assets/threat-loop.svg" alt="Simple diagram: describe system, AI asks questions, QCDS creates Conditions and Oracles, rotates perspectives, then builds a verified threat model.">
+      </div>
+
+      <div class="mini-chat-card">
+        <div class="mini-chat-head">
+          <div><span class="mini-dot"></span><b>Mini AI Interviewer</b></div>
+          <span id="mini_provider" class="mini-provider">Adaptive demo</span>
+        </div>
+        <div id="mini_messages" class="mini-messages" aria-live="polite">
+          <div class="mini-msg ai"><b>MINI AI</b><span>Tell me what you are building. One or two sentences is enough.</span></div>
+        </div>
+        <div class="mini-input-row">
+          <textarea id="mini_input" rows="3" placeholder="e.g. An AI assistant reads customer email, searches our internal documents and can draft replies…"></textarea>
+          <button type="button" id="mini_send" class="button primary">Send</button>
+        </div>
+        <div class="mini-chat-actions">
+          <button type="button" id="mini_restart" class="mini-link">Start over</button>
+          <button type="button" id="mini_apply" class="button ghost" disabled>Use answers in threat model ↓</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="visual-guide" id="visual-guide">
+      <div class="visual-guide-head">
+        <div class="section-kicker">VISUAL GUIDE</div>
+        <h2>Three pictures explain the whole thing.</h2>
+        <p>No taxonomy required. Follow the arrows first; read the details only if you want them.</p>
+      </div>
+      <div class="visual-card large">
+        <div><small>01 · THE WHOLE FLOW</small><h3>From description to a threat model</h3><p>The interview creates system facts. QCDS then searches and challenges possible paths instead of accepting the first answer.</p></div>
+        <img class="explain-svg" src="./assets/threat-loop.svg" alt="QCDS threat modelling flow from description through interview, Conditions and Oracles to verified threat model.">
+      </div>
+      <div class="visual-card large">
+        <div><small>02 · THE QCDS CORE</small><h3>The four phases stay the same</h3><p>Threat modelling is simply one domain mapped into Condition Formation, Conditional Evolution, Recursive Inference and Truth-Alignment Verification.</p></div>
+        <img class="explain-svg" src="./assets/qcds-core.svg" alt="Four QCDS phases mapped to threat modelling.">
+      </div>
+      <div class="visual-card large">
+        <div><small>03 · WHY ROTATE?</small><h3>Do not let one framework define reality</h3><p>STRIDE, OWASP, identity and open search can disagree. Remove a lens and ask whether another path rediscovers the same finding.</p></div>
+        <img class="explain-svg" src="./assets/rotation.svg" alt="One system viewed through multiple security lenses and then rotated to test whether a finding survives.">
+      </div>
+    </section>
+
     <section class="workbench" id="workbench">
       <div class="workbench-head">
         <div>
-          <div class="section-kicker">RUN IT</div>
-          <h2>Build a threat model now.</h2>
+          <div class="section-kicker">MANUAL BUILDER</div>
+          <h2>Or tell QCDS what you already know.</h2>
           <p>This is the first functional QCDS Security Lab proof: a deterministic browser engine. Your answers become Conditions; perspective families generate candidate paths; Oracles challenge them; rotation checks whether findings survive without their first lens.</p>
         </div>
         <div class="proof-note">
@@ -116,9 +169,9 @@
 
     <section class="reference-nav" aria-label="Security Lab reference">
       <div>
-        <small>REFERENCE</small>
-        <strong>Need the explanation?</strong>
-        <span>The working tool stays above. Use these sections when you want to inspect the method behind a result.</span>
+        <small>DEEPER</small>
+        <strong>Want the machinery?</strong>
+        <span>The demo and builder are above. These sections explain exactly what QCDS is doing underneath.</span>
       </div>
       <nav>
         <a href="#method">Method</a>
