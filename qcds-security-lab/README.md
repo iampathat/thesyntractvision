@@ -21,6 +21,21 @@ QCDS Security Lab is a separately licensed commercial QCDS surface for AI threat
 
 The goal is not a checklist. The goal is a recursive inference architecture that keeps searching, challenging, rotating, and verifying until the threat picture stabilizes.
 
+A non-specialist can begin with five questions:
+
+> **I am the attacker. I want to ______.**  
+> **How would I try?**  
+> **What would stop me?**  
+> **How could I get around that?**  
+> **What would prove the path is real?**
+
+The AI interview turns those answers into QCDS Conditions. Oracles constrain candidate paths. Multiple security frameworks and attacker/defender viewpoints become parallel perspectives. Rotation and dimension exclusion reduce shared bias. Recursive inference then searches threat → control → bypass chains before Truth-Alignment Verification promotes evidence-bound findings.
+
+Detailed documents:
+- [METHODOLOGY.md](./METHODOLOGY.md) — end-to-end threat-modeling method
+- [PERSPECTIVES.md](./PERSPECTIVES.md) — how STRIDE, OWASP/GenAI, identity, CIA, privacy, supply-chain and open search map into perspective and Oracle families
+- [ARCHITECTURE.md](./ARCHITECTURE.md) — core architecture
+
 ## QCDS mapping
 
 1. **Condition Formation** — map system, assets, trust boundaries, permissions, inputs and assumptions.
