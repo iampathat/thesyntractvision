@@ -197,12 +197,21 @@ jobs:
           shutil.copy2(source / 'docs' / 'ARCHITECTURE.md', out / 'docs' / 'ARCHITECTURE.md')
           PY
 
+      - name: Set up Node for Security Lab checks
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Test QCDS Security Lab analysis contracts
+        run: node --test qcds-security-lab/tests/engine.test.mjs
+
       - name: Build QCDS Security Lab commercial surface
         run: |
           mkdir -p _site/qcds-security-lab/assets
           cp qcds-security-lab/index.html _site/qcds-security-lab/index.html
           cp qcds-security-lab/style.css _site/qcds-security-lab/style.css
           cp qcds-security-lab/app.js _site/qcds-security-lab/app.js
+          cp qcds-security-lab/engine.mjs _site/qcds-security-lab/engine.mjs
           cp qcds-security-lab/README.md _site/qcds-security-lab/README.md
           cp qcds-security-lab/LICENSE.md _site/qcds-security-lab/LICENSE.md
           cp qcds-security-lab/ARCHITECTURE.md _site/qcds-security-lab/ARCHITECTURE.md
@@ -307,20 +316,21 @@ jobs:
           test -s _site/qcds-security-lab/assets/qcds-core.svg
           test -s _site/qcds-security-lab/assets/rotation.svg
           grep -F 'QCDS Security Lab' _site/qcds-security-lab/index.html
-          grep -F 'COMMERCIAL LICENSE REQUIRED' _site/qcds-security-lab/index.html
-          grep -F 'START STUPIDLY SIMPLE' _site/qcds-security-lab/index.html
-          grep -F 'ORACLES' _site/qcds-security-lab/index.html
-          grep -F 'STRIDE is one lens among several.' _site/qcds-security-lab/index.html
-          grep -F 'Run' _site/qcds-security-lab/index.html
-          grep -F 'QCDS Core' _site/qcds-security-lab/index.html
-          grep -F 'Run QCDS threat model' _site/qcds-security-lab/index.html
-          grep -F 'Mini AI Interviewer' _site/qcds-security-lab/index.html
-          grep -F 'Three pictures explain the whole thing.' _site/qcds-security-lab/index.html
-          grep -F 'miniBrowserSession' _site/qcds-security-lab/app.js
-          grep -F 'buildFindings' _site/qcds-security-lab/app.js
-          grep -F 'rotationResults' _site/qcds-security-lab/app.js
-          grep -F 'aNum - bNum' _site/qcds-security-lab/app.js
+          test -s _site/qcds-security-lab/engine.mjs
+          test -s _site/qcds-security-lab/assets/favicon.svg
+          grep -F 'COMMERCIAL LICENSE REQUIRED' _site/qcds-security-lab/app.js
+          grep -F 'Mini AI Interviewer' _site/qcds-security-lab/app.js
           grep -F 'Commercial license required' _site/qcds-security-lab/LICENSE.md
+          node --check _site/qcds-security-lab/app.js
+          node --check _site/qcds-security-lab/engine.mjs
+          python - <<'PYHTML'
+          import re
+          from pathlib import Path
+          root = Path('_site/qcds-security-lab')
+          for html in root.glob('*.html'):
+              for path in re.findall(r'(?:src|href)="(\./[^"?#]+)', html.read_text()):
+                  assert (root / path).is_file(), path
+          PYHTML
 
       - name: Validate isolated Cally.One surface
         run: |

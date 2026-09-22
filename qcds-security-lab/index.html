@@ -1,321 +1,40 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="QCDS Security Lab — commercial AI threat modelling, vulnerability discovery and recursive verification architecture by Patrik Sundblom.">
-  <title>QCDS Security Lab — AI Threat Modeling</title>
-  <link rel="stylesheet" href="./style.css">
-</head>
-<body>
-  <div class="noise"></div>
-  <header class="nav">
-    <a class="brand" href="./"><span class="mark">Q★</span><span>QCDS Security Lab</span></a>
-    <nav class="nav-right" aria-label="Security Lab">
-      <a href="#mini-ai">Mini AI</a>
-      <a href="#visual-guide">Visual guide</a>
-      <a href="#workbench">Build</a>
-      <a href="#qcds-core">QCDS Core</a>
-      <a href="#perspective-map">Perspectives</a>
-      <a href="#license">License</a>
-      <a href="https://github.com/iampathat/thesyntractvision/tree/main/qcds-security-lab">Source</a>
-      <span class="license-pill">COMMERCIAL LICENSE REQUIRED</span>
-    </nav>
-  </header>
-
-  <main>
-    <section class="hero">
-      <div class="eyebrow">PATRIK SUNDBLOM · QCDS COMMERCIAL SURFACE</div>
-      <h1>AI threat modelling<br><span>that keeps going.</span></h1>
-      <p class="lead">From system map to attack surface. From attack surface to vulnerability. From control to bypass. From hypothesis to verified finding.</p>
-      <div class="actions">
-        <a class="button primary" href="#mini-ai">Talk to Mini AI</a>
-        <a class="button ghost" href="#workbench">Build manually</a>
-        <a class="button ghost" href="https://github.com/iampathat/thesyntractvision/issues/new?title=QCDS%20Security%20Lab%20License%20Inquiry">License inquiry</a>
-      </div>
-      <div class="hero-meta">
-        <div><b>MODEL-AGNOSTIC</b><span>Use the strongest substrate available.</span></div>
-        <div><b>RECURSIVE</b><span>Keep searching after the first plausible answer.</span></div>
-        <div><b>VERIFICATION-FIRST</b><span>Promote findings only with evidence and challenge.</span></div>
-      </div>
-    </section>
-
-    <section class="ticker" aria-label="Capabilities">
-      <span>AI THREAT MODELING</span><i>×</i><span>VULNERABILITY DISCOVERY</span><i>×</i><span>ATTACK-PATH INFERENCE</span><i>×</i><span>CONTROL BYPASS ANALYSIS</span><i>×</i><span>TRUTH-ALIGNMENT VERIFICATION</span>
-    </section>
-
-
-
-
-    <section class="mini-ai" id="mini-ai">
-      <div class="mini-ai-copy">
-        <div class="section-kicker">EASIEST START</div>
-        <h2>Just describe it.<br><span>Mini AI asks the next question.</span></h2>
-        <p>You do not need to know threat modelling. Answer a few plain-language questions and the answers are transferred into the QCDS workbench as Conditions.</p>
-        <div class="mini-rule">
-          <b>Important</b>
-          <span>The interviewer may use a browser-local language model when one is available. If not, it uses the built-in adaptive demo interviewer. Either way, the language model does not decide what is true — QCDS still structures and tests the result.</span>
-        </div>
-        <img class="explain-svg compact-svg" src="./assets/threat-loop.svg" alt="Simple diagram: describe system, AI asks questions, QCDS creates Conditions and Oracles, rotates perspectives, then builds a verified threat model.">
-      </div>
-
-      <div class="mini-chat-card">
-        <div class="mini-chat-head">
-          <div><span class="mini-dot"></span><b>Mini AI Interviewer</b></div>
-          <span id="mini_provider" class="mini-provider">Adaptive demo</span>
-        </div>
-        <div id="mini_messages" class="mini-messages" aria-live="polite">
-          <div class="mini-msg ai"><b>MINI AI</b><span>Tell me what you are building. One or two sentences is enough.</span></div>
-        </div>
-        <div class="mini-input-row">
-          <textarea id="mini_input" rows="3" placeholder="e.g. An AI assistant reads customer email, searches our internal documents and can draft replies…"></textarea>
-          <button type="button" id="mini_send" class="button primary">Send</button>
-        </div>
-        <div id="mini_detected" class="mini-detected"><small>QCDS Conditions will appear here as the interview learns about the system.</small></div>
-        <div class="mini-chat-actions">
-          <button type="button" id="mini_restart" class="mini-link">Start over</button>
-          <button type="button" id="mini_apply" class="button ghost" disabled>Use answers in threat model ↓</button>
-        </div>
-      </div>
-    </section>
-
-    <section class="visual-guide" id="visual-guide">
-      <div class="visual-guide-head">
-        <div class="section-kicker">VISUAL GUIDE</div>
-        <h2>Three pictures explain the whole thing.</h2>
-        <p>No taxonomy required. Follow the arrows first; read the details only if you want them.</p>
-      </div>
-      <div class="visual-card large">
-        <div><small>01 · THE WHOLE FLOW</small><h3>From description to a threat model</h3><p>The interview creates system facts. QCDS then searches and challenges possible paths instead of accepting the first answer.</p></div>
-        <img class="explain-svg" src="./assets/threat-loop.svg" alt="QCDS threat modelling flow from description through interview, Conditions and Oracles to verified threat model.">
-      </div>
-      <div class="visual-card large">
-        <div><small>02 · THE QCDS CORE</small><h3>The four phases stay the same</h3><p>Threat modelling is simply one domain mapped into Condition Formation, Conditional Evolution, Recursive Inference and Truth-Alignment Verification.</p></div>
-        <img class="explain-svg" src="./assets/qcds-core.svg" alt="Four QCDS phases mapped to threat modelling.">
-      </div>
-      <div class="visual-card large">
-        <div><small>03 · WHY ROTATE?</small><h3>Do not let one framework define reality</h3><p>STRIDE, OWASP, identity and open search can disagree. Remove a lens and ask whether another path rediscovers the same finding.</p></div>
-        <img class="explain-svg" src="./assets/rotation.svg" alt="One system viewed through multiple security lenses and then rotated to test whether a finding survives.">
-      </div>
-    </section>
-
-    <section class="workbench" id="workbench">
-      <div class="workbench-head">
-        <div>
-          <div class="section-kicker">MANUAL BUILDER</div>
-          <h2>Or tell QCDS what you already know.</h2>
-          <p>This is the first functional QCDS Security Lab proof: a deterministic browser engine. Your answers become Conditions; perspective families generate candidate paths; Oracles challenge them; rotation checks whether findings survive without their first lens.</p>
-        </div>
-        <div class="proof-note">
-          <b>What it is</b>
-          <span>A real local inference workflow running in your browser.</span>
-          <b>What it is not yet</b>
-          <span>A full LLM-connected autonomous vulnerability scanner. Evidence verification still requires actual system data and tests.</span>
-        </div>
-      </div>
-
-      <form id="qtm_form" class="qtm-form" onsubmit="return false;">
-        <div class="qtm-fields">
-          <label>
-            <span>System name</span>
-            <input id="qtm_name" type="text" placeholder="e.g. Customer Support AI">
-          </label>
-          <label class="wide">
-            <span>What are you building?</span>
-            <textarea id="qtm_description" rows="4" placeholder="Describe the system in plain language. No security terminology needed."></textarea>
-          </label>
-          <label>
-            <span>I am the attacker. I want to…</span>
-            <input id="qtm_goal" type="text" placeholder="e.g. cause an unauthorized action">
-          </label>
-          <label>
-            <span>What matters most?</span>
-            <input id="qtm_assets" type="text" placeholder="customer data, payments, source code">
-            <small>Comma-separated assets are enough.</small>
-          </label>
-        </div>
-
-        <div class="qtm-question-title">
-          <b>Tell QCDS what is true about the system.</b>
-          <span>These become explicit Conditions. Select only what you actually know.</span>
-        </div>
-
-        <div class="qtm-checks">
-          <label><input id="qtm_external_input" type="checkbox"><span><b>External input</b>Users or external systems can submit content.</span></label>
-          <label><input id="qtm_untrusted_content" type="checkbox"><span><b>Untrusted content</b>The system reads web, email, files or retrieved content it does not control.</span></label>
-          <label><input id="qtm_rag" type="checkbox"><span><b>Retrieval / RAG</b>The system retrieves knowledge from connected sources.</span></label>
-          <label><input id="qtm_sensitive_data" type="checkbox"><span><b>Sensitive data</b>Confidential or protected information is reachable.</span></label>
-          <label><input id="qtm_cross_user" type="checkbox"><span><b>Multiple principals</b>Users, tenants or identities share an application boundary.</span></label>
-          <label><input id="qtm_tools" type="checkbox"><span><b>Tools / APIs</b>The model or application can call external tools.</span></label>
-          <label><input id="qtm_high_impact" type="checkbox"><span><b>Consequential actions</b>At least one action can meaningfully change the outside world.</span></label>
-          <label><input id="qtm_human_approval" type="checkbox"><span><b>Human approval</b>A person approves at least one consequential action.</span></label>
-          <label><input id="qtm_authorization" type="checkbox"><span><b>Explicit authorization</b>Resource/action access is checked independently of model text.</span></label>
-          <label><input id="qtm_third_party" type="checkbox"><span><b>Third parties</b>Models, packages, services or data come from outside your control.</span></label>
-          <label><input id="qtm_secrets" type="checkbox"><span><b>Secrets / privileged tokens</b>The application holds credentials with meaningful authority.</span></label>
-          <label><input id="qtm_logging" type="checkbox"><span><b>Security logging</b>Important actions are durably logged.</span></label>
-          <label><input id="qtm_rollback" type="checkbox"><span><b>Rollback / containment</b>Consequential actions can be undone or contained.</span></label>
-        </div>
-
-        <div class="qtm-actions">
-          <button type="button" id="qtm_run" class="button primary">Run QCDS threat model</button>
-          <button type="button" id="qtm_example" class="button ghost">Load example system</button>
-          <button type="button" id="qtm_reset" class="button ghost">Reset</button>
-        </div>
-      </form>
-
-      <div id="qtm_results" class="qtm-results" hidden></div>
-    </section>
-
-
-
-    <section class="reference-nav" aria-label="Security Lab reference">
-      <div>
-        <small>DEEPER</small>
-        <strong>Want the machinery?</strong>
-        <span>The demo and builder are above. These sections explain exactly what QCDS is doing underneath.</span>
-      </div>
-      <nav>
-        <a href="#method">Method</a>
-        <a href="#qcds-core">QCDS Core</a>
-        <a href="#oracles">Oracles</a>
-        <a href="#perspective-map">Perspectives</a>
-        <a href="#rotation">Rotation</a>
-        <a href="#license">License</a>
-      </nav>
-    </section>
-
-    <section class="primer" id="method">
-      <div class="section-kicker">METHOD · 01</div>
-      <h2>Start with five questions.</h2>
-      <div class="question-grid">
-        <article><small>01 · GOAL</small><blockquote>“I am the attacker. I want to ______.”</blockquote><p>Steal data? Change a decision? Trigger an action? Break availability? Impersonate someone?</p></article>
-        <article><small>02 · PATH</small><blockquote>“How would I try?”</blockquote><p>Input, identity, retrieval, model context, tool call, API, dependency, human approval — follow the route.</p></article>
-        <article><small>03 · CONTROL</small><blockquote>“What would stop me?”</blockquote><p>Authentication, authorization, isolation, validation, approval, rate limits, logging, rollback or another boundary.</p></article>
-        <article><small>04 · BYPASS</small><blockquote>“How could I get around that?”</blockquote><p>The mitigation is not the end. It becomes the next object QCDS challenges.</p></article>
-        <article><small>05 · EVIDENCE</small><blockquote>“What would prove this path is real?”</blockquote><p>Architecture, code, permissions, logs, tests, reproducible behavior and counter-evidence.</p></article>
-      </div>
-    </section>
-
-    <section class="interview" id="interview">
-      <div>
-        <div class="section-kicker">METHOD · 02</div>
-        <h2>Questions become Conditions.</h2>
-        <p class="copy">The conversation is adaptive. Every answer changes the next question. The user only needs to understand the system; the AI can translate plain language into security structure.</p>
-        <div class="chat">
-          <div class="bubble ai"><b>AI</b><span>What are you building?</span></div>
-          <div class="bubble human"><b>YOU</b><span>An assistant that reads customer email and drafts replies.</span></div>
-          <div class="bubble ai"><b>AI</b><span>Can it only draft, or can it also send?</span></div>
-          <div class="bubble human"><b>YOU</b><span>It can send after approval.</span></div>
-          <div class="bubble ai"><b>AI</b><span>Who can send email into the system, and what else can the model access?</span></div>
-        </div>
-      </div>
-      <div class="conditions-panel">
-        <div class="panel-title">CONDITION FORMATION</div>
-        <div class="condition"><code>C1</code><span>External users can submit arbitrary text</span></div>
-        <div class="condition"><code>C2</code><span>Model reads untrusted content</span></div>
-        <div class="condition"><code>C3</code><span>Model can prepare an external action</span></div>
-        <div class="condition"><code>C4</code><span>Human approval exists before send</span></div>
-        <div class="condition"><code>C5</code><span>Approval quality must be independently tested</span></div>
-        <p>Answers become explicit Conditions — the observable logical space, not the conclusion.</p>
-      </div>
-    </section>
-
-    <section class="qcds-stack" id="qcds-core">
-      <div class="section-kicker">QCDS CORE</div>
-      <h2>Conditions become an inference system.</h2>
-      <div class="stack-flow">
-        <div class="stage"><small>HUMAN LANGUAGE</small><strong>Interview + architecture + code</strong></div>
-        <b>↓</b>
-        <div class="stage bright"><small>CONDITIONS</small><strong>Facts, assets, boundaries, permissions, assumptions</strong></div>
-        <b>↓</b>
-        <div class="stage"><small>ORACLES</small><strong>Constraints, tests and evidence functions</strong></div>
-        <b>↓</b>
-        <div class="stage"><small>PARALLEL PERSPECTIVES</small><strong>Multiple independent attack hypotheses</strong></div>
-        <b>↓</b>
-        <div class="stage"><small>ROTATION</small><strong>Dimension exclusion + bias control</strong></div>
-        <b>↓</b>
-        <div class="stage"><small>RECURSIVE INFERENCE</small><strong>Threat → control → bypass → new path</strong></div>
-        <b>↓</b>
-        <div class="stage verified"><small>TRUTH-ALIGNMENT</small><strong>Evidence-bound, counter-tested surviving findings</strong></div>
-      </div>
-    </section>
-
-    <section class="oracles" id="oracles">
-      <div class="section-kicker">ORACLES</div>
-      <h2>Every candidate path has to pass tests.</h2>
-      <p class="section-copy">An Oracle is not “the answer.” It is a constraint, test or evidence function that rejects, retains, weights or narrows a candidate threat path.</p>
-      <div class="oracle-grid">
-        <article><span>BOUNDARY</span><h3>Did the path cross trust?</h3><p>External → internal, user A → user B, data → instruction, model → privileged tool.</p></article>
-        <article><span>AUTHORITY</span><h3>Can this actor actually do it?</h3><p>Check identity, token scope, role, tool permissions and the exact action context.</p></article>
-        <article><span>CONTROL</span><h3>Does a mitigation really stop it?</h3><p>Do not accept “we have approval” or “we validate input” without testing the failure conditions.</p></article>
-        <article><span>EVIDENCE</span><h3>What binds the claim to reality?</h3><p>Code, configuration, logs, architecture, tests, reproducibility and counter-evidence.</p></article>
-      </div>
-    </section>
-
-    <section class="perspectives" id="perspective-map">
-      <div class="section-kicker">PERSPECTIVE MAP</div>
-      <h2>STRIDE is one lens among several.</h2>
-      <p class="section-copy">Named frameworks feed QCDS with question families and Oracles. They do not define the edge of the search space.</p>
-      <div class="lens-grid">
-        <article><b>STRIDE</b><p>Spoofing · Tampering · Repudiation · Information disclosure · Denial of service · Elevation of privilege</p></article>
-        <article><b>OWASP / GenAI</b><p>Prompt, retrieval, model-output, tool-use and application-boundary failure modes.</p></article>
-        <article><b>IDENTITY</b><p>Principals, tokens, delegated authority, confused-deputy paths and privilege expansion.</p></article>
-        <article><b>AGENT / TOOL CHAIN</b><p>Where a model decision becomes an external action with greater consequence.</p></article>
-        <article><b>CIA / PRIVACY / SUPPLY CHAIN</b><p>Security properties, sensitive relationships, dependencies, datasets, models and services.</p></article>
-        <article class="open"><b>OPEN SEARCH</b><p>Remove the named framework entirely. Start from assets, permissions, attacker goals, consequences or reversed data flow.</p></article>
-      </div>
-      <div class="lens-note"><strong>QCDS ≠ STRIDE + more checklists.</strong><span>QCDS is the inference architecture that can run, rotate, exclude, combine and challenge those perspectives.</span></div>
-    </section>
-
-    <section class="rotation" id="rotation">
-      <div class="rotation-copy">
-        <div class="section-kicker">ROTATION CHECK</div>
-        <h2>Do independent paths rediscover the same finding?</h2>
-        <p>One branch may call prompt injection the primary risk. Another may discover that excessive tool authority is the structural weakness. A third may invalidate both because authorization blocks the path.</p>
-        <p>The contradiction is not noise to average away. It is evidence to investigate.</p>
-      </div>
-      <div class="branch-map">
-        <div class="root-node">SAME SYSTEM</div>
-        <div class="branch-row">
-          <div>PROMPT / DATA</div><div>IDENTITY</div><div>TOOLS</div><div>OPEN SEARCH</div>
-        </div>
-        <div class="cross">↘ &nbsp; ↙ &nbsp; ↘ &nbsp; ↙</div>
-        <div class="root-node lower">CROSS-EXAMINATION</div>
-        <div class="rotate-row"><span>RUN A · ALL</span><span>RUN B · –PROMPT</span><span>RUN C · –IDENTITY</span><span>RUN D · REVERSE GRAPH</span></div>
-      </div>
-    </section>
-
-    <section class="recursive">
-      <div class="section-kicker">RECURSIVE SEARCH</div>
-      <h2>A control becomes the next question.</h2>
-      <div class="recursive-chain">
-        <div>THREAT</div><b>→</b><div>ATTACK PATH</div><b>→</b><div>CONTROL</div><b>→</b><div class="hot">CAN IT FAIL?</div><b>→</b><div>BYPASS</div><b>→</b><div>NEW CONTROL</div><b>→</b><div>EVIDENCE</div>
-      </div>
-      <p class="center-copy">Then run it again. Rotate the perspective. Exclude the dominant dimension. Attempt falsification. Keep the paths that survive.</p>
-    </section>
-
-    <section class="license" id="license">
-      <div>
-        <div class="section-kicker">LICENSE</div>
-        <h2>Commercial use requires a license.</h2>
-        <p>This new QCDS Security Lab surface is published for evaluation and provenance. New material in this directory is reserved for commercial licensing by agreement.</p>
-        <p class="fine">No operational use, copying, modification, deployment, integration, service provision, model training, redistribution or commercialization is granted merely because the repository is public. Pre-existing QCDS material previously released under CC BY 4.0 / MIT keeps those earlier grants.</p>
-      </div>
-      <div class="license-box">
-        <span>THEORY EXTENSIONS</span><strong>LICENSE BY AGREEMENT</strong>
-        <span>CODE</span><strong>LICENSE BY AGREEMENT</strong>
-        <span>DEPLOYMENT</span><strong>LICENSE BY AGREEMENT</strong>
-        <span>COMMERCIAL USE</span><strong>LICENSE BY AGREEMENT</strong>
-        <a class="button primary" href="https://github.com/iampathat/thesyntractvision/blob/main/qcds-security-lab/LICENSE.md">Read full terms</a>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <div><b>QCDS Security Lab</b><br>Author: Patrik Sundblom</div>
-    <div>QCDS · substrate-independent epistemic architecture<br>Commercial surface · 2026</div>
-    <div><a href="https://zenodo.org/records/15455541">Canonical QCDS record</a></div>
-  </footer>
-  <script defer src="./app.js"></script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="QCDS Security Lab by Patrik Sundblom. Explore an AI system, trace candidate threat paths, challenge controls and bind findings to evidence."
+    />
+    <meta name="theme-color" content="#101419" />
+    <title>QCDS Security Lab · From questions to evidence</title>
+    <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./style.css?v=1.0.0" />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to workspace</a>
+    <div id="app">
+      <main class="loading">
+        <span class="brand-mark">Q★</span>
+        <h1>QCDS Security Lab</h1>
+        <p>Opening your workspace…</p>
+      </main>
+    </div>
+    <noscript
+      ><p class="loading">
+        Enable JavaScript to use the local lab. Read the
+        <a href="./METHODOLOGY.md">methodology</a> without JavaScript.
+      </p></noscript
+    >
+    <div id="toast" role="status" aria-live="polite"></div>
+    <dialog id="interview" aria-labelledby="interview-title"></dialog>
+    <input
+      type="file"
+      id="import-file"
+      accept="application/json,.json"
+      hidden
+    />
+    <script type="module" src="./app.js?v=1.0.0"></script>
+  </body>
 </html>

@@ -2,6 +2,10 @@
 
 **Author: Patrik Sundblom**
 
+## Current implementation boundary
+
+The v1.0 browser workspace evaluates the workflow using eight deterministic rules and six shared lens families. It implements actual lens and condition ablation, composed rule paths, oracle review states and snapshot-bound user-reported evidence. It does not implement autonomous discovery, a quantum/Grover execution substrate or automatic real-world verification. See [README.md](./README.md) for the implemented contract and tests.
+
 ## Purpose
 
 QCDS Security Lab treats AI security as a search-and-verification problem rather than a static checklist.
