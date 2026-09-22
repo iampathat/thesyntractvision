@@ -9,7 +9,7 @@ import {
   analyze,
   validateProject,
   markdown,
-} from "./engine.mjs";
+} from "./engine.mjs?v=1.0.1";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
@@ -229,7 +229,7 @@ function systemView() {
       )
       .join(
         "",
-      )}</section><div class="form-bottom"><p>${icon("shield")} Saved on this device. No system details are sent to a server.</p>${runButton()}</div></form>`
+      )}</section><div class="form-bottom"><p>${icon("shield")} Saved on this device. No system details are sent to a server.</p><div class="form-buttons"><button type="button" class="button" data-action="reset">${icon("undo")} Reset system</button>${runButton()}</div></div></form>`
   );
 }
 function currentAction(id) {
@@ -484,6 +484,21 @@ document.addEventListener("click", async (e) => {
       if (!state.cases.custom) state.cases.custom = newProject("custom");
       switchCase("custom");
       navigate("system");
+      break;
+    case "reset":
+      if (
+        !confirm(
+          "Reset this system and its saved evidence and actions? Export the project first if you want to keep this work.",
+        )
+      )
+        break;
+      state.cases[state.caseId] = newProject(state.caseId);
+      state.query = "";
+      state.filter = "all";
+      run();
+      save();
+      render();
+      notify("System reset. Other saved systems are unchanged.");
       break;
     case "example":
       switchCase("support");

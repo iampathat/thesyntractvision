@@ -20,7 +20,7 @@
   box-sizing: border-box;
 }
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
   scroll-padding-top: 28px;
 }
 body {
@@ -2935,5 +2935,21 @@ dialog::backdrop {
   }
   .print-details h3 {
     font-size: 18px;
+  }
+}
+.form-buttons {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+@media (max-width: 700px) {
+  .form-buttons {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .form-buttons > .button {
+    flex: 1;
+    white-space: nowrap;
   }
 }
