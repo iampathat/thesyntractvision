@@ -9,7 +9,7 @@ import {
   analyze,
   validateProject,
   markdown,
-} from "./engine.mjs?v=1.0.1";
+} from "./engine.mjs?v=1.1.0";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
@@ -25,10 +25,10 @@ const icon = (name, cls = "") =>
 const ROUTES = [
   ["overview", "Overview", "grid"],
   ["system", "System & conditions", "system"],
-  ["findings", "Findings & evidence", "shield"],
   ["trace", "QCDS trace", "trace"],
+  ["findings", "Findings & evidence", "shield"],
   ["report", "Report & export", "report"],
-  ["learn", "How it works", "book"],
+  ["learn", "Step-by-step guide", "book"],
 ];
 const ALIASES = {
   workbench: "system",
@@ -53,6 +53,7 @@ const state = {
   mobile: false,
   storage: true,
   busy: false,
+  guideStep: 0,
 };
 try {
   const saved = JSON.parse(localStorage.getItem(STORAGE));
@@ -137,11 +138,258 @@ function staleNotice() {
     : "";
 }
 function header(kicker, title, description, action = "") {
-  return `<div class="page-heading"><div><div class="eyebrow">${kicker}</div><h1>${title}</h1><p>${description}</p></div>${action}</div>`;
+  return (
+    `<div class="page-heading"><div><div class="eyebrow">${kicker}</div><h1>${title}</h1><p>${description}</p></div>${action}</div>` +
+    (!["overview", "learn"].includes(state.route) ? workspaceSteps() : "")
+  );
 }
 function runButton() {
   return `<button class="button primary" data-action="run" ${state.busy ? "disabled" : ""}>${icon("play")} ${state.busy ? "Running…" : "Run analysis"}</button>`;
 }
+
+// One continuous worked example. These explanations never become test evidence.
+const GUIDE_PHASES = [
+  ["Describe", "Condition Formation", 0],
+  ["Explore", "Conditional Evolution", 2],
+  ["Challenge", "Recursive Inference", 4],
+  ["Verify", "Truth-Alignment Verification", 7],
+];
+const GUIDE_STEPS = [
+  {
+    title: "Start with the attacker's goal",
+    short: "Name the goal",
+    phase: 0,
+    question: "I am the attacker. What do I want to happen?",
+    explanation:
+      "Name an unwanted outcome before choosing an attack technique. This gives every later question a purpose.",
+    example:
+      "I want a support assistant to send a reply to a recipient who should not receive it. The assistant reads customer email, drafts replies and uses a send tool after human approval.",
+    do: "Describe the system, the asset to protect and the attacker's goal. The Mini AI interview helps you write this brief.",
+    result:
+      "A specific question: could a customer email influence an unauthorized send?",
+    why: "A label such as ‘prompt injection’ does not explain the outcome, the route or what must be protected.",
+    flow: [
+      "Customer email",
+      "AI drafts reply",
+      "Person approves",
+      "Tool sends",
+    ],
+    route: "interview",
+    action: "Describe my system with Mini AI",
+  },
+  {
+    title: "Turn the description into conditions",
+    short: "Declare the facts",
+    phase: 0,
+    question: "What must be true for this route to exist?",
+    explanation:
+      "A condition is a declared fact about the system. Give each fact a Yes, No or Unknown so the reasoning can be inspected.",
+    example:
+      "C1: customers can submit content. C2: the assistant reads untrusted content. C6: it can call a tool. C7: the action has an external effect. C8: a person approves it.",
+    do: "Review the conditions individually. Use Unknown when you have not checked. Interview answers stay in the brief until you confirm the conditions.",
+    result:
+      "A visible set of prerequisites. C1 + C2 make F1 a candidate; C6 + C7 make F2 a candidate. Missing facts remain questions.",
+    why: "The next step needs explicit inputs. A declared Yes describes your system; it does not establish that a control works.",
+    flow: ["Plain-language brief", "Yes / No / Unknown", "Conditions C1–C13"],
+    route: "system",
+    action: "Review my system conditions",
+  },
+  {
+    title: "Ask the oracles concrete questions",
+    short: "Ask the oracles",
+    phase: 1,
+    question:
+      "Does the path cross a boundary, hold authority or meet a real control?",
+    explanation:
+      "An oracle is a constraint or test applied to a possible path. It helps decide what to retain, rule out or investigate next.",
+    example:
+      "‘A person approves the reply’ raises another question: does approval cover the exact recipient and content? Declared authorization gives the Authority Oracle the state TEST CONTROL.",
+    do: "Read the Boundary, Authority, Control and Evidence Oracle cards. Treat REVIEW or TEST CONTROL as work to do. Resolve UNKNOWN before drawing a conclusion.",
+    result:
+      "A targeted check: use the exact actor, recipient and send action to test the authorization boundary.",
+    why: "An oracle is not an all-knowing judge. In this lab its review state tells you what needs an observation.",
+    flow: ["Possible send path", "Is this action authorized?", "TEST CONTROL"],
+    route: "trace",
+    action: "Inspect my oracle checks",
+  },
+  {
+    title: "Look at the same system from several sides",
+    short: "Compare perspectives",
+    phase: 1,
+    question: "Are different explanations pointing at different weak points?",
+    explanation:
+      "Parallel perspectives start from the same system but ask different questions. Keep their paths and disagreements visible.",
+    example:
+      "The content view asks whether an email changes the draft. The identity view asks who may send to this recipient. The tool-chain view asks what the send tool will actually execute.",
+    do: "Compare the perspective cards and the finding IDs each one matches. STRIDE is one lens among several; it does not define the whole search.",
+    result:
+      "Several candidate explanations to compare: untrusted content (F1), tool authority (F2), and approval quality (F5).",
+    why: "Three matching lenses can share the same assumption. Keep the reasoning behind each result; counting agreement is not a verification test.",
+    kind: "parallel",
+    flow: [
+      "Content: what influenced it?",
+      "Identity: who is allowed?",
+      "Tool: what will execute?",
+    ],
+    route: "trace",
+    action: "Compare my perspective results",
+  },
+  {
+    title: "Rotate the view. Then hide one fact",
+    short: "Rotate & exclude",
+    phase: 2,
+    question: "What does this finding actually depend on?",
+    explanation:
+      "Run the comparison in two ways: remove a perspective, then make one declared fact Unknown. Keep the original system as the baseline.",
+    example:
+      "Without the OWASP / GenAI lens, F1 may still match through STRIDE or Open Search. When C2 is hidden, F1 loses a required fact. These two results answer different questions.",
+    do: "Read Paths retained / Paths lost in the rotation table. Then read the dimension-exclusion results. Each exclusion is a separate comparison; facts are not erased from your saved system.",
+    result:
+      "You can distinguish dependence on a perspective from dependence on a system fact.",
+    why: "This challenges a favored explanation. Shared-rule coverage alone cannot show that the conclusion is unbiased or true.",
+    kind: "comparison",
+    flow: [
+      "Remove a lens → test viewpoint dependence",
+      "Hide C2 → test fact dependence",
+    ],
+    route: "trace",
+    action: "Inspect rotation and fact exclusion",
+  },
+  {
+    title: "Follow one path all the way through",
+    short: "Deepen one path",
+    phase: 2,
+    question: "How would I try, and what would stop me?",
+    explanation:
+      "Sequential deepening follows the dependencies of one candidate route. Each link must work for the unwanted outcome to happen.",
+    example:
+      "F1: an email influences the draft. F5: a person approves a misleading summary. F2: the tool sends an action the actor should not be able to perform. A working permission check could stop this chain.",
+    do: "Open a composed path, inspect its findings and identify the control at each boundary. Ask what must be true for the next link to be possible.",
+    result:
+      "A path with explicit prerequisites and possible stopping points, ready to be challenged.",
+    why: "Parallel search compares alternatives; sequential deepening checks one connected explanation. A hybrid flow alternates those two modes as new questions appear.",
+    flow: ["F1 · Influenced draft", "F5 · Approval", "F2 · Tool authority"],
+    route: "trace",
+    action: "Inspect my composed paths",
+  },
+  {
+    title: "Make the control the next question",
+    short: "Challenge the control",
+    phase: 2,
+    question:
+      "How could that protection fail — and what would stop that failure?",
+    explanation:
+      "Finding a mitigation starts another round of reasoning. Challenge the mitigation, propose a stronger boundary, and challenge that boundary too.",
+    example:
+      "‘A person approves’ → what if they see only the model's summary? ‘Show the source and exact action’ → what if the recipient changes after approval? ‘Bind approval to the executed parameters’ → test that binding.",
+    do: "Use the five questions in each finding. Put the next control and its counter-test in the action plan. Continue the loop whenever a plausible failure opens another route.",
+    result:
+      "A deeper control-and-failure chain with a concrete test for the next boundary.",
+    why: "‘We added approval’ is only a proposal. The recursive question is: what has to be true for that approval to fail?",
+    architecture:
+      "In the broader QCDS architecture, oracle-constrained candidates are amplified — using Grover in the quantum realization — and challenged again through recursive cycles. This browser workspace demonstrates the explicit path, control and exclusion logic; it does not execute Grover amplification.",
+    kind: "loop",
+    flow: ["Possible path", "Proposed control", "Failure question"],
+    route: "findings",
+    action: "Challenge a finding and its controls",
+  },
+  {
+    title: "Test it — and try to prove it wrong",
+    short: "Test & counter-test",
+    phase: 3,
+    question:
+      "What observation would support this claim? What would contradict it?",
+    explanation:
+      "Write the expected behavior first. Test the claimed failure and a comparison that can distinguish it from ordinary, authorized behavior.",
+    example:
+      "With synthetic data in an authorized test environment, an approved reply to an allowed test recipient should succeed. A disallowed recipient or a change after approval should be rejected at the action boundary.",
+    do: "Run the test outside this lab. Record the actor, resource, exact action, expected result, actual result and a source reference. Add separate records for supporting and refuting observations.",
+    result:
+      "Evidence that supports, refutes or leaves the finding inconclusive. Contradictory observations stay visible as a conflict.",
+    why: "A single blocked attempt may only establish that one route was blocked. Check the scope before generalizing to the whole system.",
+    flow: [
+      "Expected behavior",
+      "Observed behavior",
+      "Supporting or refuting evidence",
+    ],
+    route: "findings",
+    action: "Record a test observation",
+  },
+  {
+    architecture:
+      "Syntract binding keeps the claim connected to the structure that supports it: conditions, paths, constraints, evidence and contradictions. Here, each observation is bound to its finding and exact system-and-lens snapshot so a changed setup cannot silently inherit the old result.",
+    title: "Bind the evidence. Review. Repeat",
+    short: "Bind & revisit",
+    phase: 3,
+    question: "What can we conclude, within exactly which conditions?",
+    explanation:
+      "Truth-alignment brings the claim, its conditions, control challenges, observations and counter-tests together for review.",
+    example:
+      "A rejected recipient change supports a claim about that tested action boundary. It does not settle every retrieval or identity path. If permissions or lens selection change, the old observations are retained as history.",
+    do: "Review unknown facts, untested paths and conflicts before exporting. When a test reveals a new route, return to the conditions and repeat the comparison and control search.",
+    result:
+      "A reviewable report: what you tested, what the evidence says, what remains open and the next action.",
+    why: "Convergence means repeated challenges stop adding material new paths within the stated scope and the surviving claims have evidence. Re-running unchanged rules is not independent confirmation; this lab never auto-certifies convergence.",
+    flow: [
+      "Claim + conditions",
+      "Evidence + counter-tests",
+      "Scoped conclusion + next action",
+    ],
+    route: "report",
+    action: "Review my report and open questions",
+  },
+];
+function workspaceSteps() {
+  return `<nav class="workspace-steps" aria-label="Your workflow">${[
+    ["system", "Describe", "System & conditions"],
+    ["trace", "Explore", "Oracles & perspectives"],
+    ["findings", "Challenge & test", "Paths, controls & evidence"],
+    ["report", "Review", "Conclusions & next actions"],
+  ]
+    .map(
+      ([route, title, detail], i) =>
+        `<a href="#${route}" ${state.route === route ? 'aria-current="step"' : ""}><span>0${i + 1}</span><div><b>${title}</b><small>${detail}</small></div>${icon("arrow")}</a>`,
+    )
+    .join("")}</nav>`;
+}
+function walkthrough() {
+  const step = GUIDE_STEPS[state.guideStep];
+  return `<div class="guide-context"><span>${icon("mail")} ONE EXAMPLE THROUGHOUT</span><p>A support assistant reads customer email, drafts a reply and sends it after human approval.</p><small>Illustrative reasoning, not recorded test evidence. The workspace links open your currently selected system.</small></div><div class="guide-phases" aria-label="Four QCDS phases">${GUIDE_PHASES.map(([short, name, start], i) => `<button data-guide="${start}" ${step.phase === i ? 'aria-current="step"' : ""}><span>0${i + 1}</span><div><b>${short}</b><small>${name}</small></div></button>`).join("")}</div><section class="walkthrough panel" id="walkthrough" aria-label="Worked example"><nav aria-label="Walkthrough steps"><ol>${GUIDE_STEPS.map((g, i) => `<li><button data-guide="${i}" ${state.guideStep === i ? 'aria-current="step"' : ""}><span>${String(i + 1).padStart(2, "0")}</span>${g.short}</button></li>`).join("")}</ol></nav><div class="guide-stage" aria-labelledby="guide-title"><div class="guide-step-meta"><span class="eyebrow">${GUIDE_PHASES[step.phase][1]}</span><span>${state.guideStep + 1} / ${GUIDE_STEPS.length}</span></div><h2 id="guide-title" tabindex="-1">${step.title}</h2><p class="guide-question">${step.question}</p><p>${step.explanation}</p><div class="guide-example"><span class="eyebrow">IN THIS EXAMPLE</span><p>${step.example}</p><div class="guide-flow ${step.kind || ""}">${step.flow.map((text, i) => `<div>${icon(step.kind === "loop" ? ["trace", "shield", "undo"][i] : step.kind === "parallel" ? ["mail", "shield", "layers"][i] : "arrow")}<span>${text}</span></div>`).join("")}</div>${step.kind === "parallel" ? '<p class="flow-note">Same conditions → different questions → compare the resulting paths.</p>' : step.kind === "loop" ? '<p class="flow-note">↺ A plausible failure becomes the next path to constrain and test.</p>' : ""}</div><dl class="guide-instructions"><div><dt>What you do</dt><dd>${step.do}</dd></div><div><dt>What you have now</dt><dd>${step.result}</dd></div></dl><p class="guide-why"><b>Why this step matters</b> ${step.why}</p>${step.architecture ? `<details class="inline-help guide-architecture"><summary>How this connects to the QCDS architecture</summary><p>${step.architecture}</p></details>` : ""}<div class="guide-workspace">${step.route === "interview" ? `<button class="text-button" data-action="interview">${step.action} ${icon("arrow")}</button>` : `<a class="text-link" href="#${step.route}">${step.action} ${icon("arrow")}</a>`}</div><div class="guide-pagination"><button class="button" data-guide="${state.guideStep - 1}" ${state.guideStep === 0 ? "disabled" : ""}>Previous</button>${state.guideStep < GUIDE_STEPS.length - 1 ? `<button class="button primary" data-guide="${state.guideStep + 1}">Next: ${GUIDE_STEPS[state.guideStep + 1].short} ${icon("arrow")}</button>` : `<a class="button primary" href="#system">Apply this to my system ${icon("arrow")}</a>`}</div></div></section>`;
+}
+function perspectiveOverview() {
+  const m = state.model;
+  const questions = {
+    STRIDE: "Can identity, data or authority be misused?",
+    "OWASP / GenAI": "Can content influence the model or its tools?",
+    Identity: "Which actor is allowed to access or act?",
+    "Agent / Tool Chain": "What can a model decision cause downstream?",
+    "Privacy / Supply Chain": "Where could data or dependency trust fail?",
+    "Open Search": "What route might the named lenses overlook?",
+  };
+  return `<section class="panel"><div class="panel-header"><div><span class="eyebrow muted">02 / PARALLEL PERSPECTIVES</span><h2>Same system. Different questions.</h2><p>Compare the explanations before choosing one path to deepen. These are views over shared rules, so agreement is a starting point for investigation.</p></div></div><div class="perspective-grid">${m.lenses
+    .map((l) => {
+      const matches = m.findings.filter((f) => f.hitLenses.includes(l.name));
+      return `<article><div>${icon("layers")}<b>${l.name}</b></div><p>${questions[l.name]}</p><div class="perspective-matches">${l.excluded ? '<span class="muted">Excluded from this analysis</span>' : matches.length ? matches.map((f) => `<button data-finding="${f.id}" aria-label="Open ${f.id}: ${esc(f.shortTitle)}">${f.id}</button>`).join("") : '<span class="muted">No candidate matches these declared facts</span>'}</div></article>`;
+    })
+    .join(
+      "",
+    )}</div><p class="panel-foot">Click a finding ID to inspect its path, required conditions and next test.</p></section>`;
+}
+function comparisonReadout() {
+  const m = state.model;
+  const lens =
+    m.rotation.find((r) => r.name === "OWASP / GenAI") || m.rotation[0];
+  const fact =
+    m.dimensions.find((d) => d.key === "untrusted_content") ||
+    m.dimensions.find((d) => d.lost.length) ||
+    m.dimensions[0];
+  return `<div class="comparison-readout"><div><span>CHANGE THE VIEW</span><h3>Remove a perspective</h3><p>${lens ? `Without <b>${esc(lens.name)}</b>, ${lens.retained.length} of ${m.findings.length} paths still match through the remaining lenses.` : "Enable a perspective and run the analysis to compare views."}</p><small>Question: does the result depend on this lens?</small></div><div><span>CHANGE ONE INPUT</span><h3>Hide a system fact</h3><p>${fact ? `With <b>${fact.id} · ${esc(FIELD_META[fact.key][0])}</b> treated as Unknown, ${fact.lost.length ? fact.lost.join(", ") + " lose their required basis." : "no current path loses a required fact."}` : "Declare a Yes condition to compare its contribution."}</p><small>Question: does the result depend on this fact?</small></div></div>`;
+}
+function conclusionReadiness() {
+  const m = state.model;
+  return `<section class="panel review-readiness"><div><span class="eyebrow muted">BEFORE YOU DRAW A CONCLUSION</span><h2>What still needs an answer?</h2></div><div class="review-counts"><a href="#system"><strong>${m.unknown.length}</strong><span>unknown conditions</span></a><a href="#findings"><strong>${m.findings.filter((f) => !f.records.length).length}</strong><span>paths without observations</span></a><a href="#findings"><strong>${m.findings.filter((f) => f.status === "CONFLICTING EVIDENCE").length}</strong><span>evidence conflicts</span></a></div><p>Review the scope and counter-tests even when these counts reach zero. New facts or a failed control start another cycle; an unchanged rerun adds no new evidence.</p><button class="text-button" data-guide="8">Understand evidence binding and convergence ${icon("arrow")}</button></section>`;
+}
+
 function metrics() {
   const m = state.model;
   return `<div class="metrics"><div><span>Candidate findings</span><strong>${m.findings.length}<small>to investigate</small></strong></div><div><span>Perspectives active</span><strong>${m.lenses.filter((l) => l.active).length}<small>of 6 lenses</small></strong></div><div><span>Conditions unknown</span><strong class="${m.unknown.length ? "amber" : ""}">${m.unknown.length}<small>to clarify</small></strong></div><div><span>Evidence attached</span><strong>${m.findings.filter((f) => f.records.length).length}<small>of ${m.findings.length} findings</small></strong></div></div>`;
@@ -183,17 +431,10 @@ function overview() {
       "Explore what could go wrong, what should stop it, and what to test next.",
       runButton(),
     ) +
+    `<section class="start-guide panel"><div><span class="eyebrow">START HERE</span><h2>How does a question become a tested finding?</h2><p>Follow one support example through nine short steps, from the attacker's goal to evidence and a scoped conclusion.</p></div><button class="button primary" data-guide="0">Start the walkthrough ${icon("arrow")}</button></section>` +
+    workspaceSteps() +
     metrics() +
-    `<div class="overview-grid"><section class="panel map-panel"><div class="panel-header"><div><span class="eyebrow muted">SYSTEM MAP</span><h2>${esc(m.input.name)}</h2></div><a href="#system" class="text-link">Edit ${icon("arrow")}</a></div>${graph()}<div class="map-foot">${icon("trace")} Follow trust and authority across the system. <a href="#trace">Inspect QCDS trace →</a></div></section><section class="panel next-panel"><div class="eyebrow">YOUR NEXT MOVE</div><h2>${first ? "Test the boundary." : "Clarify the system."}</h2><p>${first ? "Start with one candidate path. A declared control needs an observed test result." : "Add known system facts. An empty result is not a safety conclusion."}</p>${first ? `<div class="next-finding"><span class="mono">${first.id}</span><b>${esc(first.shortTitle)}</b></div><button class="button primary full" data-finding="${first.id}">Review & add evidence ${icon("arrow")}</button>` : `<a class="button primary full" href="#system">Review conditions ${icon("arrow")}</a>`}</section></div><section class="panel"><div class="panel-header"><div><span class="eyebrow muted">INVESTIGATE</span><h2>Candidate findings <span class="count">${m.findings.length}</span></h2></div><a href="#findings" class="text-link">View all ${icon("arrow")}</a></div>${findingsTable(m.findings.slice(0, 4))}<div class="panel-foot">Potential impact helps order the review. Every finding starts as a hypothesis.</div></section><div class="bottom-grid"><section class="panel compact"><div class="eyebrow muted">THE QCDS LOOP</div><div class="phase-mini">${[
-      ["01", "Form conditions"],
-      ["02", "Apply oracles"],
-      ["03", "Challenge paths"],
-      ["04", "Bind evidence"],
-    ]
-      .map(([n, t]) => `<a href="#trace"><span>${n}</span><b>${t}</b></a>`)
-      .join(
-        "",
-      )}</div></section><section class="panel compact help-card">${icon("book")}<div><h3>First time here?</h3><p>Take the two-minute walkthrough.</p></div><a class="icon-button" href="#learn" aria-label="Read the walkthrough">${icon("arrow")}</a></section></div>`
+    `<div class="overview-grid"><section class="panel map-panel"><div class="panel-header"><div><span class="eyebrow muted">SYSTEM MAP</span><h2>${esc(m.input.name)}</h2></div><a href="#system" class="text-link">Edit ${icon("arrow")}</a></div>${graph()}<div class="map-foot">${icon("trace")} Follow trust and authority across the system. <a href="#trace">Inspect QCDS trace →</a></div></section><section class="panel next-panel"><div class="eyebrow">YOUR NEXT MOVE</div><h2>${first ? "Test the boundary." : "Clarify the system."}</h2><p>${first ? "Start with one candidate path. A declared control needs an observed test result." : "Add known system facts. An empty result is not a safety conclusion."}</p>${first ? `<div class="next-finding"><span class="mono">${first.id}</span><b>${esc(first.shortTitle)}</b></div><button class="button primary full" data-finding="${first.id}">Review & add evidence ${icon("arrow")}</button>` : `<a class="button primary full" href="#system">Review conditions ${icon("arrow")}</a>`}</section></div><section class="panel"><div class="panel-header"><div><span class="eyebrow muted">INVESTIGATE</span><h2>Candidate findings <span class="count">${m.findings.length}</span></h2></div><a href="#findings" class="text-link">View all ${icon("arrow")}</a></div>${findingsTable(m.findings.slice(0, 4))}<div class="panel-foot">Potential impact helps order the review. Every finding starts as a hypothesis.</div></section>`
   );
 }
 function findingsTable(items) {
@@ -208,10 +449,10 @@ function systemView() {
     header(
       "01 / CONDITION FORMATION",
       "What does your system actually do?",
-      "Declare what you know. Leave uncertainty visible. These answers define the analysis.",
+      "First name the system and the attacker’s goal. Then confirm the conditions. Run the analysis to turn those inputs into candidate paths.",
       `<button class="button" data-action="interview">${icon("spark")} Help me describe it</button>`,
     ) +
-    `<form id="system-form"><section class="panel form-panel"><div class="panel-header"><h2>System brief</h2>${badge(p.example ? "Editable example" : "Your system", "neutral")}</div><div class="form-grid"><label>System name<input id="system-name" data-field="name" maxlength="120" value="${esc(i.name)}" required></label><label>Assets to protect<input data-field="assets" value="${esc(i.assets.join(", "))}" maxlength="2000" placeholder="Customer records, documents, credentials"><small>Separate assets with commas.</small></label><label class="span-two">Describe the system<textarea data-field="description" rows="3" maxlength="6000" placeholder="What goes in, what it can access, and what it can do…">${esc(i.description)}</textarea></label><label class="span-two">I am the attacker. I want to…<input data-field="attackerGoal" value="${esc(i.attackerGoal)}" maxlength="1500" placeholder="For example: see another customer's private information"></label></div></section><section class="panel condition-panel"><div class="panel-header"><div><h2>Conditions <span class="count">13</span></h2><p>Yes and No are declarations. Unknown is a question to resolve.</p></div></div>${[
+    `<form id="system-form"><section class="panel form-panel"><div class="panel-header"><h2>System brief</h2>${badge(p.example ? "Editable example" : "Your system", "neutral")}</div><div class="form-grid"><label>System name<input id="system-name" data-field="name" maxlength="120" value="${esc(i.name)}" required></label><label>Assets to protect<input data-field="assets" value="${esc(i.assets.join(", "))}" maxlength="2000" placeholder="Customer records, documents, credentials"><small>Separate assets with commas.</small></label><label class="span-two">Describe the system<textarea data-field="description" rows="3" maxlength="6000" placeholder="What goes in, what it can access, and what it can do…">${esc(i.description)}</textarea></label><label class="span-two">I am the attacker. I want to…<input data-field="attackerGoal" value="${esc(i.attackerGoal)}" maxlength="1500" placeholder="For example: see another customer's private information"></label></div></section><section class="panel condition-panel"><div class="panel-header"><div><h2>Conditions <span class="count">13</span></h2><p>Each C-number is a condition the later findings can refer back to. Yes: declared present. No: declared absent. Unknown: still needs checking.</p></div></div>${[
       "Exposure",
       "Authority",
       "Controls",
@@ -241,15 +482,15 @@ function currentAction(id) {
 function findingDetail(f) {
   const m = state.model,
     a = currentAction(f.id);
-  return `<article class="panel finding-detail"><div class="detail-head"><div class="finding-tags"><span class="mono">${f.id}</span>${badge(f.severity + " IMPACT", severityClass(f.severity))}${badge(f.status, f.status === "CONFLICTING EVIDENCE" ? "danger" : "neutral")}</div><h2>${esc(f.shortTitle)}</h2><p>${esc(f.why)}</p></div><div class="path-strip">${f.path
+  return `<article class="panel finding-detail"><div class="detail-head"><div class="finding-tags"><span class="mono">${f.id}</span>${badge(f.severity + " IMPACT", severityClass(f.severity))}${badge(f.status, f.status === "CONFLICTING EVIDENCE" ? "danger" : "neutral")}</div><h2>${esc(f.shortTitle)}</h2><p>Follow these five questions for this path. Its impact label describes a possible consequence; its evidence status describes what has been observed.</p></div><div class="challenge-steps"><div><span class="step-icon">1</span><div><h3>What does the attacker want?</h3><p>${esc(m.input.attackerGoal || "Name the unwanted outcome in System & conditions.")}</p><a class="text-link small" href="#system">Review the goal and system facts →</a></div></div><div><span class="step-icon">2</span><div><h3>How would they try?</h3><p>${esc(f.why)}</p><div class="path-strip">${f.path
     .split(" → ")
     .map(
-      (p, i) =>
-        `${i ? '<span aria-hidden="true">→</span>' : ""}<b>${esc(p)}</b>`,
+      (part, i) =>
+        `${i ? '<span aria-hidden="true">→</span>' : ""}<b>${esc(part)}</b>`,
     )
     .join(
       "",
-    )}</div><div class="detail-section"><h3>Why this appears</h3><p>The following required conditions are declared Yes:</p><div class="condition-chips">${f.requires.map((k) => `<a href="#system"><span class="mono">${m.conditions.find((c) => c.key === k).id}</span> ${esc(FIELD_META[k][0])}</a>`).join("")}</div><p class="small muted">Matched by ${f.hitLenses.map(esc).join(" · ")}. These lenses share a rule library.</p></div><div class="challenge-steps"><div><span class="step-icon">1</span><div><h3>Put a control in the path</h3><p>${esc(f.control)}</p></div></div><div><span class="step-icon">2</span><div><h3>Challenge that control</h3><p>${esc(f.bypass)}</p></div></div><div class="test-step"><span class="step-icon">3</span><div><h3>Run this verification test</h3><p>${esc(f.verify)}</p><small>Record observations from a system you are authorized to test.</small></div></div></div><div class="detail-section"><div class="section-title"><h3>Evidence log</h3><span class="count">${f.records.length}</span></div>${f.records.length ? f.records.map((e) => `<div class="evidence-entry">${badge(e.outcome, e.outcome === "refutes" ? "cyan" : e.outcome === "supports" ? "warning" : "neutral")}<span class="small muted">${esc(new Date(e.createdAt).toLocaleDateString("en-GB"))}</span><p>${esc(e.observation)}</p><small>Source: ${esc(e.source)}</small></div>`).join("") : '<p class="muted">No observation attached to this system snapshot yet.</p>'}<form id="evidence-form" class="evidence-form" data-id="${f.id}"><label>Source / test reference<input name="source" required maxlength="1000" placeholder="Test run 42, architecture review, log reference…"></label><label>What did you observe?<textarea name="observation" required rows="3" maxlength="5000" placeholder="Describe the expected result and what actually happened."></textarea></label><div class="form-inline"><label>Effect on this finding<select name="outcome"><option value="inconclusive">Inconclusive</option><option value="supports">Supports the finding</option><option value="refutes">Refutes the finding</option></select></label><button class="button primary" type="submit" ${stale() ? "disabled" : ""}>${icon("plus")} Add evidence</button></div><small>Recorded as your observation. Attaching evidence does not automatically verify the finding.</small></form></div><div class="detail-section"><h3>Action plan</h3><form id="action-form" data-id="${f.id}"><div class="form-inline"><label>Owner<input name="owner" maxlength="200" value="${esc(a.owner)}" placeholder="Assign a person or team"></label><label>Progress<select name="status"><option value="open" ${a.status === "open" ? "selected" : ""}>Open</option><option value="progress" ${a.status === "progress" ? "selected" : ""}>In progress</option><option value="done" ${a.status === "done" ? "selected" : ""}>Done</option></select></label></div><label>Next action<textarea name="note" rows="2" maxlength="5000" placeholder="What will change and how will you check it?">${esc(a.note)}</textarea></label><button type="submit" class="button small" ${stale() ? "disabled" : ""}>Save action</button><small>Completion tracks work; it does not close the evidence question.</small></form></div></article>`;
+    )}</div><p class="small muted">This candidate requires these conditions to be Yes:</p><div class="condition-chips">${f.requires.map((k) => `<a href="#system"><span class="mono">${m.conditions.find((c) => c.key === k).id}</span> ${esc(FIELD_META[k][0])}</a>`).join("")}</div><p class="small muted">Matched by ${f.hitLenses.map(esc).join(" · ")}. Inspect these views in <a href="#trace">QCDS trace</a>.</p></div></div><div><span class="step-icon">3</span><div><h3>What should stop them?</h3><p>${esc(f.control)}</p><small>A proposed control becomes the next thing to challenge.</small></div></div><div><span class="step-icon">4</span><div><h3>How could that control fail?</h3><p>${esc(f.bypass)}</p><div class="recursive-prompt">${icon("undo")}<p><b>Ask again:</b> if this failure is possible, what further control would stop it — and how could that control fail? Put the next control and test in the action plan.</p></div><button class="text-button small" data-guide="6">See a worked recursive example →</button></div></div><div class="test-step"><span class="step-icon">5</span><div><h3>What would prove or refute the path?</h3><p>${esc(f.verify)}</p><small>Write the expected result first. Run an authorized test, then record both the observed result and a counter-test that could contradict your claim.</small></div></div></div><div class="detail-section"><div class="section-title"><h3>Evidence log</h3><span class="count">${f.records.length}</span></div>${f.records.length ? f.records.map((e) => `<div class="evidence-entry">${badge(e.outcome, e.outcome === "refutes" ? "cyan" : e.outcome === "supports" ? "warning" : "neutral")}<span class="small muted">${esc(new Date(e.createdAt).toLocaleDateString("en-GB"))}</span><p>${esc(e.observation)}</p><small>Source: ${esc(e.source)}</small></div>`).join("") : '<p class="muted">No observation attached to this system snapshot yet.</p>'}<form id="evidence-form" class="evidence-form" data-id="${f.id}"><label>Source / test reference<input name="source" required maxlength="1000" placeholder="Test run 42, architecture review, log reference…"></label><label>What did you observe?<textarea name="observation" required rows="3" maxlength="5000" placeholder="Actor, resource and action tested; expected vs actual result; counter-test; what remains uncertain."></textarea></label><div class="form-inline"><label>Effect on this finding<select name="outcome"><option value="inconclusive">Inconclusive</option><option value="supports">Supports the finding</option><option value="refutes">Refutes the finding</option></select></label><button class="button primary" type="submit" ${stale() ? "disabled" : ""}>${icon("plus")} Add evidence</button></div><small>Recorded as your observation. Attaching evidence does not automatically verify the finding.</small></form></div><div class="detail-section"><h3>Action plan</h3><form id="action-form" data-id="${f.id}"><div class="form-inline"><label>Owner<input name="owner" maxlength="200" value="${esc(a.owner)}" placeholder="Assign a person or team"></label><label>Progress<select name="status"><option value="open" ${a.status === "open" ? "selected" : ""}>Open</option><option value="progress" ${a.status === "progress" ? "selected" : ""}>In progress</option><option value="done" ${a.status === "done" ? "selected" : ""}>Done</option></select></label></div><label>Next action<textarea name="note" rows="2" maxlength="5000" placeholder="What will change and how will you check it?">${esc(a.note)}</textarea></label><button type="submit" class="button small" ${stale() ? "disabled" : ""}>Save action</button><small>Completion tracks work; it does not close the evidence question.</small></form></div></article>`;
 }
 function findingsView() {
   const m = state.model;
@@ -270,7 +511,7 @@ function findingsView() {
     header(
       "INVESTIGATE / CHALLENGE / RECORD",
       "Turn a finding into a tested claim.",
-      "Follow one path, challenge its control, and record what you observe.",
+      "Choose one candidate, follow the five questions, then record a test observation and the next action. Repeat when a control opens another question.",
     ) +
     `<div class="filters"><label class="search-label"><span class="sr-only">Search findings</span><input id="finding-search" type="search" placeholder="Search findings…" value="${esc(state.query)}"></label><label><span class="sr-only">Filter findings</span><select id="finding-filter"><option value="all" ${state.filter === "all" ? "selected" : ""}>All findings (${m.findings.length})</option><option value="critical" ${state.filter === "critical" ? "selected" : ""}>Critical potential impact</option><option value="untested" ${state.filter === "untested" ? "selected" : ""}>Awaiting evidence</option><option value="evidence" ${state.filter === "evidence" ? "selected" : ""}>Evidence attached</option></select></label></div><div class="findings-layout"><div class="findings-list" aria-label="Candidate findings">${items.length ? items.map((f) => `<button class="finding-select ${f.id === state.findingId ? "selected" : ""}" data-select-finding="${f.id}" aria-pressed="${f.id === state.findingId}"><div><span class="mono">${f.id}</span>${badge(f.severity, severityClass(f.severity))}</div><b>${esc(f.shortTitle)}</b><small>${f.records.length ? f.records.length + " evidence record(s)" : "Awaiting evidence"}</small></button>`).join("") : '<div class="panel compact"><h3>No findings in this view</h3><p>Try another filter or review the system conditions.</p></div>'}</div>${selected ? findingDetail(selected) : `<div class="panel empty"><h2>No finding selected</h2><p>${m.findings.length ? "Change the filter to see more findings." : "Unknown conditions or excluded perspectives may be limiting the analysis."}</p><a class="text-link" href="#system">Review conditions →</a></div>`}</div>${m.archivedEvidence ? `<div class="notice">${m.archivedEvidence} earlier evidence record(s) are retained in the project export but do not apply to the current system snapshot.</div>` : ""}`
   );
@@ -281,10 +522,10 @@ function traceView() {
     header(
       "QCDS / FOUR PHASES",
       "Inspect the reasoning, step by step.",
-      "Every result is connected to conditions, constraints, perspective checks and observations.",
+      "Read the declared facts, inspect the oracle questions, compare perspectives, then check what changes when a view or fact is excluded.",
       runButton(),
     ) +
-    `<div class="trace-intro"><div class="trace-phase"><span>01</span><div><b>Condition Formation</b><small>${m.conditions.filter((c) => c.value !== null).length} declared · ${m.unknown.length} unknown</small></div></div><div class="trace-phase"><span>02</span><div><b>Conditional Evolution</b><small>4 oracle checks</small></div></div><div class="trace-phase"><span>03</span><div><b>Recursive Inference</b><small>${m.rotation.length} perspective reruns</small></div></div><div class="trace-phase"><span>04</span><div><b>Truth-Alignment Verification</b><small>${m.findings.reduce((n, f) => n + f.records.length, 0)} observations · human review</small></div></div></div><section class="panel"><div class="panel-header"><div><span class="eyebrow muted">02 / ORACLES</span><h2>Which questions must the path answer?</h2></div></div><div class="oracle-grid">${m.oracles.map((o) => `<article><span class="oracle-symbol">${icon("shield")}</span><h3>${o.name}</h3>${badge(o.state, o.state.includes("GAP") || o.state === "CONFLICT" ? "danger" : "neutral")}<p>${o.detail}</p></article>`).join("")}</div></section><section class="panel"><div class="panel-header"><div><span class="eyebrow muted">03 / ROTATION</span><h2>Remove a perspective. Run the rules again.</h2><p>Retained means the shared rule still matches through another enabled lens.</p></div></div><div class="lens-controls">${Object.keys(
+    `<div class="trace-intro"><div class="trace-phase"><span>01</span><div><b>Condition Formation</b><small>${m.conditions.filter((c) => c.value !== null).length} declared · ${m.unknown.length} unknown</small></div></div><div class="trace-phase"><span>02</span><div><b>Conditional Evolution</b><small>4 oracle checks</small></div></div><div class="trace-phase"><span>03</span><div><b>Recursive Inference</b><small>${m.rotation.length} perspective reruns</small></div></div><div class="trace-phase"><span>04</span><div><b>Truth-Alignment Verification</b><small>${m.findings.reduce((n, f) => n + f.records.length, 0)} observations · human review</small></div></div></div><section class="panel trace-facts"><div><span class="eyebrow muted">01 / CONDITIONS → CANDIDATES</span><h2>Start with the facts behind the paths.</h2><p>${m.conditions.filter((c) => c.value !== null).length} conditions are declared and ${m.unknown.length} remain Unknown. A rule needs all of its prerequisites to be Yes; missing context stays open for review.</p></div><a class="button" href="#system">Review conditions ${icon("arrow")}</a></section><section class="panel"><div class="panel-header"><div><span class="eyebrow muted">02 / ORACLES</span><h2>Which questions must the path answer?</h2><p>An oracle applies a constraint or asks for a test. Read each state as the next review task.</p></div></div><div class="oracle-grid">${m.oracles.map((o) => `<article><span class="oracle-symbol">${icon("shield")}</span><small>${o.name}</small><h3>${{ "Boundary Oracle": "Where does lower trust enter?", "Authority Oracle": "Is this actor allowed to act?", "Control Oracle": "Would the protection hold?", "Evidence Oracle": "What has actually been observed?" }[o.name]}</h3>${badge(o.state, o.state.includes("GAP") || o.state === "CONFLICT" ? "danger" : "neutral")}<p>${o.detail}</p></article>`).join("")}</div><details class="inline-help"><summary>How to read the oracle states</summary><p><b>REVIEW / TEST CONTROL:</b> investigate the boundary or test the declared protection. <b>UNKNOWN:</b> establish the missing fact. <b>CONTROL GAP:</b> review a declared missing protection. <b>OUT OF SCOPE:</b> the declared capability is absent. <b>AWAITING TESTS / REVIEW RECORDS / CONFLICT:</b> collect observations, inspect them or resolve disagreement. None is an automatic security pass.</p></details></section>${perspectiveOverview()}<section class="panel"><div class="panel-header"><div><span class="eyebrow muted">03 / ROTATION</span><h2>Remove a perspective. Run the rules again.</h2><p>Compare each rerun with the baseline above. Retained: another enabled lens still matches the path. Lost: the path no longer matches in that rerun; investigate why.</p></div></div>${comparisonReadout()}<p class="lens-help"><b>Try it:</b> uncheck a perspective, then Run analysis. Each row below also shows an automatic comparison with just that named lens removed.</p><div class="lens-controls">${Object.keys(
       LENSES,
     )
       .map(
@@ -293,7 +534,7 @@ function traceView() {
       )
       .join(
         "",
-      )}</div><div class="table-scroll"><table class="rotation-table"><caption class="sr-only">Leave-one-perspective-out reanalysis</caption><thead><tr><th>Excluded for this rerun</th><th>Paths retained</th><th>Paths lost</th><th>Coverage</th></tr></thead><tbody>${m.rotation.map((r) => `<tr><th>${r.name}</th><td class="mono">${r.retained.join(", ") || "—"}</td><td class="mono">${r.lost.join(", ") || "—"}</td><td><div class="coverage"><span style="width:${m.findings.length ? (r.retained.length / m.findings.length) * 100 : 0}%"></span></div><small>${r.retained.length}/${m.findings.length}</small></td></tr>`).join("") || '<tr><td colspan="4">All perspectives are excluded. Enable one and run again.</td></tr>'}</tbody></table></div><p class="panel-foot">This measures rule coverage, not independent rediscovery or proof that bias has been removed.</p></section><section class="panel"><div class="panel-header"><div><span class="eyebrow muted">03 / DIMENSION EXCLUSION</span><h2>What if a system fact were unknown?</h2><p>Each declared Yes is hidden in a separate run. Required facts cannot be replaced by perspective agreement.</p></div></div><div class="dimension-grid">${m.dimensions.map((d) => `<div><span class="mono">${d.id}</span><div><b>${FIELD_META[d.key][0]}</b><small>${d.lost.length ? "Paths losing their basis: " + d.lost.join(", ") : "No required path lost"}</small></div><strong class="${d.lost.length ? "amber" : ""}">−${d.lost.length}</strong></div>`).join("") || '<p class="empty">Declare some system facts to run dimension exclusion.</p>'}</div></section><section class="panel"><div class="panel-header"><div><span class="eyebrow muted">03 / COMPOSED PATHS</span><h2>Look at what happens between findings.</h2><p>These routes join matching rules. Test every link before treating a chain as feasible.</p></div></div><div class="chain-grid">${m.chains.map((c) => `<article><div class="chain-ids">${c.ids.map((id, i) => `${i ? "<span>→</span>" : ""}<button data-finding="${id}">${id}</button>`).join("")}</div><h3>${c.title}</h3><p>${c.explanation}</p></article>`).join("") || '<p class="empty">No composed template matches this system.</p>'}</div></section>${m.pending.length ? `<section class="panel"><div class="panel-header"><h2>Paths waiting for context</h2></div><div class="pending-list">${m.pending.map((f) => `<p><span class="mono">${f.id}</span> ${esc(f.shortTitle)} <small>Clarify: ${f.missing.map((k) => FIELD_META[k][0]).join(", ")}</small></p>`).join("")}</div></section>` : ""}`
+      )}</div><div class="table-scroll"><table class="rotation-table"><caption class="sr-only">Leave-one-perspective-out reanalysis</caption><thead><tr><th>Excluded for this rerun</th><th>Paths retained</th><th>Paths lost</th><th>Coverage</th></tr></thead><tbody>${m.rotation.map((r) => `<tr><th>${r.name}</th><td class="mono">${r.retained.join(", ") || "—"}</td><td class="mono">${r.lost.join(", ") || "—"}</td><td><div class="coverage"><span style="width:${m.findings.length ? (r.retained.length / m.findings.length) * 100 : 0}%"></span></div><small>${r.retained.length}/${m.findings.length}</small></td></tr>`).join("") || '<tr><td colspan="4">All perspectives are excluded. Enable one and run again.</td></tr>'}</tbody></table></div><p class="panel-foot">This measures rule coverage, not independent rediscovery or proof that bias has been removed.</p></section><section class="panel"><div class="panel-header"><div><span class="eyebrow muted">03 / DIMENSION EXCLUSION</span><h2>What if a system fact were unknown?</h2><p>A dimension here is one system fact. Each declared Yes is changed to Unknown in a separate comparison. Your saved condition is kept; the result shows which paths need that fact.</p></div></div><div class="dimension-grid">${m.dimensions.map((d) => `<div><span class="mono">${d.id}</span><div><b>${FIELD_META[d.key][0]}</b><small>${d.lost.length ? "Paths losing their basis: " + d.lost.join(", ") : "No required path lost"}</small></div><strong class="${d.lost.length ? "amber" : ""}">−${d.lost.length}</strong></div>`).join("") || '<p class="empty">Declare some system facts to run dimension exclusion.</p>'}</div></section><section class="panel"><div class="panel-header"><div><span class="eyebrow muted">03 / SEQUENTIAL DEEPENING</span><h2>Follow one route through several findings.</h2><p>Parallel views compare alternatives. Now follow one chain in order: path → required fact → control → possible control failure. Click each finding to continue the five questions. These templates still need a test at every link.</p></div></div><div class="chain-grid">${m.chains.map((c) => `<article><div class="chain-ids">${c.ids.map((id, i) => `${i ? "<span>→</span>" : ""}<button data-finding="${id}">${id}</button>`).join("")}</div><h3>${c.title}</h3><p>${c.explanation}</p></article>`).join("") || '<p class="empty">No composed template matches this system.</p>'}</div></section>${m.pending.length ? `<section class="panel"><div class="panel-header"><h2>Paths waiting for context</h2></div><div class="pending-list">${m.pending.map((f) => `<p><span class="mono">${f.id}</span> ${esc(f.shortTitle)} <small>Clarify: ${f.missing.map((k) => FIELD_META[k][0]).join(", ")}</small></p>`).join("")}</div></section>` : ""}`
   );
 }
 function reportView() {
@@ -302,8 +543,9 @@ function reportView() {
     header(
       "04 / EVIDENCE BINDING",
       "A report you can work from.",
-      "Export the current analysis, its assumptions, test observations and next actions.",
+      "Review what is known, what is still open and what to test next. Export the evidence together with the exact conditions it applies to.",
     ) +
+    conclusionReadiness() +
     `<div class="report-grid"><section class="panel report-paper"><div class="report-brand">Q★ <span>QCDS SECURITY LAB / THREAT MODEL</span></div><h2>${esc(m.input.name)}</h2><p>${esc(m.input.description) || "No system description yet."}</p><div class="report-meta"><div><small>ANALYZED</small><b>${new Date(m.generatedAt).toLocaleString("en-GB")}</b></div><div><small>SCOPE</small><b>${project().example ? "Example system" : "User-defined system"}</b></div></div><h3>Review summary</h3><ul><li>${m.findings.length} candidate paths require review.</li><li>${m.unknown.length} conditions remain unknown.</li><li>${m.findings.filter((f) => f.records.length).length} findings have user-reported evidence.</li><li>${m.findings.filter((f) => f.status === "CONFLICTING EVIDENCE").length} findings have conflicting observations.</li></ul><h3>Findings</h3>${m.findings.map((f) => `<div class="report-row"><span class="mono">${f.id}</span><b>${esc(f.shortTitle)}</b><small>${f.status}</small></div>`).join("") || "<p>No candidate rules matched.</p>"}<h3>Scope of the conclusion</h3><p class="small">This is a deterministic evaluation based on declared system conditions and eight candidate rules. It does not scan your system or independently verify observations. Perspective coverage and potential impact are not proof of a vulnerability.</p><section class="print-details"><h3>Detailed findings and observations</h3>${m.findings
       .map((f) => {
         const a = currentAction(f.id);
@@ -317,43 +559,12 @@ function reportView() {
 function learnView() {
   return (
     header(
-      "A TWO-MINUTE WALKTHROUGH",
-      "Start with a question. Follow the evidence.",
-      "Use the lab to understand a system before deciding what is vulnerable.",
+      "ONE EXAMPLE / NINE CONNECTED STEPS",
+      "Follow one threat. Understand every step.",
+      "Start with an attacker’s goal. Follow the facts, questions, controls and counter-tests until you can explain what the evidence supports.",
     ) +
-    `<div class="learn-start panel"><div><span class="eyebrow">TRY THIS FIRST</span><h2>Can a customer email cause an action it should not?</h2><p>Open the support example. Review F1, follow the proposed control, then ask whether approval or tool permissions really stop the path. Record a test observation and export the report.</p><button class="button primary" data-action="example">Explore the support example ${icon("arrow")}</button></div><div class="five-questions">${["What does the attacker want?", "How could they get there?", "What should stop them?", "How could that control fail?", "What would prove or refute it?"].map((q, i) => `<div><span>0${i + 1}</span>${q}</div>`).join("")}</div></div><section class="panel"><div class="panel-header"><h2>The four QCDS phases</h2></div><div class="learn-phases">${[
-      [
-        "01",
-        "Condition Formation",
-        "Describe the observable system. Mark facts Yes, No or Unknown.",
-        "For example: the assistant reads customer email.",
-      ],
-      [
-        "02",
-        "Conditional Evolution",
-        "Use oracles to constrain which candidate paths deserve attention.",
-        "For example: does the model have a tool with authority to send?",
-      ],
-      [
-        "03",
-        "Recursive Inference",
-        "Challenge a path, its controls and possible failures. Rerun with a lens or fact excluded.",
-        "For example: what if approval shows only the model’s summary?",
-      ],
-      [
-        "04",
-        "Truth-Alignment Verification",
-        "Bind each claim to observations, counter-tests and a reviewable conclusion.",
-        "For example: the action-boundary test rejected the disallowed request.",
-      ],
-    ]
-      .map(
-        ([n, t, d, e]) =>
-          `<article><span>${n}</span><h3>${t}</h3><p>${d}</p><small>${e}</small></article>`,
-      )
-      .join(
-        "",
-      )}</div></section><section class="panel glossary"><div class="panel-header"><h2>The words, in plain English</h2></div>${[
+    walkthrough() +
+    `<details class="panel glossary guide-reference"><summary>The words, in plain English</summary>${[
       [
         "Condition",
         "A declared fact or explicit uncertainty about the system.",
@@ -382,7 +593,7 @@ function learnView() {
       .map(([t, d]) => `<div><h3>${t}</h3><p>${d}</p></div>`)
       .join(
         "",
-      )}</section><section class="panel scope-panel"><div><div class="eyebrow">WHAT RUNS HERE</div><h2>An inspectable browser lab.</h2><p>Eight deterministic candidate rules, six perspective families, oracle review states, actual leave-one-lens-out and leave-one-fact-out reruns, composed path templates and an evidence log.</p><p>The four phases organize the workflow. The current implementation uses a shared rule library. It does not run Grover amplification, a quantum circuit, an autonomous vulnerability scanner or independent model agents. The full architecture is described in the methodology.</p><p>The Mini AI Interviewer works immediately in guided mode. A browser-local language model can be enabled when your browser provides one. Its questions never decide whether a finding is true.</p><p>Project data stays in this browser until you export it. Storage is local to this origin and device; clearing browser data removes it. Imported projects are validated and analyzed again.</p><a class="text-link" href="./METHODOLOGY.md">Read the full methodology ${icon("external")}</a></div><div><div class="eyebrow">AUTHORSHIP & LICENSE</div><h2>QCDS by Patrik Sundblom.</h2><p>New Security Lab material is governed by its separate commercial license. Public visibility does not grant deployment, operational use, integration or redistribution rights.</p><p>Earlier QCDS material retains its original license grants.</p><div class="reference-links"><a href="./LICENSE.md">Commercial license ${icon("external")}</a><a href="https://github.com/iampathat/thesyntractvision/tree/main/qcds-security-lab">Source & provenance ${icon("external")}</a><a href="https://zenodo.org/records/15455541">Canonical QCDS record ${icon("external")}</a><a href="https://github.com/iampathat/thesyntractvision/issues/new?title=QCDS%20Security%20Lab%20License%20Inquiry">License inquiry ${icon("external")}</a></div><small>Assistant contributor: ChatGPT (OpenAI).</small></div></section>`
+      )}</details><details class="panel guide-reference"><summary>Implementation, authorship & license</summary><div class="scope-panel"><div><div class="eyebrow">WHAT RUNS HERE</div><h2>An inspectable browser lab.</h2><p>Eight deterministic candidate rules, six perspective families, oracle review states, actual leave-one-lens-out and leave-one-fact-out reruns, composed path templates and an evidence log.</p><p>The four phases organize the workflow. The current implementation uses a shared rule library. It does not run Grover amplification, a quantum circuit, an autonomous vulnerability scanner or independent model agents. The full architecture is described in the methodology.</p><p>The Mini AI Interviewer works immediately in guided mode. A browser-local language model can be enabled when your browser provides one. Its questions never decide whether a finding is true.</p><p>Project data stays in this browser until you export it. Storage is local to this origin and device; clearing browser data removes it. Imported projects are validated and analyzed again.</p><a class="text-link" href="./METHODOLOGY.md">Read the full methodology ${icon("external")}</a></div><div><div class="eyebrow">AUTHORSHIP & LICENSE</div><h2>QCDS by Patrik Sundblom.</h2><p>New Security Lab material is governed by its separate commercial license. Public visibility does not grant deployment, operational use, integration or redistribution rights.</p><p>Earlier QCDS material retains its original license grants.</p><div class="reference-links"><a href="./LICENSE.md">Commercial license ${icon("external")}</a><a href="https://github.com/iampathat/thesyntractvision/tree/main/qcds-security-lab">Source & provenance ${icon("external")}</a><a href="https://zenodo.org/records/15455541">Canonical QCDS record ${icon("external")}</a><a href="https://github.com/iampathat/thesyntractvision/issues/new?title=QCDS%20Security%20Lab%20License%20Inquiry">License inquiry ${icon("external")}</a></div><small>Assistant contributor: ChatGPT (OpenAI).</small></div></div></details>`
   );
 }
 function view() {
@@ -451,6 +662,20 @@ function switchCase(id) {
   render();
 }
 document.addEventListener("click", async (e) => {
+  const guideButton = e.target.closest("[data-guide]");
+  if (guideButton) {
+    state.guideStep = Math.max(
+      0,
+      Math.min(GUIDE_STEPS.length - 1, Number(guideButton.dataset.guide)),
+    );
+    if (state.route !== "learn") navigate("learn");
+    else {
+      render();
+      $("#guide-title").focus({ preventScroll: true });
+      $("#walkthrough").scrollIntoView({ block: "start" });
+    }
+    return;
+  }
   const find = e.target.closest("[data-finding]");
   if (find) {
     state.findingId = find.dataset.finding;

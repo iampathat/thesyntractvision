@@ -7,11 +7,17 @@ QCDS Security Lab is a separately licensed commercial QCDS surface for AI threat
 
 > **Commercial license required.** Public visibility does not grant a right to use, copy, modify, deploy, benchmark, train on, integrate, distribute, or commercialize this material.
 
-## Workspace v1.0
+## Workspace v1.1
 
-Six connected views replace the long landing page: Overview, System & conditions, Findings & evidence, QCDS trace, Report & export, and How it works.
+Six connected views replace the long landing page: Overview, System & conditions, QCDS trace, Findings & evidence, Report & export, and Step-by-step guide.
 
 Three editable examples cover customer support, read-only knowledge retrieval and a coding/deployment agent. Each example and the custom system retain their own local state. The Mini AI Interviewer collects a six-question brief; conditions remain Unknown until explicitly reviewed. A compatible browser can optionally provide its local language model through the [Chrome Prompt API](https://developer.chrome.com/docs/ai/prompt-api). Guided mode works without a language model, API key or cloud inference service.
+
+### A connected walkthrough
+
+The step-by-step guide follows one support assistant through nine stages: attacker goal, conditions, oracle checks, parallel perspectives, rotation and dimension exclusion, sequential deepening, recursive control challenges, testing and counter-testing, then evidence binding and convergence review. Each stage explains the question, a concrete example, the action, the output and why the next step follows. Guide examples never create evidence or modify project data.
+
+The workspace shows the same progression. Findings use five numbered questions; the trace explains each oracle state and compares viewpoint dependence with fact dependence using current results; the report highlights unknown conditions, untested findings and conflicts.
 
 ### Implemented contract
 
