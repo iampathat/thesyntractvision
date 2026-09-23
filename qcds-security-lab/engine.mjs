@@ -665,7 +665,7 @@ function oracleResults(input, findings) {
         ? "REVIEW"
         : "UNKNOWN",
       detail:
-        "Check where external content, identities and dependencies cross into trusted behavior.",
+        "Check where lower-trust input, identities, components or dependencies cross into a more trusted boundary.",
     },
     {
       name: "Authority Oracle",
@@ -680,7 +680,7 @@ function oracleResults(input, findings) {
       detail:
         f.authorization === true
           ? "Authorization is declared. Test it using the exact actor, resource and action."
-          : "Confirm that tool permissions are checked independently of model output.",
+          : "Confirm that connected-action permissions are checked independently of the upstream recommendation, decision or presentation.",
     },
     {
       name: "Control Oracle",
@@ -736,21 +736,21 @@ function analyze(input, evidence = [], excluded = []) {
   const chains = [
     {
       ids: ["F1", "F2", "F8"],
-      title: "Content reaches a consequential action",
+      title: "Lower-trust input reaches a consequential action",
       explanation:
-        "Follow untrusted content into tool authority, then ask whether detection and recovery contain the effect.",
+        "Follow lower-trust input into a privileged action path, then ask whether detection, containment and recovery limit the consequence.",
     },
     {
       ids: ["F4", "F3"],
-      title: "Retrieval crosses an identity boundary",
+      title: "Connected-source trust crosses a principal boundary",
       explanation:
-        "Challenge source trust together with document access. Both conditions must hold for this composed route.",
+        "Challenge source provenance together with resource authorization. Both conditions must hold for this composed route.",
     },
     {
       ids: ["F1", "F5", "F2"],
-      title: "A misleading summary passes approval",
+      title: "A misleading presentation passes approval",
       explanation:
-        "Inspect the original source, the exact approved parameters and the action that actually runs.",
+        "Inspect the authoritative source, the exact approved parameters, the target identity and the action that actually runs.",
     },
   ].filter((c) => c.ids.every((id) => ids.includes(id)));
   return {
@@ -895,7 +895,7 @@ function markdown(model, project) {
     "## 1. Conditions",
     ...model.conditions.map(
       (c) =>
-        `- ${c.id} · ${c.label}: **${c.value === null ? "UNKNOWN" : c.value ? "YES" : "NO"}**`,
+        `- ${c.id} · ${c.label}: **${c.value === null ? "?" : c.value ? "1" : "0"}**`,
     ),
     "",
     "## 2. Oracle checks",
