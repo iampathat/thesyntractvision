@@ -954,7 +954,12 @@ function oracleResults(input, findings) {
   return [
     {
       name: "Boundary Oracle",
-      state: [f.external_input, f.cross_user, f.third_party].includes(true)
+      state: [
+        f.external_input,
+        f.untrusted_content,
+        f.cross_user,
+        f.third_party,
+      ].includes(true)
         ? "REVIEW"
         : "UNKNOWN",
       detail:
@@ -1238,15 +1243,15 @@ function markdown(model, project) {
     `${model.searchSpace.confirmedRoutes} active routes; ${model.searchSpace.conditionalRoutes} conditional routes; ${model.unknown.length} unknown conditions; ${model.archivedEvidence} evidence records belong to different system snapshots.`,
     "",
     "## 1. Conditions",
-    ...model.conditions.map(
-      (c) =>
-        `- ${c.id} · ${c.label}: **${c.value === null ? "?" : c.value ? "1" : "0"}**`,
-    ),
+    ...model.conditions.map((c) => {
+      const basis = project.conditionBasis?.[c.key];
+      return `- ${c.id} · ${c.label}: **${c.value === null ? "?" : c.value ? "1" : "0"}**${basis ? ` · interview basis: ${basis.reason} (${basis.confidence})` : ""}`;
+    }),
     "",
     "## 2. Oracle checks",
     ...model.oracles.map((o) => `- **${o.name} — ${o.state}**: ${o.detail}`),
     "",
-    "## 3. Findings",
+    "## 3. Active and conditional routes",
   ];
   for (const f of model.findings) {
     lines.push(
@@ -1299,10 +1304,10 @@ function markdown(model, project) {
       (r) =>
         `- Without ${r.name}: retained ${r.retained.join(", ") || "none"}; lost ${r.lost.join(", ") || "none"}.`,
     ),
-    "\n## 5. Dimension exclusion",
+    "\n## 5. Dimension walk",
     ...model.dimensions.map(
       (d) =>
-        `- Hide ${d.id}: retained ${d.retained.length}; lost ${d.lost.join(", ") || "none"}.`,
+        `- Set ${d.id} to ?: retained ${d.retained.length}; weakened ${d.weakened?.join(", ") || "none"}; removed ${d.lost.join(", ") || "none"}.`,
     ),
     "\n## 6. Recursive inference",
     ...model.recursive.map(
