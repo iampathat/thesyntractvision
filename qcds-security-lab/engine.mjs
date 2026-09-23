@@ -344,12 +344,12 @@ const VERSION = "1.8.0";
 const FIELD_META = {
   external_input: [
     "External input",
-    "Can customers or external systems send content in?",
+    "Can external actors, devices or systems provide input?",
     "Exposure",
   ],
   untrusted_content: [
-    "Untrusted content",
-    "Does it read email, uploads, websites or other uncontrolled content?",
+    "Lower-trust input",
+    "Does it receive or process data, messages, files, sensor input, documents or other material whose trust cannot be assumed?",
     "Exposure",
   ],
   rag: [
@@ -358,8 +358,8 @@ const FIELD_META = {
     "Exposure",
   ],
   sensitive_data: [
-    "Sensitive data",
-    "Can it reach confidential or personal information?",
+    "Protected information",
+    "Can it reach confidential, personal, regulated or safety-relevant information?",
     "Exposure",
   ],
   cross_user: [
