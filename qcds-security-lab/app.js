@@ -9,7 +9,7 @@ import {
   analyze,
   validateProject,
   markdown,
-} from "./engine.mjs?v=1.8.5";
+} from "./engine.mjs?v=1.8.6";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
@@ -29,9 +29,9 @@ const ROUTES = [
   ["findings", "Findings & evidence", "shield"],
   ["report", "Reports & export", "report"],
   ["learn", "In plain English", "book"],
-  ["system", "Conditions · 1 / 0 / ?", "system"],
-  ["trace", "QCDS trace", "trace"],
-  ["overview", "Analysis overview", "grid"],
+  ["system", "System & 1 / 0 / ? inputs", "system"],
+  ["trace", "Explain current path", "trace"],
+  ["overview", "Whole analysis", "grid"],
 ];
 const ALIASES = {
   workbench: "system",
@@ -339,9 +339,9 @@ function casePicker() {
 }
 function shell() {
   const investigating = state.route === "investigate";
-  const workRoutes = ["investigate", "perspectives", "findings", "report"];
+  const workRoutes = ["investigate", "system", "perspectives", "findings", "report"];
   const learnRoutes = ["examples", "learn"];
-  const detailRoutes = ["system", "trace", "overview"];
+  const detailRoutes = ["trace", "overview"];
   const navHints = {
     examples: "See complete worked cases first",
     investigate: "Goal → route → control → bypass → proof",
@@ -349,15 +349,15 @@ function shell() {
     findings: "Paths, controls, tests & evidence",
     report: "Full report + exports",
     learn: "The method in plain English",
-    system: "The exact ternary inputs",
-    trace: "Oracles, rotation & dimensions",
-    overview: "System-level summary",
+    system: "Edit the facts QCDS reasons from",
+    trace: "Why this path exists and what it depends on",
+    overview: "Where this path sits among all results",
   };
   const navLink = ([id, label, ic]) =>
     `<a href="${id === "investigate" ? investigationHref() : id === "perspectives" ? perspectiveHref() : "#" + id}" ${state.route === id ? 'aria-current="page"' : ""}>${icon(ic)}<span class="nav-copy"><b>${label}</b><em>${navHints[id] || ""}</em></span></a>`;
   return `<aside id="site-nav" ${state.mobile ? 'role="dialog" aria-modal="true" aria-label="Navigation"' : ""} class="sidebar ${state.mobile ? "open" : ""}"><a class="brand" href="#examples"><span class="brand-mark">Q<span>★</span></span><span>QCDS<span class="brand-sub">SECURITY LAB</span></span></a><div class="workspace-label">YOUR WORKSPACE <button class="icon-button menu-close" data-action="close-menu" aria-label="Close navigation">${icon("close")}</button></div><nav aria-label="Workspace"><div class="nav-section-label">START HERE</div>${navLink(ROUTES.find((r) => r[0] === "examples"))}<div class="nav-section-label nav-work-label">WORKFLOW</div>${ROUTES.filter(
     (r) => workRoutes.includes(r[0]),
-  ).map(navLink).join("")}<div class="nav-section-label nav-learn-label">LEARN</div>${ROUTES.filter((r) => learnRoutes.includes(r[0]) && r[0] !== "examples").map(navLink).join("")}<details class="nav-tools" ${detailRoutes.includes(state.route) ? "open" : ""}><summary><span>Why this result?</span><small>Conditions, QCDS trace & analysis</small></summary>${ROUTES.filter(
+  ).map(navLink).join("")}<div class="nav-section-label nav-learn-label">LEARN</div>${ROUTES.filter((r) => learnRoutes.includes(r[0]) && r[0] !== "examples").map(navLink).join("")}<details class="nav-tools" ${detailRoutes.includes(state.route) ? "open" : ""}><summary><span>Why this result?</span><small>Same result · two levels of explanation</small></summary>${ROUTES.filter(
     (r) => detailRoutes.includes(r[0]),
   ).map(navLink).join("")}</details></nav><button class="new-case" data-action="new">${icon("plus")} New system</button><div class="sidebar-bottom"><div class="local-note">${icon("shield")}<span>Saved on this device.<br>No account needed.</span></div><a href="#learn" class="author">By Patrik Sundblom <span>↗</span></a><div class="version">SECURITY LAB <span>v${VERSION}</span></div></div></aside>${state.mobile ? '<button class="menu-backdrop" data-action="close-menu" aria-label="Close navigation backdrop"></button>' : ""}<div class="app-body" ${state.mobile ? "inert" : ""}><header class="topbar"><div class="breadcrumb"><button class="icon-button mobile-toggle" data-action="menu" aria-controls="site-nav" aria-label="Open navigation" aria-expanded="${state.mobile}">${icon("menu")}</button><b>${investigating ? "Q★ Security Lab" : esc(ROUTES.find((r) => r[0] === state.route)?.[1])}</b></div><div class="top-actions"><span id="save-status" class="save-status">${state.storage ? "Saved on this device" : "Not saved · export your work"}</span><button class="button small plain-button" data-system-explanation>${icon("book")} What is this?</button></div></header>${investigating ? questionPosition() : ""}<main id="main" tabindex="-1">${state.route === "investigate" ? (state.question === 1 ? casePicker() : "") : !["examples", "learn"].includes(state.route) ? casePicker() : ""}<div id="stale-slot">${staleNotice()}</div><div id="view">${view()}</div><footer class="main-footer"><span>QCDS Security Lab · Patrik Sundblom</span><a href="./LICENSE.md">COMMERCIAL LICENSE REQUIRED ${icon("external")}</a></footer></main>${investigating ? questionNavigation() : ""}</div>`;
 }
@@ -370,7 +370,7 @@ function staleNotice() {
 function header(kicker, title, description, action = "") {
   return (
     `<div class="page-heading"><div><div class="eyebrow">${kicker}</div><h1>${title}</h1><p>${description}</p></div>${action}</div>` +
-    (["system", "trace", "overview"].includes(state.route)
+    (["trace", "overview"].includes(state.route)
       ? workspaceSteps()
       : "")
   );
@@ -567,7 +567,18 @@ const GUIDE_STEPS = [
 ];
 
 function workspaceSteps() {
-  return `<div class="return-context"><a class="button" href="${investigationHref()}">${icon("undo")} Back to question ${state.question}</a><p><b>Under the hood:</b> this view explains why QCDS produced the current result for <b>${esc(project().input.name)}</b>${state.findingId ? ` · ${state.findingId}` : ""}. Your place in the five-question workflow is kept.</p></div>`;
+  const f = selectedFinding() || allPaths()[0];
+  const current = state.route === "trace" ? 1 : 2;
+  return `<section class="result-explainer panel">
+    <div class="result-explainer-head">
+      <div><span class="eyebrow">EXPLAINING THE SAME RESULT</span><h2>${f ? `${f.id} · ${esc(f.shortTitle)}` : "No path selected yet"}</h2><p>${f ? "These pages do not create a different result. They explain the path you are already following." : "Choose a candidate path in the five-question workflow first."}</p></div>
+      <a class="button" href="${investigationHref(Math.max(2, state.question), f?.id || state.findingId)}">${icon("undo")} Back to the 5 questions</a>
+    </div>
+    <div class="result-explainer-levels">
+      <a href="#trace" class="${current === 1 ? "active" : ""}"><span>1</span><div><b>Explain current path</b><small>Which 1 / 0 / ? inputs it needs → which perspectives kept it → what QCDS changed or challenged → what to test.</small></div></a>
+      <a href="#overview" class="${current === 2 ? "active" : ""}"><span>2</span><div><b>Whole analysis</b><small>Where this path sits among the other candidate routes, system boundaries and evidence.</small></div></a>
+    </div>
+  </section>`;
 }
 function openSystemExplanation() {
   const d = $("#explanation");
@@ -1131,7 +1142,6 @@ function overview() {
       runButton(),
     ) +
     `<section class="start-guide panel"><div><span class="eyebrow">START HERE</span><h2>How does a question become a tested finding?</h2><p>Follow one path through five questions, from the attacker's goal to evidence and a scoped conclusion.</p></div><button class="button primary" data-question="1">Start the five questions ${icon("arrow")}</button></section>` +
-    workspaceSteps() +
     metrics() +
     `<div class="overview-grid"><section class="panel map-panel"><div class="panel-header"><div><span class="eyebrow muted">SYSTEM MAP</span><h2>${esc(m.input.name)}</h2></div><a href="#system" class="text-link">Edit ${icon("arrow")}</a></div>${graph()}<div class="map-foot">${icon("trace")} Follow trust and authority across the system. <a href="#trace">Inspect QCDS trace →</a></div></section><section class="panel next-panel"><div class="eyebrow">YOUR NEXT MOVE</div><h2>${first ? "Test the boundary." : "Clarify the system."}</h2><p>${first ? "Start with one candidate path. A declared control needs an observed test result." : "Add known system facts. An empty result is not a safety conclusion."}</p>${first ? `<div class="next-finding"><span class="mono">${first.id}</span><b>${esc(first.shortTitle)}</b></div><button class="button primary full" data-finding="${first.id}">Review & add evidence ${icon("arrow")}</button>` : `<a class="button primary full" href="#system">Review conditions ${icon("arrow")}</a>`}</section></div><section class="panel"><div class="panel-header"><div><span class="eyebrow muted">INVESTIGATE</span><h2>Candidate findings <span class="count">${m.findings.length}</span></h2></div><a href="#findings" class="text-link">View all ${icon("arrow")}</a></div>${findingsTable(m.findings.slice(0, 4))}<div class="panel-foot">Potential impact helps order the review. Every finding starts as a hypothesis.</div></section>`
   );
@@ -1146,15 +1156,16 @@ function systemView() {
     i = p.input;
   return (
     header(
-      "01 / CONDITION FORMATION",
-      "What does your system actually do?",
-      "First name the system and the attacker’s goal. Then confirm the conditions. Run the analysis to turn those inputs into candidate paths.",
-      `<button class="button" data-action="interview">${icon("spark")} Help me describe it</button>`,
+      "INPUTS TO THE ANALYSIS",
+      "What should QCDS reason from?",
+      "This is the editable source material for the five-question workflow: the system description, the unwanted outcome and the exact 1 / 0 / ? conditions. Change these inputs and the candidate paths are recalculated.",
+      `<div class="system-header-actions"><button class="button primary" data-action="interview-ai">${icon("spark")} AI / LLM interview</button><button class="button" data-action="interview">Guided interview</button></div>`,
     ) +
-    `<form id="system-form"><section class="panel form-panel"><div class="panel-header"><h2>System brief</h2>${badge(p.example ? "Editable example" : "Your system", "neutral")}</div><div class="form-grid"><label>System name<input id="system-name" data-field="name" maxlength="120" value="${esc(i.name)}" required></label><label>Assets to protect<input data-field="assets" value="${esc(i.assets.join(", "))}" maxlength="2000" placeholder="Customer records, documents, credentials"><small>Separate assets with commas.</small></label><label class="span-two">Describe the system<textarea data-field="description" rows="3" maxlength="6000" placeholder="What goes in, what it can access, and what it can do…">${esc(i.description)}</textarea></label><label class="span-two">I am the attacker. I want to…<input data-field="attackerGoal" value="${esc(i.attackerGoal)}" maxlength="1500" placeholder="For example: see another customer's private information"></label></div></section><section class="panel condition-panel"><div class="panel-header"><div><h2>Conditions <span class="count">13</span></h2><p>Each C-number is ternary: <b>1 = present</b>, <b>0 = absent</b>, <b>? = unknown</b>. A ? stays in the model and creates conditional routes rather than forcing a Yes or No.</p></div></div>${[
+    `<form id="system-form"><section class="panel form-panel"><div class="panel-header"><h2>System brief</h2>${badge(p.example ? "Editable example" : "Your system", "neutral")}</div><div class="form-grid"><label>System name<input id="system-name" data-field="name" maxlength="120" value="${esc(i.name)}" required></label><label>Assets to protect<input data-field="assets" value="${esc(i.assets.join(", "))}" maxlength="2000" placeholder="Customer records, documents, credentials"><small>Separate assets with commas.</small></label><label class="span-two">Describe the system<textarea data-field="description" rows="3" maxlength="6000" placeholder="What goes in, what it can access, and what it can do…">${esc(i.description)}</textarea></label><label class="span-two">I am the attacker. I want to…<input data-field="attackerGoal" value="${esc(i.attackerGoal)}" maxlength="1500" placeholder="For example: see another customer's private information"></label></div></section><section class="panel condition-panel"><div class="panel-header"><div><h2>Conditions <span class="count">${CONDITION_DEFS.length}</span></h2><p>Each C-number is ternary: <b>1 = present</b>, <b>0 = absent</b>, <b>? = unknown</b>. A ? stays in the model and creates conditional routes rather than forcing a Yes or No.</p></div></div>${[
       "Exposure",
       "Authority",
       "Controls",
+      "System type",
     ]
       .map(
         (group, idx) =>
