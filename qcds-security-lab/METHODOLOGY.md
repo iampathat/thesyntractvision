@@ -1,4 +1,4 @@
-# QCDS Security Lab — Threat Modeling Method
+# QCDS Security Lab — Threat Modelling Method
 
 **Author: Patrik Sundblom**
 
@@ -10,60 +10,82 @@ The entry point is deliberately simple.
 > **How would I try?**  
 > **What would stop me?**  
 > **How could I get around that control?**  
-> **What evidence would prove that the path is real?**
+> **What evidence would support or refute the path?**
 
-A non-specialist should be able to start a QCDS threat model without knowing STRIDE, ATT&CK, OWASP or security taxonomy.
+A non-specialist should be able to begin without knowing STRIDE, ATT&CK, OWASP or security taxonomy.
 
-The AI interviewer turns plain answers into a structured logical space.
+The target may be any system. Optional LLM or predictive-model assistance can help turn a plain-language description into candidate questions and structure. It does not decide which facts are true.
 
-## The interview becomes Conditions
+## The description becomes Conditions
 
-The model asks adaptive questions:
+The investigation asks questions such as:
 
-- What are you building?
-- Who can reach it?
+- What are you building or operating?
+- Who or what can reach it?
 - What enters the system?
 - Who controls that input?
-- What can the AI or software read?
-- What can it write, send, delete, execute or approve?
-- Which identities and permissions exist?
-- What is sensitive?
-- What assumptions are you relying on?
-- What happens if one component lies, fails or is manipulated?
+- What information can be read or changed?
+- What connected interfaces, services, APIs, actuators or components can be invoked?
+- Which identities, roles and permissions exist?
+- What is sensitive, safety-relevant or consequential?
+- Which third parties or connected sources are trusted?
 - Which actions require a human?
-- Can the human independently verify the underlying evidence?
-- What logging, rollback and recovery exist?
+- Can the human independently verify the underlying source and exact action?
+- What logging, containment, rollback and recovery exist?
+- Does the **target system itself** contain AI/ML?
 
-Each answer creates or refines **Conditions**.
+Each answer creates or refines a **Condition**.
 
-Examples:
+Conditions are ternary:
 
-```text
-C1  External users can submit arbitrary text
-C2  The model reads untrusted web content
-C3  The model can call a ticketing tool
-C4  The tool token can create and close tickets
-C5  Internal documents are retrievable through RAG
-C6  Authorization is enforced before retrieval
-C7  High-impact actions require independent approval
-C8  Tool calls are logged and reversible
-```
+- **1** = present
+- **0** = absent
+- **?** = unresolved
+
+Examples for a conventional web portal:
+
+~~~text
+C1  External users can submit input
+C2  Some input is lower-trust
+C3  No connected data source is used
+C4  Personal records are reachable
+C5  Many principals share the service boundary
+C6  Connected APIs/actions exist
+C9  Authorization is enforced at the resource boundary
+C12 Security-relevant activity is logged
+C14 The target itself does not contain AI/ML
+~~~
+
+For an AI-enabled target, C14 becomes 1 and the AI / GenAI perspective can become applicable.
 
 The Conditions define the observable problem space. They are not the conclusion.
 
+## Model-assisted analysis
+
+A language model or another predictive model may assist with:
+
+- clarifying the system description;
+- suggesting candidate Conditions;
+- proposing questions;
+- generating possible paths to investigate;
+- producing material for STRIDE, OWASP/AppSec, Identity and other perspectives;
+- summarizing evidence already supplied by the user.
+
+Model output remains **candidate analytical material**. QCDS and the evidence workflow are what keep that material constrained, compared, challenged and testable.
+
 ## Oracles
 
-An **Oracle** is a constraint, test or evidence function applied to candidate threat paths.
+An **Oracle** is a constraint, test or evidence function applied to candidate paths.
 
 It can ask questions such as:
 
 - Does this path cross a trust boundary?
-- Does untrusted data become executable instruction?
-- Does the path require a permission the actor does not possess?
-- Can the control be independently verified?
-- Is there evidence that the component actually exposes the capability?
-- Does a second control block the path?
-- Can the same outcome be reached through another route?
+- Does lower-trust input gain higher trust?
+- Does the path require authority the actor does not possess?
+- Can the proposed control be independently verified?
+- Is there evidence that the component exposes the claimed capability?
+- Does another control block the route?
+- Can the same outcome be reached another way?
 - Does the hypothesis survive a changed perspective?
 
 An Oracle may reject, retain, weight or narrow candidate paths.
@@ -72,72 +94,75 @@ A framework can supply Oracle families, but no framework owns the search.
 
 ## Perspective lenses are inputs, not the engine
 
-QCDS can instantiate many parallel perspectives:
+QCDS can instantiate many parallel perspectives.
 
 | Perspective lens | Example questions it contributes |
 |---|---|
-| STRIDE | Can identity be spoofed? Can data be tampered with? Can actions be repudiated? Can information leak? Can service be denied? Can privilege be elevated? |
-| CIA | What breaks confidentiality, integrity or availability? |
-| OWASP / GenAI | Where can model, prompt, retrieval, output or tool boundaries fail? |
-| ATT&CK-like technique view | Which known adversary techniques resemble this path? |
+| STRIDE | Can identity be spoofed? Can information be altered or exposed? Can service be denied? Can privilege be elevated? |
+| OWASP / AppSec | Where can application input, business logic, interfaces, data handling or trust boundaries fail? |
 | Identity / privilege | Where does authority expand, confuse or cross principals? |
-| Supply chain | Which dependency, model, package, dataset or service can become the weak link? |
-| Privacy | Can data be inferred, linked, exposed or retained beyond intent? |
+| Action / Tool Chain | What connected component can cause the next consequential action, and with whose authority? |
+| Privacy / Supply Chain | Which data, provider or dependency can become the weak link? |
+| AI / GenAI | If the target uses AI/ML, where can model context, generated output, retrieval or model-influenced actions cross a boundary? |
+| CIA | What breaks confidentiality, integrity or availability? |
+| ATT&CK-like technique view | Which known adversary techniques resemble this path? |
 | Insider | What can a legitimate but malicious or careless user do? |
-| Agent / tool chain | Can one model decision trigger a higher-impact action downstream? |
 | Recovery | Can the system detect, contain, undo and learn from failure? |
-| Unknown / open search | What plausible path is not represented by any named framework? |
+| Open Search | What plausible path is not represented by any named framework? |
 
-STRIDE is therefore **one perspective**. It is useful, but it is not the boundary of the threat model.
+STRIDE is **one perspective**, not the boundary of the threat model.
+
+The AI / GenAI lens is a specialized target-dependent perspective. Using an LLM to assist the analysis does not make this lens automatically applicable.
 
 ## Parallel inference
 
-Different branches should be allowed to disagree.
+Different branches are allowed to disagree.
 
-```text
+~~~text
                  SAME SYSTEM
                       │
       ┌───────────────┼────────────────┐
       ▼               ▼                ▼
- Prompt / data     Identity /       Tool-chain
- manipulation      privilege        authority
+ Application       Identity /        Action /
+ security          privilege         tool chain
       │               │                │
       └───────────────┼────────────────┘
                       ▼
               cross-examination
-```
+~~~
 
-One branch may claim prompt injection is central. Another may show that the real failure is excessive tool authority. A third may find that retrieval authorization already kills the original path.
+One branch may emphasize input handling. Another may show that the real issue is identity. A third may find that the action boundary already blocks the route.
 
-The disagreement is useful evidence.
+The disagreement is useful.
 
 ## Rotation and dimension exclusion
 
 If every branch starts from the same assumptions, parallelism can reproduce the same bias.
 
-QCDS therefore rotates perspective and can temporarily exclude one dimension:
+QCDS therefore changes perspective and can temporarily alter one dimension for comparison.
 
-```text
-Run A: all dimensions
-Run B: remove prompt-injection lens
-Run C: remove identity lens
-Run D: remove tool-authority lens
-Run E: reverse attacker/defender priority
-Run F: start from asset loss instead of attack technique
-```
+~~~text
+Run A: all applicable perspectives
+Run B: remove OWASP / AppSec
+Run C: remove Identity
+Run D: remove Action / Tool Chain
+Run E: start from the consequence instead of the attack technique
+Run F: set one declared fact to ? for a comparison
+~~~
 
-A finding that only appears when one favored lens is present is weaker than a finding rediscovered through independent paths.
+These operations answer different questions:
 
-Rotation is not random decoration. It is a bias-control mechanism.
+- **Perspective rotation:** does the result depend on this lens?
+- **Dimension exclusion:** does the result depend on this system fact?
 
 ## Sequential deepening
 
 Promising paths are then narrowed.
 
-```text
-THREAT
+~~~text
+THREAT / FAILURE
   ↓
-ATTACK PATH
+ROUTE
   ↓
 REQUIRED CONDITIONS
   ↓
@@ -152,11 +177,11 @@ SECOND CONTROL
 COUNTER-TEST
   ↓
 EVIDENCE
-```
+~~~
 
-This continues recursively.
+The process continues recursively.
 
-The system should not stop merely because it has found a mitigation.
+The system should not stop merely because it found a mitigation.
 
 The next question is:
 
@@ -166,15 +191,15 @@ The next question is:
 
 ### 1. Condition Formation
 
-Turn interviews, architecture, code, permissions, data flows and assumptions into explicit Conditions.
+Turn descriptions, architecture, code, permissions, flows, observations and assumptions into explicit Conditions.
 
 ### 2. Conditional Evolution
 
-Apply Oracles and perspective families to generate and constrain candidate threat paths.
+Apply Oracles and perspective families to generate and constrain candidate paths.
 
 ### 3. Recursive Inference
 
-Deepen retained paths, search combinations, rotate dimensions, challenge mitigations and generate bypass hypotheses.
+Deepen retained paths, search combinations, rotate perspectives, alter dimensions for comparison, challenge mitigations and generate bypass hypotheses.
 
 ### 4. Truth-Alignment Verification
 
@@ -182,47 +207,46 @@ Bind surviving claims to evidence, counter-tests and reproducible conditions. Fi
 
 ## Convergence
 
-The objective is not "the AI produced a list."
+The objective is not "the model produced a list."
 
-The objective is a state where repeated perspective rotation, counter-testing and recursive search produce diminishing material novelty and the surviving findings are evidence-bound.
+The objective is a state where perspective rotation, counter-testing and recursive search produce diminishing material novelty and the surviving claims are evidence-bound.
 
-```text
+~~~text
 SYSTEM
   ↓
-INTERVIEW / EVIDENCE
+DESCRIPTION / CODE / OBSERVATIONS
   ↓
-CONDITIONS
+OPTIONAL MODEL-ASSISTED ANALYSIS
   ↓
-ORACLE FAMILIES
+CONDITIONS 1 / 0 / ?
+  ↓
+ORACLES
   ↓
 PARALLEL PERSPECTIVES
-  ↓
-ROTATION / DIMENSION EXCLUSION
+  ↕
+QCDS ROTATION / DIMENSION EXCLUSION
   ↓
 SEQUENTIAL DEEPENING
   ↓
-RECURSIVE ATTACK ↔ CONTROL SEARCH
+RECURSIVE ROUTE ↔ CONTROL SEARCH
   ↓
 EVIDENCE + FALSIFICATION
   ↓
-STABLE VERIFIED THREAT MODEL
-```
+SCOPED, INSPECTABLE RESULT
+~~~
 
 ## The output
 
-A useful QCDS threat model should not be a flat spreadsheet of scary nouns.
-
-It should preserve:
+A useful QCDS threat model should preserve:
 
 - the system fact that created the concern;
-- the attack path;
-- the Conditions required for the path;
-- the perspective(s) that discovered it;
+- the route;
+- the Conditions required for the route;
+- the perspective(s) that surfaced it;
 - the Oracles that retained or rejected it;
 - the control and bypass attempts;
 - the evidence;
 - the counter-evidence;
-- the confidence / status;
 - unresolved questions;
 - the next test required.
 
@@ -230,4 +254,4 @@ That makes the result inspectable by both specialists and non-specialists.
 
 ## License
 
-This document is part of QCDS Security Lab and is governed by [LICENSE.md](./LICENSE.md). Use beyond the stated evaluation permission requires a separate commercial license.
+This document is part of QCDS Security Lab and is governed by [LICENSE.md](./LICENSE.md).
