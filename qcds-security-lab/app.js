@@ -1166,7 +1166,7 @@ function systemView() {
       "INPUTS TO THE ANALYSIS",
       "What should QCDS reason from?",
       "This is the editable source material for the five-question workflow: the system description, the unwanted outcome and the exact 1 / 0 / ? conditions. Change these inputs and the candidate paths are recalculated.",
-      `<div class="system-header-actions"><button class="button primary" data-action="interview-ai">${icon("spark")} AI / LLM interview</button><button class="button" data-action="interview">Guided interview</button></div>`,
+      `<div class="system-header-actions"><button class="button primary" data-action="interview-ai">${icon("spark")} AI / LLM interview</button><button class="button" data-action="interview">Guided interview</button><button class="button" data-action="form-conditions">Form 1 / 0 / ? from brief</button></div>`,
     ) +
     `<form id="system-form"><section class="panel form-panel"><div class="panel-header"><h2>System brief</h2>${badge(p.example ? "Editable example" : "Your system", "neutral")}</div><div class="form-grid"><label>System name<input id="system-name" data-field="name" maxlength="120" value="${esc(i.name)}" required></label><label>Assets to protect<input data-field="assets" value="${esc(i.assets.join(", "))}" maxlength="2000" placeholder="Customer records, documents, credentials"><small>Separate assets with commas.</small></label><label class="span-two">Describe the system<textarea data-field="description" rows="3" maxlength="6000" placeholder="What goes in, what it can access, and what it can do…">${esc(i.description)}</textarea></label><label class="span-two">I am the attacker. I want to…<input data-field="attackerGoal" value="${esc(i.attackerGoal)}" maxlength="1500" placeholder="For example: see another customer's private information"></label></div></section><section class="panel condition-panel"><div class="panel-header"><div><h2>Conditions <span class="count">${CONDITION_DEFS.length}</span></h2><p>Each C-number is ternary: <b>1 = present</b>, <b>0 = absent</b>, <b>? = unknown</b>. A ? stays in the model and creates conditional routes rather than forcing a Yes or No.</p></div></div>${[
       "Exposure",
@@ -1181,13 +1181,14 @@ function systemView() {
           )
             .map(([k], n) => {
               const id = CONDITION_DEFS.findIndex((x) => x[0] === k) + 1;
-              return `<div class="condition-row"><div><label id="label-${k}" for="condition-${k}"><span class="mono">C${id}</span><b>${FIELD_META[k][0]}</b></label><p id="hint-${k}">${FIELD_META[k][1]}</p></div><select id="condition-${k}" data-condition="${k}" aria-labelledby="label-${k}" aria-describedby="hint-${k}" class="condition-select ${i.flags[k] === null ? "unknown" : i.flags[k] ? "yes" : "no"}"><option value="yes" ${i.flags[k] === true ? "selected" : ""}>1 · Yes</option><option value="no" ${i.flags[k] === false ? "selected" : ""}>0 · No</option><option value="unknown" ${i.flags[k] === null ? "selected" : ""}>? · Unknown</option></select></div>`;
+              const basis = p.conditionBasis?.[k];
+              return `<div class="condition-row"><div><label id="label-${k}" for="condition-${k}"><span class="mono">C${id}</span><b>${FIELD_META[k][0]}</b></label><p id="hint-${k}">${FIELD_META[k][1]}</p>${basis ? `<em class="condition-basis">Interview / brief inference · ${esc(basis.confidence)} confidence · ${esc(basis.reason)}</em>` : ""}</div><select id="condition-${k}" data-condition="${k}" aria-labelledby="label-${k}" aria-describedby="hint-${k}" class="condition-select ${i.flags[k] === null ? "unknown" : i.flags[k] ? "yes" : "no"}"><option value="yes" ${i.flags[k] === true ? "selected" : ""}>1 · Yes</option><option value="no" ${i.flags[k] === false ? "selected" : ""}>0 · No</option><option value="unknown" ${i.flags[k] === null ? "selected" : ""}>? · Unknown</option></select></div>`;
             })
             .join("")}</div></div>`,
       )
       .join(
         "",
-      )}</section><div class="form-bottom"><p>${icon("shield")} Saved on this device. No system details are sent to a server.</p><div class="form-buttons"><button type="button" class="button" data-action="reset">${icon("undo")} Reset system</button>${runButton()}</div></div></form>`
+      )}</section>${state.model.clarifications.length ? `<section class="panel qcds-asks"><span class="eyebrow">QCDS ASKS NEXT</span><h2>Resolve the ? facts with the highest effect on the current route space.</h2><div class="clarification-list">${state.model.clarifications.slice(0, 8).map((item) => `<div><div><b>${item.id} · ${esc(item.label)}</b><p>${esc(item.question)}</p><small>${item.routeIds.length ? "Affects " + item.routeIds.join(", ") : "General system context"}</small></div><div class="clarification-actions"><button type="button" data-answer-condition="${item.key}" data-condition-value="yes">1 · Yes</button><button type="button" data-answer-condition="${item.key}" data-condition-value="no">0 · No</button><button type="button" data-answer-condition="${item.key}" data-condition-value="unknown">? · Keep unknown</button></div></div>`).join("")}</div></section>` : ""}<div class="form-bottom"><p>${icon("shield")} Saved on this device. No system details are sent to a server.</p><div class="form-buttons"><button type="button" class="button" data-action="reset">${icon("undo")} Reset system</button>${runButton()}</div></div></form>`
   );
 }
 function currentAction(id) {
@@ -1615,6 +1616,31 @@ document.addEventListener("click", async (e) => {
     case "interview":
       openInterview("guided");
       break;
+    case "form-conditions": {
+      const suggestions = suggestConditions(project().input);
+      if (!project().conditionBasis) project().conditionBasis = {};
+      let applied = 0;
+      for (const suggestion of suggestions) {
+        if (project().input.flags[suggestion.key] !== null) continue;
+        project().input.flags[suggestion.key] = suggestion.value;
+        project().conditionBasis[suggestion.key] = {
+          source: "brief condition formation",
+          reason: suggestion.reason,
+          confidence: suggestion.confidence,
+        };
+        applied++;
+      }
+      run();
+      save();
+      render();
+      notify(
+        applied
+          ? `${applied} condition${applied === 1 ? "" : "s"} formed from the brief. Review the inferred values and remaining ?.`
+          : "No additional conditions could be formed safely from this brief.",
+        applied ? "success" : "warning",
+      );
+      break;
+    }
     case "export-json":
       exportProject();
       break;
@@ -1675,6 +1701,11 @@ document.addEventListener("input", (e) => {
             .map((x) => x.trim())
             .filter(Boolean)
         : v;
+    if (
+      project().conditionBasis &&
+      ["description", "assets", "attackerGoal"].includes(key)
+    )
+      project().conditionBasis = {};
     updateDirty();
   }
   if (e.target.id === "finding-search") {
