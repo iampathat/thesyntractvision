@@ -754,7 +754,8 @@ function traceWalkthrough() {
   const required = f.requires
     .map((k) => {
       const c = m.conditions.find((x) => x.key === k);
-      return `${c?.id || "?"} · ${FIELD_META[k][0]}`;
+      const symbol = c?.value === true ? "1" : c?.value === false ? "0" : "?";
+      return `${symbol} · ${c?.id || "?"} · ${FIELD_META[k][0]}`;
     })
     .join(" · ");
   const lensLoss = m.rotation
@@ -778,10 +779,10 @@ function traceWalkthrough() {
     </div>
     <div class="trace-focus">
       <div><small>PATH IN FOCUS</small><strong>${f.id} · ${esc(f.shortTitle)}</strong></div>
-      <div class="trace-finding-chips" aria-label="Choose a path to trace">${m.findings
+      <div class="trace-finding-chips" aria-label="Choose a path to trace">${allPaths()
         .map(
           (x) =>
-            `<button class="trace-finding-chip ${x.id === f.id ? "selected" : ""}" data-trace-finding="${x.id}" aria-pressed="${x.id === f.id}">${x.id}</button>`,
+            `<button class="trace-finding-chip ${x.id === f.id ? "selected" : ""} ${x.conditional ? "conditional" : ""}" data-trace-finding="${x.id}" aria-pressed="${x.id === f.id}">${x.conditional ? "? · " : ""}${x.id}</button>`,
         )
         .join("")}</div>
     </div>
@@ -810,8 +811,8 @@ function traceWalkthrough() {
         <span class="trace-phase-label">03 · RECURSIVE INFERENCE</span>
         <h3>Rotate, remove, deepen.</h3>
         <div class="trace-dependency">
-          <p><b>Rotate the perspective</b>${lensLoss.length ? `If ${lensLoss.map(esc).join(", ")} is removed, ${f.id} disappears in that rerun.` : `${f.id} survives every single-perspective removal currently available.`}</p>
-          <p><b>Walk a dimension</b>${firstFragile ? `Treat ${firstFragile.id} · ${esc(FIELD_META[firstFragile.key][0])} as Unknown and ${f.id} loses a required basis.` : `${f.id} does not lose its required basis in the available one-fact exclusions.`}</p>
+          <p><b>Rotate the perspective</b>${f.conditional ? `${f.id} is still conditional because of ?. Perspective rotation remains available, but the route is not yet a fully resolved baseline.` : lensLoss.length ? `If ${lensLoss.map(esc).join(", ")} is removed, ${f.id} disappears in that rerun.` : `${f.id} survives every single-perspective removal currently available.`}</p>
+          <p><b>Walk a dimension</b>${f.conditional ? `The route already contains unresolved dimensions: ${f.missing.map((k) => state.model.conditions.find((c) => c.key === k)?.id || "?").join(", ")}. QCDS carries them as ? instead of assuming 1 or 0.` : firstFragile ? `Treat ${firstFragile.id} · ${esc(FIELD_META[firstFragile.key][0])} as ? and ${f.id} loses a required basis.` : `${f.id} does not lose its required basis in the available one-fact exclusions.`}</p>
           <p><b>Challenge the control</b>${esc(f.control)} → <em>${esc(f.bypass)}</em></p>
         </div>
         <small>${lensSurvival.length ? `It still survives without: ${lensSurvival.map(esc).join(", ")}.` : "No alternate single-lens survival is recorded for this path."}</small>
@@ -1051,8 +1052,8 @@ function updateDirty() {
       ([key]) => project().input.flags[key] === null,
     ).length;
     factCount.textContent = unknown
-      ? `${unknown} to clarify`
-      : `${CONDITION_DEFS.length} declared`;
+      ? `${unknown} unresolved (?)`
+      : `${CONDITION_DEFS.length} resolved`;
   }
 }
 function download(content, filename, type) {
@@ -1087,7 +1088,7 @@ async function execute() {
   if (state.route === "system") goQuestion(2);
   else navigate(state.route);
   notify(
-    `Analysis complete · ${state.model.findings.length} candidate findings · ${state.model.unknown.length} unknown conditions.`,
+    `Analysis complete · ${state.model.findings.length} resolved path${state.model.findings.length === 1 ? "" : "s"} · ${state.model.pending.length} conditional (?) · ${state.model.unknown.length} unresolved condition${state.model.unknown.length === 1 ? "" : "s"}.`,
   );
 }
 function switchCase(id) {
@@ -1169,7 +1170,13 @@ document.addEventListener("click", async (e) => {
     state.findingId = find.dataset.finding;
     state.filter = "all";
     state.query = "";
-    navigate("findings");
+    const path = allPaths().find((x) => x.id === state.findingId);
+    if (path?.conditional) {
+      goQuestion(2, path.id);
+      notify(`${path.id} is a conditional route. The ? inputs stay unresolved while you explore it.`);
+    } else {
+      navigate("findings");
+    }
     return;
   }
   const select = e.target.closest("[data-select-finding]");
