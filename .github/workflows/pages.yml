@@ -325,6 +325,12 @@ jobs:
           grep -F 'Explain current path' _site/qcds-security-lab/app.js
           grep -F 'Whole analysis' _site/qcds-security-lab/app.js
           grep -F 'Exit walkthrough · Examples' _site/qcds-security-lab/app.js
+          grep -F 'QCDS ASKS NEXT' _site/qcds-security-lab/app.js
+          grep -F 'CONDITIONAL · ?' _site/qcds-security-lab/app.js
+          grep -F 'RECURSIVE INFERENCE · WHAT QCDS ASKS NEXT' _site/qcds-security-lab/app.js
+          grep -F 'function suggestConditions' _site/qcds-security-lab/engine.mjs
+          grep -F 'conditionalRoutes' _site/qcds-security-lab/engine.mjs
+          grep -F 'recursiveInference' _site/qcds-security-lab/engine.mjs
           grep -F 'Commercial license required' _site/qcds-security-lab/LICENSE.md
           node --check _site/qcds-security-lab/app.js
           node --check _site/qcds-security-lab/engine.mjs
