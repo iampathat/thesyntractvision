@@ -4,6 +4,7 @@ import {
   newProject,
   analyze,
   fingerprint,
+  suggestConditions,
   LENSES,
   validateProject,
   markdown,
@@ -67,6 +68,8 @@ test("unknown system is not a security pass", () => {
   const m = analyze(newProject("custom").input);
   assert.equal(m.unknown.length, 14);
   assert.equal(m.findings.length, 0);
+  assert.equal(m.pending.length, 8);
+  assert.equal(m.searchSpace.conditionalRoutes, 8);
   assert.ok(m.oracles.every((o) => !["PASS", "VERIFIED"].includes(o.state)));
 });
 test("unknown prerequisites produce questions; explicit No excludes the rule", () => {
@@ -79,6 +82,52 @@ test("unknown prerequisites produce questions; explicit No excludes the rule", (
   m = analyze(p.input);
   assert.ok(!m.pending.some((f) => f.id === "F1"));
   assert.ok(!ids(m).includes("F1"));
+});
+test("interview condition formation turns a sparse brief into an inspectable route space", () => {
+  const p = newProject("custom");
+  p.input.name = "I am building a security app";
+  p.input.description =
+    "System: I am building a security app\n" +
+    "Inputs: Anyone who downloads the app\n" +
+    "Attacker goal: Expose security flaws\n" +
+    "Assets: Personal data\n" +
+    "Actions: All of them\n" +
+    "Controls: Nothing";
+  p.input.attackerGoal = "Expose security flaws";
+  p.input.assets = ["Personal data"];
+
+  const suggestions = suggestConditions(p.input);
+  for (const suggestion of suggestions)
+    if (p.input.flags[suggestion.key] === null)
+      p.input.flags[suggestion.key] = suggestion.value;
+
+  const m = analyze(p.input);
+  assert.equal(p.input.flags.external_input, true);
+  assert.equal(p.input.flags.sensitive_data, true);
+  assert.equal(p.input.flags.tools, true);
+  assert.equal(p.input.flags.high_impact, true);
+  assert.equal(p.input.flags.authorization, false);
+  assert.deepEqual(ids(m), ["F1", "F2", "F3", "F8"]);
+  assert.deepEqual(
+    m.pending.map((f) => f.id),
+    ["F4", "F6", "F7"],
+  );
+  assert.equal(m.searchSpace.confirmedRoutes, 4);
+  assert.equal(m.searchSpace.conditionalRoutes, 3);
+  assert.ok(m.clarifications.some((item) => item.key === "rag"));
+  assert.ok(m.recursive.some((branch) => branch.id === "F1"));
+});
+test("condition provenance survives project import but conclusions do not", () => {
+  const p = newProject("custom");
+  p.conditionBasis.external_input = {
+    source: "guided interview + deterministic formation",
+    reason: "External users can interact with the target.",
+    confidence: "medium",
+  };
+  p.analysis = { findings: [{ id: "F1", status: "VERIFIED" }] };
+  const clean = validateProject(JSON.parse(JSON.stringify(p)));
+  assert.equal(clean.analysis, undefined);
+  assert.equal(clean.conditionBasis.external_input.confidence, "medium");
 });
 test("declared authorization still needs a test", () => {
   const p = newProject();
@@ -98,14 +147,18 @@ test("rotation reruns selected perspectives and can lose all paths", () => {
   assert.deepEqual(m.rotation[0].lost, ids(m));
   assert.equal(analyze(p.input, [], Object.keys(LENSES)).findings.length, 0);
 });
-test("dimension exclusion identifies required facts", () => {
+test("dimension walk weakens routes instead of silently deleting unknowns", () => {
   const m = analyze(newProject().input);
-  assert.deepEqual(m.dimensions.find((d) => d.key === "tools").lost, ["F2"]);
-  assert.deepEqual(m.dimensions.find((d) => d.key === "human_approval").lost, [
-    "F5",
-  ]);
   assert.deepEqual(
-    m.dimensions.find((d) => d.key === "authorization").lost,
+    m.dimensions.find((d) => d.key === "tools").weakened,
+    ["F2"],
+  );
+  assert.deepEqual(
+    m.dimensions.find((d) => d.key === "human_approval").weakened,
+    ["F5"],
+  );
+  assert.deepEqual(
+    m.dimensions.find((d) => d.key === "authorization").weakened,
     [],
   );
 });
@@ -199,8 +252,9 @@ test("report includes provenance, uncertainty, evidence, actions and scope", () 
     "Test suite 9",
     "Boundary rejected",
     "regression test",
-    "shared rules",
+    "seed route families",
     "Dimension exclusion",
+    "Recursive inference",
     "REFUTED · REPORTED",
   ])
     assert.ok(md.includes(s), s);
