@@ -390,7 +390,7 @@ const GUIDE_STEPS = [
       "Name an unwanted outcome before choosing an attack technique. This gives every later question a purpose.",
     example:
       "I want a support assistant to send a reply to a recipient who should not receive it. The assistant reads customer email, drafts replies and uses a send tool after human approval.",
-    do: "Describe the system, the asset to protect and the attacker's goal. The Mini AI interview helps you write this brief.",
+    do: "Describe the system, the asset to protect and the attacker's goal. The model-assisted interview helps you structure this brief.",
     result:
       "A specific question: could a customer email influence an unauthorized send?",
     why: "A label such as ‘prompt injection’ does not explain the outcome, the route or what must be protected.",
@@ -401,7 +401,7 @@ const GUIDE_STEPS = [
       "Tool sends",
     ],
     route: "interview",
-    action: "Describe my system with Mini AI",
+    action: "Describe my system with the interviewer",
   },
   {
     title: "Turn the description into conditions",
@@ -1719,7 +1719,7 @@ const mini = {
 };
 function interviewMarkup() {
   const n = mini.answers.length;
-  return `<div class="dialog-head"><div><span class="eyebrow">DESCRIBE YOUR SYSTEM</span><h2 id="interview-title">Mini AI Interviewer</h2></div><button class="icon-button" data-mini="close" aria-label="Close interviewer">${icon("close")}</button></div><div class="interview-meta"><span id="mini-provider">${esc(mini.provider)}</span><span id="mini-progress">${Math.min(n + 1, 6)} / 6 questions</span></div><div class="interview-progress"><span style="width:${(n / 6) * 100}%"></span></div><div id="mini-messages" class="mini-messages" aria-live="polite">${mini.answers.map((a, i) => `<div class="mini-msg ai"><small>INTERVIEWER</small><p>${esc(mini.questions[i])}</p></div><div class="mini-msg user"><small>YOU</small><p>${esc(a)}</p></div>`).join("")}<div class="mini-msg ai"><small>INTERVIEWER</small><p>${n < 6 ? esc(mini.questions[n]) : "Your brief is ready. Next, review the system conditions: the interview has not decided which facts are true or which paths are vulnerable."}</p></div></div>${n < 6 ? `<form id="mini-form"><label class="sr-only" for="mini-input">Your answer</label><textarea id="mini-input" required rows="3" maxlength="3000" placeholder="Describe it in your own words…"></textarea><div class="mini-input-actions"><small>Enter to send · Shift + Enter for a new line</small><button id="mini-send" type="submit" class="button primary">Send ${icon("arrow")}</button></div></form>` : `<button class="button primary full" data-mini="apply">Review my system conditions ${icon("arrow")}</button>`}<div class="dialog-foot"><button class="text-button" data-mini="restart">Start over</button><button class="text-button" data-mini="enable" id="mini-enable">Enable browser-local AI</button></div><p class="small muted mini-note">Guided mode works immediately. Local AI requires a compatible browser and may download its model. Your answers stay on this device.</p>`;
+  return `<div class="dialog-head"><div><span class="eyebrow">DESCRIBE YOUR SYSTEM</span><h2 id="interview-title">Model-assisted interviewer</h2></div><button class="icon-button" data-mini="close" aria-label="Close interviewer">${icon("close")}</button></div><div class="interview-meta"><span id="mini-provider">${esc(mini.provider)}</span><span id="mini-progress">${Math.min(n + 1, 6)} / 6 questions</span></div><div class="interview-progress"><span style="width:${(n / 6) * 100}%"></span></div><div id="mini-messages" class="mini-messages" aria-live="polite">${mini.answers.map((a, i) => `<div class="mini-msg ai"><small>INTERVIEWER</small><p>${esc(mini.questions[i])}</p></div><div class="mini-msg user"><small>YOU</small><p>${esc(a)}</p></div>`).join("")}<div class="mini-msg ai"><small>INTERVIEWER</small><p>${n < 6 ? esc(mini.questions[n]) : "Your brief is ready. Next, review the system conditions: the interview has not decided which facts are true or which paths are vulnerable."}</p></div></div>${n < 6 ? `<form id="mini-form"><label class="sr-only" for="mini-input">Your answer</label><textarea id="mini-input" required rows="3" maxlength="3000" placeholder="Describe it in your own words…"></textarea><div class="mini-input-actions"><small>Enter to send · Shift + Enter for a new line</small><button id="mini-send" type="submit" class="button primary">Send ${icon("arrow")}</button></div></form>` : `<button class="button primary full" data-mini="apply">Review my system conditions ${icon("arrow")}</button>`}<div class="dialog-foot"><button class="text-button" data-mini="restart">Start over</button><button class="text-button" data-mini="enable" id="mini-enable">Enable browser-local model</button></div><p class="small muted mini-note">Guided mode works immediately. A browser-local model requires a compatible browser and may download model files. Your answers stay on this device.</p>`;
 }
 function openInterview() {
   const d = $("#interview");
