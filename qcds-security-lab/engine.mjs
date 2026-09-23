@@ -314,7 +314,7 @@ function buildFindings(input, conditions, lenses) {
   });
 }
 
-const VERSION = "1.5.0";
+const VERSION = "1.6.0";
 const FIELD_META = {
   external_input: [
     "External input",
@@ -475,6 +475,31 @@ const SCENARIOS = [
         "rollback",
       ],
       ["rag", "cross_user"],
+    ),
+  },,
+  {
+    id: "invoice",
+    label: "Invoice approval assistant",
+    subtitle: "Supplier PDFs · approvals · one unknown",
+    name: "Invoice Approval Assistant",
+    description:
+      "Finance staff upload supplier invoices. The AI extracts amounts and vendors, compares information and prepares a payment recommendation for a human. Whether it searches a connected internal document or knowledge source has not yet been confirmed.",
+    attackerGoal:
+      "Make a malicious supplier document influence what the approver sees or which payment is prepared.",
+    assets: ["Payment instructions", "Supplier records", "Finance identity"],
+    flags: flags(
+      [
+        "external_input",
+        "untrusted_content",
+        "sensitive_data",
+        "cross_user",
+        "tools",
+        "high_impact",
+        "human_approval",
+        "third_party",
+        "logging",
+      ],
+      ["secrets", "rollback"],
     ),
   },
 ];
