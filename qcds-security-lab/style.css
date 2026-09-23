@@ -4450,6 +4450,28 @@ dialog::backdrop {
   border-top: 1px solid var(--line);
   background: #11191d;
 }
+.example-journey-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 19px 28px 22px;
+  border-top: 1px solid #435235;
+  background: #162016;
+}
+.example-journey-cta b {
+  display: block;
+  font-size: 14px;
+}
+.example-journey-cta small {
+  display: block;
+  margin-top: 4px;
+  color: #9eab92;
+  font-size: 11px;
+}
+.example-journey-cta .button {
+  flex-shrink: 0;
+}
 .example-explain summary {
   cursor: pointer;
   color: var(--acid);
@@ -4575,6 +4597,14 @@ dialog::backdrop {
   }
   .example-coach {
     padding: 16px;
+  }
+  .example-journey-cta {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 17px 18px 19px;
+  }
+  .example-journey-cta .button {
+    width: 100%;
   }
 }
 
