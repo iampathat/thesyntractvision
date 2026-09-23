@@ -4,97 +4,167 @@
 
 ## Current implementation boundary
 
-The v1.0 browser workspace evaluates the workflow using eight deterministic rules and six shared lens families. It implements actual lens and condition ablation, composed rule paths, oracle review states and snapshot-bound user-reported evidence. It does not implement autonomous discovery, a quantum/Grover execution substrate or automatic real-world verification. See [README.md](./README.md) for the implemented contract and tests.
+The browser workspace evaluates the method using eight deterministic candidate-rule families, fourteen ternary conditions and seven perspective families. It implements perspective rotation, condition ablation, composed paths, Oracle review states and snapshot-bound user-reported evidence.
+
+It does not claim autonomous real-world discovery, automatic verification, or a quantum/Grover execution substrate in this browser release.
 
 ## Purpose
 
-QCDS Security Lab treats AI security as a search-and-verification problem rather than a static checklist.
+QCDS Security Lab treats security investigation as a **search, comparison and verification problem**, not as a static checklist.
 
-The core object is the **observable threat space**: system components, data flows, trust boundaries, identities, permissions, tools, model context, external inputs, controls and assumptions.
+The target may be any system: software, infrastructure, a process, a workflow, a machine, an organization, an AI system or another operational system.
 
-## Discovery loop
+The observable threat space can include actors and identities, assets and protected outcomes, system components, data and material flows, trust boundaries, permissions, delegated authority, connected interfaces, external dependencies, human approvals, controls, assumptions and unresolved facts. AI/ML components are included when the target actually contains them.
 
-```text
-PLAIN-LANGUAGE INTERVIEW / CODE / ARCHITECTURE / EVIDENCE
-                           ↓
-                    CONDITIONS
-                           ↓
-               ORACLES / CONSTRAINTS
-                           ↓
-              ATTACK-SURFACE GRAPH
-                           ↓
-              PARALLEL PERSPECTIVES
-                           ↓
-          ROTATION / DIMENSION EXCLUSION
-                           ↓
-               ATTACK-PATH INFERENCE
-                           ↓
-                 CONTROL / MITIGATION
-                           ↓
-               BYPASS / FAILURE SEARCH
-                           ↓
-                RECURSIVE INFERENCE
-                           ↓
-             EVIDENCE + FALSIFICATION
-                           ↓
-          TRUTH-ALIGNMENT / STABILIZATION
-```
+## Analysis roles
 
-The human-facing entry point is intentionally simple:
+Three layers must not be confused.
 
-> I am the attacker. I want to ______.  
-> How would I try?  
-> What would stop me?  
-> How could I bypass that?  
-> What would prove the path is real?
+### 1. Target system
 
-The AI interviewer converts the answers into explicit Conditions. Oracles then test candidate paths. Parallel perspectives generate competing hypotheses. Rotation and dimension exclusion reduce shared bias. Recursive inference challenges controls and searches for bypasses. Truth-Alignment Verification binds the surviving findings to evidence.
+The real system being investigated.
 
-See [METHODOLOGY.md](./METHODOLOGY.md) for the full flow and [PERSPECTIVES.md](./PERSPECTIVES.md) for the framework-to-Oracle mapping.
+### 2. Model-assisted analysis
 
-## Conditions, Oracles and perspectives
+LLMs or other predictive models may help interpret descriptions, suggest candidate conditions, generate questions, propose possible routes and prepare material for security perspectives.
 
-**Conditions** represent the observable facts and assumptions of the system: assets, actors, permissions, data flows, tool capabilities, trust boundaries and controls.
+They are assistants. Their output is candidate material, not truth.
 
-**Oracles** are constraint, test or evidence functions. They may reject, retain, weight or narrow candidate threat paths.
+### 3. QCDS inference loop
 
-**Perspectives** generate questions and candidate paths. STRIDE, CIA, OWASP/GenAI, identity, privacy, supply-chain, insider, agent/tool-chain and open-search views are examples. They are not the QCDS engine; they are lenses the engine can combine, rotate, exclude and challenge.
+QCDS keeps the investigation coherent across uncertainty, alternatives, perspectives, controls and evidence.
 
-The architecture always reserves open-search branches so named frameworks do not become the boundary of thought.
+~~~text
+ANY TARGET SYSTEM
+        ↓
+PLAIN DESCRIPTION / ARCHITECTURE / CODE / OBSERVATIONS
+        ↓
+OPTIONAL MODEL-ASSISTED INTERPRETATION
+        ↓
+CONDITIONS 1 / 0 / ?
+        ↓
+ORACLES / CONSTRAINTS
+        ↓
+PARALLEL SECURITY PERSPECTIVES
+        ↕
+QCDS ROTATION / DIMENSION EXCLUSION
+        ↓
+CANDIDATE ROUTES
+        ↓
+CONTROL / MITIGATION
+        ↓
+BYPASS / FAILURE QUESTION
+        ↓
+RECURSIVE INFERENCE
+        ↓
+TESTS / COUNTER-TESTS / OBSERVATIONS
+        ↓
+TRUTH-ALIGNMENT / SCOPED CONCLUSION
+~~~
+
+QCDS is not merely a final filter after frameworks. It remains in the loop while routes, perspectives, dimensions and controls are compared and challenged.
+
+## Conditions
+
+Conditions are explicit ternary system facts:
+
+- **1** — present
+- **0** — absent
+- **?** — unresolved
+
+Unknown is not an error.
+
+The current implementation uses fourteen stable condition IDs. The final condition explicitly records whether the **target system itself** contains an AI/ML component. This prevents optional model assistance in the analysis from being confused with AI inside the target.
+
+## Oracles
+
+Oracles are constraint, test or evidence functions. They can retain, reject, narrow or challenge candidate paths.
+
+Examples include questions about trust-boundary crossings, identity and authority, control effectiveness, connected-source provenance, evidence quality and whether an alternate route survives.
+
+## Perspectives
+
+Perspectives contribute questions; they are not the QCDS engine.
+
+Current UI perspective families are:
+
+- STRIDE
+- OWASP / AppSec
+- Identity
+- Action / Tool Chain
+- Privacy / Supply Chain
+- AI / GenAI
+- Open Search
+
+The AI / GenAI lens is applicable only when the target is declared to contain AI/ML.
+
+Additional perspectives such as CIA, ATT&CK-like technique views, insider, physical safety, operational resilience or domain-specific frameworks can be added without changing the underlying QCDS role.
+
+## Discovery and recursion
+
+Parallel analysis asks different questions about the same target.
+
+Sequential deepening follows one candidate route through its dependencies.
+
+Recursive inference turns a proposed control into the next question:
+
+~~~text
+ROUTE
+  ↓
+CONTROL
+  ↓
+HOW COULD THIS CONTROL FAIL?
+  ↓
+NEXT CONTROL
+  ↓
+HOW COULD THAT FAIL?
+  ↓
+TEST / COUNTER-TEST
+~~~
+
+A mitigation proposal is not the end of the search.
+
+## Rotation and dimension exclusion
+
+Perspective rotation asks whether a candidate depends on one chosen lens.
+
+Dimension exclusion asks whether it depends on one chosen system fact.
+
+These are different comparisons:
+
+~~~text
+same facts + remove one perspective
+same perspectives + alter one condition for comparison
+~~~
+
+The saved target state remains intact.
 
 ## Target classes
 
-The architecture is intended to reason across:
+The same architecture can be used for ordinary web applications, APIs and services, identity systems, payment and approval processes, business workflows, infrastructure and networks, supply chains, machines and operational systems, AI/ML systems, and mixed physical/digital systems.
 
-- prompt and indirect-prompt injection;
-- excessive or confused tool authority;
-- privilege and trust-boundary violations;
-- data leakage and cross-context exposure;
-- unsafe model-to-tool transitions;
-- poisoned or adversarial knowledge sources;
-- compound vulnerabilities that emerge only from component combinations;
-- control bypasses and brittle mitigations;
-- missing observability, recovery and verification.
+AI-specific failure modes are therefore a **subset**, not the definition of the Security Lab.
 
 ## Finding contract
 
-A promoted finding should carry:
+A useful finding carries:
 
-1. **Claim** — what may be vulnerable.
-2. **Path** — the system path or dependency chain involved.
-3. **Conditions** — what must be true for the finding to matter.
-4. **Evidence** — source, observation, test or reproducible basis.
-5. **Counter-test** — attempt to falsify the finding.
-6. **Control** — mitigation or boundary intended to stop it.
-7. **Bypass search** — attempt to challenge that control.
-8. **Status** — hypothesis, supported, verified, rejected or unresolved.
+1. **Claim** — what may fail or be exploitable.
+2. **Path** — the system path or dependency chain.
+3. **Conditions** — what must be true.
+4. **Perspectives** — which question families surfaced it.
+5. **Control** — what should interrupt the path.
+6. **Bypass search** — how that control could fail.
+7. **Evidence** — observation, source or test.
+8. **Counter-test** — what could contradict the claim.
+9. **Status** — unresolved, hypothesis, supported, refuted or conflicting.
 
 ## Principle
 
-A strong base model is useful, but it is not the architecture.
+A strong model can help generate candidate material, but it is not the architecture.
 
-QCDS Security Lab is designed so the model can be replaced while the inference discipline remains: parallel search, rotation, recursive narrowing, falsification and truth-alignment verification.
+QCDS supplies the inference discipline: explicit conditions, multiple directions, constraint, rotation, recursive challenge and evidence alignment.
 
 ## License
 
-This document is part of QCDS Security Lab and is governed by [LICENSE.md](./LICENSE.md). Commercial use requires a separate written license agreement.
+This document is part of QCDS Security Lab and is governed by [LICENSE.md](./LICENSE.md).
