@@ -320,7 +320,9 @@ jobs:
           test -s _site/qcds-security-lab/engine.mjs
           test -s _site/qcds-security-lab/assets/favicon.svg
           grep -F 'COMMERCIAL LICENSE REQUIRED' _site/qcds-security-lab/app.js
-          grep -F 'Mini AI Interviewer' _site/qcds-security-lab/app.js
+          grep -F 'Model-assisted interviewer' _site/qcds-security-lab/app.js
+          grep -F 'Conditions · 1 / 0 / ?' _site/qcds-security-lab/app.js
+          grep -F 'Exit walkthrough · Examples' _site/qcds-security-lab/app.js
           grep -F 'Commercial license required' _site/qcds-security-lab/LICENSE.md
           node --check _site/qcds-security-lab/app.js
           node --check _site/qcds-security-lab/engine.mjs
