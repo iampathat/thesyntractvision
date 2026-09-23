@@ -4175,6 +4175,96 @@ dialog::backdrop {
   color: var(--acid);
 }
 
+
+.nav-section-label {
+  margin: 9px 12px 5px;
+  color: #697680;
+  font: 9px var(--mono);
+  letter-spacing: 0.14em;
+}
+.nav-learn-label {
+  margin-top: 16px;
+}
+.sidebar nav a {
+  align-items: flex-start;
+}
+.sidebar nav a > .icon {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+.sidebar .nav-copy {
+  display: block;
+  min-width: 0;
+  white-space: normal;
+}
+.sidebar .nav-copy b {
+  display: block;
+  font-size: 13px;
+  font-weight: 560;
+  line-height: 1.25;
+}
+.sidebar .nav-copy em {
+  display: block;
+  margin-top: 4px;
+  color: #71808a;
+  font-size: 9px;
+  font-style: normal;
+  line-height: 1.35;
+}
+.sidebar nav a[aria-current] .nav-copy em {
+  color: #96b96c;
+}
+.nav-tools {
+  margin-top: 18px;
+}
+.nav-tools > summary {
+  padding-block: 12px;
+  border-radius: 7px;
+}
+.nav-tools > summary:hover {
+  background: #171d21;
+}
+.nav-tools > summary > span {
+  font-size: 12px;
+  font-weight: 600;
+  color: #d4dde4;
+}
+.nav-tools > summary > small {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  font: 9px/1.4 var(--mono);
+  color: #71808a;
+}
+.condition-chips .unknown-chip {
+  border-color: #c5a85f !important;
+  background: #2b2719;
+  color: #f1d58c !important;
+}
+.conditional-note {
+  margin: 16px 0;
+  padding: 13px 14px;
+  border: 1px solid #6f5d2f;
+  border-radius: 7px;
+  background: #262216;
+  color: #dbc785;
+  font-size: 13px;
+  line-height: 1.65;
+}
+.conditional-evidence {
+  border-color: #6f5d2f;
+}
+.trace-finding-chip.conditional {
+  border-color: #7c6937;
+  color: #e0c777;
+}
+.trace-finding-chip.conditional.selected {
+  border-color: #e0c777;
+  background: #342d18;
+  color: #f3d987;
+}
+
 /* Guided trace: keep the QCDS machinery understandable before showing the full tables. */
 .trace-guide {
   overflow: hidden;
