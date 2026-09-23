@@ -7,13 +7,15 @@ QCDS Security Lab is a separately licensed commercial QCDS surface for AI threat
 
 > **Commercial license required.** Public visibility does not grant a right to use, copy, modify, deploy, benchmark, train on, integrate, distribute, or commercialize this material.
 
-## Workspace v1.3
+## Workspace v1.4
 
 The main workspace follows five questions: the attacker's goal, possible path, control, possible control failure, and evidence. One question is shown at a time. A persistent position indicator keeps the system, path and question visible; Back and Next remain within reach. Question and finding are encoded in the URL, and the last position is kept in session storage.
 
 At question 2 or 4, an inline perspective explorer changes the lens on the same path without navigating elsewhere or changing the saved conditions. Users can explicitly follow another matching finding or inspect a leave-one-fact-out comparison. Plain-English explanations open in a dialog and close back to the same scroll position. Detailed views remain available with an explicit return to the current question.
 
 The QCDS trace now starts with a live walkthrough of the selected finding. It follows the same candidate path through required Conditions, matching perspectives, leave-one-perspective-out rotation, leave-one-fact-out dimension exclusion, recursive control-bypass challenge and the next evidence test. Finding chips switch the walkthrough without leaving the trace. The full oracle, rotation, dimension and chain tables remain below for detailed inspection.
+
+Perspectives are now first-class workspace outputs. STRIDE, OWASP/GenAI, Identity, Agent/Tool Chain, Privacy/Supply Chain and Open Search each have a focused report page with current system signals, matching findings, a rotation-dependence check, Markdown export and browser Print / Save PDF. The sidebar separates these deliverables from an **Under the hood** section containing system conditions, QCDS trace and analysis overview.
 
 The sidebar becomes a drawer below 1025 CSS pixels, covering both narrow phones and common unfolded Fold widths. A diagnostic fixture at `qa/fold.html` renders the actual application in 360px and 768px frames for layout and navigation checks; it is not part of the product navigation.
 
