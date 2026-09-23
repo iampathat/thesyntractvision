@@ -3687,6 +3687,19 @@ dialog::backdrop {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.walkthrough-exit {
+  display: inline-block;
+  margin-top: 4px;
+  color: #7f8d96;
+  font-size: 10px;
+  line-height: 1.4;
+  text-decoration: none;
+}
+.walkthrough-exit:hover,
+.walkthrough-exit:focus-visible {
+  color: #b8c5cc;
+  text-decoration: underline;
+}
 .question-position nav {
   display: flex;
   gap: 8px;
@@ -4673,10 +4686,7 @@ dialog::backdrop {
   line-height: 1.7;
 }
 .example-coach {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 20px;
+  display: block;
   padding: 18px 20px;
   margin-bottom: 18px;
   border-color: #526c37;
