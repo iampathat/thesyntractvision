@@ -5136,6 +5136,13 @@ dialog::backdrop {
 .perspective-choice.excluded {
   opacity: 0.58;
 }
+.perspective-choice.inactive {
+  opacity: 0.62;
+  border-style: dashed;
+}
+.perspective-choice.inactive small {
+  color: #8d99a1;
+}
 .perspective-report {
   overflow: hidden;
 }
