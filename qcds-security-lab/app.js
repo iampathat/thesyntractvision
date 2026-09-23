@@ -9,7 +9,7 @@ import {
   analyze,
   validateProject,
   markdown,
-} from "./engine.mjs?v=1.8.2";
+} from "./engine.mjs?v=1.8.3";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
@@ -697,7 +697,11 @@ function selectedFinding() {
   return allPaths().find((f) => f.id === state.findingId);
 }
 function questionPosition() {
-  return `<div class="question-position" aria-label="Current investigation position"><div><span class="question-count">${state.question} / 5</span><div><b>Question ${state.question}: ${QUESTION_STEPS[state.question - 1].short}</b><small>${esc(project().input.name)}${state.question > 1 && state.findingId ? ` · ${state.findingId}` : ""}</small></div></div><nav aria-label="Five investigation questions">${QUESTION_STEPS.map((q, i) => `<button data-question="${i + 1}" ${state.question === i + 1 ? 'aria-current="step"' : ""} aria-label="Question ${i + 1}: ${q.short}" title="${q.title}"><span>${i + 1}</span><small>${q.short}</small></button>`).join("")}</nav></div>`;
+  const exampleExit =
+    project().example && EXAMPLE_GUIDES[state.caseId]
+      ? '<a class="walkthrough-exit" href="#examples">Exit walkthrough · Examples</a>'
+      : "";
+  return `<div class="question-position" aria-label="Current investigation position"><div><span class="question-count">${state.question} / 5</span><div><b>Question ${state.question}: ${QUESTION_STEPS[state.question - 1].short}</b><small>${esc(project().input.name)}${state.question > 1 && state.findingId ? ` · ${state.findingId}` : ""}</small>${exampleExit}</div></div><nav aria-label="Five investigation questions">${QUESTION_STEPS.map((q, i) => `<button data-question="${i + 1}" ${state.question === i + 1 ? 'aria-current="step"' : ""} aria-label="Question ${i + 1}: ${q.short}" title="${q.title}"><span>${i + 1}</span><small>${q.short}</small></button>`).join("")}</nav></div>`;
 }
 function questionNavigation() {
   const empty = state.question > 1 && !selectedFinding();
@@ -772,7 +776,7 @@ function exampleCoach(f) {
     4: "Now challenge that protection. This is the recursive move: control → possible bypass → next control.",
     5: "Finish with a test that could change your mind. Evidence is stronger than a plausible story.",
   };
-  return `<section class="example-coach panel"><div><span class="eyebrow">${esc(guide.level)}</span><b>Walking example: ${esc(guide.title)}</b><p>${messages[state.question]}</p>${state.question > 1 && focus ? `<small>Example path in focus: ${focus.id} · ${esc(focus.shortTitle)}${focus.conditional ? " · ? conditional" : ""}</small>` : ""}</div><a class="text-link" href="#examples">See all examples →</a></section>`;
+  return `<section class="example-coach panel"><div><span class="eyebrow">${esc(guide.level)}</span><b>Walking example: ${esc(guide.title)}</b><p>${messages[state.question]}</p>${state.question > 1 && focus ? `<small>Example path in focus: ${focus.id} · ${esc(focus.shortTitle)}${focus.conditional ? " · ? conditional" : ""}</small>` : ""}</div></section>`;
 }
 
 function exampleFlowCard(id) {
