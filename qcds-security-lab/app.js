@@ -242,9 +242,19 @@ function shell() {
   const investigating = state.route === "investigate";
   const workRoutes = ["investigate", "perspectives", "findings", "report"];
   const detailRoutes = ["system", "trace", "overview"];
+  const navHints = {
+    investigate: "Goal → route → control → bypass → proof",
+    perspectives: "STRIDE · OWASP · Identity · more",
+    findings: "Paths, controls, tests & evidence",
+    report: "Full report + exports",
+    learn: "The method in plain English",
+    system: "The exact ternary inputs",
+    trace: "Oracles, rotation & dimensions",
+    overview: "System-level summary",
+  };
   const navLink = ([id, label, ic]) =>
-    `<a href="${id === "investigate" ? investigationHref() : id === "perspectives" ? perspectiveHref() : "#" + id}" ${state.route === id ? 'aria-current="page"' : ""}>${icon(ic)}<span>${label}</span></a>`;
-  return `<aside id="site-nav" ${state.mobile ? 'role="dialog" aria-modal="true" aria-label="Navigation"' : ""} class="sidebar ${state.mobile ? "open" : ""}"><a class="brand" href="#investigate/1"><span class="brand-mark">Q<span>★</span></span><span>QCDS<span class="brand-sub">SECURITY LAB</span></span></a><div class="workspace-label">YOUR WORKSPACE <button class="icon-button menu-close" data-action="close-menu" aria-label="Close navigation">${icon("close")}</button></div><nav aria-label="Workspace"><div class="nav-section-label">WORK</div>${ROUTES.filter(
+    `<a href="${id === "investigate" ? investigationHref() : id === "perspectives" ? perspectiveHref() : "#" + id}" ${state.route === id ? 'aria-current="page"' : ""}>${icon(ic)}<span class="nav-copy"><b>${label}</b><em>${navHints[id] || ""}</em></span></a>`;
+  return `<aside id="site-nav" ${state.mobile ? 'role="dialog" aria-modal="true" aria-label="Navigation"' : ""} class="sidebar ${state.mobile ? "open" : ""}"><a class="brand" href="#investigate/1"><span class="brand-mark">Q<span>★</span></span><span>QCDS<span class="brand-sub">SECURITY LAB</span></span></a><div class="workspace-label">YOUR WORKSPACE <button class="icon-button menu-close" data-action="close-menu" aria-label="Close navigation">${icon("close")}</button></div><nav aria-label="Workspace"><div class="nav-section-label">WORKFLOW</div>${ROUTES.filter(
     (r) => workRoutes.includes(r[0]),
   ).map(navLink).join("")}<div class="nav-section-label nav-learn-label">LEARN</div>${navLink(ROUTES.find((r) => r[0] === "learn"))}<details class="nav-tools" ${detailRoutes.includes(state.route) ? "open" : ""}><summary><span>Why this result?</span><small>Conditions, QCDS trace & analysis</small></summary>${ROUTES.filter(
     (r) => detailRoutes.includes(r[0]),
@@ -560,7 +570,7 @@ function explorerContent(f) {
           )
           .join("")}</div>`
       : ""
-  }<details class="fact-comparison"><summary>What if one system fact were unknown?</summary><p>In this lab, a dimension is one system fact. Hide one in a comparison to see what the path depends on.</p><label class="station-label" for="fact-choice">Fact to question<select id="fact-choice">${state.model.dimensions.map((d) => `<option value="${d.key}" ${d.key === fact?.key ? "selected" : ""}>${d.id} · ${FIELD_META[d.key][0]}</option>`).join("")}</select></label><p class="fact-result" role="status">${fact ? `If <b>${fact.id}</b> were Unknown, <b>${fact.lost.includes(f.id) ? `${f.id} would lose a required fact and need more context.` : `${f.id} would still have its required facts.`}</b>` : "No declared Yes conditions are available for this comparison."}</p><small>Your declared facts remain saved. This comparison does not establish whether a finding is true.</small></details><button class="text-button" data-guide="4">In plain English: why change dimensions?</button>`;
+  }<details class="fact-comparison"><summary>What if one system fact were ?</summary><p>In this lab, a dimension is one system fact. Set one to ? in a comparison to see what the path depends on.</p><label class="station-label" for="fact-choice">Fact to question<select id="fact-choice">${state.model.dimensions.map((d) => `<option value="${d.key}" ${d.key === fact?.key ? "selected" : ""}>${d.id} · ${FIELD_META[d.key][0]}</option>`).join("")}</select></label><p class="fact-result" role="status">${fact ? `If <b>${fact.id}</b> were ?, <b>${fact.lost.includes(f.id) ? `${f.id} would lose a required fact and need more context.` : `${f.id} would still have its required facts.`}</b>` : "No declared Yes conditions are available for this comparison."}</p><small>Your declared facts remain saved. This comparison does not establish whether a finding is true.</small></details><button class="text-button" data-guide="4">In plain English: why change dimensions?</button>`;
 }
 function dimensionStation(f) {
   return `<details class="dimension-station panel"><summary>${icon("layers")} Rotate the view / walk a dimension <span>${f.hitLenses.length} perspectives match this path · compare another lens or hide one fact without leaving the question</span></summary><div id="dimension-content">${explorerContent(f)}</div></details>`;
@@ -626,7 +636,7 @@ function perspectiveOverview() {
   };
   return `<section class="panel"><div class="panel-header"><div><span class="eyebrow muted">02 / PARALLEL PERSPECTIVES</span><h2>Same system. Different questions.</h2><p>Compare the explanations before choosing one path to deepen. These are views over shared rules, so agreement is a starting point for investigation.</p></div></div><div class="perspective-grid">${m.lenses
     .map((l) => {
-      const matches = m.findings.filter((f) => f.hitLenses.includes(l.name));
+      const matches = allPaths().filter((f) => f.hitLenses.includes(l.name));
       return `<article><div>${icon("layers")}<b>${l.name}</b></div><p>${questions[l.name]}</p><div class="perspective-matches">${l.excluded ? '<span class="muted">Excluded from this analysis</span>' : matches.length ? matches.map((f) => `<button data-finding="${f.id}" aria-label="Open ${f.id}: ${esc(f.shortTitle)}">${f.id}</button>`).join("") : '<span class="muted">No candidate matches these declared facts</span>'}</div></article>`;
     })
     .join(
