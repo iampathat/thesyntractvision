@@ -705,6 +705,7 @@ function exampleFlowCard(id) {
       <button class="button primary" data-example-walk="${id}">Walk the 5 questions ${icon("arrow")}</button>
     </div>
     <div class="example-problem"><span>THE SECURITY QUESTION</span><strong>${esc(guide.question)}</strong></div>
+    <details class="example-preview" ${id === "support" ? "open" : ""}><summary>Preview the whole 5-step flow</summary>
     <div class="example-flow">
       <div><span>1 · GOAL</span><b>${esc(p.input.attackerGoal)}</b><small>What unwanted outcome are we investigating?</small></div>
       <div><span>2 · ROUTE</span><b>${esc(focus.path)}</b><small>${focus.conditional ? "? Conditional because one or more required facts are unresolved." : "A candidate route supported by the current system facts."}</small></div>
@@ -716,7 +717,8 @@ function exampleFlowCard(id) {
       <div><span class="eyebrow muted">THE 1 / 0 / ? FACTS THIS ROUTE USES</span><div class="condition-chips">${conditions}</div></div>
       <div><span class="eyebrow muted">PERSPECTIVES THAT SEE IT</span><div class="example-lenses">${focus.hitLenses.map((name) => `<span>${esc(name)}</span>`).join("")}</div></div>
     </div>
-    <details class="example-explain"><summary>Why this example matters</summary><p>${esc(guide.learn)}</p><p><b>Important:</b> the framework perspective is a view over the route. QCDS keeps the shared conditions, recursive challenge and evidence logic underneath it.</p></details>
+    <div class="example-explain"><b>Why this example matters</b><p>${esc(guide.learn)}</p><p><b>Important:</b> the framework perspective is a view over the route. QCDS keeps the shared conditions, recursive challenge and evidence logic underneath it.</p></div>
+    </details>
   </article>`;
 }
 
