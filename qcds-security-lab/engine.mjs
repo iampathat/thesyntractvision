@@ -314,7 +314,7 @@ function buildFindings(input, conditions, lenses) {
   });
 }
 
-const VERSION = "1.4.0";
+const VERSION = "1.5.0";
 const FIELD_META = {
   external_input: [
     "External input",
@@ -531,9 +531,7 @@ function lensRuns(input, excluded = []) {
     evidence: l.tests
       .filter(([k]) => input.flags[k] === true)
       .map(([, v]) => v),
-    active:
-      !excluded.includes(name) &&
-      l.tests.some(([k]) => input.flags[k] === true),
+    active: !excluded.includes(name),
   }));
 }
 function candidateRun(input, excluded = []) {
