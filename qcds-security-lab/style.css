@@ -4166,6 +4166,9 @@ dialog::backdrop {
   gap: 10px;
   margin: 20px 0;
 }
+.system-simple-flow-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
 .system-simple-flow > div {
   display: grid;
   grid-template-columns: 30px minmax(0, 1fr);
@@ -4227,6 +4230,35 @@ dialog::backdrop {
   font-size: 12px;
   line-height: 1.65;
 }
+.system-explanation-qcds {
+  margin: 20px 0;
+  padding: 17px 18px;
+  border: 1px solid #46593a;
+  border-radius: 8px;
+  background: #172018;
+}
+.system-explanation-qcds p {
+  margin: 8px 0 0;
+  color: #bac6bd;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.system-terms {
+  margin: 20px 0 !important;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #141c21;
+}
+.system-terms summary {
+  font-weight: 600;
+}
+.system-terms p {
+  margin: 9px 0 0;
+  color: #abb7c0;
+  font-size: 12px !important;
+  line-height: 1.65 !important;
+}
 .system-you-are-here {
   padding-top: 12px;
   border-top: 1px solid var(--line);
@@ -4240,6 +4272,7 @@ dialog::backdrop {
 }
 @media (max-width: 620px) {
   .system-simple-flow,
+  .system-simple-flow-three,
   .system-explanation-two {
     grid-template-columns: 1fr;
   }
