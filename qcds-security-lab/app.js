@@ -9,7 +9,7 @@ import {
   analyze,
   validateProject,
   markdown,
-} from "./engine.mjs?v=1.8.6";
+} from "./engine.mjs?v=1.8.7";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
@@ -26,7 +26,7 @@ const ROUTES = [
   ["examples", "Example journeys", "play"],
   ["investigate", "Investigate · 5 questions", "trace"],
   ["perspectives", "Perspectives", "layers"],
-  ["findings", "Findings & evidence", "shield"],
+  ["findings", "Results & explanation", "shield"],
   ["report", "Reports & export", "report"],
   ["learn", "In plain English", "book"],
   ["system", "System & 1 / 0 / ? inputs", "system"],
@@ -341,12 +341,12 @@ function shell() {
   const investigating = state.route === "investigate";
   const workRoutes = ["investigate", "system", "perspectives", "findings", "report"];
   const learnRoutes = ["examples", "learn"];
-  const detailRoutes = ["trace", "overview"];
+  const detailRoutes = [];
   const navHints = {
     examples: "See complete worked cases first",
     investigate: "Goal → route → control → bypass → proof",
     perspectives: "STRIDE · OWASP · Identity · more",
-    findings: "Paths, controls, tests & evidence",
+    findings: "Results, reasons, QCDS checks & evidence",
     report: "Full report + exports",
     learn: "The method in plain English",
     system: "Edit the facts QCDS reasons from",
@@ -357,9 +357,7 @@ function shell() {
     `<a href="${id === "investigate" ? investigationHref() : id === "perspectives" ? perspectiveHref() : "#" + id}" ${state.route === id ? 'aria-current="page"' : ""}>${icon(ic)}<span class="nav-copy"><b>${label}</b><em>${navHints[id] || ""}</em></span></a>`;
   return `<aside id="site-nav" ${state.mobile ? 'role="dialog" aria-modal="true" aria-label="Navigation"' : ""} class="sidebar ${state.mobile ? "open" : ""}"><a class="brand" href="#examples"><span class="brand-mark">Q<span>★</span></span><span>QCDS<span class="brand-sub">SECURITY LAB</span></span></a><div class="workspace-label">YOUR WORKSPACE <button class="icon-button menu-close" data-action="close-menu" aria-label="Close navigation">${icon("close")}</button></div><nav aria-label="Workspace"><div class="nav-section-label">START HERE</div>${navLink(ROUTES.find((r) => r[0] === "examples"))}<div class="nav-section-label nav-work-label">WORKFLOW</div>${ROUTES.filter(
     (r) => workRoutes.includes(r[0]),
-  ).map(navLink).join("")}<div class="nav-section-label nav-learn-label">LEARN</div>${ROUTES.filter((r) => learnRoutes.includes(r[0]) && r[0] !== "examples").map(navLink).join("")}<details class="nav-tools" ${detailRoutes.includes(state.route) ? "open" : ""}><summary><span>Why this result?</span><small>Same result · two levels of explanation</small></summary>${ROUTES.filter(
-    (r) => detailRoutes.includes(r[0]),
-  ).map(navLink).join("")}</details></nav><button class="new-case" data-action="new">${icon("plus")} New system</button><div class="sidebar-bottom"><div class="local-note">${icon("shield")}<span>Saved on this device.<br>No account needed.</span></div><a href="#learn" class="author">By Patrik Sundblom <span>↗</span></a><div class="version">SECURITY LAB <span>v${VERSION}</span></div></div></aside>${state.mobile ? '<button class="menu-backdrop" data-action="close-menu" aria-label="Close navigation backdrop"></button>' : ""}<div class="app-body" ${state.mobile ? "inert" : ""}><header class="topbar"><div class="breadcrumb"><button class="icon-button mobile-toggle" data-action="menu" aria-controls="site-nav" aria-label="Open navigation" aria-expanded="${state.mobile}">${icon("menu")}</button><b>${investigating ? "Q★ Security Lab" : esc(ROUTES.find((r) => r[0] === state.route)?.[1])}</b></div><div class="top-actions"><span id="save-status" class="save-status">${state.storage ? "Saved on this device" : "Not saved · export your work"}</span><button class="button small plain-button" data-system-explanation>${icon("book")} What is this?</button></div></header>${investigating ? questionPosition() : ""}<main id="main" tabindex="-1">${state.route === "investigate" ? (state.question === 1 ? casePicker() : "") : !["examples", "learn"].includes(state.route) ? casePicker() : ""}<div id="stale-slot">${staleNotice()}</div><div id="view">${view()}</div><footer class="main-footer"><span>QCDS Security Lab · Patrik Sundblom</span><a href="./LICENSE.md">COMMERCIAL LICENSE REQUIRED ${icon("external")}</a></footer></main>${investigating ? questionNavigation() : ""}</div>`;
+  ).map(navLink).join("")}<div class="nav-section-label nav-learn-label">LEARN</div>${ROUTES.filter((r) => learnRoutes.includes(r[0]) && r[0] !== "examples").map(navLink).join("")}</nav><button class="new-case" data-action="new">${icon("plus")} New system</button><div class="sidebar-bottom"><div class="local-note">${icon("shield")}<span>Saved on this device.<br>No account needed.</span></div><a href="#learn" class="author">By Patrik Sundblom <span>↗</span></a><div class="version">SECURITY LAB <span>v${VERSION}</span></div></div></aside>${state.mobile ? '<button class="menu-backdrop" data-action="close-menu" aria-label="Close navigation backdrop"></button>' : ""}<div class="app-body" ${state.mobile ? "inert" : ""}><header class="topbar"><div class="breadcrumb"><button class="icon-button mobile-toggle" data-action="menu" aria-controls="site-nav" aria-label="Open navigation" aria-expanded="${state.mobile}">${icon("menu")}</button><b>${investigating ? "Q★ Security Lab" : esc(ROUTES.find((r) => r[0] === state.route)?.[1])}</b></div><div class="top-actions"><span id="save-status" class="save-status">${state.storage ? "Saved on this device" : "Not saved · export your work"}</span><button class="button small plain-button" data-system-explanation>${icon("book")} What is this?</button></div></header>${investigating ? questionPosition() : ""}<main id="main" tabindex="-1">${state.route === "investigate" ? (state.question === 1 ? casePicker() : "") : !["examples", "learn"].includes(state.route) ? casePicker() : ""}<div id="stale-slot">${staleNotice()}</div><div id="view">${view()}</div><footer class="main-footer"><span>QCDS Security Lab · Patrik Sundblom</span><a href="./LICENSE.md">COMMERCIAL LICENSE REQUIRED ${icon("external")}</a></footer></main>${investigating ? questionNavigation() : ""}</div>`;
 }
 function staleNotice() {
   if (state.route === "investigate" && state.question === 1) return "";
@@ -1189,10 +1187,43 @@ function currentAction(id) {
     ? a
     : { status: "open", owner: "", note: "" };
 }
+function resultExplanation(f) {
+  const m = state.model;
+  const conditionRows = f.requires
+    .map((key) => {
+      const condition = m.conditions.find((c) => c.key === key);
+      const symbol =
+        condition?.value === true ? "1" : condition?.value === false ? "0" : "?";
+      return `<div><span class="result-symbol ${symbol === "?" ? "unknown" : ""}">${symbol}</span><div><b>${condition?.id || "?"} · ${esc(FIELD_META[key][0])}</b><small>${esc(FIELD_META[key][1])}</small></div></div>`;
+    })
+    .join("");
+  const lostByPerspective = m.rotation
+    .filter((r) => r.lost.includes(f.id))
+    .map((r) => r.name);
+  const dimensionDeps = m.dimensions
+    .filter((d) => d.lost.includes(f.id))
+    .map((d) => `${d.id} · ${FIELD_META[d.key][0]}`);
+  const oracleSummary = m.oracles
+    .map((o) => `<span><b>${esc(o.name.replace(" Oracle", ""))}</b> · ${esc(o.state)}</span>`)
+    .join("");
+  return `<section class="result-why">
+    <div class="result-why-head">
+      <div><span class="eyebrow">WHY THIS RESULT?</span><h3>QCDS kept this path because these facts and perspectives support it.</h3><p>This is the explanation of <b>${f.id}</b>, not a separate analysis. Change the inputs and this explanation is recalculated with the result.</p></div>
+      <div class="result-advanced-links"><a href="#trace">Full QCDS trace</a><a href="#overview">Whole analysis</a></div>
+    </div>
+    <div class="result-why-grid">
+      <section><span class="eyebrow muted">1 / 0 / ? INPUTS THIS PATH NEEDS</span><div class="result-condition-list">${conditionRows}</div></section>
+      <section><span class="eyebrow muted">PERSPECTIVES THAT SAW THE PATH</span><div class="result-perspective-list">${f.hitLenses.map((name) => `<span>${esc(name)}</span>`).join("")}</div><p>${lostByPerspective.length ? `If ${lostByPerspective.map(esc).join(", ")} ${lostByPerspective.length === 1 ? "is" : "are"} removed, this path disappears in that comparison.` : "This path survives every current single-perspective removal."}</p></section>
+      <section><span class="eyebrow muted">QCDS DEPENDENCE CHECK</span><p>${dimensionDeps.length ? `The route loses its required basis when these declared dimensions are changed to ?: <b>${dimensionDeps.map(esc).join(" · ")}</b>.` : "No current one-fact exclusion removes the route's required basis."}</p><div class="result-oracles">${oracleSummary}</div></section>
+      <section><span class="eyebrow muted">WHAT THIS MEANS</span><p><b>Candidate, not proof.</b> The route is structurally supported by the current system description. Evidence and counter-tests decide whether the concern is supported, refuted or remains unresolved.</p></section>
+    </div>
+  </section>`;
+}
+
 function findingDetail(f) {
   const m = state.model,
     a = currentAction(f.id);
-  return `<article class="panel finding-detail"><div class="detail-head"><div class="finding-tags"><span class="mono">${f.id}</span>${badge(f.severity + " IMPACT", severityClass(f.severity))}${badge(f.status, f.status === "CONFLICTING EVIDENCE" ? "danger" : "neutral")}</div><h2>${esc(f.shortTitle)}</h2><p>Follow these five questions for this path. Its impact label describes a possible consequence; its evidence status describes what has been observed.</p></div><div class="challenge-steps"><div><span class="step-icon">1</span><div><h3>What does the attacker want?</h3><p>${esc(m.input.attackerGoal || "Name the unwanted outcome in System & conditions.")}</p><a class="text-link small" href="#system">Review the goal and system facts →</a></div></div><div><span class="step-icon">2</span><div><h3>How would they try?</h3><p>${esc(f.why)}</p><div class="path-strip">${f.path
+  return `<article class="panel finding-detail"><div class="detail-head"><div class="finding-tags"><span class="mono">${f.id}</span>${badge(f.severity + " IMPACT", severityClass(f.severity))}${badge(f.status, f.status === "CONFLICTING EVIDENCE" ? "danger" : "neutral")}</div><h2>${esc(f.shortTitle)}</h2><p>Follow these five questions for this path. Its impact label describes a possible consequence; its evidence status describes what has been observed.</p></div>${resultExplanation(f)}<div class="challenge-steps"><div><span class="step-icon">1</span><div><h3>What does the attacker want?</h3><p>${esc(m.input.attackerGoal || "Name the unwanted outcome in System & conditions.")}</p><a class="text-link small" href="#system">Review the goal and system facts →</a></div></div><div><span class="step-icon">2</span><div><h3>How would they try?</h3><p>${esc(f.why)}</p><div class="path-strip">${f.path
     .split(" → ")
     .map(
       (part, i) =>
@@ -1200,7 +1231,7 @@ function findingDetail(f) {
     )
     .join(
       "",
-    )}</div><p class="small muted">This candidate requires these conditions to be Yes:</p><div class="condition-chips">${f.requires.map((k) => `<a href="#system"><span class="mono">${m.conditions.find((c) => c.key === k).id}</span> ${esc(FIELD_META[k][0])}</a>`).join("")}</div><p class="small muted">Matched by ${f.hitLenses.map(esc).join(" · ")}. Inspect these views in <a href="#trace">QCDS trace</a>.</p></div></div><div><span class="step-icon">3</span><div><h3>What should stop them?</h3><p>${esc(f.control)}</p><small>A proposed control becomes the next thing to challenge.</small></div></div><div><span class="step-icon">4</span><div><h3>How could that control fail?</h3><p>${esc(f.bypass)}</p><div class="recursive-prompt">${icon("undo")}<p><b>Ask again:</b> if this failure is possible, what further control would stop it — and how could that control fail? Put the next control and test in the action plan.</p></div><button class="text-button small" data-guide="6">See a worked recursive example →</button></div></div><div class="test-step"><span class="step-icon">5</span><div><h3>What would prove or refute the path?</h3><p>${esc(f.verify)}</p><small>Write the expected result first. Run an authorized test, then record both the observed result and a counter-test that could contradict your claim.</small></div></div></div><div class="detail-section"><div class="section-title"><h3>Evidence log</h3><span class="count">${f.records.length}</span></div>${f.records.length ? f.records.map((e) => `<div class="evidence-entry">${badge(e.outcome, e.outcome === "refutes" ? "cyan" : e.outcome === "supports" ? "warning" : "neutral")}<span class="small muted">${esc(new Date(e.createdAt).toLocaleDateString("en-GB"))}</span><p>${esc(e.observation)}</p><small>Source: ${esc(e.source)}</small></div>`).join("") : '<p class="muted">No observation attached to this system snapshot yet.</p>'}<form id="evidence-form" class="evidence-form" data-id="${f.id}"><label>Source / test reference<input name="source" required maxlength="1000" placeholder="Test run 42, architecture review, log reference…"></label><label>What did you observe?<textarea name="observation" required rows="3" maxlength="5000" placeholder="Actor, resource and action tested; expected vs actual result; counter-test; what remains uncertain."></textarea></label><div class="form-inline"><label>Effect on this finding<select name="outcome"><option value="inconclusive">Inconclusive</option><option value="supports">Supports the finding</option><option value="refutes">Refutes the finding</option></select></label><button class="button primary" type="submit" ${stale() ? "disabled" : ""}>${icon("plus")} Add evidence</button></div><small>Recorded as your observation. Attaching evidence does not automatically verify the finding.</small></form></div><div class="detail-section"><h3>Action plan</h3><form id="action-form" data-id="${f.id}"><div class="form-inline"><label>Owner<input name="owner" maxlength="200" value="${esc(a.owner)}" placeholder="Assign a person or team"></label><label>Progress<select name="status"><option value="open" ${a.status === "open" ? "selected" : ""}>Open</option><option value="progress" ${a.status === "progress" ? "selected" : ""}>In progress</option><option value="done" ${a.status === "done" ? "selected" : ""}>Done</option></select></label></div><label>Next action<textarea name="note" rows="2" maxlength="5000" placeholder="What will change and how will you check it?">${esc(a.note)}</textarea></label><button type="submit" class="button small" ${stale() ? "disabled" : ""}>Save action</button><small>Completion tracks work; it does not close the evidence question.</small></form></div></article>`;
+    )}</div><p class="small muted">This candidate requires these conditions to be Yes:</p><div class="condition-chips">${f.requires.map((k) => `<a href="#system"><span class="mono">${m.conditions.find((c) => c.key === k).id}</span> ${esc(FIELD_META[k][0])}</a>`).join("")}</div><p class="small muted">Matched by ${f.hitLenses.map(esc).join(" · ")}. The explanation above shows how these perspectives and the declared system facts support this candidate.</p></div></div><div><span class="step-icon">3</span><div><h3>What should stop them?</h3><p>${esc(f.control)}</p><small>A proposed control becomes the next thing to challenge.</small></div></div><div><span class="step-icon">4</span><div><h3>How could that control fail?</h3><p>${esc(f.bypass)}</p><div class="recursive-prompt">${icon("undo")}<p><b>Ask again:</b> if this failure is possible, what further control would stop it — and how could that control fail? Put the next control and test in the action plan.</p></div><button class="text-button small" data-guide="6">See a worked recursive example →</button></div></div><div class="test-step"><span class="step-icon">5</span><div><h3>What would prove or refute the path?</h3><p>${esc(f.verify)}</p><small>Write the expected result first. Run an authorized test, then record both the observed result and a counter-test that could contradict your claim.</small></div></div></div><div class="detail-section"><div class="section-title"><h3>Evidence log</h3><span class="count">${f.records.length}</span></div>${f.records.length ? f.records.map((e) => `<div class="evidence-entry">${badge(e.outcome, e.outcome === "refutes" ? "cyan" : e.outcome === "supports" ? "warning" : "neutral")}<span class="small muted">${esc(new Date(e.createdAt).toLocaleDateString("en-GB"))}</span><p>${esc(e.observation)}</p><small>Source: ${esc(e.source)}</small></div>`).join("") : '<p class="muted">No observation attached to this system snapshot yet.</p>'}<form id="evidence-form" class="evidence-form" data-id="${f.id}"><label>Source / test reference<input name="source" required maxlength="1000" placeholder="Test run 42, architecture review, log reference…"></label><label>What did you observe?<textarea name="observation" required rows="3" maxlength="5000" placeholder="Actor, resource and action tested; expected vs actual result; counter-test; what remains uncertain."></textarea></label><div class="form-inline"><label>Effect on this finding<select name="outcome"><option value="inconclusive">Inconclusive</option><option value="supports">Supports the finding</option><option value="refutes">Refutes the finding</option></select></label><button class="button primary" type="submit" ${stale() ? "disabled" : ""}>${icon("plus")} Add evidence</button></div><small>Recorded as your observation. Attaching evidence does not automatically verify the finding.</small></form></div><div class="detail-section"><h3>Action plan</h3><form id="action-form" data-id="${f.id}"><div class="form-inline"><label>Owner<input name="owner" maxlength="200" value="${esc(a.owner)}" placeholder="Assign a person or team"></label><label>Progress<select name="status"><option value="open" ${a.status === "open" ? "selected" : ""}>Open</option><option value="progress" ${a.status === "progress" ? "selected" : ""}>In progress</option><option value="done" ${a.status === "done" ? "selected" : ""}>Done</option></select></label></div><label>Next action<textarea name="note" rows="2" maxlength="5000" placeholder="What will change and how will you check it?">${esc(a.note)}</textarea></label><button type="submit" class="button small" ${stale() ? "disabled" : ""}>Save action</button><small>Completion tracks work; it does not close the evidence question.</small></form></div></article>`;
 }
 function findingsView() {
   const m = state.model;
@@ -1219,9 +1250,9 @@ function findingsView() {
   const selected = items.find((f) => f.id === state.findingId);
   return (
     header(
-      "INVESTIGATE / CHALLENGE / RECORD",
-      "Turn a finding into a tested claim.",
-      "Choose one candidate, follow the five questions, then record a test observation and the next action. Repeat when a control opens another question.",
+      "RESULTS / EXPLANATION / EVIDENCE",
+      "See the result, why QCDS produced it, and what to test next.",
+      "Choose a candidate result. Its explanation, system dependencies, perspective checks, control challenge and evidence all stay together on this page.",
     ) +
     `<div class="filters"><label class="search-label"><span class="sr-only">Search findings</span><input id="finding-search" type="search" placeholder="Search findings…" value="${esc(state.query)}"></label><label><span class="sr-only">Filter findings</span><select id="finding-filter"><option value="all" ${state.filter === "all" ? "selected" : ""}>All findings (${m.findings.length})</option><option value="critical" ${state.filter === "critical" ? "selected" : ""}>Critical potential impact</option><option value="untested" ${state.filter === "untested" ? "selected" : ""}>Awaiting evidence</option><option value="evidence" ${state.filter === "evidence" ? "selected" : ""}>Evidence attached</option></select></label></div><div class="findings-layout"><div class="findings-list" aria-label="Candidate findings">${items.length ? items.map((f) => `<button class="finding-select ${f.id === state.findingId ? "selected" : ""}" data-select-finding="${f.id}" aria-pressed="${f.id === state.findingId}"><div><span class="mono">${f.id}</span>${badge(f.severity, severityClass(f.severity))}</div><b>${esc(f.shortTitle)}</b><small>${f.records.length ? f.records.length + " evidence record(s)" : "Awaiting evidence"}</small></button>`).join("") : '<div class="panel compact"><h3>No findings in this view</h3><p>Try another filter or review the system conditions.</p></div>'}</div>${selected ? findingDetail(selected) : `<div class="panel empty"><h2>No finding selected</h2><p>${m.findings.length ? "Change the filter to see more findings." : "Unknown conditions or excluded perspectives may be limiting the analysis."}</p><a class="text-link" href="#system">Review conditions →</a></div>`}</div>${m.archivedEvidence ? `<div class="notice">${m.archivedEvidence} earlier evidence record(s) are retained in the project export but do not apply to the current system snapshot.</div>` : ""}`
   );
