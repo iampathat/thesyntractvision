@@ -253,7 +253,7 @@ test("report includes provenance, uncertainty, evidence, actions and scope", () 
     "Boundary rejected",
     "regression test",
     "seed route families",
-    "Dimension exclusion",
+    "Dimension walk",
     "Recursive inference",
     "REFUTED · REPORTED",
   ])
