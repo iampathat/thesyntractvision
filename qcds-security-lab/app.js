@@ -23,6 +23,7 @@ const esc = (s) =>
 const icon = (name, cls = "") =>
   `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${{ grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>', system: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 21h8m-4-5v5"/>', shield: '<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="M12 8v5m0 3h.01"/>', trace: '<circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="12" cy="19" r="2"/><path d="m5 7 6 10m8-10-6 10M7 5h10"/>', report: '<path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8m-8 4h6"/>', book: '<path d="M12 5c-3-2-6-2-10-1v15c4-1 7-1 10 1 3-2 6-2 10-1V4c-4-1-7-1-10 1zm0 0v15"/>', arrow: '<path d="M4 12h16m-6-6 6 6-6 6"/>', play: '<path d="m8 5 11 7-11 7z"/>', plus: '<path d="M12 5v14M5 12h14"/>', spark: '<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z"/>', download: '<path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/>', check: '<path d="m5 12 4 4L19 6"/>', close: '<path d="m6 6 12 12M6 18 18 6"/>', external: '<path d="M14 3h7v7m0-7L10 14M10 3H3v18h18v-7"/>', layers: '<path d="m12 3 10 5-10 5L2 8zm-10 9 10 5 10-5m-20 5 10 5 10-5"/>', mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 5 10 8L22 5"/>', database: '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 4 16 4 16 0V5M4 12c0 4 16 4 16 0"/>', menu: '<path d="M4 6h16M4 12h16M4 18h16"/>', undo: '<path d="m9 3-6 6 6 6M3 9h11a6 6 0 0 1 0 12"/>' }[name] || '<circle cx="12" cy="12" r="8"/>'}</svg>`;
 const ROUTES = [
+  ["examples", "Example journeys", "play"],
   ["investigate", "Investigate · 5 questions", "trace"],
   ["perspectives", "Perspectives", "layers"],
   ["findings", "Findings & evidence", "shield"],
@@ -41,6 +42,7 @@ const ALIASES = {
   method: "learn",
   oracles: "trace",
   rotation: "trace",
+  examples: "examples",
   license: "learn",
 };
 const STORAGE = "qcds-security-lab:workspace:v1";
@@ -165,6 +167,68 @@ function rememberPlace() {
     );
   } catch {}
 }
+
+const EXAMPLE_GUIDES = {
+  support: {
+    level: "EASY · START HERE",
+    title: "A customer email reaches an AI support assistant",
+    story:
+      "A customer sends an email. The AI reads it, searches support documents, drafts a reply, a person approves it, and a tool sends it.",
+    question:
+      "Could customer-controlled text steer the assistant toward exposing another customer's information or causing the wrong email to be sent?",
+    focus: "F1",
+    learn:
+      "See how QCDS turns ordinary system facts into a route, then challenges the protection instead of stopping at the first plausible answer.",
+  },
+  knowledge: {
+    level: "EASY · DATA & IDENTITY",
+    title: "An employee asks AI about confidential documents",
+    story:
+      "Employees ask a read-only assistant questions over internal documents. Different people have different permissions, so retrieval must preserve identity boundaries.",
+    question:
+      "Could one employee receive information from a document they are not allowed to read?",
+    focus: "F3",
+    learn:
+      "See why the same route looks different through STRIDE, Identity and Privacy perspectives while the underlying system stays the same.",
+  },
+  coding: {
+    level: "INTERMEDIATE · INCLUDES ?",
+    title: "An AI coding agent can deploy software",
+    story:
+      "The agent reads issues and packages, proposes code and can deploy through a service account. Review exists, but action-specific authorization has not yet been confirmed.",
+    question:
+      "Could lower-trust text influence a deployment beyond the change a reviewer thought they approved?",
+    focus: "F2",
+    learn:
+      "See why ? is useful. Unknown authorization stays unresolved while QCDS keeps the possible route visible instead of forcing a Yes or No.",
+  },
+};
+
+function canonicalExample(id) {
+  const p = newProject(id);
+  const m = analyze(p.input, [], []);
+  const guide = EXAMPLE_GUIDES[id];
+  const paths = [
+    ...m.findings.map((f) => ({ ...f, conditional: false })),
+    ...m.pending.map((f) => ({
+      ...f,
+      records: [],
+      status: "CONDITIONAL · ?",
+      conditional: true,
+    })),
+  ];
+  return {
+    p,
+    m,
+    guide,
+    focus: paths.find((f) => f.id === guide.focus) || paths[0],
+  };
+}
+function conditionSymbol(model, key) {
+  const value = model.conditions.find((c) => c.key === key)?.value;
+  return value === true ? "1" : value === false ? "0" : "?";
+}
+
 const PERSPECTIVE_SLUGS = {
   STRIDE: "stride",
   "OWASP / GenAI": "owasp-genai",
@@ -241,8 +305,10 @@ function casePicker() {
 function shell() {
   const investigating = state.route === "investigate";
   const workRoutes = ["investigate", "perspectives", "findings", "report"];
+  const learnRoutes = ["examples", "learn"];
   const detailRoutes = ["system", "trace", "overview"];
   const navHints = {
+    examples: "See complete worked cases first",
     investigate: "Goal → route → control → bypass → proof",
     perspectives: "STRIDE · OWASP · Identity · more",
     findings: "Paths, controls, tests & evidence",
