@@ -385,14 +385,14 @@ const GUIDE_STEPS = [
     phase: 0,
     question: "What must be true for this route to exist?",
     explanation:
-      "A condition is a declared fact about the system. Give each fact a Yes, No or Unknown so the reasoning can be inspected.",
+      "A condition is a declared fact about the system. Use 1 for present, 0 for absent and ? when it is genuinely unresolved.",
     example:
       "C1: customers can submit content. C2: the assistant reads untrusted content. C6: it can call a tool. C7: the action has an external effect. C8: a person approves it.",
-    do: "Review the conditions individually. Use Unknown when you have not checked. Interview answers stay in the brief until you confirm the conditions.",
+    do: "Review the conditions individually. Use ? when you have not checked. QCDS carries that uncertainty forward instead of forcing a guess.",
     result:
       "A visible set of prerequisites. C1 + C2 make F1 a candidate; C6 + C7 make F2 a candidate. Missing facts remain questions.",
     why: "The next step needs explicit inputs. A declared Yes describes your system; it does not establish that a control works.",
-    flow: ["Plain-language brief", "Yes / No / Unknown", "Conditions C1–C13"],
+    flow: ["Plain-language brief", "1 / 0 / ?", "Conditions C1–C13"],
     route: "system",
     action: "Review my system conditions",
   },
