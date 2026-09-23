@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420" role="img" aria-labelledby="t d">
-<title id="t">QCDS threat modelling flow</title><desc id="d">A simple flow from human description through AI interview, Conditions, Oracles and perspectives to a verified threat model.</desc>
+<title id="t">QCDS threat modelling flow</title><desc id="d">A simple flow from a target-system description through optional model assistance, QCDS Conditions and Oracles, perspective search and evidence-bound results.</desc>
 <defs><style>
   .bg{fill:#0b0f14}.box{fill:#111821;stroke:#2b3743;stroke-width:2}.hot{fill:#152014;stroke:#8bbf32;stroke-width:2}
   .verify{fill:#0d1a1d;stroke:#3aa9bc;stroke-width:2}.txt{fill:#f4f7fb;font:700 22px system-ui,sans-serif}
@@ -10,13 +10,13 @@
 <g transform="translate(55,105)">
  <rect class="box" width="180" height="150" rx="20"/><text class="k" x="20" y="35">1 · YOU</text><text class="txt" x="20" y="73">Describe</text><text class="txt" x="20" y="101">the system</text><text class="sub" x="20" y="130">plain language</text>
  <path class="arrow" d="M190 75h65"/>
- <g transform="translate(265)"><rect class="box" width="180" height="150" rx="20"/><text class="k" x="20" y="35">2 · AI</text><text class="txt" x="20" y="73">Ask better</text><text class="txt" x="20" y="101">questions</text><text class="sub" x="20" y="130">adaptive interview</text></g>
+ <g transform="translate(265)"><rect class="box" width="180" height="150" rx="20"/><text class="k" x="20" y="35">2 · MODEL ASSIST</text><text class="txt" x="20" y="73">Build</text><text class="txt" x="20" y="101">candidates</text><text class="sub" x="20" y="130">optional analysis aid</text></g>
  <path class="arrow" d="M455 75h65"/>
  <g transform="translate(530)"><rect class="hot" width="180" height="150" rx="20"/><text class="k" x="20" y="35">3 · QCDS</text><text class="txt" x="20" y="73">Conditions</text><text class="txt" x="20" y="101">+ Oracles</text><text class="sub" x="20" y="130">logical space</text></g>
  <path class="arrow" d="M720 75h65"/>
  <g transform="translate(795)"><rect class="box" width="180" height="150" rx="20"/><text class="k" x="20" y="35">4 · SEARCH</text><text class="txt" x="20" y="73">Rotate +</text><text class="txt" x="20" y="101">challenge</text><text class="sub" x="20" y="130">parallel paths</text></g>
  <path class="arrow" d="M985 75h65"/>
- <g transform="translate(1060)"><rect class="verify" width="180" height="150" rx="20"/><text class="k" x="20" y="35">5 · RESULT</text><text class="txt" x="20" y="73">Verified</text><text class="txt" x="20" y="101">threat model</text><text class="sub" x="20" y="130">evidence-bound</text></g>
+ <g transform="translate(1060)"><rect class="verify" width="180" height="150" rx="20"/><text class="k" x="20" y="35">5 · RESULT</text><text class="txt" x="20" y="73">Scoped</text><text class="txt" x="20" y="101">result</text><text class="sub" x="20" y="130">evidence-bound</text></g>
 </g>
-<text class="sub" x="55" y="335">The model is not the method. QCDS keeps the search moving after the first plausible answer.</text>
+<text class="sub" x="55" y="335">The target can be any system. Models can assist the analysis; QCDS keeps the inference loop moving.</text>
 </svg>
