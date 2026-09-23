@@ -1193,37 +1193,40 @@ function currentAction(id) {
 }
 function resultExplanation(f) {
   const m = state.model;
+  const conditional = !!f.conditional || !!f.missing?.length;
   const conditionRows = f.requires
     .map((key) => {
       const condition = m.conditions.find((c) => c.key === key);
       const symbol =
         condition?.value === true ? "1" : condition?.value === false ? "0" : "?";
-      return `<div><span class="result-symbol ${symbol === "?" ? "unknown" : ""}">${symbol}</span><div><b>${condition?.id || "?"} · ${esc(FIELD_META[key][0])}</b><small>${esc(FIELD_META[key][1])}</small></div></div>`;
+      const basis = project().conditionBasis?.[key];
+      return `<div><span class="result-symbol ${symbol === "?" ? "unknown" : ""}">${symbol}</span><div><b>${condition?.id || "?"} · ${esc(FIELD_META[key][0])}</b><small>${esc(FIELD_META[key][1])}</small>${basis ? `<em class="condition-basis">From interview · ${esc(basis.confidence)} confidence · ${esc(basis.reason)}</em>` : ""}</div></div>`;
     })
     .join("");
   const lostByPerspective = m.rotation
     .filter((r) => r.lost.includes(f.id))
     .map((r) => r.name);
   const dimensionDeps = m.dimensions
-    .filter((d) => d.lost.includes(f.id))
+    .filter((d) => d.lost.includes(f.id) || d.weakened?.includes(f.id))
     .map((d) => `${d.id} · ${FIELD_META[d.key][0]}`);
   const oracleSummary = m.oracles
     .map((o) => `<span><b>${esc(o.name.replace(" Oracle", ""))}</b> · ${esc(o.state)}</span>`)
     .join("");
-  return `<section class="result-why">
+  const branch = m.recursive.find((item) => item.id === f.id);
+  return `<section class="result-why ${conditional ? "conditional" : ""}">
     <div class="result-why-head">
-      <div><span class="eyebrow">WHY THIS RESULT?</span><h3>QCDS kept this path because these facts and perspectives support it.</h3><p>This is the explanation of <b>${f.id}</b>, not a separate analysis. Change the inputs and this explanation is recalculated with the result.</p></div>
+      <div><span class="eyebrow">WHY THIS RESULT?</span><h3>${conditional ? "QCDS is keeping this route alive while required facts are still ?." : "QCDS retained this route under the current declared conditions."}</h3><p>This is the explanation of <b>${f.id}</b>, not a separate analysis. Change a fact or perspective and QCDS reruns the route space.</p></div>
       <div class="result-advanced-links"><a href="#trace">Full QCDS trace</a><a href="#overview">Whole analysis</a></div>
     </div>
     <div class="result-why-grid">
       <section><span class="eyebrow muted">1 / 0 / ? INPUTS THIS PATH NEEDS</span><div class="result-condition-list">${conditionRows}</div></section>
-      <section><span class="eyebrow muted">PERSPECTIVES THAT SAW THE PATH</span><div class="result-perspective-list">${f.hitLenses.map((name) => `<span>${esc(name)}</span>`).join("")}</div><p>${lostByPerspective.length ? `If ${lostByPerspective.map(esc).join(", ")} ${lostByPerspective.length === 1 ? "is" : "are"} removed, this path disappears in that comparison.` : "This path survives every current single-perspective removal."}</p></section>
-      <section><span class="eyebrow muted">QCDS DEPENDENCE CHECK</span><p>${dimensionDeps.length ? `The route loses its required basis when these declared dimensions are changed to ?: <b>${dimensionDeps.map(esc).join(" · ")}</b>.` : "No current one-fact exclusion removes the route's required basis."}</p><div class="result-oracles">${oracleSummary}</div></section>
-      <section><span class="eyebrow muted">WHAT THIS MEANS</span><p><b>Candidate, not proof.</b> The route is structurally supported by the current system description. Evidence and counter-tests decide whether the concern is supported, refuted or remains unresolved.</p></section>
+      <section><span class="eyebrow muted">PERSPECTIVES THAT SAW THE PATH</span><div class="result-perspective-list">${f.hitLenses.map((name) => `<span>${esc(name)}</span>`).join("")}</div><p>${lostByPerspective.length ? `If ${lostByPerspective.map(esc).join(", ")} ${lostByPerspective.length === 1 ? "is" : "are"} removed, this route disappears from the surviving route space.` : "This route survives every current single-perspective removal."}</p></section>
+      <section><span class="eyebrow muted">DIMENSION WALK</span><p>${dimensionDeps.length ? `Changing these declared dimensions to ? weakens or removes this route: <b>${dimensionDeps.map(esc).join(" · ")}</b>.` : "No current one-fact comparison weakens this route."}</p><div class="result-oracles">${oracleSummary}</div></section>
+      <section><span class="eyebrow muted">RECURSIVE INFERENCE · WHAT QCDS ASKS NEXT</span>${branch ? `<ol class="recursive-next">${branch.nextQuestions.map((question) => `<li>${esc(question)}</li>`).join("")}</ol>` : "<p>No recursive branch is available for this route yet.</p>"}</section>
+      <section class="result-meaning"><span class="eyebrow muted">WHAT THIS MEANS</span><p>${conditional ? "<b>Conditional route, not a finding.</b> It remains plausible because no required fact is 0, but at least one required fact is still ?. Resolve the missing facts before binding evidence." : "<b>Active hypothesis, not proof.</b> Its required conditions are present. Evidence and counter-tests decide whether it is supported, refuted or remains unresolved."}</p></section>
     </div>
   </section>`;
 }
-
 function findingDetail(f) {
   const m = state.model,
     a = currentAction(f.id);
@@ -1239,12 +1242,14 @@ function findingDetail(f) {
 }
 function findingsView() {
   const m = state.model;
-  let items = m.findings.filter(
+  const routes = allPaths();
+  let items = routes.filter(
     (f) =>
       (state.filter === "all" ||
         (state.filter === "critical" && f.severity === "CRITICAL") ||
-        (state.filter === "untested" && !f.records.length) ||
-        (state.filter === "evidence" && f.records.length)) &&
+        (state.filter === "conditional" && f.conditional) ||
+        (state.filter === "untested" && !f.conditional && !f.records.length) ||
+        (state.filter === "evidence" && !f.conditional && f.records.length)) &&
       `${f.id} ${f.title} ${f.shortTitle}`
         .toLowerCase()
         .includes(state.query.toLowerCase()),
@@ -1255,10 +1260,12 @@ function findingsView() {
   return (
     header(
       "RESULTS / EXPLANATION / EVIDENCE",
-      "See the result, why QCDS produced it, and what to test next.",
-      "Choose a candidate result. Its explanation, system dependencies, perspective checks, control challenge and evidence all stay together on this page.",
+      "See every surviving route, why QCDS kept it, and what to ask next.",
+      `${m.searchSpace.confirmedRoutes} active · ${m.searchSpace.conditionalRoutes} conditional · ${m.searchSpace.rejectedRoutes} rejected by declared conditions. A conditional route is not silently discarded just because a required fact is ?.`,
     ) +
-    `<div class="filters"><label class="search-label"><span class="sr-only">Search findings</span><input id="finding-search" type="search" placeholder="Search findings…" value="${esc(state.query)}"></label><label><span class="sr-only">Filter findings</span><select id="finding-filter"><option value="all" ${state.filter === "all" ? "selected" : ""}>All findings (${m.findings.length})</option><option value="critical" ${state.filter === "critical" ? "selected" : ""}>Critical potential impact</option><option value="untested" ${state.filter === "untested" ? "selected" : ""}>Awaiting evidence</option><option value="evidence" ${state.filter === "evidence" ? "selected" : ""}>Evidence attached</option></select></label></div><div class="findings-layout"><div class="findings-list" aria-label="Candidate findings">${items.length ? items.map((f) => `<button class="finding-select ${f.id === state.findingId ? "selected" : ""}" data-select-finding="${f.id}" aria-pressed="${f.id === state.findingId}"><div><span class="mono">${f.id}</span>${badge(f.severity, severityClass(f.severity))}</div><b>${esc(f.shortTitle)}</b><small>${f.records.length ? f.records.length + " evidence record(s)" : "Awaiting evidence"}</small></button>`).join("") : '<div class="panel compact"><h3>No findings in this view</h3><p>Try another filter or review the system conditions.</p></div>'}</div>${selected ? findingDetail(selected) : `<div class="panel empty"><h2>No finding selected</h2><p>${m.findings.length ? "Change the filter to see more findings." : "Unknown conditions or excluded perspectives may be limiting the analysis."}</p><a class="text-link" href="#system">Review conditions →</a></div>`}</div>${m.archivedEvidence ? `<div class="notice">${m.archivedEvidence} earlier evidence record(s) are retained in the project export but do not apply to the current system snapshot.</div>` : ""}`
+    `<section class="search-space-strip panel"><div><span>ACTIVE</span><b>${m.searchSpace.confirmedRoutes}</b><small>all required facts = 1</small></div><div><span>CONDITIONAL · ?</span><b>${m.searchSpace.conditionalRoutes}</b><small>still plausible, missing context</small></div><div><span>REJECTED</span><b>${m.searchSpace.rejectedRoutes}</b><small>a required fact = 0 or no active lens</small></div><div><span>SEED SPACE</span><b>${m.searchSpace.seedFamilies}</b><small>browser route families before deepening</small></div></section>
+    <div class="filters"><label class="search-label"><span class="sr-only">Search results</span><input id="finding-search" type="search" placeholder="Search results…" value="${esc(state.query)}"></label><label><span class="sr-only">Filter results</span><select id="finding-filter"><option value="all" ${state.filter === "all" ? "selected" : ""}>All surviving routes (${routes.length})</option><option value="conditional" ${state.filter === "conditional" ? "selected" : ""}>Conditional · ? (${m.pending.length})</option><option value="critical" ${state.filter === "critical" ? "selected" : ""}>Critical potential impact</option><option value="untested" ${state.filter === "untested" ? "selected" : ""}>Active · awaiting evidence</option><option value="evidence" ${state.filter === "evidence" ? "selected" : ""}>Evidence attached</option></select></label></div>
+    <div class="findings-layout"><div class="findings-list" aria-label="Surviving routes">${items.length ? items.map((f) => `<button class="finding-select ${f.id === state.findingId ? "selected" : ""} ${f.conditional ? "conditional" : ""}" data-select-finding="${f.id}" aria-pressed="${f.id === state.findingId}"><div><span class="mono">${f.id}</span>${badge(f.conditional ? "CONDITIONAL · ?" : f.severity, f.conditional ? "warning" : severityClass(f.severity))}</div><b>${esc(f.shortTitle)}</b><small>${f.conditional ? `Needs ${f.missing.map((key) => state.model.conditions.find((condition) => condition.key === key)?.id).join(", ")}` : f.records.length ? f.records.length + " evidence record(s)" : "Active hypothesis · awaiting evidence"}</small></button>`).join("") : '<div class="panel compact"><h3>No routes in this view</h3><p>Try another filter or review the system conditions.</p></div>'}</div>${selected ? findingDetail(selected) : `<div class="panel empty"><h2>No route selected</h2><p>${routes.length ? "Change the filter to see more routes." : "No current seed route survives the declared conditions. This is not a safety conclusion."}</p><a class="text-link" href="#system">Review conditions →</a></div>`}</div>${m.archivedEvidence ? `<div class="notice">${m.archivedEvidence} earlier evidence record(s) are retained in the project export but do not apply to the current system snapshot.</div>` : ""}`
   );
 }
 function traceView() {
@@ -1461,6 +1468,23 @@ document.addEventListener("click", async (e) => {
     rememberPlace();
     goQuestion(1, state.findingId);
     notify("Example loaded. Follow the five questions from left to right.");
+    return;
+  }
+  const conditionAnswer = e.target.closest("[data-answer-condition]");
+  if (conditionAnswer) {
+    const key = conditionAnswer.dataset.answerCondition;
+    const value = conditionAnswer.dataset.conditionValue;
+    project().input.flags[key] =
+      value === "unknown" ? null : value === "yes";
+    if (project().conditionBasis) delete project().conditionBasis[key];
+    run();
+    save();
+    render();
+    notify(
+      value === "unknown"
+        ? "Kept as ?. Conditional routes remain visible."
+        : `${key} updated. QCDS recalculated the route space.`,
+    );
     return;
   }
   const questionButton = e.target.closest("[data-question]");
