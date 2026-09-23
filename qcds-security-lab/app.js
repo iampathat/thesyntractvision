@@ -9,7 +9,7 @@ import {
   analyze,
   validateProject,
   markdown,
-} from "./engine.mjs?v=1.4.0";
+} from "./engine.mjs?v=1.5.0";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
@@ -23,12 +23,12 @@ const esc = (s) =>
 const icon = (name, cls = "") =>
   `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${{ grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>', system: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 21h8m-4-5v5"/>', shield: '<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="M12 8v5m0 3h.01"/>', trace: '<circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="12" cy="19" r="2"/><path d="m5 7 6 10m8-10-6 10M7 5h10"/>', report: '<path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8m-8 4h6"/>', book: '<path d="M12 5c-3-2-6-2-10-1v15c4-1 7-1 10 1 3-2 6-2 10-1V4c-4-1-7-1-10 1zm0 0v15"/>', arrow: '<path d="M4 12h16m-6-6 6 6-6 6"/>', play: '<path d="m8 5 11 7-11 7z"/>', plus: '<path d="M12 5v14M5 12h14"/>', spark: '<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z"/>', download: '<path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/>', check: '<path d="m5 12 4 4L19 6"/>', close: '<path d="m6 6 12 12M6 18 18 6"/>', external: '<path d="M14 3h7v7m0-7L10 14M10 3H3v18h18v-7"/>', layers: '<path d="m12 3 10 5-10 5L2 8zm-10 9 10 5 10-5m-20 5 10 5 10-5"/>', mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 5 10 8L22 5"/>', database: '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 4 16 4 16 0V5M4 12c0 4 16 4 16 0"/>', menu: '<path d="M4 6h16M4 12h16M4 18h16"/>', undo: '<path d="m9 3-6 6 6 6M3 9h11a6 6 0 0 1 0 12"/>' }[name] || '<circle cx="12" cy="12" r="8"/>'}</svg>`;
 const ROUTES = [
-  ["investigate", "Five questions", "trace"],
-  ["perspectives", "Perspectives & reports", "layers"],
+  ["investigate", "Investigate · 5 questions", "trace"],
+  ["perspectives", "Perspectives", "layers"],
   ["findings", "Findings & evidence", "shield"],
-  ["report", "Report & export", "report"],
+  ["report", "Reports & export", "report"],
   ["learn", "In plain English", "book"],
-  ["system", "System & conditions", "system"],
+  ["system", "Conditions · 1 / 0 / ?", "system"],
   ["trace", "QCDS trace", "trace"],
   ["overview", "Analysis overview", "grid"],
 ];
@@ -110,14 +110,26 @@ function notify(text, kind = "success") {
     el.classList.remove("visible", "success", "warning");
   }, kind === "warning" ? 6200 : 4200);
 }
+function allPaths() {
+  if (!state.model) return [];
+  return [
+    ...state.model.findings.map((f) => ({ ...f, conditional: false })),
+    ...state.model.pending.map((f) => ({
+      ...f,
+      records: [],
+      status: "CONDITIONAL · ?",
+      conditional: true,
+    })),
+  ];
+}
 function run() {
   state.model = analyze(
     project().input,
     project().evidence,
     project().excludedLenses,
   );
-  if (!state.model.findings.some((f) => f.id === state.findingId))
-    state.findingId = state.model.findings[0]?.id || null;
+  if (!allPaths().some((f) => f.id === state.findingId))
+    state.findingId = allPaths()[0]?.id || null;
 }
 
 const PLACE_KEY = "qcds-security-lab:place:v1";
@@ -178,28 +190,8 @@ function goQuestion(question, finding = state.findingId) {
     run();
     save();
   }
-  if (
-    Number(question) === 2 &&
-    state.route === "investigate" &&
-    state.question === 1 &&
-    !state.model.findings.length &&
-    state.model.unknown.length
-  ) {
-    const facts = $(".fact-review");
-    if (facts) {
-      facts.open = true;
-      facts.classList.add("needs-input");
-      facts.scrollIntoView({ block: "start", behavior: "smooth" });
-      setTimeout(() => facts.classList.remove("needs-input"), 6200);
-    }
-    notify(
-      "Before QCDS can build a route, answer the highlighted system facts. Unknown means the route cannot be evaluated yet.",
-      "warning",
-    );
-    return;
-  }
   state.question = Math.max(1, Math.min(5, Math.trunc(Number(question)) || 1));
-  if (state.model.findings.some((f) => f.id === finding))
+  if (allPaths().some((f) => f.id === finding))
     state.findingId = finding;
   state.mobile = false;
   rememberPlace();
@@ -219,7 +211,7 @@ function readLocation() {
         1,
         Math.min(5, Math.trunc(Number(detail)) || 1),
       );
-    if (state.model.findings.some((f) => f.id === finding))
+    if (allPaths().some((f) => f.id === finding))
       state.findingId = finding;
     rememberPlace();
   }
@@ -537,7 +529,7 @@ const ANGLES = {
     "Starting from the unwanted outcome, what other route or assumption should we question?",
 };
 function selectedFinding() {
-  return state.model.findings.find((f) => f.id === state.findingId);
+  return allPaths().find((f) => f.id === state.findingId);
 }
 function questionPosition() {
   return `<div class="question-position" aria-label="Current investigation position"><div><span class="question-count">${state.question} / 5</span><div><b>Question ${state.question}: ${QUESTION_STEPS[state.question - 1].short}</b><small>${esc(project().input.name)}${state.question > 1 && state.findingId ? ` · ${state.findingId}` : ""}</small></div></div><nav aria-label="Five investigation questions">${QUESTION_STEPS.map((q, i) => `<button data-question="${i + 1}" ${state.question === i + 1 ? 'aria-current="step"' : ""} aria-label="Question ${i + 1}: ${q.short}" title="${q.title}"><span>${i + 1}</span><small>${q.short}</small></button>`).join("")}</nav></div>`;
@@ -547,19 +539,17 @@ function questionNavigation() {
   return `<nav class="question-navigation" aria-label="Previous and next question"><div><button class="button" data-question="${state.question - 1}" ${state.question === 1 ? "disabled" : ""}>${icon("undo")} Back</button><span>${state.question} of 5</span>${state.question === 5 ? '<a class="button primary" href="#report">Review report →</a>' : `<button class="button primary" data-question="${state.question + 1}" ${empty ? "disabled" : ""}>${QUESTION_STEPS[state.question - 1].next} ${icon("arrow")}</button>`}</div></nav>`;
 }
 function compactConditions() {
-  return `<div class="compact-conditions">${CONDITION_DEFS.map(([k], i) => `<label><span><b>C${i + 1} · ${FIELD_META[k][0]}</b><small>${FIELD_META[k][1]}</small></span><select data-condition="${k}" aria-label="C${i + 1} ${FIELD_META[k][0]}"><option value="unknown" ${project().input.flags[k] === null ? "selected" : ""}>Unknown</option><option value="yes" ${project().input.flags[k] === true ? "selected" : ""}>Yes</option><option value="no" ${project().input.flags[k] === false ? "selected" : ""}>No</option></select></label>`).join("")}</div>`;
+  return `<div class="compact-conditions">${CONDITION_DEFS.map(([k], i) => `<label><span><b>C${i + 1} · ${FIELD_META[k][0]}</b><small>${FIELD_META[k][1]}</small></span><select data-condition="${k}" aria-label="C${i + 1} ${FIELD_META[k][0]}"><option value="yes" ${project().input.flags[k] === true ? "selected" : ""}>1 · Yes</option><option value="no" ${project().input.flags[k] === false ? "selected" : ""}>0 · No</option><option value="unknown" ${project().input.flags[k] === null ? "selected" : ""}>? · Unknown</option></select></label>`).join("")}</div>`;
 }
 function pathSummary(f) {
-  return `<div class="current-path"><label for="path-choice">THE PATH WE ARE FOLLOWING</label><select id="path-choice">${state.model.findings.map((x) => `<option value="${x.id}" ${f.id === x.id ? "selected" : ""}>${x.id} · ${esc(x.shortTitle)}</option>`).join("")}</select><small>Changing the path keeps you on question ${state.question}.</small></div>`;
+  return `<div class="current-path"><label for="path-choice">THE PATH WE ARE FOLLOWING</label><select id="path-choice">${allPaths().map((x) => `<option value="${x.id}" ${f.id === x.id ? "selected" : ""}>${x.id} · ${x.conditional ? "? · " : ""}${esc(x.shortTitle)}</option>`).join("")}</select><small>${f.conditional ? "? means this route is conditional on unresolved system facts. " : ""}Changing the path keeps you on question ${state.question}.</small></div>`;
 }
 function explorerContent(f) {
   const lens = state.explorerLens || f.hitLenses[0] || "STRIDE";
   const fact =
     state.model.dimensions.find((d) => d.key === state.explorerFact) ||
     state.model.dimensions.find((d) => f.requires.includes(d.key));
-  const matches = state.model.findings.filter((x) =>
-    x.hitLenses.includes(lens),
-  );
+  const matches = allPaths().filter((x) => x.hitLenses.includes(lens));
   const rotation = state.model.rotation.find((r) => r.name === lens);
   const retained = rotation?.retained.includes(f.id);
   return `<p class="station-context"><b>${f.id} stays in focus.</b> Same system · question ${state.question} of 5.</p><label class="station-label" for="angle-choice">Look through a different perspective<select id="angle-choice">${Object.keys(
