@@ -1040,6 +1040,10 @@ function render() {
     "investigation-mode",
     state.route === "investigate",
   );
+  document.body.classList.toggle(
+    "perspective-mode",
+    state.route === "perspectives",
+  );
   document.body.classList.toggle("menu-open", state.mobile);
   $("#app").innerHTML = shell();
   document.title = `${ROUTES.find((r) => r[0] === state.route)?.[1] || "Overview"} · QCDS Security Lab`;
