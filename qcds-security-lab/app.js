@@ -275,7 +275,9 @@ function staleNotice() {
 function header(kicker, title, description, action = "") {
   return (
     `<div class="page-heading"><div><div class="eyebrow">${kicker}</div><h1>${title}</h1><p>${description}</p></div>${action}</div>` +
-    (state.route !== "investigate" ? workspaceSteps() : "")
+    (["system", "trace", "overview"].includes(state.route)
+      ? workspaceSteps()
+      : "")
   );
 }
 function runButton() {
@@ -470,7 +472,7 @@ const GUIDE_STEPS = [
 ];
 
 function workspaceSteps() {
-  return `<div class="return-context"><a class="button" href="${investigationHref()}">${icon("undo")} Back to question ${state.question}</a><p>You are viewing supporting detail for <b>${esc(project().input.name)}</b>${state.findingId ? ` · ${state.findingId}` : ""}. Your place in the five questions is kept.</p></div>`;
+  return `<div class="return-context"><a class="button" href="${investigationHref()}">${icon("undo")} Back to question ${state.question}</a><p><b>Under the hood:</b> this view explains why QCDS produced the current result for <b>${esc(project().input.name)}</b>${state.findingId ? ` · ${state.findingId}` : ""}. Your place in the five-question workflow is kept.</p></div>`;
 }
 function openExplanation(index) {
   const step = GUIDE_STEPS[index] || GUIDE_STEPS[0];
@@ -657,7 +659,7 @@ function perspectiveMarkdown(name = state.perspective) {
     "",
     `System: ${m.input.name}`,
     `Generated: ${new Date(m.generatedAt).toLocaleString("en-GB")}`,
-    `Perspective state: ${lens?.excluded ? "EXCLUDED" : "ACTIVE"}`,
+    `Perspective state: ${project().excludedLenses.includes(name) ? "EXCLUDED" : "ACTIVE"}`,
     "",
     "## What this perspective asks",
     ANGLES[name] || "Inspect the same system from this security perspective.",
