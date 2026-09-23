@@ -4212,6 +4212,56 @@ dialog::backdrop {
   font-size: 13px;
   line-height: 1.65;
 }
+.system-explanation-pipeline {
+  margin: 20px 0;
+  padding: 17px 18px;
+  border: 1px solid #3d4d56;
+  border-radius: 8px;
+  background: #11191e;
+}
+.system-pipeline-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1.2fr auto 1.2fr auto 1.25fr auto 1fr;
+  gap: 8px;
+  align-items: stretch;
+  margin-top: 13px;
+}
+.system-pipeline-row > div {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #151d22;
+}
+.system-pipeline-row > div b {
+  display: block;
+  font-size: 12px;
+  line-height: 1.35;
+}
+.system-pipeline-row > div small {
+  display: block;
+  margin-top: 5px;
+  color: #96a5ae;
+  font-size: 10px;
+  line-height: 1.5;
+}
+.system-pipeline-row > i {
+  align-self: center;
+  color: #72818a;
+  font-style: normal;
+}
+.system-pipeline-row .qcds-loop-node {
+  border-color: #5c713d;
+  background: #1c2818;
+}
+.system-pipeline-row .qcds-loop-node b {
+  color: var(--acid);
+}
+.system-explanation-pipeline > p {
+  margin: 14px 0 0;
+  color: #b6c2c9;
+  font-size: 12px;
+  line-height: 1.65;
+}
 .system-explanation-two {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -4275,6 +4325,13 @@ dialog::backdrop {
   .system-simple-flow-three,
   .system-explanation-two {
     grid-template-columns: 1fr;
+  }
+  .system-pipeline-row {
+    grid-template-columns: 1fr;
+  }
+  .system-pipeline-row > i {
+    text-align: center;
+    transform: rotate(90deg);
   }
   .system-explanation-actions {
     flex-direction: column;
