@@ -195,7 +195,7 @@ test("report includes provenance, uncertainty, evidence, actions and scope", () 
   const md = markdown(analyze(p.input, p.evidence), p);
   for (const s of [
     "Patrik Sundblom",
-    "UNKNOWN",
+    "**?**",
     "Test suite 9",
     "Boundary rejected",
     "regression test",
