@@ -9,7 +9,7 @@ import {
   analyze,
   validateProject,
   markdown,
-} from "./engine.mjs?v=1.6.1";
+} from "./engine.mjs?v=1.6.2";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
@@ -335,7 +335,7 @@ function shell() {
     (r) => workRoutes.includes(r[0]),
   ).map(navLink).join("")}<div class="nav-section-label nav-learn-label">LEARN</div>${ROUTES.filter((r) => learnRoutes.includes(r[0]) && r[0] !== "examples").map(navLink).join("")}<details class="nav-tools" ${detailRoutes.includes(state.route) ? "open" : ""}><summary><span>Why this result?</span><small>Conditions, QCDS trace & analysis</small></summary>${ROUTES.filter(
     (r) => detailRoutes.includes(r[0]),
-  ).map(navLink).join("")}</details></nav><button class="new-case" data-action="new">${icon("plus")} New system</button><div class="sidebar-bottom"><div class="local-note">${icon("shield")}<span>Saved on this device.<br>No account needed.</span></div><a href="#learn" class="author">By Patrik Sundblom <span>↗</span></a><div class="version">SECURITY LAB <span>v${VERSION}</span></div></div></aside>${state.mobile ? '<button class="menu-backdrop" data-action="close-menu" aria-label="Close navigation backdrop"></button>' : ""}<div class="app-body" ${state.mobile ? "inert" : ""}><header class="topbar"><div class="breadcrumb"><button class="icon-button mobile-toggle" data-action="menu" aria-controls="site-nav" aria-label="Open navigation" aria-expanded="${state.mobile}">${icon("menu")}</button><b>${investigating ? "Q★ Security Lab" : esc(ROUTES.find((r) => r[0] === state.route)?.[1])}</b></div><div class="top-actions"><span id="save-status" class="save-status">${state.storage ? "Saved on this device" : "Not saved · export your work"}</span><button class="button small plain-button" data-guide="${investigating ? QUESTION_STEPS[state.question - 1].guide : 0}">${icon("book")} In plain English</button></div></header>${investigating ? questionPosition() : ""}<main id="main" tabindex="-1">${state.route === "investigate" ? (state.question === 1 ? casePicker() : "") : !["examples", "learn"].includes(state.route) ? casePicker() : ""}<div id="stale-slot">${staleNotice()}</div><div id="view">${view()}</div><footer class="main-footer"><span>QCDS Security Lab · Patrik Sundblom</span><a href="./LICENSE.md">COMMERCIAL LICENSE REQUIRED ${icon("external")}</a></footer></main>${investigating ? questionNavigation() : ""}</div>`;
+  ).map(navLink).join("")}</details></nav><button class="new-case" data-action="new">${icon("plus")} New system</button><div class="sidebar-bottom"><div class="local-note">${icon("shield")}<span>Saved on this device.<br>No account needed.</span></div><a href="#learn" class="author">By Patrik Sundblom <span>↗</span></a><div class="version">SECURITY LAB <span>v${VERSION}</span></div></div></aside>${state.mobile ? '<button class="menu-backdrop" data-action="close-menu" aria-label="Close navigation backdrop"></button>' : ""}<div class="app-body" ${state.mobile ? "inert" : ""}><header class="topbar"><div class="breadcrumb"><button class="icon-button mobile-toggle" data-action="menu" aria-controls="site-nav" aria-label="Open navigation" aria-expanded="${state.mobile}">${icon("menu")}</button><b>${investigating ? "Q★ Security Lab" : esc(ROUTES.find((r) => r[0] === state.route)?.[1])}</b></div><div class="top-actions"><span id="save-status" class="save-status">${state.storage ? "Saved on this device" : "Not saved · export your work"}</span><button class="button small plain-button" data-system-explanation>${icon("book")} In plain English</button></div></header>${investigating ? questionPosition() : ""}<main id="main" tabindex="-1">${state.route === "investigate" ? (state.question === 1 ? casePicker() : "") : !["examples", "learn"].includes(state.route) ? casePicker() : ""}<div id="stale-slot">${staleNotice()}</div><div id="view">${view()}</div><footer class="main-footer"><span>QCDS Security Lab · Patrik Sundblom</span><a href="./LICENSE.md">COMMERCIAL LICENSE REQUIRED ${icon("external")}</a></footer></main>${investigating ? questionNavigation() : ""}</div>`;
 }
 function staleNotice() {
   if (state.route === "investigate" && state.question === 1) return "";
@@ -545,6 +545,37 @@ const GUIDE_STEPS = [
 function workspaceSteps() {
   return `<div class="return-context"><a class="button" href="${investigationHref()}">${icon("undo")} Back to question ${state.question}</a><p><b>Under the hood:</b> this view explains why QCDS produced the current result for <b>${esc(project().input.name)}</b>${state.findingId ? ` · ${state.findingId}` : ""}. Your place in the five-question workflow is kept.</p></div>`;
 }
+function openSystemExplanation() {
+  const d = $("#explanation");
+  const routeName =
+    ROUTES.find((r) => r[0] === state.route)?.[1] || "Security Lab";
+  d.innerHTML = `<div class="dialog-head"><div><span class="eyebrow">IN PLAIN ENGLISH</span><h2 id="explanation-title">What is QCDS Security Lab?</h2></div><button class="icon-button" data-close-explanation aria-label="Close explanation">${icon("close")}</button></div>
+    <div class="explanation-body system-explanation">
+      <p class="system-explanation-lead"><b>It is a threat-modelling workspace.</b> You describe a system and something you do not want to happen. QCDS helps you work out <i>how it could happen, what should stop it, how that protection might fail, and what you would need to test.</i></p>
+      <div class="system-simple-flow" aria-label="How QCDS Security Lab works">
+        <div><span>1</span><b>Describe the system</b><small>What does it do, what matters, and what unwanted outcome are we investigating?</small></div>
+        <div><span>2</span><b>State what you know</b><small><strong>1</strong> = present · <strong>0</strong> = absent · <strong>?</strong> = we do not know yet.</small></div>
+        <div><span>3</span><b>Explore possible routes</b><small>QCDS keeps several possible explanations alive instead of jumping to the first plausible one.</small></div>
+        <div><span>4</span><b>Change the viewpoint</b><small>Look through STRIDE, OWASP/GenAI, Identity and other perspectives over the same system.</small></div>
+        <div><span>5</span><b>Challenge the protection</b><small>Ask what should stop the route, then ask how that protection itself could fail.</small></div>
+        <div><span>6</span><b>Test and report</b><small>Record observations, separate hypotheses from evidence, and export the result.</small></div>
+      </div>
+      <div class="system-explanation-example">
+        <span class="eyebrow">A VERY SIMPLE EXAMPLE</span>
+        <p><b>System:</b> an AI reads customer email and can prepare a reply.</p>
+        <p><b>Question:</b> could text in an email make the system expose another customer's information?</p>
+        <p><b>QCDS:</b> maps the facts → keeps possible routes → looks through several security perspectives → asks what control should stop each route → challenges that control → defines a test.</p>
+      </div>
+      <div class="system-explanation-two">
+        <div><span class="eyebrow">WHAT QCDS ADDS</span><p>It keeps uncertainty, alternatives and dependencies visible. A <b>?</b> is not an error, and one security framework is not treated as the whole answer.</p></div>
+        <div><span class="eyebrow">WHAT IT DOES NOT CLAIM</span><p>A candidate route is not automatically a vulnerability. The lab helps structure an investigation; observations and tests are what move a claim toward or away from evidence.</p></div>
+      </div>
+      <p class="system-you-are-here"><b>You are currently in:</b> ${esc(routeName)}. Closing this explanation returns you exactly where you were.</p>
+      <div class="system-explanation-actions"><a class="button" href="#examples" data-close-explanation>Show me worked examples</a><button class="button primary" data-close-explanation>Got it · back to the lab ${icon("arrow")}</button></div>
+    </div>`;
+  d.showModal();
+}
+
 function openExplanation(index) {
   const step = GUIDE_STEPS[index] || GUIDE_STEPS[0];
   const d = $("#explanation");
@@ -1293,6 +1324,10 @@ document.addEventListener("click", async (e) => {
   }
   if (e.target.closest("[data-close-explanation]")) {
     $("#explanation").close();
+    return;
+  }
+  if (e.target.closest("[data-system-explanation]")) {
+    openSystemExplanation();
     return;
   }
   const exampleWalk = e.target.closest("[data-example-walk]");
