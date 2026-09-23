@@ -1,50 +1,119 @@
 # QCDS Security Lab
 
 **Author: Patrik Sundblom**  
-**Assisted by: ChatGPT (OpenAI AI Assistant)**
+**Assisted by: ChatGPT (OpenAI)**
 
-QCDS Security Lab is a separately licensed commercial QCDS surface for AI threat modelling, vulnerability discovery, attack-path inference, control-bypass analysis, and recursive verification.
+QCDS Security Lab is a separately licensed commercial QCDS surface for system security investigation, threat modelling, attack-path inference, control-bypass analysis and evidence-bound verification.
 
-> **Commercial license required.** Public visibility does not grant a right to use, copy, modify, deploy, benchmark, train on, integrate, distribute, or commercialize this material.
+The **target system can be anything**: software, infrastructure, a business process, an API, a network, a machine, an organization, an AI system or another operational system.
 
-## Workspace v1.7
+LLMs and other predictive models can assist with interpretation, question generation and candidate analysis material. They are **analysis tools**, not the target by default and not the source of truth. Security frameworks such as STRIDE, OWASP/AppSec, Identity, Action/Tool Chain, Privacy/Supply Chain and AI/GenAI are perspectives inside the investigation. QCDS remains in the reasoning loop across conditions, alternatives, perspective rotation, dimension exclusion, recursive control challenge and evidence.
 
-The main workspace follows five questions: the attacker's goal, possible path, control, possible control failure, and evidence. One question is shown at a time. A persistent position indicator keeps the system, path and question visible; Back and Next remain within reach. Question and finding are encoded in the URL, and the last position is kept in session storage.
+> **Commercial license required.** Public visibility does not grant a right to use, copy, modify, deploy, benchmark, train on, integrate, distribute or commercialize this material.
 
-At question 2 or 4, an inline perspective explorer changes the lens on the same path without navigating elsewhere or changing the saved conditions. Users can explicitly follow another matching finding or inspect a leave-one-fact-out comparison. Plain-English explanations open in a dialog and close back to the same scroll position. Detailed views remain available with an explicit return to the current question.
+## Workspace v1.8
 
-The QCDS trace now starts with a live walkthrough of the selected finding. It follows the same candidate path through required Conditions, matching perspectives, leave-one-perspective-out rotation, leave-one-fact-out dimension exclusion, recursive control-bypass challenge and the next evidence test. Finding chips switch the walkthrough without leaving the trace. The full oracle, rotation, dimension and chain tables remain below for detailed inspection.
+The workspace follows five human-facing questions:
 
-Perspectives are now first-class workspace outputs. STRIDE, OWASP/GenAI, Identity, Agent/Tool Chain, Privacy/Supply Chain and Open Search each have a focused report page with current system signals, matching findings, a rotation-dependence check, Markdown export and browser Print / Save PDF.
+1. What unwanted outcome are we investigating?
+2. How could it happen?
+3. What should stop it?
+4. How could that protection fail?
+5. What would support or refute the path?
 
-Conditions are explicitly ternary: **1 = present, 0 = absent, ? = unknown**. A ? is valid input, not an error. QCDS carries unresolved prerequisites forward as conditional paths so the user can continue exploring without guessing. Evidence binding waits until the required system facts are resolved.
+The user does not need to know QCDS or a security framework to start.
 
-The sidebar now separates **Workflow**, **Learn**, and **Why this result?**. The last section contains Conditions, QCDS trace and Analysis overview so explanatory machinery is distinct from the work and report surfaces.
+### Conditions
 
-The default start experience is now **Example journeys**. The first worked case is deliberately a conventional, non-AI customer records portal so the product does not imply that the system under investigation must itself use AI.
+Conditions are ternary:
 
-The Security Lab is system-agnostic: the target can be software, infrastructure, a process, a workflow, a machine, an organization, an AI system or another kind of system. LLMs/predictive models can assist in generating candidate facts, questions, routes and framework material; STRIDE/OWASP/Identity and other frameworks are perspectives; QCDS remains in the recursive inference loop across conditions, alternatives, rotation, controls, dimensions and evidence.
+- **1** = present / known true
+- **0** = absent / known false
+- **?** = unresolved
 
-The default start experience is now **Example journeys**. Four worked cases explain the entire five-question flow before asking the user to configure anything: customer support email, internal document access, invoice approval with a real `?` dependency, and a coding/deployment agent. The first example is expanded by default; the others can preview the complete Goal → Route → Control → Bypass → Proof chain. **Walk the 5 questions** loads a clean copy of that example and keeps a plain-English coaching strip visible through the investigation.
+A question mark is valid input. QCDS carries unresolved facts forward as conditional routes instead of forcing a guess.
 
-The sidebar becomes a drawer below 1025 CSS pixels, covering both narrow phones and common unfolded Fold widths. A diagnostic fixture at `qa/fold.html` renders the actual application in 360px and 768px frames for layout and navigation checks; it is not part of the product navigation.
+The current implementation exposes fourteen stable condition IDs. **C14 explicitly states whether the target system itself contains an AI/ML component.** This separates target-system AI from the optional use of models as analysis assistants.
 
-Three editable examples cover support, knowledge retrieval and a coding/deployment agent. Each example and the custom system retain their own local state. The Mini AI Interviewer collects a six-question brief; conditions stay Unknown until reviewed. Optional browser-local language model support and the deterministic analysis contract are unchanged.
+### Perspectives
 
-### Implemented contract
+Current perspective families are:
 
-- Eight inspectable candidate rules and six shared lens families.
-- Thirteen stable condition IDs, each Yes, No or Unknown. Unknown prerequisites produce questions; explicit No excludes the matching template. No-match is never a safety certification.
-- Declared authorization or approval does not establish control effectiveness.
-- Rotation reruns the rules with a lens excluded. Dimension exclusion reruns with a declared Yes changed to Unknown. Lens agreement is shared-rule coverage, not independent evidence or demonstrated bias removal.
-- Evidence binds to the exact system and lens selection. Changed inputs archive old observations from the current analysis without deleting them from the project.
-- Supporting and refuting observations remain visible as a conflict. No record or repeated rule match automatically creates a VERIFIED finding.
-- Actions track an owner, progress and next step. Completion does not verify the finding.
-- Markdown and JSON export, clipboard, and a printable report with detailed evidence and actions. Imported project data is validated; supplied analysis conclusions are discarded and recalculated.
+- STRIDE
+- OWASP / AppSec
+- Identity
+- Action / Tool Chain
+- Privacy / Supply Chain
+- AI / GenAI
+- Open Search
 
-This browser evaluation does not scan a target, execute Grover amplification or a quantum circuit, run independent agent searches, or automatically perform verification tests. The broader architecture below describes the intended method, not a claim that all architectural capabilities run in this release.
+AI / GenAI is active only when the target system is declared to contain AI/ML. A conventional portal, process or service is not silently treated as an AI system.
 
-### Run and verify
+Each perspective can produce a focused report view and Print / Save PDF output. Perspective agreement is shared analytical coverage, not independent evidence.
+
+### Example journeys
+
+The default entry point is **Example journeys**. The first case is deliberately a conventional non-AI customer records portal. Additional examples include AI-assisted support, internal knowledge access, invoice approval with a real `?` dependency and a coding/deployment agent.
+
+Each example can be previewed end-to-end before the user chooses **Walk the 5 questions**.
+
+### Navigation
+
+The sidebar separates:
+
+- **Start here** — worked examples
+- **Workflow** — investigate, perspectives, findings, reports
+- **Learn** — plain-English method
+- **Why this result?** — conditions, QCDS trace, analysis overview
+
+### QCDS trace
+
+The trace follows the same candidate route through:
+
+- Condition Formation
+- Conditional Evolution
+- perspective rotation
+- dimension exclusion
+- Recursive Inference
+- control → bypass challenge
+- Truth-Alignment Verification
+
+The browser release demonstrates this inspectable logic. It does not execute Grover amplification, autonomous real-world scanning or automatic verification tests.
+
+## Implemented contract
+
+- Eight inspectable candidate rule families with system-neutral core wording.
+- Seven perspective families, including a target-specific AI / GenAI lens.
+- Fourteen ternary system conditions.
+- Rotation reruns the analysis with a perspective excluded.
+- Dimension exclusion reruns with one declared fact changed for comparison.
+- Evidence binds to the exact system snapshot and perspective selection.
+- Changed inputs archive prior observations from the current analysis without deleting them.
+- Supporting and refuting observations remain visible as conflicts.
+- Actions can track owner, status and next control/counter-test.
+- Markdown, JSON and printable report export are supported.
+- Imported projects are validated and conclusions are recalculated.
+
+## What models do here
+
+A language model or predictive model can help:
+
+- interpret a plain-language system description;
+- suggest candidate system facts;
+- suggest questions and possible routes;
+- generate material for STRIDE, OWASP/AppSec or other perspectives;
+- help organize an investigation.
+
+It does **not** automatically establish that a threat is real. QCDS keeps candidate routes, uncertainty, controls and perspective changes in the loop until claims can be connected to observations and tests.
+
+## QCDS mapping
+
+1. **Condition Formation** — map system facts, assets, actors, boundaries, permissions, inputs and assumptions.
+2. **Conditional Evolution** — apply Oracles and perspectives to generate and constrain candidate paths.
+3. **Recursive Inference** — deepen paths, rotate perspectives, exclude dimensions and challenge controls.
+4. **Truth-Alignment Verification** — bind surviving claims to evidence, counter-tests and scoped conclusions.
+
+## Run and verify
 
 No application dependencies or build tool are required. Serve the repository root and open `/qcds-security-lab/`:
 
@@ -53,59 +122,25 @@ python3 -m http.server 8765
 node --test qcds-security-lab/tests/engine.test.mjs
 ```
 
-Use Node 22 for the tests. GitHub Pages copies the HTML, CSS, scripts, engine, documents and SVG assets, and runs contract tests and asset checks before publication.
+Use Node 22 for the tests.
 
-Project data stays in this browser's localStorage until exported. Export JSON before clearing browser data or changing devices. Evidence references are inert text. Optional local model availability and downloads depend on the browser.
-
-## What this directory introduces
-
-- AI Threat Modeling
-- Vulnerability Discovery
-- Attack-Surface Mapping
-- Parallel Attack-Hypothesis Search
-- Rotation / Perspective Exclusion
-- Recursive Control-Bypass Analysis
-- Compound Attack-Path Discovery
-- Evidence Binding and Verification
-- Model-agnostic / substrate-independent execution
-
-The goal is not a checklist. The goal is a recursive inference architecture that keeps searching, challenging, rotating, and verifying until the threat picture stabilizes.
-
-A non-specialist can begin with five questions:
-
-> **I am the attacker. I want to ______.**  
-> **How would I try?**  
-> **What would stop me?**  
-> **How could I get around that?**  
-> **What would prove the path is real?**
-
-The AI interview turns those answers into QCDS Conditions. Oracles constrain candidate paths. Multiple security frameworks and attacker/defender viewpoints become parallel perspectives. Rotation and dimension exclusion reduce shared bias. Recursive inference then searches threat → control → bypass chains before Truth-Alignment Verification promotes evidence-bound findings.
+Project data stays in browser localStorage until exported. Evidence references are inert text. Browser-local model support is optional and depends on browser capabilities.
 
 Detailed documents:
-- [METHODOLOGY.md](./METHODOLOGY.md) — end-to-end threat-modeling method
-- [PERSPECTIVES.md](./PERSPECTIVES.md) — how STRIDE, OWASP/GenAI, identity, CIA, privacy, supply-chain and open search map into perspective and Oracle families
-- [ARCHITECTURE.md](./ARCHITECTURE.md) — core architecture
 
-## QCDS mapping
-
-1. **Condition Formation** — map system, assets, trust boundaries, permissions, inputs and assumptions.
-2. **Conditional Evolution** — generate constrained threat and vulnerability hypotheses.
-3. **Recursive Inference** — search attack paths, combinations, bypasses and second-order effects.
-4. **Truth-Alignment Verification** — require evidence, falsification attempts and stable convergence before a finding is promoted.
+- [METHODOLOGY.md](./METHODOLOGY.md)
+- [PERSPECTIVES.md](./PERSPECTIVES.md)
+- [ARCHITECTURE.md](./ARCHITECTURE.md)
+- [LICENSE.md](./LICENSE.md)
 
 ## Licensing
 
 Everything newly authored in this directory is governed by [LICENSE.md](./LICENSE.md).
 
-The commercial license is negotiated separately in writing. Attribution alone is not a substitute for a license.
-
-Pre-existing QCDS material that was already released under earlier licenses remains governed by those earlier grants. This directory does **not** revoke prior CC BY 4.0 or MIT permissions already granted for earlier QCDS material. The new Security Lab text, site, architecture extensions, code and implementations in this directory are separately reserved to the extent legally protectable.
+Pre-existing QCDS material already released under earlier licenses retains those earlier grants.
 
 Canonical QCDS attribution:
+
 - Patrik Sundblom
 - https://github.com/iampathat/QCDS
 - https://zenodo.org/records/15455541
-
-## Commercial licensing inquiry
-
-Open an issue in the repository with the title **QCDS Security Lab License Inquiry** to discuss scope, pricing and terms.
