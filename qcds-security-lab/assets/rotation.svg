@@ -8,7 +8,7 @@
 <rect class="root" x="470" y="45" width="260" height="85" rx="18"/><text class="k" x="500" y="78">SAME SYSTEM</text><text class="h" x="500" y="108">One reality</text>
 <path class="a" d="M600 140v45"/><path class="a" d="M600 165L195 230"/><path class="a" d="M600 165L465 230"/><path class="a" d="M600 165L735 230"/><path class="a" d="M600 165L1005 230"/>
 <g transform="translate(80,230)"><rect class="lens" width="230" height="115" rx="18"/><text class="k" x="20" y="35">LENS A</text><text class="h" x="20" y="72">STRIDE</text><text class="s" x="20" y="97">known threat classes</text></g>
-<g transform="translate(350,230)"><rect class="lens" width="230" height="115" rx="18"/><text class="k" x="20" y="35">LENS B</text><text class="h" x="20" y="72">OWASP / AI</text><text class="s" x="20" y="97">AI failure modes</text></g>
+<g transform="translate(350,230)"><rect class="lens" width="230" height="115" rx="18"/><text class="k" x="20" y="35">LENS B</text><text class="h" x="20" y="72">OWASP</text><text class="s" x="20" y="97">application security</text></g>
 <g transform="translate(620,230)"><rect class="lens" width="230" height="115" rx="18"/><text class="k" x="20" y="35">LENS C</text><text class="h" x="20" y="72">Identity</text><text class="s" x="20" y="97">authority + principals</text></g>
 <g transform="translate(890,230)"><rect class="lens" width="230" height="115" rx="18"/><text class="k" x="20" y="35">LENS D</text><text class="h" x="20" y="72">Open search</text><text class="s" x="20" y="97">no named framework</text></g>
 <path class="a" d="M195 355L510 420"/><path class="a" d="M465 355L555 420"/><path class="a" d="M735 355L645 420"/><path class="a" d="M1005 355L690 420"/>
