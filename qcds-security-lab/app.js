@@ -9,7 +9,7 @@ import {
   analyze,
   validateProject,
   markdown,
-} from "./engine.mjs?v=1.2.1";
+} from "./engine.mjs?v=1.3.0";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
@@ -461,7 +461,7 @@ const QUESTION_STEPS = [
     guide: 0,
   },
   {
-    short: "Path",
+    short: "Route",
     title: "How would I try?",
     reason:
       "Follow one possible route. Look from different angles without losing the question.",
@@ -477,7 +477,7 @@ const QUESTION_STEPS = [
     guide: 2,
   },
   {
-    short: "Challenge",
+    short: "Bypass",
     title: "How could I get around it?",
     reason:
       "A control opens the next question: what would have to be true for it to fail?",
@@ -485,7 +485,7 @@ const QUESTION_STEPS = [
     guide: 6,
   },
   {
-    short: "Evidence",
+    short: "Proof",
     title: "What would prove or refute it?",
     reason:
       "Compare the claim with observations. Record what happened and what is still uncertain.",
@@ -552,7 +552,7 @@ function explorerContent(f) {
   }<details class="fact-comparison"><summary>What if one system fact were unknown?</summary><p>In this lab, a dimension is one system fact. Hide one in a comparison to see what the path depends on.</p><label class="station-label" for="fact-choice">Fact to question<select id="fact-choice">${state.model.dimensions.map((d) => `<option value="${d.key}" ${d.key === fact?.key ? "selected" : ""}>${d.id} · ${FIELD_META[d.key][0]}</option>`).join("")}</select></label><p class="fact-result" role="status">${fact ? `If <b>${fact.id}</b> were Unknown, <b>${fact.lost.includes(f.id) ? `${f.id} would lose a required fact and need more context.` : `${f.id} would still have its required facts.`}</b>` : "No declared Yes conditions are available for this comparison."}</p><small>Your declared facts remain saved. This comparison does not establish whether a finding is true.</small></details><button class="text-button" data-guide="4">In plain English: why change dimensions?</button>`;
 }
 function dimensionStation(f) {
-  return `<details class="dimension-station panel"><summary>${icon("layers")} Look from another angle <span>Perspectives & dimensions</span></summary><div id="dimension-content">${explorerContent(f)}</div></details>`;
+  return `<details class="dimension-station panel"><summary>${icon("layers")} Rotate the view / walk a dimension <span>${f.hitLenses.length} perspectives match this path · compare another lens or hide one fact without leaving the question</span></summary><div id="dimension-content">${explorerContent(f)}</div></details>`;
 }
 function refreshExplorer(focusId) {
   const f = selectedFinding();
@@ -622,6 +622,94 @@ function comparisonReadout() {
     m.dimensions.find((d) => d.lost.length) ||
     m.dimensions[0];
   return `<div class="comparison-readout"><div><span>CHANGE THE VIEW</span><h3>Remove a perspective</h3><p>${lens ? `Without <b>${esc(lens.name)}</b>, ${lens.retained.length} of ${m.findings.length} paths still match through the remaining lenses.` : "Enable a perspective and run the analysis to compare views."}</p><small>Question: does the result depend on this lens?</small></div><div><span>CHANGE ONE INPUT</span><h3>Hide a system fact</h3><p>${fact ? `With <b>${fact.id} · ${esc(FIELD_META[fact.key][0])}</b> treated as Unknown, ${fact.lost.length ? fact.lost.join(", ") + " lose their required basis." : "no current path loses a required fact."}` : "Declare a Yes condition to compare its contribution."}</p><small>Question: does the result depend on this fact?</small></div></div>`;
+}
+function traceWalkthrough() {
+  const m = state.model;
+  const f =
+    (state.findingId && m.findings.find((x) => x.id === state.findingId)) ||
+    m.findings[0];
+  if (!f)
+    return `<section class="panel trace-guide"><div class="trace-guide-head"><div><span class="eyebrow">START HERE</span><h2>Nothing to trace yet.</h2><p>Confirm the system facts first. QCDS needs explicit conditions before it can show a candidate route.</p></div><button class="button primary" data-question="1">Review the system ${icon("arrow")}</button></div></section>`;
+
+  const required = f.requires
+    .map((k) => {
+      const c = m.conditions.find((x) => x.key === k);
+      return `${c?.id || "?"} · ${FIELD_META[k][0]}`;
+    })
+    .join(" · ");
+  const lensLoss = m.rotation
+    .filter((r) => r.lost.includes(f.id))
+    .map((r) => r.name);
+  const lensSurvival = m.rotation
+    .filter((r) => r.retained.includes(f.id))
+    .map((r) => r.name);
+  const fragileFacts = m.dimensions.filter((d) => d.lost.includes(f.id));
+  const firstFragile = fragileFacts[0];
+  const path = f.path.split(" → ");
+
+  return `<section class="panel trace-guide">
+    <div class="trace-guide-head">
+      <div>
+        <span class="eyebrow">START HERE · LIVE QCDS WALKTHROUGH</span>
+        <h2>Follow one real path through the machinery.</h2>
+        <p>Do not read this page as six separate tools. It is one investigation. The same system stays fixed while QCDS changes questions, viewpoints and assumptions around it.</p>
+      </div>
+      <button class="button" data-question="2">Open the five-question view ${icon("arrow")}</button>
+    </div>
+    <div class="trace-focus">
+      <div><small>PATH IN FOCUS</small><strong>${f.id} · ${esc(f.shortTitle)}</strong></div>
+      <div class="trace-finding-chips" aria-label="Choose a path to trace">${m.findings
+        .map(
+          (x) =>
+            `<button class="trace-finding-chip ${x.id === f.id ? "selected" : ""}" data-trace-finding="${x.id}" aria-pressed="${x.id === f.id}">${x.id}</button>`,
+        )
+        .join("")}</div>
+    </div>
+    <div class="trace-live-path" aria-label="Current candidate path">
+      ${path
+        .map(
+          (part, i) =>
+            `<div><span>${String(i + 1).padStart(2, "0")}</span><b>${esc(part)}</b></div>${i < path.length - 1 ? '<i aria-hidden="true">→</i>' : ""}`,
+        )
+        .join("")}
+    </div>
+    <div class="trace-phase-cards">
+      <article>
+        <span class="trace-phase-label">01 · CONDITION FORMATION</span>
+        <h3>What must be true?</h3>
+        <p>${required || "No required Yes conditions are declared for this path."}</p>
+        <small>These are coordinates of the current system, not conclusions.</small>
+      </article>
+      <article>
+        <span class="trace-phase-label">02 · CONDITIONAL EVOLUTION</span>
+        <h3>Ask from several angles.</h3>
+        <p><b>${f.hitLenses.map(esc).join(" · ") || "No active lens"}</b></p>
+        <small>Oracles constrain the route. Perspectives ask different questions over the same declared reality.</small>
+      </article>
+      <article class="trace-recursive-card">
+        <span class="trace-phase-label">03 · RECURSIVE INFERENCE</span>
+        <h3>Rotate, remove, deepen.</h3>
+        <div class="trace-dependency">
+          <p><b>Rotate the perspective</b>${lensLoss.length ? `If ${lensLoss.map(esc).join(", ")} is removed, ${f.id} disappears in that rerun.` : `${f.id} survives every single-perspective removal currently available.`}</p>
+          <p><b>Walk a dimension</b>${firstFragile ? `Treat ${firstFragile.id} · ${esc(FIELD_META[firstFragile.key][0])} as Unknown and ${f.id} loses a required basis.` : `${f.id} does not lose its required basis in the available one-fact exclusions.`}</p>
+          <p><b>Challenge the control</b>${esc(f.control)} → <em>${esc(f.bypass)}</em></p>
+        </div>
+        <small>${lensSurvival.length ? `It still survives without: ${lensSurvival.map(esc).join(", ")}.` : "No alternate single-lens survival is recorded for this path."}</small>
+      </article>
+      <article>
+        <span class="trace-phase-label">04 · TRUTH-ALIGNMENT VERIFICATION</span>
+        <h3>What observation could change our mind?</h3>
+        <p>${esc(f.verify)}</p>
+        <small>${f.records.length ? `${f.records.length} observation${f.records.length === 1 ? "" : "s"} attached. Read the actual records before drawing a scoped conclusion.` : "No observation is attached yet. This remains a candidate path."}</small>
+        <a class="text-link" href="${investigationHref(5, f.id)}">Plan or record the test ${icon("arrow")}</a>
+      </article>
+    </div>
+    <div class="trace-plain-rule">
+      <b>Two different moves:</b>
+      <span><strong>Perspective rotation</strong> changes the question while keeping the system facts fixed.</span>
+      <span><strong>Dimension exclusion</strong> changes one system fact for a comparison while keeping your saved system intact.</span>
+    </div>
+  </section>`;
 }
 function conclusionReadiness() {
   const m = state.model;
@@ -763,7 +851,7 @@ function traceView() {
       "Read the declared facts, inspect the oracle questions, compare perspectives, then check what changes when a view or fact is excluded.",
       runButton(),
     ) +
-    `<div class="trace-intro"><div class="trace-phase"><span>01</span><div><b>Condition Formation</b><small>${m.conditions.filter((c) => c.value !== null).length} declared · ${m.unknown.length} unknown</small></div></div><div class="trace-phase"><span>02</span><div><b>Conditional Evolution</b><small>4 oracle checks</small></div></div><div class="trace-phase"><span>03</span><div><b>Recursive Inference</b><small>${m.rotation.length} perspective reruns</small></div></div><div class="trace-phase"><span>04</span><div><b>Truth-Alignment Verification</b><small>${m.findings.reduce((n, f) => n + f.records.length, 0)} observations · human review</small></div></div></div><section class="panel trace-facts"><div><span class="eyebrow muted">01 / CONDITIONS → CANDIDATES</span><h2>Start with the facts behind the paths.</h2><p>${m.conditions.filter((c) => c.value !== null).length} conditions are declared and ${m.unknown.length} remain Unknown. A rule needs all of its prerequisites to be Yes; missing context stays open for review.</p></div><a class="button" href="#system">Review conditions ${icon("arrow")}</a></section><section class="panel"><div class="panel-header"><div><span class="eyebrow muted">02 / ORACLES</span><h2>Which questions must the path answer?</h2><p>An oracle applies a constraint or asks for a test. Read each state as the next review task.</p></div></div><div class="oracle-grid">${m.oracles.map((o) => `<article><span class="oracle-symbol">${icon("shield")}</span><small>${o.name}</small><h3>${{ "Boundary Oracle": "Where does lower trust enter?", "Authority Oracle": "Is this actor allowed to act?", "Control Oracle": "Would the protection hold?", "Evidence Oracle": "What has actually been observed?" }[o.name]}</h3>${badge(o.state, o.state.includes("GAP") || o.state === "CONFLICT" ? "danger" : "neutral")}<p>${o.detail}</p></article>`).join("")}</div><details class="inline-help"><summary>How to read the oracle states</summary><p><b>REVIEW / TEST CONTROL:</b> investigate the boundary or test the declared protection. <b>UNKNOWN:</b> establish the missing fact. <b>CONTROL GAP:</b> review a declared missing protection. <b>OUT OF SCOPE:</b> the declared capability is absent. <b>AWAITING TESTS / REVIEW RECORDS / CONFLICT:</b> collect observations, inspect them or resolve disagreement. None is an automatic security pass.</p></details></section>${perspectiveOverview()}<section class="panel"><div class="panel-header"><div><span class="eyebrow muted">03 / ROTATION</span><h2>Remove a perspective. Run the rules again.</h2><p>Compare each rerun with the baseline above. Retained: another enabled lens still matches the path. Lost: the path no longer matches in that rerun; investigate why.</p></div></div>${comparisonReadout()}<p class="lens-help"><b>Try it:</b> uncheck a perspective, then Run analysis. Each row below also shows an automatic comparison with just that named lens removed.</p><div class="lens-controls">${Object.keys(
+    `<div class="trace-intro"><div class="trace-phase"><span>01</span><div><b>Condition Formation</b><small>${m.conditions.filter((c) => c.value !== null).length} declared · ${m.unknown.length} unknown</small></div></div><div class="trace-phase"><span>02</span><div><b>Conditional Evolution</b><small>4 oracle checks</small></div></div><div class="trace-phase"><span>03</span><div><b>Recursive Inference</b><small>${m.rotation.length} perspective reruns</small></div></div><div class="trace-phase"><span>04</span><div><b>Truth-Alignment Verification</b><small>${m.findings.reduce((n, f) => n + f.records.length, 0)} observations · human review</small></div></div></div>${traceWalkthrough()}<figure class="trace-core-visual"><img src="./assets/qcds-core.svg" alt="The four QCDS phases mapped to threat modelling"><figcaption>Four phases, one investigation. The live walkthrough above shows how the selected path moves through them.</figcaption></figure><section class="panel trace-facts"><div><span class="eyebrow muted">01 / CONDITIONS → CANDIDATES</span><h2>Start with the facts behind the paths.</h2><p>${m.conditions.filter((c) => c.value !== null).length} conditions are declared and ${m.unknown.length} remain Unknown. A rule needs all of its prerequisites to be Yes; missing context stays open for review.</p></div><a class="button" href="#system">Review conditions ${icon("arrow")}</a></section><section class="panel"><div class="panel-header"><div><span class="eyebrow muted">02 / ORACLES</span><h2>Which questions must the path answer?</h2><p>An oracle applies a constraint or asks for a test. Read each state as the next review task.</p></div></div><div class="oracle-grid">${m.oracles.map((o) => `<article><span class="oracle-symbol">${icon("shield")}</span><small>${o.name}</small><h3>${{ "Boundary Oracle": "Where does lower trust enter?", "Authority Oracle": "Is this actor allowed to act?", "Control Oracle": "Would the protection hold?", "Evidence Oracle": "What has actually been observed?" }[o.name]}</h3>${badge(o.state, o.state.includes("GAP") || o.state === "CONFLICT" ? "danger" : "neutral")}<p>${o.detail}</p></article>`).join("")}</div><details class="inline-help"><summary>How to read the oracle states</summary><p><b>REVIEW / TEST CONTROL:</b> investigate the boundary or test the declared protection. <b>UNKNOWN:</b> establish the missing fact. <b>CONTROL GAP:</b> review a declared missing protection. <b>OUT OF SCOPE:</b> the declared capability is absent. <b>AWAITING TESTS / REVIEW RECORDS / CONFLICT:</b> collect observations, inspect them or resolve disagreement. None is an automatic security pass.</p></details></section>${perspectiveOverview()}<section class="panel"><div class="panel-header"><div><span class="eyebrow muted">03 / ROTATION</span><h2>Remove a perspective. Run the rules again.</h2><p>Compare each rerun with the baseline above. Retained: another enabled lens still matches the path. Lost: the path no longer matches in that rerun; investigate why.</p></div></div>${comparisonReadout()}<p class="lens-help"><b>Try it:</b> uncheck a perspective, then Run analysis. Each row below also shows an automatic comparison with just that named lens removed.</p><div class="lens-controls">${Object.keys(
       LENSES,
     )
       .map(
@@ -941,6 +1029,14 @@ document.addEventListener("click", async (e) => {
   const guideButton = e.target.closest("[data-guide]");
   if (guideButton) {
     openExplanation(Number(guideButton.dataset.guide));
+    return;
+  }
+  const traceFind = e.target.closest("[data-trace-finding]");
+  if (traceFind) {
+    state.findingId = traceFind.dataset.traceFinding;
+    rememberPlace();
+    render();
+    $(".trace-guide")?.scrollIntoView({ block: "start" });
     return;
   }
   const find = e.target.closest("[data-finding]");
