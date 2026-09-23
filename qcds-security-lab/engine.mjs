@@ -340,7 +340,7 @@ function buildFindings(input, conditions, lenses) {
   });
 }
 
-const VERSION = "1.8.2";
+const VERSION = "1.8.3";
 const FIELD_META = {
   external_input: [
     "External input",
