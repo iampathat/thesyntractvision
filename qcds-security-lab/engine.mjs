@@ -1,24 +1,30 @@
 // Copyright © 2026 Patrik Sundblom. See LICENSE.md.
 // Deterministic, inspectable Security Lab evaluation engine.
 const CONDITION_DEFS = [
-  ["external_input", "External users or systems can submit content"],
+  ["external_input", "External actors, users, devices or systems can submit input"],
   [
     "untrusted_content",
-    "The system processes untrusted web, email, file or retrieved content",
+    "The system processes input whose trust cannot be assumed",
   ],
-  ["rag", "The system retrieves knowledge from a corpus or connected source"],
+  [
+    "rag",
+    "The system retrieves, imports or combines information from a connected source",
+  ],
   [
     "sensitive_data",
-    "Sensitive or confidential data is reachable by the system",
+    "Sensitive, confidential or safety-relevant information is reachable by the system",
   ],
   [
     "cross_user",
-    "Multiple users, tenants or principals share the same application boundary",
+    "Multiple users, tenants, devices, roles or principals share a system or resource boundary",
   ],
-  ["tools", "The model or application can call external tools or APIs"],
+  [
+    "tools",
+    "The system can invoke connected interfaces, services, APIs, actuators or other components",
+  ],
   [
     "high_impact",
-    "At least one available action has meaningful external impact",
+    "At least one available action can materially change data, money, access, operations or physical state",
   ],
   [
     "human_approval",
@@ -26,20 +32,24 @@ const CONDITION_DEFS = [
   ],
   [
     "authorization",
-    "Explicit authorization is enforced at the resource/action boundary",
+    "Explicit authorization is enforced at the relevant resource or action boundary",
   ],
   [
     "third_party",
-    "The system depends on third-party services, models, packages or data",
+    "The system depends on external services, components, packages, models, data or providers",
   ],
   [
     "secrets",
-    "Secrets, credentials or privileged tokens are available to the application",
+    "Secrets, credentials or privileged tokens are available within the system boundary",
   ],
-  ["logging", "Security-relevant actions are logged"],
+  ["logging", "Security-relevant actions and outcomes are logged"],
   [
     "rollback",
-    "Consequential actions can be contained, reversed or rolled back",
+    "Consequential actions can be contained, reversed, isolated or rolled back",
+  ],
+  [
+    "ai_component",
+    "The target system itself contains an AI/ML or learned-model component",
   ],
 ];
 
@@ -47,59 +57,68 @@ const LENSES = {
   STRIDE: {
     color: "cyan",
     tests: [
-      ["external_input", "Spoofing / tampering entry exists"],
-      ["sensitive_data", "Information disclosure consequence exists"],
-      ["high_impact", "Tampering / denial / privilege consequences may matter"],
-      ["cross_user", "Principal separation must be preserved"],
+      ["external_input", "Spoofing or tampering entry points may exist"],
+      ["sensitive_data", "Information disclosure consequences may matter"],
+      ["high_impact", "Tampering, denial or privilege consequences may matter"],
+      ["cross_user", "Principal or boundary separation must be preserved"],
     ],
   },
-  "OWASP / GenAI": {
+  "OWASP / AppSec": {
     color: "acid",
     tests: [
-      ["untrusted_content", "Untrusted content can influence model context"],
-      ["rag", "Retrieval introduces a knowledge boundary"],
-      ["tools", "Model output can cross into tool execution"],
-      ["sensitive_data", "Sensitive context can become model-visible"],
+      ["external_input", "External input crosses an application or service boundary"],
+      ["untrusted_content", "Lower-trust input reaches processing logic"],
+      ["tools", "Connected interfaces or APIs expand the attack surface"],
+      ["sensitive_data", "Protected information is handled by the system"],
     ],
   },
   Identity: {
     color: "orange",
     tests: [
       ["cross_user", "Multiple principals create authorization edges"],
-      ["authorization", "Resource/action authorization exists"],
+      ["authorization", "Resource or action authorization exists"],
       ["secrets", "Privileged credentials may amplify authority"],
-      ["tools", "Delegated tool authority must match the user context"],
+      ["tools", "Delegated authority must match the originating principal and task"],
     ],
   },
-  "Agent / Tool Chain": {
+  "Action / Tool Chain": {
     color: "purple",
     tests: [
-      ["tools", "External actions are callable"],
-      ["high_impact", "Consequential action surface exists"],
+      ["tools", "Connected actions or components are callable"],
+      ["high_impact", "A consequential action surface exists"],
       ["human_approval", "Human approval is part of the control chain"],
-      ["rollback", "Recovery determines blast radius"],
+      ["rollback", "Containment and recovery affect blast radius"],
     ],
   },
   "Privacy / Supply Chain": {
     color: "blue",
     tests: [
-      ["sensitive_data", "Protected data exists"],
-      ["third_party", "External dependency boundary exists"],
-      ["rag", "Retrieved material may have separate provenance"],
-      ["logging", "Logs may contain or expose sensitive events"],
+      ["sensitive_data", "Protected information exists"],
+      ["third_party", "An external dependency or provider boundary exists"],
+      ["rag", "Connected information may have separate provenance or trust"],
+      ["logging", "Telemetry may contain or expose sensitive events"],
+    ],
+  },
+  "AI / GenAI": {
+    color: "acid",
+    requiresTargetAI: true,
+    tests: [
+      ["ai_component", "The target system contains an AI/ML component"],
+      ["untrusted_content", "Lower-trust content can affect model context or behavior"],
+      ["rag", "Connected data can affect model context or grounding"],
+      ["tools", "Model-influenced output can cross into connected actions"],
     ],
   },
   "Open Search": {
     color: "white",
     tests: [
-      ["external_input", "Start from attacker-controlled ingress"],
-      ["high_impact", "Start backward from consequence"],
+      ["external_input", "Start from an attacker- or environment-controlled ingress"],
+      ["high_impact", "Start backward from the consequence"],
       ["secrets", "Start from authority-bearing material"],
-      ["rollback", "Start from irreversible failure"],
+      ["rollback", "Start from an irreversible or hard-to-contain failure"],
     ],
   },
 };
-
 function addFinding(out, finding, conditions, lenses) {
   const byKey = Object.fromEntries(conditions.map((c) => [c.key, c.value]));
   if (finding.requires.some((key) => byKey[key] === false)) return;
@@ -122,18 +141,18 @@ function buildFindings(input, conditions, lenses) {
     f,
     {
       id: "F1",
-      title: "Untrusted content may influence a more trusted decision path",
-      path: "External content → model/context → downstream decision",
+      title: "Untrusted input may influence a more trusted decision or action path",
+      path: "External or lower-trust input → trusted processing/context → downstream decision or action",
       requires: ["external_input", "untrusted_content"],
       supports: ["tools", "high_impact", "sensitive_data"],
-      lensTriggers: ["OWASP / GenAI", "STRIDE", "Open Search"],
-      why: "The system accepts attacker-controlled content and also treats that content as context for a reasoning component.",
+      lensTriggers: ["OWASP / AppSec", "STRIDE", "AI / GenAI", "Open Search"],
+      why: "The system accepts lower-trust input and processes it in a context that can affect a more trusted decision, resource or action.",
       control:
-        "Separate data from instructions; constrain downstream authority; validate the action at the tool/resource boundary.",
+        "Keep trust boundaries explicit; validate and normalize input; separate lower-trust data from policy or control instructions; constrain downstream authority at the resource or action boundary.",
       bypass:
-        "Could the same untrusted content reach the decision through retrieval, attachments, quoted text or another indirect channel?",
+        "Could the same lower-trust input reach the protected decision through an alternate channel, transformation, import, cache, attachment, integration, model context or other indirect path?",
       verify:
-        "Use a harmless synthetic instruction embedded in test content and confirm that it cannot change protected actions or reveal protected context.",
+        "Use harmless synthetic lower-trust input and confirm that it cannot alter protected decisions or actions, or expose protected information beyond the intended boundary.",
       severity: "HIGH",
     },
     conditions,
@@ -144,23 +163,24 @@ function buildFindings(input, conditions, lenses) {
     f,
     {
       id: "F2",
-      title: "Tool authority may exceed the authority needed for the user task",
-      path: "User/context → model decision → tool token → external action",
+      title: "Action authority may exceed the authority needed for the originating task",
+      path: "Request/context → decision component → privileged interface or credential → consequential action",
       requires: ["tools", "high_impact"],
       supports: ["secrets", "human_approval", "external_input"],
       lensTriggers: [
-        "Agent / Tool Chain",
+        "Action / Tool Chain",
         "Identity",
-        "OWASP / GenAI",
+        "OWASP / AppSec",
+        "AI / GenAI",
         "Open Search",
       ],
-      why: "A reasoning component can reach a consequential action. The structural question is whether the action is authorized independently of the model's text.",
+      why: "A system component can cause a consequential action. The structural question is whether that action is authorized independently of the upstream decision, recommendation or presentation.",
       control:
-        "Use least-privilege tool scopes, action-specific authorization, parameter validation and independent approval for high-impact actions.",
+        "Use least-privilege interface scopes, action-specific authorization, parameter validation and independent approval where the impact requires it.",
       bypass:
-        "Can a lower-trust input influence tool parameters, select a stronger tool, or cause the approver to confirm misleading context?",
+        "Can lower-trust input influence action parameters, select a stronger interface, reuse broader credentials, cross a component boundary or mislead an approver?",
       verify:
-        "In a test environment, attempt a disallowed but harmless action with a low-privilege test principal and confirm the tool boundary rejects it regardless of model output.",
+        "In a safe test environment, attempt a disallowed but harmless action with a low-privilege test principal and confirm the action boundary rejects it regardless of upstream output or recommendation.",
       severity: "CRITICAL",
     },
     conditions,
@@ -172,23 +192,24 @@ function buildFindings(input, conditions, lenses) {
     {
       id: "F3",
       title:
-        "Cross-user or cross-tenant data exposure path requires verification",
-      path: "Principal A → application/model → retrieval/resource → Principal B data",
+        "Cross-user, cross-tenant or cross-principal data exposure requires verification",
+      path: "Principal A → shared service/application → resource or data boundary → Principal B data",
       requires: ["cross_user", "sensitive_data"],
       supports: ["rag", "authorization", "tools"],
       lensTriggers: [
         "Identity",
         "STRIDE",
         "Privacy / Supply Chain",
+        "OWASP / AppSec",
         "Open Search",
       ],
-      why: "Multiple principals share an application boundary while sensitive information is reachable.",
+      why: "Multiple principals share a system or resource boundary while protected information is reachable.",
       control:
-        "Enforce authorization before retrieval and again at the resource/action boundary; bind identity to every request.",
+        "Enforce authorization before data access and again at the relevant resource or action boundary; bind the correct principal identity to every request and transition.",
       bypass:
-        "Does caching, conversation state, retrieval ranking, background indexing or a shared service account bypass the intended principal boundary?",
+        "Can caching, session or workflow state, indexing, alternate interfaces, shared credentials, background processing or misbound identity bypass the intended principal boundary?",
       verify:
-        "Create two isolated test principals with non-sensitive fixtures and verify that neither direct nor semantically similar queries can cross the boundary.",
+        "Create two isolated test principals with non-sensitive fixtures and verify that direct, indirect and alternate access paths cannot cross the protected resource boundary.",
       severity: "CRITICAL",
     },
     conditions,
@@ -199,18 +220,23 @@ function buildFindings(input, conditions, lenses) {
     f,
     {
       id: "F4",
-      title: "Retrieval provenance can become a trust-confusion path",
-      path: "Source corpus → retrieval → model context → conclusion/action",
+      title: "Connected-source provenance can become a trust-confusion path",
+      path: "Source or data feed → lookup/import/retrieval → processing context → conclusion or action",
       requires: ["rag", "untrusted_content"],
       supports: ["third_party", "tools", "sensitive_data"],
-      lensTriggers: ["OWASP / GenAI", "Privacy / Supply Chain", "Open Search"],
-      why: "Retrieved material may be relevant without being trustworthy, authorized or instruction-bearing.",
+      lensTriggers: [
+        "OWASP / AppSec",
+        "Privacy / Supply Chain",
+        "AI / GenAI",
+        "Open Search",
+      ],
+      why: "Connected material may be relevant without being trustworthy, authorized, current or appropriate for the decision that consumes it.",
       control:
-        "Track provenance, authorization and trust level per retrieved item; prevent retrieved text from redefining system policy.",
+        "Track provenance, authorization, freshness and trust level per source item; prevent a lower-trust source from silently inheriting the authority of the component that consumes it.",
       bypass:
-        "Can low-trust material outrank trusted material, enter through an indexed attachment, or inherit the trust of the retrieval layer?",
+        "Can lower-trust material outrank trusted material, enter through an alternate feed or indexed attachment, survive a transformation, or inherit trust from the lookup or integration layer?",
       verify:
-        "Seed the test corpus with clearly marked low-trust synthetic content and confirm provenance is preserved and protected decisions remain unchanged.",
+        "Seed a safe test source with clearly marked lower-trust synthetic material and confirm provenance remains visible and protected decisions or actions do not silently inherit that source's claims.",
       severity: "HIGH",
     },
     conditions,
@@ -222,17 +248,17 @@ function buildFindings(input, conditions, lenses) {
     {
       id: "F5",
       title: "Human approval may be only a presentation-layer control",
-      path: "Model recommendation → human confirmation → consequential action",
+      path: "Presented recommendation/context → human confirmation → consequential action",
       requires: ["human_approval", "high_impact"],
       supports: ["tools", "untrusted_content", "sensitive_data"],
-      lensTriggers: ["Agent / Tool Chain", "Open Search", "STRIDE"],
-      why: "A human click is not independent verification if the human sees only the model's framing of the underlying evidence.",
+      lensTriggers: ["Action / Tool Chain", "Open Search", "STRIDE", "AI / GenAI"],
+      why: "A human confirmation is not independent verification if the person sees only a filtered, summarized or misleading representation of the underlying evidence and action.",
       control:
-        "Show original source data, exact action parameters and target identity independently of the model explanation.",
+        "Show original or authoritative source information, exact action parameters and target identity independently of the recommendation or summary being approved.",
       bypass:
-        "Can the model omit, summarize or frame the evidence so that the approver cannot independently detect a bad action?",
+        "Can the presentation layer omit, aggregate, summarize or frame information so the approver cannot independently detect a bad action?",
       verify:
-        "Run a benign mismatch test where the model summary conflicts with the displayed source parameters and confirm the UI makes the discrepancy obvious.",
+        "Run a benign mismatch test where the presented recommendation conflicts with authoritative source parameters and confirm the interface makes the discrepancy obvious before approval.",
       severity: "HIGH",
     },
     conditions,
@@ -244,18 +270,18 @@ function buildFindings(input, conditions, lenses) {
     {
       id: "F6",
       title:
-        "Privileged secret or service-account concentration may enlarge blast radius",
-      path: "Application/model compromise → privileged credential → broader resources",
+        "Privileged secret or credential concentration may enlarge blast radius",
+      path: "Local component or account compromise → privileged credential → broader resources",
       requires: ["secrets"],
       supports: ["tools", "third_party", "cross_user", "high_impact"],
       lensTriggers: ["Identity", "Privacy / Supply Chain", "Open Search"],
-      why: "Authority-bearing credentials can turn a local model/application failure into a wider system failure.",
+      why: "Authority-bearing credentials can turn a local component, account or workflow failure into a wider system failure.",
       control:
-        "Short-lived scoped credentials, per-action tokens, secret isolation and explicit resource boundaries.",
+        "Use short-lived scoped credentials, per-action or per-component authority, secret isolation and explicit resource boundaries.",
       bypass:
-        "Does any shared credential silently grant broader access than the user or task requires?",
+        "Does any shared or inherited credential silently grant broader access than the originating user, component or task requires?",
       verify:
-        "Inventory effective permissions of test credentials and compare them with the minimum permissions required for each action.",
+        "Inventory effective permissions of test credentials and compare them with the minimum permissions required for each intended action and resource.",
       severity: "HIGH",
     },
     conditions,
@@ -268,17 +294,17 @@ function buildFindings(input, conditions, lenses) {
       id: "F7",
       title:
         "Third-party dependency creates an external trust and provenance boundary",
-      path: "Third-party model/service/package/data → application → protected behavior",
+      path: "External service/component/package/model/data → system → protected behavior",
       requires: ["third_party"],
       supports: ["sensitive_data", "rag", "tools", "secrets"],
-      lensTriggers: ["Privacy / Supply Chain", "Open Search", "STRIDE"],
-      why: "A dependency can alter code, data, model behavior or availability outside the direct control of the application owner.",
+      lensTriggers: ["Privacy / Supply Chain", "Open Search", "STRIDE", "OWASP / AppSec"],
+      why: "A dependency can alter code, data, behavior, availability or trust assumptions outside the direct control of the system owner.",
       control:
-        "Pin and verify dependencies, minimize shared secrets/data, monitor changes and define degradation/fail-closed behavior.",
+        "Verify and constrain dependencies, minimize shared authority and data, monitor changes, define failure behavior and preserve provenance across the dependency boundary.",
       bypass:
-        "What happens if the dependency returns valid-looking but malicious, stale or structurally different output?",
+        "What happens if the dependency returns valid-looking but malicious, stale, unavailable or structurally different output?",
       verify:
-        "Use a controlled stub that returns malformed or misleading data and confirm the application contains the failure without escalating authority.",
+        "Use a controlled substitute or test double that returns malformed, stale or misleading data and confirm the system contains the failure without silently escalating trust or authority.",
       severity: "MEDIUM",
     },
     conditions,
@@ -289,18 +315,18 @@ function buildFindings(input, conditions, lenses) {
     f,
     {
       id: "F8",
-      title: "Detection and recovery may be weaker than the action surface",
-      path: "Bad action → insufficient telemetry or rollback → persistent consequence",
+      title: "Detection and recovery may be weaker than the consequence surface",
+      path: "Harmful or incorrect action → insufficient telemetry or containment → persistent consequence",
       requires: ["high_impact"],
       supports: ["logging", "rollback", "tools"],
-      lensTriggers: ["Agent / Tool Chain", "STRIDE", "Open Search"],
-      why: "Consequential actions need observability and containment, not only preventive controls.",
+      lensTriggers: ["Action / Tool Chain", "STRIDE", "Open Search"],
+      why: "Consequential actions need observability, containment and recovery as well as preventive controls.",
       control:
-        "Log actor/context/action, define alerts, reversible operations and recovery procedures.",
+        "Record actor, context, action and outcome; define alerts, containment paths, reversible operations and recovery procedures appropriate to the system.",
       bypass:
-        "Can a harmful action succeed without a durable event record, or can an attacker act faster than containment?",
+        "Can a harmful action succeed without a durable event record, or can the consequence propagate faster than detection and containment?",
       verify:
-        "Trigger a harmless test action and confirm the event is attributable, alertable and reversible within the intended recovery process.",
+        "Trigger a harmless test action and confirm the event is attributable, detectable and containable or reversible within the intended recovery process.",
       severity: input.flags.logging && input.flags.rollback ? "MEDIUM" : "HIGH",
     },
     conditions,
@@ -314,7 +340,7 @@ function buildFindings(input, conditions, lenses) {
   });
 }
 
-const VERSION = "1.7.0";
+const VERSION = "1.8.0";
 const FIELD_META = {
   external_input: [
     "External input",
@@ -327,8 +353,8 @@ const FIELD_META = {
     "Exposure",
   ],
   rag: [
-    "Connected knowledge",
-    "Does it search documents or a knowledge base?",
+    "Connected source",
+    "Does it retrieve, import or combine information from another source?",
     "Exposure",
   ],
   sensitive_data: [
@@ -337,18 +363,18 @@ const FIELD_META = {
     "Exposure",
   ],
   cross_user: [
-    "Shared application",
-    "Do multiple users or tenants share the application?",
+    "Shared boundary",
+    "Do multiple users, tenants, devices, roles or principals share a system or resource boundary?",
     "Exposure",
   ],
   tools: [
-    "Tools & APIs",
-    "Can it call tools, APIs or connected services?",
+    "Connected actions",
+    "Can it invoke APIs, services, interfaces, actuators or other components?",
     "Authority",
   ],
   high_impact: [
     "Consequential actions",
-    "Can it send, change, delete, pay or deploy?",
+    "Can it materially change data, money, access, operations or physical state?",
     "Authority",
   ],
   secrets: [
@@ -358,7 +384,7 @@ const FIELD_META = {
   ],
   third_party: [
     "External dependencies",
-    "Does it rely on outside models, packages or services?",
+    "Does it rely on outside services, components, packages, models, data or providers?",
     "Authority",
   ],
   human_approval: [
@@ -378,15 +404,20 @@ const FIELD_META = {
   ],
   rollback: [
     "Recovery",
-    "Can consequential actions be reversed or contained?",
+    "Can consequential actions be reversed, isolated or contained?",
     "Controls",
+  ],
+  ai_component: [
+    "AI / ML component",
+    "Does the target system itself contain an AI/ML or learned-model component?",
+    "System type",
   ],
 };
 const SHORT_TITLES = {
-  F1: "Untrusted content → trusted decisions",
-  F2: "More tool power than the task needs",
+  F1: "Untrusted input → trusted outcome",
+  F2: "More action authority than the task needs",
   F3: "Data crossing between users",
-  F4: "Retrieved content inherits too much trust",
+  F4: "Connected source inherits too much trust",
   F5: "Approval without the full picture",
   F6: "Credentials expand the blast radius",
   F7: "An external dependency changes behavior",
@@ -421,7 +452,7 @@ const SCENARIOS = [
         "third_party",
         "logging",
       ],
-      ["rag", "tools", "high_impact", "human_approval", "secrets", "rollback"],
+      ["rag", "tools", "high_impact", "human_approval", "secrets", "rollback", "ai_component"],
     ),
   },
   {
@@ -447,7 +478,8 @@ const SCENARIOS = [
         "authorization",
         "third_party",
         "secrets",
-        "logging",
+        "logging",,
+        "ai_component",
       ],
       ["rollback"],
     ),
@@ -470,7 +502,8 @@ const SCENARIOS = [
         "cross_user",
         "authorization",
         "third_party",
-        "logging",
+        "logging",,
+        "ai_component",
       ],
       ["tools", "high_impact", "human_approval", "rollback", "secrets"],
     ),
@@ -495,7 +528,8 @@ const SCENARIOS = [
         "third_party",
         "secrets",
         "logging",
-        "rollback",
+        "rollback",,
+        "ai_component",
       ],
       ["rag", "cross_user"],
     ),
@@ -520,7 +554,8 @@ const SCENARIOS = [
         "high_impact",
         "human_approval",
         "third_party",
-        "logging",
+        "logging",,
+        "ai_component",
       ],
       ["secrets", "rollback"],
     ),
@@ -572,15 +607,19 @@ function conditionList(input) {
   }));
 }
 function lensRuns(input, excluded = []) {
-  return Object.entries(LENSES).map(([name, l]) => ({
-    name,
-    color: l.color,
-    excluded: excluded.includes(name),
-    evidence: l.tests
-      .filter(([k]) => input.flags[k] === true)
-      .map(([, v]) => v),
-    active: !excluded.includes(name),
-  }));
+  return Object.entries(LENSES).map(([name, l]) => {
+    const applicable = !l.requiresTargetAI || input.flags.ai_component === true;
+    return {
+      name,
+      color: l.color,
+      excluded: excluded.includes(name),
+      applicable,
+      evidence: l.tests
+        .filter(([k]) => input.flags[k] === true)
+        .map(([, v]) => v),
+      active: !excluded.includes(name) && applicable,
+    };
+  });
 }
 function candidateRun(input, excluded = []) {
   return buildFindings(
@@ -732,6 +771,10 @@ function analyze(input, evidence = [], excluded = []) {
     archivedEvidence: evidence.filter((e) => e.fingerprint !== fp).length,
   };
 }
+const LEGACY_LENS_NAMES = {
+  "OWASP / GenAI": "OWASP / AppSec",
+  "Agent / Tool Chain": "Action / Tool Chain",
+};
 function validateProject(value) {
   if (!value || value.schema !== "qcds-security-lab/project-v1" || !value.input)
     throw new Error(
@@ -749,15 +792,21 @@ function validateProject(value) {
   if (
     !i.flags ||
     !CONDITION_DEFS.every(
-      ([k]) => i.flags[k] === null || typeof i.flags[k] === "boolean",
+      ([k]) =>
+        i.flags[k] === undefined ||
+        i.flags[k] === null ||
+        typeof i.flags[k] === "boolean",
     )
   )
-    throw new Error("Each system condition must be Yes, No or Unknown.");
-  if (
-    !Array.isArray(value.excludedLenses) ||
-    value.excludedLenses.some((x) => !Object.hasOwn(LENSES, x)) ||
-    new Set(value.excludedLenses).size !== value.excludedLenses.length
-  )
+    throw new Error("Each system condition must be 1, 0 or ?.");
+  if (!Array.isArray(value.excludedLenses))
+    throw new Error("Invalid perspective selection.");
+  const excludedLenses = [
+    ...new Set(
+      value.excludedLenses.map((x) => LEGACY_LENS_NAMES[x] || x),
+    ),
+  ];
+  if (excludedLenses.some((x) => !Object.hasOwn(LENSES, x)))
     throw new Error("Invalid perspective selection.");
   if (!Array.isArray(value.evidence) || value.evidence.length > 500)
     throw new Error("Invalid evidence records.");
@@ -810,9 +859,14 @@ function validateProject(value) {
       description: i.description,
       attackerGoal: i.attackerGoal,
       assets: [...i.assets],
-      flags: Object.fromEntries(CONDITION_DEFS.map(([k]) => [k, i.flags[k]])),
+      flags: Object.fromEntries(
+        CONDITION_DEFS.map(([k]) => [
+          k,
+          i.flags[k] === undefined ? null : i.flags[k],
+        ]),
+      ),
     },
-    excludedLenses: [...value.excludedLenses],
+    excludedLenses,
     evidence,
     actions,
     updatedAt: new Date().toISOString(),
