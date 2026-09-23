@@ -50,7 +50,7 @@ const state = {
   caseId: "support",
   cases: { support: newProject() },
   model: null,
-  route: "investigate",
+  route: "examples",
   findingId: null,
   filter: "all",
   query: "",
@@ -67,10 +67,10 @@ try {
   if (
     saved &&
     typeof saved === "object" &&
-    ["support", "knowledge", "coding", "custom"].includes(saved.caseId)
+    ["support", "knowledge", "coding", "invoice", "custom"].includes(saved.caseId)
   ) {
     const cases = {};
-    for (const id of ["support", "knowledge", "coding", "custom"])
+    for (const id of ["support", "knowledge", "coding", "invoice", "custom"])
       if (saved.cases?.[id]) cases[id] = validateProject(saved.cases[id]);
     if (cases[saved.caseId]) {
       state.cases = cases;
@@ -192,15 +192,26 @@ const EXAMPLE_GUIDES = {
       "See why the same route looks different through STRIDE, Identity and Privacy perspectives while the underlying system stays the same.",
   },
   coding: {
-    level: "INTERMEDIATE · INCLUDES ?",
+    level: "INTERMEDIATE · TOOL AUTHORITY",
     title: "An AI coding agent can deploy software",
     story:
-      "The agent reads issues and packages, proposes code and can deploy through a service account. Review exists, but action-specific authorization has not yet been confirmed.",
+      "The agent reads issues and packages, proposes code and can deploy through a service account. Review exists, so the interesting question is whether tool authority is constrained independently of the model.",
     question:
       "Could lower-trust text influence a deployment beyond the change a reviewer thought they approved?",
     focus: "F2",
     learn:
-      "See why ? is useful. Unknown authorization stays unresolved while QCDS keeps the possible route visible instead of forcing a Yes or No.",
+      "See how QCDS follows a consequential tool route, then challenges least privilege, approval and the possibility that the control itself can be influenced.",
+  },
+  invoice: {
+    level: "EASY · LEARN WHAT ? MEANS",
+    title: "A supplier invoice reaches a finance AI",
+    story:
+      "Finance staff upload supplier PDFs. The AI extracts amounts and vendors and prepares a payment recommendation. Nobody has yet confirmed whether it also searches a connected internal knowledge source.",
+    question:
+      "Could a malicious supplier document gain extra trust through an unconfirmed retrieval or knowledge connection?",
+    focus: "F4",
+    learn:
+      "This route requires untrusted content and connected knowledge. Untrusted content is 1, connected knowledge is ?, so QCDS keeps F4 visible as conditional instead of guessing.",
   },
 };
 
@@ -267,7 +278,7 @@ function goQuestion(question, finding = state.findingId) {
 }
 function readLocation() {
   const [raw, detail, finding] = location.hash.slice(1).split("/");
-  const route = ALIASES[raw] || raw || "investigate";
+  const route = ALIASES[raw] || raw || "examples";
   state.route = ROUTES.some((r) => r[0] === route) ? route : "investigate";
   if (state.route === "investigate") {
     if (detail)
@@ -286,7 +297,7 @@ function readLocation() {
 function navigate(route) {
   if (route === "interview") return openInterview();
   if (route === "investigate") return goQuestion(state.question);
-  if (!ROUTES.some((r) => r[0] === route)) return goQuestion(1);
+  if (!ROUTES.some((r) => r[0] === route)) return navigate("examples");
   state.mobile = false;
   if (location.hash === "#" + route) {
     state.route = route;
@@ -300,7 +311,7 @@ const severityClass = (s) =>
   s === "CRITICAL" ? "danger" : s === "HIGH" ? "warning" : "neutral";
 
 function casePicker() {
-  return `<div class="casebar"><label for="case-select">SYSTEM</label><select id="case-select" aria-label="Choose a system"><option value="support" ${state.caseId === "support" ? "selected" : ""}>Customer support AI</option><option value="knowledge" ${state.caseId === "knowledge" ? "selected" : ""}>Internal knowledge assistant</option><option value="coding" ${state.caseId === "coding" ? "selected" : ""}>Coding & deployment agent</option>${state.cases.custom ? `<option value="custom" ${state.caseId === "custom" ? "selected" : ""}>${esc(state.cases.custom.input.name)}</option>` : ""}</select>${badge(project().example ? "Example" : "Your system", "neutral")}</div>`;
+  return `<div class="casebar"><label for="case-select">SYSTEM</label><select id="case-select" aria-label="Choose a system"><option value="support" ${state.caseId === "support" ? "selected" : ""}>Customer support AI</option><option value="knowledge" ${state.caseId === "knowledge" ? "selected" : ""}>Internal knowledge assistant</option><option value="coding" ${state.caseId === "coding" ? "selected" : ""}>Coding & deployment agent</option><option value="invoice" ${state.caseId === "invoice" ? "selected" : ""}>Invoice approval assistant</option>${state.cases.custom ? `<option value="custom" ${state.caseId === "custom" ? "selected" : ""}>${esc(state.cases.custom.input.name)}</option>` : ""}</select>${badge(project().example ? "Example" : "Your system", "neutral")}</div>`;
 }
 function shell() {
   const investigating = state.route === "investigate";
@@ -320,11 +331,11 @@ function shell() {
   };
   const navLink = ([id, label, ic]) =>
     `<a href="${id === "investigate" ? investigationHref() : id === "perspectives" ? perspectiveHref() : "#" + id}" ${state.route === id ? 'aria-current="page"' : ""}>${icon(ic)}<span class="nav-copy"><b>${label}</b><em>${navHints[id] || ""}</em></span></a>`;
-  return `<aside id="site-nav" ${state.mobile ? 'role="dialog" aria-modal="true" aria-label="Navigation"' : ""} class="sidebar ${state.mobile ? "open" : ""}"><a class="brand" href="#investigate/1"><span class="brand-mark">Q<span>★</span></span><span>QCDS<span class="brand-sub">SECURITY LAB</span></span></a><div class="workspace-label">YOUR WORKSPACE <button class="icon-button menu-close" data-action="close-menu" aria-label="Close navigation">${icon("close")}</button></div><nav aria-label="Workspace"><div class="nav-section-label">START HERE</div>${navLink(ROUTES.find((r) => r[0] === "examples"))}<div class="nav-section-label nav-work-label">WORKFLOW</div>${ROUTES.filter(
+  return `<aside id="site-nav" ${state.mobile ? 'role="dialog" aria-modal="true" aria-label="Navigation"' : ""} class="sidebar ${state.mobile ? "open" : ""}"><a class="brand" href="#examples"><span class="brand-mark">Q<span>★</span></span><span>QCDS<span class="brand-sub">SECURITY LAB</span></span></a><div class="workspace-label">YOUR WORKSPACE <button class="icon-button menu-close" data-action="close-menu" aria-label="Close navigation">${icon("close")}</button></div><nav aria-label="Workspace"><div class="nav-section-label">START HERE</div>${navLink(ROUTES.find((r) => r[0] === "examples"))}<div class="nav-section-label nav-work-label">WORKFLOW</div>${ROUTES.filter(
     (r) => workRoutes.includes(r[0]),
   ).map(navLink).join("")}<div class="nav-section-label nav-learn-label">LEARN</div>${ROUTES.filter((r) => learnRoutes.includes(r[0]) && r[0] !== "examples").map(navLink).join("")}<details class="nav-tools" ${detailRoutes.includes(state.route) ? "open" : ""}><summary><span>Why this result?</span><small>Conditions, QCDS trace & analysis</small></summary>${ROUTES.filter(
     (r) => detailRoutes.includes(r[0]),
-  ).map(navLink).join("")}</details></nav><button class="new-case" data-action="new">${icon("plus")} New system</button><div class="sidebar-bottom"><div class="local-note">${icon("shield")}<span>Saved on this device.<br>No account needed.</span></div><a href="#learn" class="author">By Patrik Sundblom <span>↗</span></a><div class="version">SECURITY LAB <span>v${VERSION}</span></div></div></aside>${state.mobile ? '<button class="menu-backdrop" data-action="close-menu" aria-label="Close navigation backdrop"></button>' : ""}<div class="app-body" ${state.mobile ? "inert" : ""}><header class="topbar"><div class="breadcrumb"><button class="icon-button mobile-toggle" data-action="menu" aria-controls="site-nav" aria-label="Open navigation" aria-expanded="${state.mobile}">${icon("menu")}</button><b>${investigating ? "Q★ Security Lab" : esc(ROUTES.find((r) => r[0] === state.route)?.[1])}</b></div><div class="top-actions"><span id="save-status" class="save-status">${state.storage ? "Saved on this device" : "Not saved · export your work"}</span><button class="button small plain-button" data-guide="${investigating ? QUESTION_STEPS[state.question - 1].guide : 0}">${icon("book")} In plain English</button></div></header>${investigating ? questionPosition() : ""}<main id="main" tabindex="-1">${!investigating || state.question === 1 ? casePicker() : ""}<div id="stale-slot">${staleNotice()}</div><div id="view">${view()}</div><footer class="main-footer"><span>QCDS Security Lab · Patrik Sundblom</span><a href="./LICENSE.md">COMMERCIAL LICENSE REQUIRED ${icon("external")}</a></footer></main>${investigating ? questionNavigation() : ""}</div>`;
+  ).map(navLink).join("")}</details></nav><button class="new-case" data-action="new">${icon("plus")} New system</button><div class="sidebar-bottom"><div class="local-note">${icon("shield")}<span>Saved on this device.<br>No account needed.</span></div><a href="#learn" class="author">By Patrik Sundblom <span>↗</span></a><div class="version">SECURITY LAB <span>v${VERSION}</span></div></div></aside>${state.mobile ? '<button class="menu-backdrop" data-action="close-menu" aria-label="Close navigation backdrop"></button>' : ""}<div class="app-body" ${state.mobile ? "inert" : ""}><header class="topbar"><div class="breadcrumb"><button class="icon-button mobile-toggle" data-action="menu" aria-controls="site-nav" aria-label="Open navigation" aria-expanded="${state.mobile}">${icon("menu")}</button><b>${investigating ? "Q★ Security Lab" : esc(ROUTES.find((r) => r[0] === state.route)?.[1])}</b></div><div class="top-actions"><span id="save-status" class="save-status">${state.storage ? "Saved on this device" : "Not saved · export your work"}</span><button class="button small plain-button" data-guide="${investigating ? QUESTION_STEPS[state.question - 1].guide : 0}">${icon("book")} In plain English</button></div></header>${investigating ? questionPosition() : ""}<main id="main" tabindex="-1">${state.route === "investigate" ? (state.question === 1 ? casePicker() : "") : !["examples", "learn"].includes(state.route) ? casePicker() : ""}<div id="stale-slot">${staleNotice()}</div><div id="view">${view()}</div><footer class="main-footer"><span>QCDS Security Lab · Patrik Sundblom</span><a href="./LICENSE.md">COMMERCIAL LICENSE REQUIRED ${icon("external")}</a></footer></main>${investigating ? questionNavigation() : ""}</div>`;
 }
 function staleNotice() {
   if (state.route === "investigate" && state.question === 1) return "";
@@ -703,7 +714,7 @@ function exampleFlowCard(id) {
     </div>
     <div class="example-bottom">
       <div><span class="eyebrow muted">THE 1 / 0 / ? FACTS THIS ROUTE USES</span><div class="condition-chips">${conditions}</div></div>
-      <div><span class="eyebrow muted">PERSPECTIVES THAT SEE IT</span><div class="example-lenses">${focus.hitLenses.map((name) => `<a href="${perspectiveHref(name)}">${esc(name)}</a>`).join("")}</div></div>
+      <div><span class="eyebrow muted">PERSPECTIVES THAT SEE IT</span><div class="example-lenses">${focus.hitLenses.map((name) => `<span>${esc(name)}</span>`).join("")}</div></div>
     </div>
     <details class="example-explain"><summary>Why this example matters</summary><p>${esc(guide.learn)}</p><p><b>Important:</b> the framework perspective is a view over the route. QCDS keeps the shared conditions, recursive challenge and evidence logic underneath it.</p></details>
   </article>`;
@@ -720,7 +731,7 @@ function examplesView() {
       <div><span class="eyebrow">THE ONLY THREE SYMBOLS YOU NEED AT FIRST</span><h2>1 = yes · 0 = no · ? = we do not know yet</h2><p>QCDS does not force a guess. A ? keeps dependent routes visible as conditional possibilities while you continue the investigation.</p></div>
       <button class="button" data-action="new">Skip examples · use my own system ${icon("arrow")}</button>
     </section>
-    <div class="examples-list">${["support", "knowledge", "coding"].map(exampleFlowCard).join("")}</div>
+    <div class="examples-list">${["support", "knowledge", "invoice", "coding"].map(exampleFlowCard).join("")}</div>
     <section class="examples-after panel"><span class="eyebrow">WHAT TO NOTICE</span><h2>The five questions stay simple. QCDS does the deeper comparison underneath.</h2><div><p><b>Conditions</b> describe what is known about the system.</p><p><b>Perspectives</b> such as STRIDE or OWASP ask different questions about the same route.</p><p><b>Recursion</b> means a protection becomes the next thing to challenge.</p><p><b>Evidence</b> decides how far a claim can be trusted.</p></div></section>`
   );
 }
@@ -1165,7 +1176,7 @@ function view() {
       trace: traceView,
       report: reportView,
       learn: learnView,
-    }[state.route] || overview
+    }[state.route] || examplesView
   )();
 }
 function render() {
