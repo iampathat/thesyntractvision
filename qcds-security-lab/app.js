@@ -9,7 +9,7 @@ import {
   analyze,
   validateProject,
   markdown,
-} from "./engine.mjs?v=1.5.0";
+} from "./engine.mjs?v=1.6.0";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
@@ -662,6 +662,69 @@ function investigationEvidence(f) {
   }
   return `<section class="question-card panel"><span class="eyebrow">A TEST TO RUN</span><p>${esc(f.verify)}</p><p class="small muted">Run the test in an authorized environment. Include a counter-test that could contradict the claim.</p></section><section class="question-card panel"><h2>What did you observe?</h2><form id="evidence-form" class="evidence-form" data-id="${f.id}"><label>Source / test reference<input name="source" required maxlength="1000" placeholder="A test run, log or review reference"></label><label>Expected and actual result<textarea name="observation" rows="4" required maxlength="5000" placeholder="Who tried which action? What should happen? What happened? What did the counter-test show?"></textarea></label><label>What does it say about this path?<select name="outcome"><option value="inconclusive">Still inconclusive</option><option value="supports">Supports the finding</option><option value="refutes">Refutes the finding</option></select></label><button class="button primary" type="submit">${icon("plus")} Add observation</button><small>Your observation is bound to ${f.id} and this system snapshot. It does not automatically verify the finding.</small></form>${f.records.length ? `<details class="observations" open><summary>${f.records.length} saved observation${f.records.length === 1 ? "" : "s"}</summary>${f.records.map((e) => `<article>${badge(e.outcome)}<p>${esc(e.observation)}</p><small>${esc(e.source)}</small></article>`).join("")}</details>` : ""}</section><button class="text-button" data-guide="8">In plain English: evidence, Syntract binding & convergence →</button>`;
 }
+
+function exampleCoach(f) {
+  const guide = EXAMPLE_GUIDES[state.caseId];
+  if (!guide || !project().example) return "";
+  const focus =
+    f || allPaths().find((x) => x.id === guide.focus) || allPaths()[0];
+  const messages = {
+    1: "Start with the unwanted outcome. Do not begin with a framework label or attack technique.",
+    2: "Now QCDS turns the 1 / 0 / ? facts into possible routes. A ? stays visible as uncertainty.",
+    3: "A route is not enough. Ask what protection should stop this exact actor, resource and action.",
+    4: "Now challenge that protection. This is the recursive move: control → possible bypass → next control.",
+    5: "Finish with a test that could change your mind. Evidence is stronger than a plausible story.",
+  };
+  return `<section class="example-coach panel"><div><span class="eyebrow">${esc(guide.level)}</span><b>Walking example: ${esc(guide.title)}</b><p>${messages[state.question]}</p>${state.question > 1 && focus ? `<small>Example path in focus: ${focus.id} · ${esc(focus.shortTitle)}${focus.conditional ? " · ? conditional" : ""}</small>` : ""}</div><a class="text-link" href="#examples">See all examples →</a></section>`;
+}
+
+function exampleFlowCard(id) {
+  const { p, m, guide, focus } = canonicalExample(id);
+  if (!focus) return "";
+  const conditions = focus.requires
+    .map((key) => {
+      const condition = m.conditions.find((c) => c.key === key);
+      const symbol = conditionSymbol(m, key);
+      return `<span class="${symbol === "?" ? "unknown-chip" : ""}">${symbol} · ${condition.id} · ${esc(FIELD_META[key][0])}</span>`;
+    })
+    .join("");
+  return `<article class="example-journey panel">
+    <div class="example-journey-head">
+      <div><span class="eyebrow">${esc(guide.level)}</span><h2>${esc(guide.title)}</h2><p>${esc(guide.story)}</p></div>
+      <button class="button primary" data-example-walk="${id}">Walk the 5 questions ${icon("arrow")}</button>
+    </div>
+    <div class="example-problem"><span>THE SECURITY QUESTION</span><strong>${esc(guide.question)}</strong></div>
+    <div class="example-flow">
+      <div><span>1 · GOAL</span><b>${esc(p.input.attackerGoal)}</b><small>What unwanted outcome are we investigating?</small></div>
+      <div><span>2 · ROUTE</span><b>${esc(focus.path)}</b><small>${focus.conditional ? "? Conditional because one or more required facts are unresolved." : "A candidate route supported by the current system facts."}</small></div>
+      <div><span>3 · CONTROL</span><b>${esc(focus.control)}</b><small>What should stop the route?</small></div>
+      <div><span>4 · BYPASS</span><b>${esc(focus.bypass)}</b><small>How could that protection fail?</small></div>
+      <div><span>5 · PROOF</span><b>${esc(focus.verify)}</b><small>What observation could support or refute the route?</small></div>
+    </div>
+    <div class="example-bottom">
+      <div><span class="eyebrow muted">THE 1 / 0 / ? FACTS THIS ROUTE USES</span><div class="condition-chips">${conditions}</div></div>
+      <div><span class="eyebrow muted">PERSPECTIVES THAT SEE IT</span><div class="example-lenses">${focus.hitLenses.map((name) => `<a href="${perspectiveHref(name)}">${esc(name)}</a>`).join("")}</div></div>
+    </div>
+    <details class="example-explain"><summary>Why this example matters</summary><p>${esc(guide.learn)}</p><p><b>Important:</b> the framework perspective is a view over the route. QCDS keeps the shared conditions, recursive challenge and evidence logic underneath it.</p></details>
+  </article>`;
+}
+
+function examplesView() {
+  return (
+    header(
+      "EXAMPLES / START HERE",
+      "See the whole flow before building your own.",
+      "Pick a finished example, read the five steps in one screen, then walk through the same case interactively. You do not need to understand QCDS terminology first.",
+    ) +
+    `<section class="examples-primer panel">
+      <div><span class="eyebrow">THE ONLY THREE SYMBOLS YOU NEED AT FIRST</span><h2>1 = yes · 0 = no · ? = we do not know yet</h2><p>QCDS does not force a guess. A ? keeps dependent routes visible as conditional possibilities while you continue the investigation.</p></div>
+      <button class="button" data-action="new">Skip examples · use my own system ${icon("arrow")}</button>
+    </section>
+    <div class="examples-list">${["support", "knowledge", "coding"].map(exampleFlowCard).join("")}</div>
+    <section class="examples-after panel"><span class="eyebrow">WHAT TO NOTICE</span><h2>The five questions stay simple. QCDS does the deeper comparison underneath.</h2><div><p><b>Conditions</b> describe what is known about the system.</p><p><b>Perspectives</b> such as STRIDE or OWASP ask different questions about the same route.</p><p><b>Recursion</b> means a protection becomes the next thing to challenge.</p><p><b>Evidence</b> decides how far a claim can be trusted.</p></div></section>`
+  );
+}
+
 function investigationView() {
   const q = QUESTION_STEPS[state.question - 1],
     f = selectedFinding(),
@@ -688,7 +751,7 @@ function investigationView() {
     }
     if (state.question === 5) content += investigationEvidence(f);
   }
-  return `<div class="investigation"><div class="investigation-heading"><span class="eyebrow">QUESTION ${state.question} OF 5</span><h1 id="question-title" tabindex="-1">${q.title}</h1><p>${q.reason}</p></div>${content}</div>`;
+  return `<div class="investigation"><div class="investigation-heading"><span class="eyebrow">QUESTION ${state.question} OF 5</span><h1 id="question-title" tabindex="-1">${q.title}</h1><p>${q.reason}</p></div>${exampleCoach(f)}${content}</div>`;
 }
 function perspectiveOverview() {
   const m = state.model;
@@ -1093,6 +1156,7 @@ function learnView() {
 function view() {
   return (
     {
+      examples: examplesView,
       investigate: investigationView,
       overview: overview,
       system: systemView,
@@ -1213,6 +1277,27 @@ document.addEventListener("click", async (e) => {
   }
   if (e.target.closest("[data-close-explanation]")) {
     $("#explanation").close();
+    return;
+  }
+  const exampleWalk = e.target.closest("[data-example-walk]");
+  if (exampleWalk) {
+    const id = exampleWalk.dataset.exampleWalk;
+    state.cases[id] = newProject(id);
+    state.caseId = id;
+    state.question = 1;
+    state.explorerLens = "";
+    state.explorerFact = "";
+    state.query = "";
+    state.filter = "all";
+    run();
+    state.findingId =
+      allPaths().find((f) => f.id === EXAMPLE_GUIDES[id]?.focus)?.id ||
+      allPaths()[0]?.id ||
+      null;
+    save();
+    rememberPlace();
+    goQuestion(1, state.findingId);
+    notify("Example loaded. Follow the five questions from left to right.");
     return;
   }
   const questionButton = e.target.closest("[data-question]");
