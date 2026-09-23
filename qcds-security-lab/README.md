@@ -11,7 +11,7 @@ LLMs and other predictive models can assist with interpretation, question genera
 
 > **Commercial license required.** Public visibility does not grant a right to use, copy, modify, deploy, benchmark, train on, integrate, distribute or commercialize this material.
 
-## Workspace v1.8
+## Workspace v1.9
 
 The workspace follows five human-facing questions:
 
@@ -33,7 +33,7 @@ Conditions are ternary:
 
 A question mark is valid input. QCDS carries unresolved facts forward as conditional routes instead of forcing a guess.
 
-The current implementation exposes fourteen stable condition IDs. **C14 explicitly states whether the target system itself contains an AI/ML component.** This separates target-system AI from the optional use of models as analysis assistants.
+The current implementation exposes fourteen stable condition IDs. **C14 explicitly states whether the target system itself contains an AI/ML component.** Interview answers can now form high- or medium-confidence condition proposals, each with a visible reason. Unresolved values stay as `?` and drive the next QCDS clarification questions.
 
 ### Perspectives
 
@@ -82,12 +82,14 @@ The browser release demonstrates this inspectable logic. It does not execute Gro
 
 ## Implemented contract
 
-- Eight inspectable candidate rule families with system-neutral core wording.
+- Fourteen ternary system conditions, with interview-to-condition formation and explicit provenance for inferred values.
+- Eight current seed route families that initialize the browser search space; unresolved prerequisites remain conditional routes instead of disappearing.
 - Seven perspective families, including a target-specific AI / GenAI lens.
-- Fourteen ternary system conditions.
-- Rotation reruns the analysis with a perspective excluded.
-- Dimension exclusion reruns with one declared fact changed for comparison.
-- Evidence binds to the exact system snapshot and perspective selection.
+- A ranked clarification queue generated from the ? conditions that affect surviving routes.
+- Perspective rotation reruns the surviving route space with one lens excluded.
+- Dimension walking changes one declared 1 to ? and records which routes become weaker, remain stable or disappear.
+- Recursive branches carry each surviving route through conditions → control → bypass → counter-test.
+- Evidence binds only to active routes and to the exact system snapshot and perspective selection.
 - Changed inputs archive prior observations from the current analysis without deleting them.
 - Supporting and refuting observations remain visible as conflicts.
 - Actions can track owner, status and next control/counter-test.
