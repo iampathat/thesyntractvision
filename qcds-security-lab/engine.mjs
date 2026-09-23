@@ -936,14 +936,12 @@ function evidenceState(records) {
           ? "INCONCLUSIVE"
           : "HYPOTHESIS";
 }
-function rotationResults(input, excluded, findings) {
-  const baseline = findings.map((f) => f.id);
+function rotationResults(input, excluded, candidates) {
+  const baseline = candidates.map((f) => f.id);
   return Object.keys(LENSES)
     .filter((n) => !excluded.includes(n))
     .map((name) => {
-      const after = candidateRun(input, [...excluded, name])
-        .filter((f) => !f.missing.length)
-        .map((f) => f.id);
+      const after = candidateRun(input, [...excluded, name]).map((f) => f.id);
       return {
         name,
         retained: baseline.filter((id) => after.includes(id)),
@@ -1013,56 +1011,88 @@ function analyze(input, evidence = [], excluded = []) {
       );
       return { ...f, records, status: evidenceState(records) };
     });
-  const rotation = rotationResults(input, excluded, findings);
+  const pending = candidates
+    .filter((f) => f.missing.length)
+    .map((f) => ({ ...f, status: "NEEDS CONTEXT" }));
+  const rotation = rotationResults(input, excluded, candidates);
   const dimensions = conditionList(input)
-    .filter((c) => c.value === true)
-    .map((c) => {
-      const copy = { ...input, flags: { ...input.flags, [c.key]: null } };
-      const ids = candidateRun(copy, excluded)
-        .filter((f) => !f.missing.length)
-        .map((f) => f.id);
+    .filter((condition) => condition.value === true)
+    .map((condition) => {
+      const copy = {
+        ...input,
+        flags: { ...input.flags, [condition.key]: null },
+      };
+      const after = candidateRun(copy, excluded);
+      const afterById = Object.fromEntries(
+        after.map((route) => [route.id, route]),
+      );
       return {
-        ...c,
-        retained: findings.filter((f) => ids.includes(f.id)).map((f) => f.id),
-        lost: findings.filter((f) => !ids.includes(f.id)).map((f) => f.id),
+        ...condition,
+        retained: candidates
+          .filter(
+            (route) =>
+              afterById[route.id] &&
+              afterById[route.id].missing.length === route.missing.length,
+          )
+          .map((route) => route.id),
+        weakened: candidates
+          .filter(
+            (route) =>
+              afterById[route.id] &&
+              afterById[route.id].missing.length > route.missing.length,
+          )
+          .map((route) => route.id),
+        lost: candidates
+          .filter((route) => !afterById[route.id])
+          .map((route) => route.id),
       };
     });
-  const ids = findings.map((f) => f.id);
-  const chains = [
-    {
-      ids: ["F1", "F2", "F8"],
-      title: "Lower-trust input reaches a consequential action",
-      explanation:
-        "Follow lower-trust input into a privileged action path, then ask whether detection, containment and recovery limit the consequence.",
-    },
-    {
-      ids: ["F4", "F3"],
-      title: "Connected-source trust crosses a principal boundary",
-      explanation:
-        "Challenge source provenance together with resource authorization. Both conditions must hold for this composed route.",
-    },
-    {
-      ids: ["F1", "F5", "F2"],
-      title: "A misleading presentation passes approval",
-      explanation:
-        "Inspect the authoritative source, the exact approved parameters, the target identity and the action that actually runs.",
-    },
-  ].filter((c) => c.ids.every((id) => ids.includes(id)));
+  const conditions = conditionList(input);
+  const recursive = recursiveInference(candidates, conditions);
+  const chains = recursive.map((branch) => ({
+    ids: [branch.id],
+    title: branch.title,
+    explanation:
+      branch.stages.find((stage) => stage.type === "challenge")?.text +
+      " Next: " +
+      branch.nextQuestions[0],
+  }));
+  const suggestions = suggestConditions(input);
+  const clarifications = clarificationQueue(input, candidates);
+
   return {
     version: VERSION,
     generatedAt: new Date().toISOString(),
     fingerprint: fp,
     input: structuredClone(input),
     excludedLenses: [...excluded],
-    conditions: conditionList(input),
+    conditions,
+    conditionSuggestions: suggestions,
     lenses: lensRuns(input, excluded),
     findings,
-    pending: candidates.filter((f) => f.missing.length),
+    pending,
+    routes: [
+      ...findings.map((route) => ({ ...route, conditional: false })),
+      ...pending.map((route) => ({
+        ...route,
+        records: [],
+        conditional: true,
+      })),
+    ],
+    searchSpace: {
+      seedFamilies: Object.keys(SHORT_TITLES).length,
+      survivingRoutes: candidates.length,
+      confirmedRoutes: findings.length,
+      conditionalRoutes: pending.length,
+      rejectedRoutes: Object.keys(SHORT_TITLES).length - candidates.length,
+    },
+    clarifications,
     oracles: oracleResults(input, findings),
     rotation,
     dimensions,
+    recursive,
     chains,
-    unknown: conditionList(input).filter((c) => c.value === null),
+    unknown: conditions.filter((condition) => condition.value === null),
     archivedEvidence: evidence.filter((e) => e.fingerprint !== fp).length,
   };
 }
