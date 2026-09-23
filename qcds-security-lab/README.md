@@ -7,7 +7,7 @@ QCDS Security Lab is a separately licensed commercial QCDS surface for AI threat
 
 > **Commercial license required.** Public visibility does not grant a right to use, copy, modify, deploy, benchmark, train on, integrate, distribute, or commercialize this material.
 
-## Workspace v1.6
+## Workspace v1.7
 
 The main workspace follows five questions: the attacker's goal, possible path, control, possible control failure, and evidence. One question is shown at a time. A persistent position indicator keeps the system, path and question visible; Back and Next remain within reach. Question and finding are encoded in the URL, and the last position is kept in session storage.
 
@@ -20,6 +20,10 @@ Perspectives are now first-class workspace outputs. STRIDE, OWASP/GenAI, Identit
 Conditions are explicitly ternary: **1 = present, 0 = absent, ? = unknown**. A ? is valid input, not an error. QCDS carries unresolved prerequisites forward as conditional paths so the user can continue exploring without guessing. Evidence binding waits until the required system facts are resolved.
 
 The sidebar now separates **Workflow**, **Learn**, and **Why this result?**. The last section contains Conditions, QCDS trace and Analysis overview so explanatory machinery is distinct from the work and report surfaces.
+
+The default start experience is now **Example journeys**. The first worked case is deliberately a conventional, non-AI customer records portal so the product does not imply that the system under investigation must itself use AI.
+
+The Security Lab is system-agnostic: the target can be software, infrastructure, a process, a workflow, a machine, an organization, an AI system or another kind of system. LLMs/predictive models can assist in generating candidate facts, questions, routes and framework material; STRIDE/OWASP/Identity and other frameworks are perspectives; QCDS remains in the recursive inference loop across conditions, alternatives, rotation, controls, dimensions and evidence.
 
 The default start experience is now **Example journeys**. Four worked cases explain the entire five-question flow before asking the user to configure anything: customer support email, internal document access, invoice approval with a real `?` dependency, and a coding/deployment agent. The first example is expanded by default; the others can preview the complete Goal → Route → Control → Bypass → Proof chain. **Walk the 5 questions** loads a clean copy of that example and keeps a plain-English coaching strip visible through the investigation.
 
