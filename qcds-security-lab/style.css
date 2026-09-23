@@ -3610,6 +3610,116 @@ dialog::backdrop {
 .plain-button {
   white-space: nowrap;
 }
+
+.result-explainer {
+  margin-bottom: 20px;
+  overflow: hidden;
+  border-color: #43583a;
+}
+.result-explainer-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 22px 24px;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(135deg, rgba(184,255,57,.035), transparent 62%), #151d1a;
+}
+.result-explainer-head > div {
+  max-width: 760px;
+}
+.result-explainer-head h2 {
+  margin: 6px 0 7px;
+  font-size: 20px;
+}
+.result-explainer-head p {
+  margin: 0;
+  color: #aebbbf;
+  font-size: 12px;
+  line-height: 1.65;
+}
+.result-explainer-head .button {
+  flex-shrink: 0;
+}
+.result-explainer-levels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.result-explainer-levels > a {
+  display: grid;
+  grid-template-columns: 34px minmax(0,1fr);
+  gap: 11px;
+  align-items: start;
+  padding: 18px 20px;
+  color: #bcc8cf;
+  text-decoration: none;
+  background: #12191d;
+}
+.result-explainer-levels > a + a {
+  border-left: 1px solid var(--line);
+}
+.result-explainer-levels > a > span {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid #4b5962;
+  border-radius: 50%;
+  color: #9eabb4;
+  font: 11px var(--mono);
+}
+.result-explainer-levels b {
+  display: block;
+  margin-bottom: 5px;
+  color: #d9e2e7;
+  font-size: 13px;
+}
+.result-explainer-levels small {
+  display: block;
+  color: #8f9da6;
+  font-size: 10px;
+  line-height: 1.55;
+}
+.result-explainer-levels > a.active {
+  background: #1b2718;
+}
+.result-explainer-levels > a.active > span {
+  border-color: var(--acid);
+  background: #2b3a20;
+  color: var(--acid);
+}
+.result-explainer-levels > a.active b {
+  color: var(--acid);
+}
+.system-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+@media (max-width: 700px) {
+  .result-explainer-head {
+    flex-direction: column;
+    padding: 18px;
+  }
+  .result-explainer-head .button {
+    width: 100%;
+  }
+  .result-explainer-levels {
+    grid-template-columns: 1fr;
+  }
+  .result-explainer-levels > a + a {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+  .system-header-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+  .system-header-actions .button {
+    width: 100%;
+  }
+}
 .return-context {
   display: flex;
   align-items: center;
