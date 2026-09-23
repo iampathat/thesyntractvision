@@ -9,7 +9,7 @@ import {
   analyze,
   validateProject,
   markdown,
-} from "./engine.mjs?v=1.6.3";
+} from "./engine.mjs?v=1.7.0";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
@@ -549,41 +549,54 @@ function openSystemExplanation() {
   const d = $("#explanation");
   const routeName =
     ROUTES.find((r) => r[0] === state.route)?.[1] || "Security Lab";
-  d.innerHTML = `<div class="dialog-head"><div><span class="eyebrow">WHAT IS THIS?</span><h2 id="explanation-title">QCDS Security Lab, in plain English</h2></div><button class="icon-button" data-close-explanation aria-label="Close explanation">${icon("close")}</button></div>
+  d.innerHTML = `<div class="dialog-head"><div><span class="eyebrow">WHAT IS THIS?</span><h2 id="explanation-title">A security investigation lab for any system</h2></div><button class="icon-button" data-close-explanation aria-label="Close explanation">${icon("close")}</button></div>
     <div class="explanation-body system-explanation">
-      <p class="system-explanation-lead"><b>This tool helps you think through how an AI system could go wrong or be misused — before it happens.</b><br>You do not need to know security frameworks or QCDS to start.</p>
+      <p class="system-explanation-lead"><b>QCDS Security Lab helps you investigate how any system could be attacked, misused or fail.</b><br>The system can be a website, API, payment process, company workflow, network, machine, cloud service, AI agent — or something else entirely.</p>
 
       <div class="system-simple-flow system-simple-flow-three" aria-label="What you do and what the lab does">
-        <div><span>1</span><b>You tell it about the system</b><small>What does the AI do? What data or actions matter? What is something you do <strong>not</strong> want to happen?</small></div>
-        <div><span>2</span><b>It explores several ways that could happen</b><small>It keeps known facts, missing information and different security viewpoints separate instead of jumping to one answer.</small></div>
-        <div><span>3</span><b>You get things to investigate</b><small>Possible routes, protections that should stop them, ways those protections could fail, and tests that can support or reject the concern.</small></div>
+        <div><span>1</span><b>You describe the system and the unwanted outcome</b><small>What does the system do? What matters? What are you trying to protect or understand?</small></div>
+        <div><span>2</span><b>Models help build the investigation material</b><small>LLMs or other predictive models can help turn the description into candidate facts, questions, routes and material for security perspectives.</small></div>
+        <div><span>3</span><b>QCDS keeps the reasoning moving</b><small>It carries uncertainty, compares alternatives, rotates perspectives, challenges controls recursively and pushes the investigation toward testable evidence.</small></div>
       </div>
 
       <div class="system-explanation-example">
-        <span class="eyebrow">A 20-SECOND EXAMPLE</span>
-        <p><b>Imagine:</b> an AI reads customer emails and prepares replies.</p>
-        <p><b>You do not want:</b> one customer's email to make the AI reveal another customer's information.</p>
-        <p><b>The lab asks:</b> how could that happen → what should stop it → could that protection fail → what would we test to find out?</p>
+        <span class="eyebrow">A 20-SECOND NON-AI EXAMPLE</span>
+        <p><b>System:</b> an online customer portal with login, password reset and access to personal records.</p>
+        <p><b>Unwanted outcome:</b> one customer gains access to another customer's records.</p>
+        <p><b>The lab can explore:</b> possible routes → which controls should stop them → how those controls could fail → what STRIDE, Identity or another perspective highlights → what should actually be tested.</p>
+      </div>
+
+      <div class="system-explanation-pipeline">
+        <span class="eyebrow">WHAT IS ACTUALLY HAPPENING?</span>
+        <div class="system-pipeline-row">
+          <div><b>Any system</b><small>Your real system, process or case</small></div><i>→</i>
+          <div><b>Model-assisted analysis</b><small>LLM / predictive models help create candidate material</small></div><i>→</i>
+          <div><b>Security perspectives</b><small>STRIDE · OWASP · Identity · Tool chain · Privacy · Open search</small></div><i>↔</i>
+          <div class="qcds-loop-node"><b>QCDS loop</b><small>1 / 0 / ? · oracles · rotation · dimension exclusion · recursive inference</small></div><i>→</i>
+          <div><b>Evidence & reports</b><small>Tests, observations and perspective-specific outputs</small></div>
+        </div>
+        <p><b>Important:</b> QCDS is not just a final filter after the frameworks. It stays in the loop while perspectives, assumptions, controls and alternative routes are compared and challenged.</p>
       </div>
 
       <div class="system-explanation-two">
-        <div><span class="eyebrow">WHAT ARE 1 / 0 / ?</span><p>They are simply the facts you know about the system. <b>1</b> = yes, <b>0</b> = no, <b>?</b> = we do not know yet. You are allowed to leave something as ?.</p></div>
-        <div><span class="eyebrow">WHAT ARE STRIDE / OWASP / IDENTITY?</span><p>They are different sets of security questions — different ways to look at the <b>same system</b>. You can later ask for a report from one of those viewpoints.</p></div>
+        <div><span class="eyebrow">WHAT ARE STRIDE / OWASP / IDENTITY?</span><p>They are useful security perspectives. They help ask different questions about the same system. They are <b>inputs and views in the investigation</b>, not the whole reasoning engine.</p></div>
+        <div><span class="eyebrow">WHAT ARE 1 / 0 / ?</span><p>QCDS keeps facts explicit: <b>1</b> = present, <b>0</b> = absent, <b>?</b> = unresolved. A ? stays in the reasoning instead of being guessed away.</p></div>
       </div>
 
       <div class="system-explanation-qcds">
-        <span class="eyebrow">SO WHAT IS QCDS DOING?</span>
-        <p>QCDS is the reasoning method underneath the lab. It keeps multiple possible routes and uncertainties in view, changes perspective, challenges assumptions and protections, and keeps asking until the result can be connected to something you can actually test.</p>
-        <p><b>In short:</b> describe → explore → challenge → test → report.</p>
+        <span class="eyebrow">THE SIMPLE VERSION OF QCDS</span>
+        <p>Keep several plausible routes alive. Look at them from different directions. Remove or change one dimension and see what survives. Challenge each protection with the next question. Repeat until the important claims can be checked against evidence.</p>
+        <p><b>In short:</b> form conditions → explore and constrain → recurse → verify.</p>
       </div>
 
       <details class="system-terms">
         <summary>A few words you may see in the lab</summary>
         <p><b>Route:</b> one possible way the unwanted outcome could happen.</p>
-        <p><b>Control:</b> a protection that should stop that route.</p>
-        <p><b>Perspective:</b> a set of security questions, such as STRIDE or Identity.</p>
-        <p><b>Evidence:</b> what you observed when you actually checked or tested something.</p>
-        <p><b>Threat modelling:</b> the general practice of thinking through how a system could be attacked, misused or fail.</p>
+        <p><b>Control:</b> a protection that should interrupt that route.</p>
+        <p><b>Perspective:</b> one way of asking security questions about the same system.</p>
+        <p><b>Model-assisted analysis:</b> using an LLM or predictive model to help create and structure candidate investigation material — not to declare truth by itself.</p>
+        <p><b>Evidence:</b> what was actually observed when something was checked or tested.</p>
+        <p><b>Threat modelling:</b> the general practice of working out how a system could be attacked, misused or fail.</p>
       </details>
 
       <p class="system-you-are-here"><b>You are currently in:</b> ${esc(routeName)}. Close this explanation and you return exactly where you were.</p>
