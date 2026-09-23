@@ -3852,6 +3852,25 @@ dialog::backdrop {
 .question-card[open] > summary {
   margin-bottom: 20px;
 }
+.describe-start {
+  margin-bottom: 22px;
+  padding: 18px;
+  border: 1px solid #58723e;
+  border-radius: 8px;
+  background: #182218;
+}
+.describe-start-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+.describe-start > p {
+  margin: 12px 0 0;
+  color: #aebbb1;
+  font-size: 12px;
+  line-height: 1.65;
+}
 .system-brief {
   margin-top: 22px;
   border-top: 1px solid var(--line);
@@ -3873,6 +3892,14 @@ dialog::backdrop {
   line-height: 1.55;
 }
 @media (max-width: 600px) {
+  .describe-start-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .describe-start-actions .button {
+    width: 100%;
+  }
+
   .interview-choices {
     display: grid;
     grid-template-columns: 1fr;
