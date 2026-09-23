@@ -314,7 +314,7 @@ function buildFindings(input, conditions, lenses) {
   });
 }
 
-const VERSION = "1.6.3";
+const VERSION = "1.7.0";
 const FIELD_META = {
   external_input: [
     "External input",
@@ -401,6 +401,29 @@ function flags(yes = [], no = []) {
   );
 }
 const SCENARIOS = [
+  {
+    id: "portal",
+    label: "Customer records portal",
+    subtitle: "Login · records · account boundaries",
+    name: "Customer Records Portal",
+    description:
+      "A conventional web portal lets customers sign in, reset passwords and read their own personal records. Thousands of customers share the same application and database, but each account must remain isolated from every other account.",
+    attackerGoal:
+      "Access another customer's records through the shared portal.",
+    assets: ["Customer records", "Account identity", "Session access"],
+    flags: flags(
+      [
+        "external_input",
+        "untrusted_content",
+        "sensitive_data",
+        "cross_user",
+        "authorization",
+        "third_party",
+        "logging",
+      ],
+      ["rag", "tools", "high_impact", "human_approval", "secrets", "rollback"],
+    ),
+  },
   {
     id: "support",
     label: "Customer support AI",
