@@ -3857,6 +3857,30 @@ dialog::backdrop {
   border-top: 1px solid var(--line);
   padding-top: 18px;
 }
+.interview-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+.interview-choices > small {
+  flex: 1 1 100%;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.55;
+}
+@media (max-width: 600px) {
+  .interview-choices {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .interview-choices .button {
+    width: 100%;
+  }
+}
 .compact-conditions > label {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 110px;
