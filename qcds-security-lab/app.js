@@ -47,8 +47,8 @@ const ALIASES = {
 };
 const STORAGE = "qcds-security-lab:workspace:v1";
 const state = {
-  caseId: "support",
-  cases: { support: newProject() },
+  caseId: "portal",
+  cases: { portal: newProject("portal") },
   model: null,
   route: "examples",
   findingId: null,
@@ -67,10 +67,10 @@ try {
   if (
     saved &&
     typeof saved === "object" &&
-    ["support", "knowledge", "coding", "invoice", "custom"].includes(saved.caseId)
+    ["portal", "support", "knowledge", "coding", "invoice", "custom"].includes(saved.caseId)
   ) {
     const cases = {};
-    for (const id of ["support", "knowledge", "coding", "invoice", "custom"])
+    for (const id of ["portal", "support", "knowledge", "coding", "invoice", "custom"])
       if (saved.cases?.[id]) cases[id] = validateProject(saved.cases[id]);
     if (cases[saved.caseId]) {
       state.cases = cases;
@@ -169,6 +169,17 @@ function rememberPlace() {
 }
 
 const EXAMPLE_GUIDES = {
+  portal: {
+    level: "EASY · START HERE · NO AI REQUIRED",
+    title: "A normal customer portal must keep accounts apart",
+    story:
+      "Customers sign in to a conventional web portal to read personal records. Many customers share the same application and database, but each account must remain isolated.",
+    question:
+      "Could one signed-in customer reach another customer's records through the shared application?",
+    focus: "F3",
+    learn:
+      "This is a deliberately non-AI example. The system being investigated is an ordinary web application. STRIDE, Identity and Privacy provide perspectives; QCDS keeps the routes, assumptions and tests moving through the loop.",
+  },
   support: {
     level: "EASY · START HERE",
     title: "A customer email reaches an AI support assistant",
@@ -311,7 +322,7 @@ const severityClass = (s) =>
   s === "CRITICAL" ? "danger" : s === "HIGH" ? "warning" : "neutral";
 
 function casePicker() {
-  return `<div class="casebar"><label for="case-select">SYSTEM</label><select id="case-select" aria-label="Choose a system"><option value="support" ${state.caseId === "support" ? "selected" : ""}>Customer support AI</option><option value="knowledge" ${state.caseId === "knowledge" ? "selected" : ""}>Internal knowledge assistant</option><option value="coding" ${state.caseId === "coding" ? "selected" : ""}>Coding & deployment agent</option><option value="invoice" ${state.caseId === "invoice" ? "selected" : ""}>Invoice approval assistant</option>${state.cases.custom ? `<option value="custom" ${state.caseId === "custom" ? "selected" : ""}>${esc(state.cases.custom.input.name)}</option>` : ""}</select>${badge(project().example ? "Example" : "Your system", "neutral")}</div>`;
+  return `<div class="casebar"><label for="case-select">SYSTEM</label><select id="case-select" aria-label="Choose a system"><option value="portal" ${state.caseId === "portal" ? "selected" : ""}>Customer records portal</option><option value="support" ${state.caseId === "support" ? "selected" : ""}>Customer support AI</option><option value="knowledge" ${state.caseId === "knowledge" ? "selected" : ""}>Internal knowledge assistant</option><option value="coding" ${state.caseId === "coding" ? "selected" : ""}>Coding & deployment agent</option><option value="invoice" ${state.caseId === "invoice" ? "selected" : ""}>Invoice approval assistant</option>${state.cases.custom ? `<option value="custom" ${state.caseId === "custom" ? "selected" : ""}>${esc(state.cases.custom.input.name)}</option>` : ""}</select>${badge(project().example ? "Example" : "Your system", "neutral")}</div>`;
 }
 function shell() {
   const investigating = state.route === "investigate";
@@ -764,7 +775,7 @@ function exampleFlowCard(id) {
       <div><span class="eyebrow">${esc(guide.level)}</span><h2>${esc(guide.title)}</h2><p>${esc(guide.story)}</p></div>
     </div>
     <div class="example-problem"><span>THE SECURITY QUESTION</span><strong>${esc(guide.question)}</strong></div>
-    <details class="example-preview" ${id === "support" ? "open" : ""}><summary>Preview the whole 5-step flow</summary>
+    <details class="example-preview" ${id === "portal" ? "open" : ""}><summary>Preview the whole 5-step flow</summary>
     <div class="example-flow">
       <div><span>1 · GOAL</span><b>${esc(p.input.attackerGoal)}</b><small>What unwanted outcome are we investigating?</small></div>
       <div><span>2 · ROUTE</span><b>${esc(focus.path)}</b><small>${focus.conditional ? "? Conditional because one or more required facts are unresolved." : "A candidate route supported by the current system facts."}</small></div>
@@ -796,7 +807,7 @@ function examplesView() {
       <div><span class="eyebrow">THE ONLY THREE SYMBOLS YOU NEED AT FIRST</span><h2>1 = yes · 0 = no · ? = we do not know yet</h2><p>QCDS does not force a guess. A ? keeps dependent routes visible as conditional possibilities while you continue the investigation.</p></div>
       <button class="button" data-action="new">Skip examples · use my own system ${icon("arrow")}</button>
     </section>
-    <div class="examples-list">${["support", "knowledge", "invoice", "coding"].map(exampleFlowCard).join("")}</div>
+    <div class="examples-list">${["portal", "support", "knowledge", "invoice", "coding"].map(exampleFlowCard).join("")}</div>
     <section class="examples-after panel"><span class="eyebrow">WHAT TO NOTICE</span><h2>The five questions stay simple. QCDS does the deeper comparison underneath.</h2><div><p><b>Conditions</b> describe what is known about the system.</p><p><b>Perspectives</b> such as STRIDE or OWASP ask different questions about the same route.</p><p><b>Recursion</b> means a protection becomes the next thing to challenge.</p><p><b>Evidence</b> decides how far a claim can be trusted.</p></div></section>`
   );
 }
