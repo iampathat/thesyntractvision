@@ -9,7 +9,7 @@ import {
   analyze,
   validateProject,
   markdown,
-} from "./engine.mjs?v=1.8.3";
+} from "./engine.mjs?v=1.8.4";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
@@ -837,7 +837,7 @@ function investigationView() {
     input = project().input;
   let content = "";
   if (state.question === 1) {
-    content = `<section class="question-card panel"><label class="goal-field">The outcome I want to cause<textarea data-field="attackerGoal" rows="3" maxlength="1500" placeholder="For example: send a reply to someone who should not receive it.">${esc(input.attackerGoal)}</textarea></label><p class="goal-protection"><b>What we protect:</b> ${esc(input.assets.join(", ") || "Describe the important data or capability below.")}</p><details class="system-brief"><summary>Describe or edit this system</summary><label>System name<input data-field="name" value="${esc(input.name)}" maxlength="120"></label><label>What does it do?<textarea data-field="description" rows="3" maxlength="6000">${esc(input.description)}</textarea></label><label>Assets to protect<input data-field="assets" value="${esc(input.assets.join(", "))}" maxlength="2000"></label><button class="button" data-action="interview">${icon("spark")} Help me describe it</button></details></section><details class="question-card panel fact-review" ${state.model.unknown.length ? "open" : ""}><summary>System facts · 1 / 0 / ? <span>${state.model.unknown.length ? state.model.unknown.length + " unresolved (?)" : CONDITION_DEFS.length + " resolved"}</span></summary><p><b>1</b> = present · <b>0</b> = absent · <b>?</b> = unknown. A ? is valid input: QCDS carries that uncertainty forward and marks dependent routes as conditional instead of forcing a guess.</p>${compactConditions()}<button class="text-button" data-guide="1">In plain English: what is a condition?</button></details><p class="next-explained">Next, the lab uses these conditions to show possible paths to investigate.</p>`;
+    content = `<section class="question-card panel"><label class="goal-field">The outcome I want to cause<textarea data-field="attackerGoal" rows="3" maxlength="1500" placeholder="For example: send a reply to someone who should not receive it.">${esc(input.attackerGoal)}</textarea></label><p class="goal-protection"><b>What we protect:</b> ${esc(input.assets.join(", ") || "Describe the important data or capability below.")}</p><details class="system-brief"><summary>Describe or edit this system</summary><label>System name<input data-field="name" value="${esc(input.name)}" maxlength="120"></label><label>What does it do?<textarea data-field="description" rows="3" maxlength="6000">${esc(input.description)}</textarea></label><label>Assets to protect<input data-field="assets" value="${esc(input.assets.join(", "))}" maxlength="2000"></label><div class="interview-choices"><button class="button primary" data-action="interview-ai">${icon("spark")} Interview me with AI / LLM</button><button class="button" data-action="interview">Guided interview · no model</button><small>Both create the same system brief. The AI / LLM option adapts follow-up questions when a browser-local language model is available.</small></div></details></section><details class="question-card panel fact-review" ${state.model.unknown.length ? "open" : ""}><summary>System facts · 1 / 0 / ? <span>${state.model.unknown.length ? state.model.unknown.length + " unresolved (?)" : CONDITION_DEFS.length + " resolved"}</span></summary><p><b>1</b> = present · <b>0</b> = absent · <b>?</b> = unknown. A ? is valid input: QCDS carries that uncertainty forward and marks dependent routes as conditional instead of forcing a guess.</p>${compactConditions()}<button class="text-button" data-guide="1">In plain English: what is a condition?</button></details><p class="next-explained">Next, the lab uses these conditions to show possible paths to investigate.</p>`;
   } else if (!f) {
     content = `<section class="question-card panel"><h2>We need a path to investigate.</h2><p>${state.model.unknown.length ? `${state.model.unknown.length} facts are still Unknown. Confirm what you know to see which paths have the conditions they need.` : "No rule matches the declared system and active perspectives. An empty result does not establish that the system is safe."}</p><button class="button primary" data-question="1">Review the system facts</button><a class="text-link" href="#trace">Inspect the detailed reasoning →</a></section>`;
   } else {
@@ -1504,8 +1504,12 @@ document.addEventListener("click", async (e) => {
       switchCase("support");
       goQuestion(1);
       break;
+    case "interview-ai":
+      openInterview("ai");
+      await enableInterviewAI();
+      break;
     case "interview":
-      openInterview();
+      openInterview("guided");
       break;
     case "export-json":
       exportProject();
@@ -1718,18 +1722,33 @@ const mini = {
   session: null,
   busy: false,
   epoch: 0,
-  provider: "Guided · no language model",
+  provider: "Guided interview · no language model",
   controller: null,
 };
 function interviewMarkup() {
   const n = mini.answers.length;
-  return `<div class="dialog-head"><div><span class="eyebrow">DESCRIBE YOUR SYSTEM</span><h2 id="interview-title">Model-assisted interviewer</h2></div><button class="icon-button" data-mini="close" aria-label="Close interviewer">${icon("close")}</button></div><div class="interview-meta"><span id="mini-provider">${esc(mini.provider)}</span><span id="mini-progress">${Math.min(n + 1, 6)} / 6 questions</span></div><div class="interview-progress"><span style="width:${(n / 6) * 100}%"></span></div><div id="mini-messages" class="mini-messages" aria-live="polite">${mini.answers.map((a, i) => `<div class="mini-msg ai"><small>INTERVIEWER</small><p>${esc(mini.questions[i])}</p></div><div class="mini-msg user"><small>YOU</small><p>${esc(a)}</p></div>`).join("")}<div class="mini-msg ai"><small>INTERVIEWER</small><p>${n < 6 ? esc(mini.questions[n]) : "Your brief is ready. Next, review the system conditions: the interview has not decided which facts are true or which paths are vulnerable."}</p></div></div>${n < 6 ? `<form id="mini-form"><label class="sr-only" for="mini-input">Your answer</label><textarea id="mini-input" required rows="3" maxlength="3000" placeholder="Describe it in your own words…"></textarea><div class="mini-input-actions"><small>Enter to send · Shift + Enter for a new line</small><button id="mini-send" type="submit" class="button primary">Send ${icon("arrow")}</button></div></form>` : `<button class="button primary full" data-mini="apply">Review my system conditions ${icon("arrow")}</button>`}<div class="dialog-foot"><button class="text-button" data-mini="restart">Start over</button><button class="text-button" data-mini="enable" id="mini-enable">Enable browser-local model</button></div><p class="small muted mini-note">Guided mode works immediately. A browser-local model requires a compatible browser and may download model files. Your answers stay on this device.</p>`;
+  return `<div class="dialog-head"><div><span class="eyebrow">DESCRIBE YOUR SYSTEM</span><h2 id="interview-title">Model-assisted interviewer</h2></div><button class="icon-button" data-mini="close" aria-label="Close interviewer">${icon("close")}</button></div><div class="interview-meta"><span id="mini-provider">${esc(mini.provider)}</span><span id="mini-progress">${Math.min(n + 1, 6)} / 6 questions</span></div><div class="interview-progress"><span style="width:${(n / 6) * 100}%"></span></div><div id="mini-messages" class="mini-messages" aria-live="polite">${mini.answers.map((a, i) => `<div class="mini-msg ai"><small>INTERVIEWER</small><p>${esc(mini.questions[i])}</p></div><div class="mini-msg user"><small>YOU</small><p>${esc(a)}</p></div>`).join("")}<div class="mini-msg ai"><small>INTERVIEWER</small><p>${n < 6 ? esc(mini.questions[n]) : "Your brief is ready. Next, review the system conditions: the interview has not decided which facts are true or which paths are vulnerable."}</p></div></div>${n < 6 ? `<form id="mini-form"><label class="sr-only" for="mini-input">Your answer</label><textarea id="mini-input" required rows="3" maxlength="3000" placeholder="Describe it in your own words…"></textarea><div class="mini-input-actions"><small>Enter to send · Shift + Enter for a new line</small><button id="mini-send" type="submit" class="button primary">Send ${icon("arrow")}</button></div></form>` : `<button class="button primary full" data-mini="apply">Review my system conditions ${icon("arrow")}</button>`}<div class="dialog-foot"><button class="text-button" data-mini="restart">Start over</button><button class="text-button" data-mini="enable" id="mini-enable">Use AI / LLM interview</button></div><p class="small muted mini-note">Guided interview works in every browser. AI / LLM interview uses a browser-local language model when the browser provides one and may require a model download. Your answers stay on this device.</p>`;
 }
-function openInterview() {
+function openInterview(mode = "guided") {
+  if (mode === "guided" && !mini.session)
+    mini.provider = "Guided interview · no language model";
+  if (mode === "ai" && !mini.session)
+    mini.provider = "AI / LLM interview · starting…";
   const d = $("#interview");
   d.innerHTML = interviewMarkup();
   if (!d.open) d.showModal();
   $("#mini-input")?.focus();
+}
+async function enableInterviewAI() {
+  const session = await miniBrowserSession();
+  if (session) {
+    mini.provider = "AI / LLM interview · browser-local language model";
+    if ($("#mini-provider")) $("#mini-provider").textContent = mini.provider;
+    notify("AI / LLM interviewer is active.");
+  } else {
+    mini.provider = "Guided interview · AI / LLM unavailable in this browser";
+    if ($("#mini-provider")) $("#mini-provider").textContent = mini.provider;
+  }
 }
 function appendMini(role, text) {
   const box = $("#mini-messages"),
@@ -1752,7 +1771,7 @@ async function miniBrowserSession() {
     typeof factory.create !== "function"
   ) {
     notify(
-      "This browser does not provide a local language model. Guided mode is ready to use.",
+      "This browser does not provide a local language model. The guided interview is still available.",
     );
     return null;
   }
@@ -1766,7 +1785,7 @@ async function miniBrowserSession() {
       expectedOutputs: [{ type: "text", languages: ["en"] }],
     });
     if (availability === "unavailable") throw new Error("unavailable");
-    mini.provider = "Loading local model…";
+    mini.provider = "AI / LLM interview · loading local model…";
     $("#mini-provider").textContent = mini.provider;
     const s = await factory.create({
       signal: ctrl.signal,
@@ -1785,11 +1804,11 @@ async function miniBrowserSession() {
       return null;
     }
     mini.session = s;
-    mini.provider = "Browser-local language model";
+    mini.provider = "AI / LLM interview · browser-local language model";
     return s;
   } catch {
-    mini.provider = "Guided · no language model";
-    notify("Local AI could not start. Continue with the guided interview.");
+    mini.provider = "Guided interview · AI / LLM unavailable in this browser";
+    notify("AI / LLM interview is unavailable in this browser. Guided interview remains available.");
     return null;
   } finally {
     clearTimeout(timer);
@@ -1835,7 +1854,7 @@ async function sendMini() {
       )
         question = response.trim();
     } catch {
-      mini.provider = "Guided · local AI unavailable";
+      mini.provider = "Guided interview · AI / LLM became unavailable";
     } finally {
       clearTimeout(timer);
     }
@@ -1869,13 +1888,13 @@ $("#interview").addEventListener("click", async (e) => {
     mini.answers = [];
     mini.questions = [...QUESTIONS];
     mini.busy = false;
-    mini.provider = "Guided · no language model";
-    openInterview();
+    mini.provider = "Guided interview · no language model";
+    openInterview("guided");
   }
   if (action === "enable") {
     const b = $("#mini-enable");
     b.disabled = true;
-    await miniBrowserSession();
+    await enableInterviewAI();
     if ($("#mini-enable")) $("#mini-enable").disabled = false;
   }
   if (action === "apply") {
