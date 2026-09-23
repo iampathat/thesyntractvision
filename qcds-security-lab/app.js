@@ -9,7 +9,7 @@ import {
   analyze,
   validateProject,
   markdown,
-} from "./engine.mjs?v=1.6.0";
+} from "./engine.mjs?v=1.6.1";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
@@ -702,7 +702,6 @@ function exampleFlowCard(id) {
   return `<article class="example-journey panel">
     <div class="example-journey-head">
       <div><span class="eyebrow">${esc(guide.level)}</span><h2>${esc(guide.title)}</h2><p>${esc(guide.story)}</p></div>
-      <button class="button primary" data-example-walk="${id}">Walk the 5 questions ${icon("arrow")}</button>
     </div>
     <div class="example-problem"><span>THE SECURITY QUESTION</span><strong>${esc(guide.question)}</strong></div>
     <details class="example-preview" ${id === "support" ? "open" : ""}><summary>Preview the whole 5-step flow</summary>
@@ -719,6 +718,10 @@ function exampleFlowCard(id) {
     </div>
     <div class="example-explain"><b>Why this example matters</b><p>${esc(guide.learn)}</p><p><b>Important:</b> the framework perspective is a view over the route. QCDS keeps the shared conditions, recursive challenge and evidence logic underneath it.</p></div>
     </details>
+    <div class="example-journey-cta">
+      <div><b>Ready to try it yourself?</b><small>Walk through the same example one question at a time.</small></div>
+      <button class="button primary" data-example-walk="${id}">Walk the 5 questions ${icon("arrow")}</button>
+    </div>
   </article>`;
 }
 
