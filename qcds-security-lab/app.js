@@ -9,7 +9,7 @@ import {
   analyze,
   validateProject,
   markdown,
-} from "./engine.mjs?v=1.2.0";
+} from "./engine.mjs?v=1.2.1";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
@@ -891,6 +891,30 @@ function switchCase(id) {
   if (state.route === "investigate") goQuestion(1);
   else render();
 }
+function setMenu(open) {
+  state.mobile = open;
+  document.body.classList.toggle("menu-open", open);
+  const sidebar = $("#site-nav");
+  sidebar.classList.toggle("open", open);
+  for (const [name, value] of Object.entries({
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-label": "Navigation",
+  })) {
+    if (open) sidebar.setAttribute(name, value);
+    else sidebar.removeAttribute(name);
+  }
+  $(".app-body").toggleAttribute("inert", open);
+  $(".mobile-toggle").setAttribute("aria-expanded", String(open));
+  if (open && !$(".menu-backdrop")) {
+    const backdrop = document.createElement("button");
+    backdrop.className = "menu-backdrop";
+    backdrop.dataset.action = "close-menu";
+    backdrop.setAttribute("aria-label", "Close navigation backdrop");
+    sidebar.after(backdrop);
+  } else if (!open) $(".menu-backdrop")?.remove();
+  $(open ? ".menu-close" : ".mobile-toggle")?.focus({ preventScroll: true });
+}
 document.addEventListener("click", async (e) => {
   if (e.target.closest('a[href="#main"]')) {
     e.preventDefault();
@@ -945,16 +969,10 @@ document.addEventListener("click", async (e) => {
       execute();
       break;
     case "close-menu":
-      state.mobile = false;
-      render();
-      $(".mobile-toggle")?.focus({ preventScroll: true });
+      setMenu(false);
       break;
     case "menu":
-      state.mobile = !state.mobile;
-      render();
-      $(state.mobile ? ".menu-close" : ".mobile-toggle")?.focus({
-        preventScroll: true,
-      });
+      setMenu(!state.mobile);
       break;
     case "new":
       if (!state.cases.custom) state.cases.custom = newProject("custom");
@@ -1159,10 +1177,11 @@ window.addEventListener("hashchange", () => {
 });
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && state.mobile) {
-    state.mobile = false;
-    render();
-    $(".mobile-toggle")?.focus();
+    setMenu(false);
   }
+});
+window.addEventListener("resize", () => {
+  if (innerWidth > 1024 && state.mobile) setMenu(false);
 });
 
 const QUESTIONS = [
