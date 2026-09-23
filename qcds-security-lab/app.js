@@ -240,23 +240,15 @@ function casePicker() {
 }
 function shell() {
   const investigating = state.route === "investigate";
-  const mainRoutes = ["investigate", "perspectives", "findings", "report", "learn"];
+  const workRoutes = ["investigate", "perspectives", "findings", "report"];
   const detailRoutes = ["system", "trace", "overview"];
   const navLink = ([id, label, ic]) =>
     `<a href="${id === "investigate" ? investigationHref() : id === "perspectives" ? perspectiveHref() : "#" + id}" ${state.route === id ? 'aria-current="page"' : ""}>${icon(ic)}<span>${label}</span></a>`;
-  return `<aside id="site-nav" ${state.mobile ? 'role="dialog" aria-modal="true" aria-label="Navigation"' : ""} class="sidebar ${state.mobile ? "open" : ""}"><a class="brand" href="#investigate/1"><span class="brand-mark">Q<span>★</span></span><span>QCDS<span class="brand-sub">SECURITY LAB</span></span></a><div class="workspace-label">YOUR WORKSPACE <button class="icon-button menu-close" data-action="close-menu" aria-label="Close navigation">${icon("close")}</button></div><nav aria-label="Workspace">${ROUTES.filter(
-    (r) => mainRoutes.includes(r[0]),
-  )
-    .map(navLink)
-    .join(
-      "",
-    )}<details class="nav-tools" ${detailRoutes.includes(state.route) ? "open" : ""}><summary><span>Under the hood</span><small>Why QCDS produced the result</small></summary>${ROUTES.filter(
+  return `<aside id="site-nav" ${state.mobile ? 'role="dialog" aria-modal="true" aria-label="Navigation"' : ""} class="sidebar ${state.mobile ? "open" : ""}"><a class="brand" href="#investigate/1"><span class="brand-mark">Q<span>★</span></span><span>QCDS<span class="brand-sub">SECURITY LAB</span></span></a><div class="workspace-label">YOUR WORKSPACE <button class="icon-button menu-close" data-action="close-menu" aria-label="Close navigation">${icon("close")}</button></div><nav aria-label="Workspace"><div class="nav-section-label">WORK</div>${ROUTES.filter(
+    (r) => workRoutes.includes(r[0]),
+  ).map(navLink).join("")}<div class="nav-section-label nav-learn-label">LEARN</div>${navLink(ROUTES.find((r) => r[0] === "learn"))}<details class="nav-tools" ${detailRoutes.includes(state.route) ? "open" : ""}><summary><span>Why this result?</span><small>Conditions, QCDS trace & analysis</small></summary>${ROUTES.filter(
     (r) => detailRoutes.includes(r[0]),
-  )
-    .map(navLink)
-    .join(
-      "",
-    )}</details></nav><button class="new-case" data-action="new">${icon("plus")} Your own system</button><div class="sidebar-bottom"><div class="local-note">${icon("shield")}<span>Saved on this device.<br>No account needed.</span></div><a href="#learn" class="author">By Patrik Sundblom <span>↗</span></a><div class="version">SECURITY LAB <span>v${VERSION}</span></div></div></aside>${state.mobile ? '<button class="menu-backdrop" data-action="close-menu" aria-label="Close navigation backdrop"></button>' : ""}<div class="app-body" ${state.mobile ? "inert" : ""}><header class="topbar"><div class="breadcrumb"><button class="icon-button mobile-toggle" data-action="menu" aria-controls="site-nav" aria-label="Open navigation" aria-expanded="${state.mobile}">${icon("menu")}</button><b>${investigating ? "Q★ Security Lab" : esc(ROUTES.find((r) => r[0] === state.route)?.[1])}</b></div><div class="top-actions"><span id="save-status" class="save-status">${state.storage ? "Saved on this device" : "Not saved · export your work"}</span><button class="button small plain-button" data-guide="${investigating ? QUESTION_STEPS[state.question - 1].guide : 0}">${icon("book")} In plain English</button></div></header>${investigating ? questionPosition() : ""}<main id="main" tabindex="-1">${!investigating || state.question === 1 ? casePicker() : ""}<div id="stale-slot">${staleNotice()}</div><div id="view">${view()}</div><footer class="main-footer"><span>QCDS Security Lab · Patrik Sundblom</span><a href="./LICENSE.md">COMMERCIAL LICENSE REQUIRED ${icon("external")}</a></footer></main>${investigating ? questionNavigation() : ""}</div>`;
+  ).map(navLink).join("")}</details></nav><button class="new-case" data-action="new">${icon("plus")} New system</button><div class="sidebar-bottom"><div class="local-note">${icon("shield")}<span>Saved on this device.<br>No account needed.</span></div><a href="#learn" class="author">By Patrik Sundblom <span>↗</span></a><div class="version">SECURITY LAB <span>v${VERSION}</span></div></div></aside>${state.mobile ? '<button class="menu-backdrop" data-action="close-menu" aria-label="Close navigation backdrop"></button>' : ""}<div class="app-body" ${state.mobile ? "inert" : ""}><header class="topbar"><div class="breadcrumb"><button class="icon-button mobile-toggle" data-action="menu" aria-controls="site-nav" aria-label="Open navigation" aria-expanded="${state.mobile}">${icon("menu")}</button><b>${investigating ? "Q★ Security Lab" : esc(ROUTES.find((r) => r[0] === state.route)?.[1])}</b></div><div class="top-actions"><span id="save-status" class="save-status">${state.storage ? "Saved on this device" : "Not saved · export your work"}</span><button class="button small plain-button" data-guide="${investigating ? QUESTION_STEPS[state.question - 1].guide : 0}">${icon("book")} In plain English</button></div></header>${investigating ? questionPosition() : ""}<main id="main" tabindex="-1">${!investigating || state.question === 1 ? casePicker() : ""}<div id="stale-slot">${staleNotice()}</div><div id="view">${view()}</div><footer class="main-footer"><span>QCDS Security Lab · Patrik Sundblom</span><a href="./LICENSE.md">COMMERCIAL LICENSE REQUIRED ${icon("external")}</a></footer></main>${investigating ? questionNavigation() : ""}</div>`;
 }
 function staleNotice() {
   if (state.route === "investigate" && state.question === 1) return "";
@@ -644,7 +636,7 @@ function perspectiveOverview() {
 
 function perspectiveMarkdown(name = state.perspective) {
   const m = state.model;
-  const matches = m.findings.filter((f) => f.hitLenses.includes(name));
+  const matches = allPaths().filter((f) => f.hitLenses.includes(name));
   const lens = m.lenses.find((l) => l.name === name);
   const rotation = m.rotation.find((r) => r.name === name);
   const signals = (LENSES[name]?.tests || []).map(([key, question]) => {
@@ -694,7 +686,7 @@ function perspectivesView() {
   const name = Object.keys(LENSES).includes(state.perspective)
     ? state.perspective
     : "STRIDE";
-  const matches = m.findings.filter((f) => f.hitLenses.includes(name));
+  const matches = allPaths().filter((f) => f.hitLenses.includes(name));
   const rotation = m.rotation.find((r) => r.name === name);
   const tests = LENSES[name]?.tests || [];
   return (
@@ -706,7 +698,7 @@ function perspectivesView() {
     `<section class="perspective-intro panel"><div><span class="eyebrow">HOW TO USE THIS</span><h2>One QCDS run. Several report views.</h2><p>The underlying system does not change when you switch perspective. The lens changes which security questions are emphasized and which candidate findings are shown in this report.</p></div><a class="button" href="#trace">See how rotation works ${icon("arrow")}</a></section>
     <div class="perspective-picker" aria-label="Security perspectives">${Object.keys(LENSES)
       .map((n) => {
-        const count = m.findings.filter((f) => f.hitLenses.includes(n)).length;
+        const count = allPaths().filter((f) => f.hitLenses.includes(n)).length;
         const excluded = project().excludedLenses.includes(n);
         return `<a class="perspective-choice ${n === name ? "selected" : ""} ${excluded ? "excluded" : ""}" href="${perspectiveHref(n)}" aria-current="${n === name ? "true" : "false"}"><span>${icon("layers")}</span><b>${esc(n)}</b><small>${excluded ? "Excluded from current analysis" : `${count} matching candidate${count === 1 ? "" : "s"}`}</small></a>`;
       })
@@ -732,7 +724,7 @@ function perspectivesView() {
       <div class="perspective-report-findings">${matches.length
         ? matches
             .map(
-              (f) => `<article><div><span class="mono">${f.id}</span>${badge(f.severity, severityClass(f.severity))}</div><h3>${esc(f.shortTitle)}</h3><p>${esc(f.path)}</p><small>${f.records.length ? `${f.records.length} evidence record${f.records.length === 1 ? "" : "s"}` : "Awaiting evidence"}</small><button class="text-button" data-finding="${f.id}">Open the full finding ${icon("arrow")}</button></article>`,
+              (f) => `<article><div><span class="mono">${f.id}</span>${badge(f.conditional ? "? CONDITIONAL" : f.severity, f.conditional ? "warning" : severityClass(f.severity))}</div><h3>${esc(f.shortTitle)}</h3><p>${esc(f.path)}</p><small>${f.conditional ? `Depends on ${f.missing.length} unresolved condition${f.missing.length === 1 ? "" : "s"}` : f.records.length ? `${f.records.length} evidence record${f.records.length === 1 ? "" : "s"}` : "Awaiting evidence"}</small><button class="text-button" data-finding="${f.id}">Open the full path ${icon("arrow")}</button></article>`,
             )
             .join("")
         : `<div class="empty"><h3>No current finding matches ${esc(name)}</h3><p>This is not a safety conclusion. Review Unknown conditions and whether the perspective is enabled.</p></div>`}</div>
@@ -754,10 +746,10 @@ function comparisonReadout() {
 function traceWalkthrough() {
   const m = state.model;
   const f =
-    (state.findingId && m.findings.find((x) => x.id === state.findingId)) ||
-    m.findings[0];
+    (state.findingId && allPaths().find((x) => x.id === state.findingId)) ||
+    allPaths()[0];
   if (!f)
-    return `<section class="panel trace-guide"><div class="trace-guide-head"><div><span class="eyebrow">START HERE</span><h2>Nothing to trace yet.</h2><p>Confirm the system facts first. QCDS needs explicit conditions before it can show a candidate route.</p></div><button class="button primary" data-question="1">Review the system ${icon("arrow")}</button></div></section>`;
+    return `<section class="panel trace-guide"><div class="trace-guide-head"><div><span class="eyebrow">START HERE</span><h2>Nothing to trace yet.</h2><p>No route remains possible under the current 1 / 0 / ? conditions and selected perspectives. A ? by itself does not block the trace.</p></div><button class="button primary" data-question="1">Review the system ${icon("arrow")}</button></div></section>`;
 
   const required = f.requires
     .map((k) => {
