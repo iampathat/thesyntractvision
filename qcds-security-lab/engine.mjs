@@ -340,7 +340,7 @@ function buildFindings(input, conditions, lenses) {
   });
 }
 
-const VERSION = "1.8.7";
+const VERSION = "1.9.0";
 const FIELD_META = {
   external_input: [
     "External input",
@@ -583,6 +583,7 @@ function newProject(scenario = "support") {
           flags: flags(),
         },
     excludedLenses: [],
+    conditionBasis: {},
     evidence: [],
     actions: {},
     updatedAt: new Date().toISOString(),
@@ -605,6 +606,300 @@ function conditionList(input) {
     label,
     value: input.flags[key] ?? null,
   }));
+}
+
+function descriptionSection(input, label) {
+  const text = String(input.description || "");
+  const re = new RegExp("(?:^|\\n)" + label + "\\s*:\\s*([^\\n]*)", "i");
+  return (text.match(re)?.[1] || "").trim();
+}
+function suggestConditions(input) {
+  const system = [input.name, descriptionSection(input, "System")].join(" ");
+  const inputs = descriptionSection(input, "Inputs");
+  const assets = [input.assets.join(" "), descriptionSection(input, "Assets")].join(" ");
+  const actions = descriptionSection(input, "Actions");
+  const controls = descriptionSection(input, "Controls");
+  const all = [system, inputs, assets, actions, controls, input.description, input.attackerGoal]
+    .join(" ")
+    .toLowerCase();
+  const suggestions = [];
+  const seen = new Set();
+  const add = (key, value, reason, confidence = "medium") => {
+    if (seen.has(key) || value === null) return;
+    seen.add(key);
+    suggestions.push({ key, value, reason, confidence });
+  };
+  const none = (s) =>
+    /^(?:none|nothing|no|n\/a|not applicable)$/i.test(String(s || "").trim());
+  const has = (s, re) => re.test(String(s || "").toLowerCase());
+
+  if (none(inputs))
+    add("external_input", false, "The interview explicitly says there is no external input.", "high");
+  else if (
+    has(
+      inputs,
+      /anyone|public|customer|client|user|visitor|partner|external|download|upload|submit|send|enter|message|request|form|file|command|api/,
+    )
+  )
+    add(
+      "external_input",
+      true,
+      "The interview names external people or systems that can interact with the target.",
+      "medium",
+    );
+
+  if (
+    has(
+      inputs,
+      /untrusted|public|customer|client|user|visitor|email|upload|file|web|message|document|sensor/,
+    ) ||
+    suggestions.some(
+      (suggestion) =>
+        suggestion.key === "external_input" && suggestion.value === true,
+    )
+  )
+    add(
+      "untrusted_content",
+      true,
+      "Lower-trust or externally supplied material can reach the system.",
+      "medium",
+    );
+
+  if (
+    has(
+      all,
+      /retrieve|retrieval|search(?:es|ing)?|knowledge base|connected source|document store|corpus|imports? data/,
+    )
+  )
+    add(
+      "rag",
+      true,
+      "The description names retrieval, search or a connected information source.",
+      "high",
+    );
+  else if (has(all, /no retrieval|does not retrieve|no connected source|no search/))
+    add(
+      "rag",
+      false,
+      "The description explicitly excludes retrieval or connected-source search.",
+      "high",
+    );
+
+  if (
+    has(
+      assets,
+      /personal|private|confidential|sensitive|regulated|health|financial|payment|credential|secret|security data|customer data|record/,
+    )
+  )
+    add(
+      "sensitive_data",
+      true,
+      "The protected assets include personal, confidential, regulated or security-relevant information.",
+      "high",
+    );
+
+  if (
+    has(
+      [inputs, system, input.description].join(" "),
+      /anyone|users|customers|clients|accounts|tenants|employees|multiple|shared|multi-user|multi tenant/,
+    )
+  )
+    add(
+      "cross_user",
+      true,
+      "The description implies multiple principals share the target or its resources.",
+      "medium",
+    );
+
+  if (none(actions)) {
+    add(
+      "tools",
+      false,
+      "The interview explicitly says the system has no connected actions.",
+      "high",
+    );
+    add(
+      "high_impact",
+      false,
+      "The interview explicitly says there are no consequential actions.",
+      "medium",
+    );
+  } else if (
+    has(
+      actions,
+      /all of them|send|change|delete|pay|deploy|write|call|invoke|api|service|actuator|transfer|approve|execute|create|update/,
+    )
+  ) {
+    add(
+      "tools",
+      true,
+      "The interview says the system can invoke or perform connected actions.",
+      "high",
+    );
+    add(
+      "high_impact",
+      true,
+      "The named actions can materially change data, access, money, operations or state.",
+      "medium",
+    );
+  }
+
+  if (none(controls) || has(controls, /nothing|none|no controls?|without controls?/)) {
+    add(
+      "human_approval",
+      false,
+      "The interview says there is no approval control.",
+      "high",
+    );
+    add(
+      "authorization",
+      false,
+      "The interview says there is no independent authorization control.",
+      "high",
+    );
+    add(
+      "logging",
+      false,
+      "No logging control was declared when the interview said controls are absent.",
+      "medium",
+    );
+    add(
+      "rollback",
+      false,
+      "No containment or recovery control was declared when the interview said controls are absent.",
+      "medium",
+    );
+  } else {
+    if (has(controls, /human|approve|approval|review|confirm/))
+      add(
+        "human_approval",
+        true,
+        "The interview names a human review or approval step.",
+        "high",
+      );
+    if (has(controls, /authori[sz]|permission|access control|rbac|policy|acl/))
+      add(
+        "authorization",
+        true,
+        "The interview names an authorization or permission control.",
+        "high",
+      );
+    if (has(controls, /log|audit|telemetry|recorded/))
+      add(
+        "logging",
+        true,
+        "The interview names security logging or audit telemetry.",
+        "high",
+      );
+    if (has(controls, /rollback|recover|recovery|reverse|contain|isolate|undo/))
+      add(
+        "rollback",
+        true,
+        "The interview names containment, rollback or recovery.",
+        "high",
+      );
+  }
+
+  if (
+    has(
+      all,
+      /third[- ]party|vendor|provider|package|dependency|external service|cloud service|saas/,
+    )
+  )
+    add(
+      "third_party",
+      true,
+      "The target depends on an external provider, package or service.",
+      "medium",
+    );
+
+  if (has(all, /api key|token|secret|credential|service account|password|private key/))
+    add(
+      "secrets",
+      true,
+      "The description mentions credentials, tokens, keys or other authority-bearing secrets.",
+      "high",
+    );
+
+  if (
+    has(
+      all,
+      /\bai\b|llm|language model|machine learning|learned model|predictive model|\bagent\b|assistant/,
+    )
+  )
+    add(
+      "ai_component",
+      true,
+      "The target description explicitly includes an AI/ML or learned-model component.",
+      "high",
+    );
+  else if (has(all, /no ai|without ai|not an ai|does not use ai/))
+    add(
+      "ai_component",
+      false,
+      "The target description explicitly excludes AI/ML.",
+      "high",
+    );
+
+  return suggestions;
+}
+function clarificationQueue(input, candidates) {
+  const conditions = conditionList(input);
+  return conditions
+    .filter((condition) => condition.value === null)
+    .map((condition) => {
+      const routes = candidates.filter((route) =>
+        route.missing.includes(condition.key),
+      );
+      return {
+        id: condition.id,
+        key: condition.key,
+        label: FIELD_META[condition.key][0],
+        question: FIELD_META[condition.key][1],
+        routeIds: routes.map((route) => route.id),
+        priority: routes.length,
+      };
+    })
+    .sort(
+      (a, b) =>
+        b.priority - a.priority ||
+        Number(a.id.slice(1)) - Number(b.id.slice(1)),
+    );
+}
+function recursiveInference(candidates, conditions) {
+  const byKey = Object.fromEntries(
+    conditions.map((condition) => [condition.key, condition]),
+  );
+  return candidates.map((route) => {
+    const missing = route.missing.map((key) => byKey[key]).filter(Boolean);
+    const nextQuestions = [
+      ...missing.map(
+        (condition) =>
+          \`Resolve \${condition.id} · \${FIELD_META[condition.key][0]}: \${FIELD_META[condition.key][1]}\`,
+      ),
+      \`Control challenge: \${route.bypass}\`,
+      \`Counter-test: \${route.verify}\`,
+    ];
+    return {
+      id: route.id,
+      title: route.shortTitle,
+      status: missing.length ? "CONDITIONAL" : "ACTIVE",
+      depth: 4,
+      stages: [
+        { type: "route", text: route.path },
+        {
+          type: "conditions",
+          text: missing.length
+            ? \`Route is kept alive while \${missing.map((condition) => condition.id).join(", ")} remain unresolved.\`
+            : "All required route conditions are present.",
+        },
+        { type: "control", text: route.control },
+        { type: "challenge", text: route.bypass },
+        { type: "test", text: route.verify },
+      ],
+      nextQuestions,
+    };
+  });
 }
 function lensRuns(input, excluded = []) {
   return Object.entries(LENSES).map(([name, l]) => {
