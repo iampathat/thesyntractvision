@@ -875,10 +875,10 @@ function recursiveInference(candidates, conditions) {
     const nextQuestions = [
       ...missing.map(
         (condition) =>
-          \`Resolve \${condition.id} · \${FIELD_META[condition.key][0]}: \${FIELD_META[condition.key][1]}\`,
+          `Resolve ${condition.id} · ${FIELD_META[condition.key][0]}: ${FIELD_META[condition.key][1]}`,
       ),
-      \`Control challenge: \${route.bypass}\`,
-      \`Counter-test: \${route.verify}\`,
+      `Control challenge: ${route.bypass}`,
+      `Counter-test: ${route.verify}`,
     ];
     return {
       id: route.id,
@@ -890,7 +890,7 @@ function recursiveInference(candidates, conditions) {
         {
           type: "conditions",
           text: missing.length
-            ? \`Route is kept alive while \${missing.map((condition) => condition.id).join(", ")} remain unresolved.\`
+            ? `Route is kept alive while ${missing.map((condition) => condition.id).join(", ")} remain unresolved.`
             : "All required route conditions are present.",
         },
         { type: "control", text: route.control },
