@@ -4,9 +4,9 @@
 
 ## Current implementation boundary
 
-The browser workspace evaluates the method using eight deterministic candidate-rule families, fourteen ternary conditions and seven perspective families. It implements perspective rotation, condition ablation, composed paths, Oracle review states and snapshot-bound user-reported evidence.
+The browser workspace uses fourteen ternary conditions, seven perspective families and eight current seed route families. The seed families initialize a browser search space; they are not treated as exhaustive QCDS knowledge. The runtime now performs interview-assisted Condition Formation, keeps unresolved routes conditional, ranks clarification questions, reruns perspective rotation, walks dimensions by changing a declared 1 to ?, recursively challenges each surviving route through control → bypass → counter-test, and binds user-reported evidence to the exact system snapshot.
 
-It does not claim autonomous real-world discovery, automatic verification, or a quantum/Grover execution substrate in this browser release.
+It still does not claim autonomous real-world discovery, automatic verification, or a quantum/Grover execution substrate in this browser release. Those remain separate execution capabilities from the browser demonstrator.
 
 ## Purpose
 
