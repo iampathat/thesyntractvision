@@ -207,8 +207,9 @@ jobs:
 
       - name: Build QCDS Security Lab commercial surface
         run: |
-          mkdir -p _site/qcds-security-lab/assets
+          mkdir -p _site/qcds-security-lab/assets _site/qcds-security-lab/qa
           cp qcds-security-lab/index.html _site/qcds-security-lab/index.html
+          cp qcds-security-lab/qa/fold.html _site/qcds-security-lab/qa/fold.html
           cp qcds-security-lab/style.css _site/qcds-security-lab/style.css
           cp qcds-security-lab/app.js _site/qcds-security-lab/app.js
           cp qcds-security-lab/engine.mjs _site/qcds-security-lab/engine.mjs

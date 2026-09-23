@@ -7,17 +7,15 @@ QCDS Security Lab is a separately licensed commercial QCDS surface for AI threat
 
 > **Commercial license required.** Public visibility does not grant a right to use, copy, modify, deploy, benchmark, train on, integrate, distribute, or commercialize this material.
 
-## Workspace v1.1
+## Workspace v1.2
 
-Six connected views replace the long landing page: Overview, System & conditions, QCDS trace, Findings & evidence, Report & export, and Step-by-step guide.
+The main workspace follows five questions: the attacker's goal, possible path, control, possible control failure, and evidence. One question is shown at a time. A persistent position indicator keeps the system, path and question visible; Back and Next remain within reach. Question and finding are encoded in the URL, and the last position is kept in session storage.
 
-Three editable examples cover customer support, read-only knowledge retrieval and a coding/deployment agent. Each example and the custom system retain their own local state. The Mini AI Interviewer collects a six-question brief; conditions remain Unknown until explicitly reviewed. A compatible browser can optionally provide its local language model through the [Chrome Prompt API](https://developer.chrome.com/docs/ai/prompt-api). Guided mode works without a language model, API key or cloud inference service.
+At question 2 or 4, an inline perspective explorer changes the lens on the same path without navigating elsewhere or changing the saved conditions. Users can explicitly follow another matching finding or inspect a leave-one-fact-out comparison. Plain-English explanations open in a dialog and close back to the same scroll position. Detailed views remain available with an explicit return to the current question.
 
-### A connected walkthrough
+The sidebar becomes a drawer below 1025 CSS pixels, covering both narrow phones and common unfolded Fold widths. A diagnostic fixture at `qa/fold.html` renders the actual application in 360px and 768px frames for layout and navigation checks; it is not part of the product navigation.
 
-The step-by-step guide follows one support assistant through nine stages: attacker goal, conditions, oracle checks, parallel perspectives, rotation and dimension exclusion, sequential deepening, recursive control challenges, testing and counter-testing, then evidence binding and convergence review. Each stage explains the question, a concrete example, the action, the output and why the next step follows. Guide examples never create evidence or modify project data.
-
-The workspace shows the same progression. Findings use five numbered questions; the trace explains each oracle state and compares viewpoint dependence with fact dependence using current results; the report highlights unknown conditions, untested findings and conflicts.
+Three editable examples cover support, knowledge retrieval and a coding/deployment agent. Each example and the custom system retain their own local state. The Mini AI Interviewer collects a six-question brief; conditions stay Unknown until reviewed. Optional browser-local language model support and the deterministic analysis contract are unchanged.
 
 ### Implemented contract
 

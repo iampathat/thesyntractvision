@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Fold layout checks · QCDS Security Lab</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 16px;
+        background: #070b0e;
+        color: #b8c5cd;
+        font:
+          13px/1.5 system-ui,
+          sans-serif;
+      }
+      header {
+        max-width: 1160px;
+        margin: 0 auto 12px;
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+      }
+      header a {
+        color: #b8ff39;
+      }
+      main {
+        display: flex;
+        align-items: flex-start;
+        gap: 24px;
+        width: max-content;
+        max-width: none;
+        margin: auto;
+      }
+      figure {
+        margin: 0;
+      }
+      figcaption {
+        margin-bottom: 8px;
+      }
+      iframe {
+        display: block;
+        border: 0;
+        height: 780px;
+        background: #111519;
+        outline: 1px solid #34403d;
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <span>Responsive inspection · actual app at two CSS viewport widths</span
+      ><a href="../index.html">Open the lab →</a>
+    </header>
+    <main>
+      <figure>
+        <figcaption>Fold cover · 360 px</figcaption>
+        <iframe
+          title="Fold cover"
+          width="360"
+          src="../index.html#investigate/1"
+        ></iframe>
+      </figure>
+      <figure>
+        <figcaption>Fold inside · 768 px</figcaption>
+        <iframe
+          title="Fold inside"
+          width="768"
+          src="../index.html#investigate/1"
+        ></iframe>
+      </figure>
+    </main>
+  </body>
+</html>
