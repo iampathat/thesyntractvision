@@ -1093,7 +1093,7 @@ function graph() {
       : ["system", "System processing", "Logic / process"];
   const steps = [
     [
-      "mail",
+      "external",
       f.external_input === true ? "External input" : "Input boundary",
       f.untrusted_content === true ? "Lower trust" : "Declared input",
     ],
