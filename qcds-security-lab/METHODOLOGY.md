@@ -36,6 +36,8 @@ The investigation asks questions such as:
 
 Each answer creates or refines a **Condition**.
 
+In v1.9, the interview can form condition proposals from the user's own words. Each inferred value carries a reason and confidence marker. The user can override it. Values that cannot be supported remain **?**; they are not converted to No. Those unknowns are ranked by how many surviving conditional routes depend on them, producing the next clarification queue.
+
 Conditions are ternary:
 
 - **1** = present
@@ -58,7 +60,7 @@ C14 The target itself does not contain AI/ML
 
 For an AI-enabled target, C14 becomes 1 and the AI / GenAI perspective can become applicable.
 
-The Conditions define the observable problem space. They are not the conclusion.
+The Conditions define the observable problem space. They are not the conclusion. A route whose required condition is `?` remains in the search space as **conditional** until that fact becomes 1 or 0.
 
 ## Model-assisted analysis
 
