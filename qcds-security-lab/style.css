@@ -4174,6 +4174,247 @@ dialog::backdrop {
 .plain-question-list a {
   color: var(--acid);
 }
+
+/* Guided trace: keep the QCDS machinery understandable before showing the full tables. */
+.trace-guide {
+  overflow: hidden;
+  border-color: #4b6335;
+  background:
+    linear-gradient(180deg, rgba(184, 255, 57, 0.035), transparent 34%),
+    var(--panel);
+}
+.trace-guide-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 28px;
+  padding: 28px;
+}
+.trace-guide-head > div {
+  max-width: 760px;
+}
+.trace-guide-head h2 {
+  margin: 7px 0 10px;
+  font-size: clamp(22px, 2.4vw, 30px);
+}
+.trace-guide-head p {
+  margin: 0;
+  color: #bdc8cf;
+  line-height: 1.7;
+}
+.trace-guide-head .button {
+  flex-shrink: 0;
+}
+.trace-focus {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px 28px;
+  border-block: 1px solid var(--line);
+  background: #11191d;
+}
+.trace-focus small {
+  display: block;
+  color: var(--muted);
+  font: 10px var(--mono);
+  letter-spacing: 0.06em;
+  margin-bottom: 5px;
+}
+.trace-focus strong {
+  display: block;
+  font-size: 15px;
+}
+.trace-finding-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
+}
+.trace-finding-chip {
+  min-width: 42px;
+  min-height: 36px;
+  border: 1px solid #42505a;
+  border-radius: 6px;
+  background: #1b242a;
+  color: #bdc8cf;
+  font: 11px var(--mono);
+}
+.trace-finding-chip.selected {
+  border-color: var(--acid);
+  background: #2a3a1e;
+  color: var(--acid);
+}
+.trace-live-path {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  padding: 22px 28px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--line);
+}
+.trace-live-path > div {
+  flex: 1 0 150px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #3b4850;
+  border-radius: 8px;
+  background: #172128;
+}
+.trace-live-path > div span {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--cyan);
+  font: 10px var(--mono);
+}
+.trace-live-path > div b {
+  display: block;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.trace-live-path > i {
+  align-self: center;
+  color: #71808a;
+  font-style: normal;
+}
+.trace-phase-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.trace-phase-cards > article {
+  min-width: 0;
+  padding: 25px 28px;
+  border-bottom: 1px solid var(--line);
+}
+.trace-phase-cards > article:nth-child(odd) {
+  border-right: 1px solid var(--line);
+}
+.trace-phase-cards h3 {
+  margin: 8px 0 13px;
+  font-size: 18px;
+}
+.trace-phase-cards p {
+  margin: 0 0 10px;
+  color: #c4ced5;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.trace-phase-cards small {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.65;
+}
+.trace-phase-cards .text-link {
+  display: inline-flex;
+  margin-top: 14px;
+}
+.trace-phase-label {
+  color: var(--acid);
+  font: 10px var(--mono);
+  letter-spacing: 0.06em;
+}
+.trace-dependency {
+  display: grid;
+  gap: 9px;
+  margin: 15px 0;
+}
+.trace-dependency p {
+  margin: 0;
+  padding: 12px 13px;
+  border: 1px solid #35424a;
+  border-radius: 7px;
+  background: #11191e;
+}
+.trace-dependency b {
+  display: block;
+  margin-bottom: 4px;
+  color: #d6e2e8;
+  font-size: 12px;
+}
+.trace-dependency em {
+  color: #d6b872;
+  font-style: normal;
+}
+.trace-plain-rule {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr;
+  gap: 14px 22px;
+  align-items: start;
+  padding: 20px 28px 24px;
+  background: #11191d;
+}
+.trace-plain-rule > b {
+  color: var(--acid);
+}
+.trace-plain-rule span {
+  color: #afbec7;
+  font-size: 13px;
+  line-height: 1.65;
+}
+.trace-plain-rule strong {
+  color: var(--text);
+}
+.trace-core-visual {
+  margin: 24px 0;
+  padding: 14px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #0b0f14;
+}
+.trace-core-visual img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.trace-core-visual figcaption {
+  padding: 10px 8px 2px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+@media (max-width: 760px) {
+  .trace-guide-head {
+    flex-direction: column;
+    padding: 22px 20px;
+    gap: 18px;
+  }
+  .trace-guide-head .button {
+    width: 100%;
+  }
+  .trace-focus {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 15px 20px;
+  }
+  .trace-finding-chips {
+    justify-content: flex-start;
+  }
+  .trace-live-path {
+    padding: 18px 20px;
+  }
+  .trace-live-path > div {
+    flex-basis: 170px;
+  }
+  .trace-phase-cards {
+    grid-template-columns: 1fr;
+  }
+  .trace-phase-cards > article,
+  .trace-phase-cards > article:nth-child(odd) {
+    border-right: 0;
+    padding: 22px 20px;
+  }
+  .trace-plain-rule {
+    grid-template-columns: 1fr;
+    padding: 18px 20px 22px;
+  }
+  .trace-core-visual {
+    display: none;
+  }
+}
+
 @media (max-width: 1190px) and (min-width: 1025px) {
   .question-navigation {
     left: 220px;
@@ -4316,7 +4557,9 @@ dialog::backdrop {
     padding: 5px 0;
   }
   .question-position nav small {
-    display: none;
+    display: block;
+    font-size: 10px;
+    line-height: 1.2;
   }
   .question-position nav {
     gap: 5px;
