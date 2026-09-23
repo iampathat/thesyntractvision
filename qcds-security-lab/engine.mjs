@@ -294,7 +294,7 @@ function buildFindings(input, conditions, lenses) {
       id: "F7",
       title:
         "Third-party dependency creates an external trust and provenance boundary",
-      path: "External service/component/package/model/data → system → protected behavior",
+      path: "External dependency or provider → system → protected behavior",
       requires: ["third_party"],
       supports: ["sensitive_data", "rag", "tools", "secrets"],
       lensTriggers: ["Privacy / Supply Chain", "Open Search", "STRIDE", "OWASP / AppSec"],
