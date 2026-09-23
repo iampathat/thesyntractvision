@@ -6,10 +6,11 @@ import {
   SCENARIOS,
   newProject,
   fingerprint,
+  suggestConditions,
   analyze,
   validateProject,
   markdown,
-} from "./engine.mjs?v=1.8.7";
+} from "./engine.mjs?v=1.9.0";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
@@ -717,7 +718,10 @@ function questionNavigation() {
   return `<nav class="question-navigation" aria-label="Previous and next question"><div><button class="button" data-question="${state.question - 1}" ${state.question === 1 ? "disabled" : ""}>${icon("undo")} Back</button><span>${state.question} of 5</span>${state.question === 5 ? '<a class="button primary" href="#report">Review report →</a>' : `<button class="button primary" data-question="${state.question + 1}" ${empty ? "disabled" : ""}>${QUESTION_STEPS[state.question - 1].next} ${icon("arrow")}</button>`}</div></nav>`;
 }
 function compactConditions() {
-  return `<div class="compact-conditions">${CONDITION_DEFS.map(([k], i) => `<label><span><b>C${i + 1} · ${FIELD_META[k][0]}</b><small>${FIELD_META[k][1]}</small></span><select data-condition="${k}" aria-label="C${i + 1} ${FIELD_META[k][0]}"><option value="yes" ${project().input.flags[k] === true ? "selected" : ""}>1 · Yes</option><option value="no" ${project().input.flags[k] === false ? "selected" : ""}>0 · No</option><option value="unknown" ${project().input.flags[k] === null ? "selected" : ""}>? · Unknown</option></select></label>`).join("")}</div>`;
+  return `<div class="compact-conditions">${CONDITION_DEFS.map(([k], i) => {
+    const basis = project().conditionBasis?.[k];
+    return `<label><span><b>C${i + 1} · ${FIELD_META[k][0]}</b><small>${FIELD_META[k][1]}</small>${basis ? `<em class="condition-basis">Interview inference · ${esc(basis.confidence)} confidence · ${esc(basis.reason)}</em>` : ""}</span><select data-condition="${k}" aria-label="C${i + 1} ${FIELD_META[k][0]}"><option value="yes" ${project().input.flags[k] === true ? "selected" : ""}>1 · Yes</option><option value="no" ${project().input.flags[k] === false ? "selected" : ""}>0 · No</option><option value="unknown" ${project().input.flags[k] === null ? "selected" : ""}>? · Unknown</option></select></label>`;
+  }).join("")}</div>`;
 }
 function pathSummary(f) {
   return `<div class="current-path"><label for="path-choice">THE PATH WE ARE FOLLOWING</label><select id="path-choice">${allPaths().map((x) => `<option value="${x.id}" ${f.id === x.id ? "selected" : ""}>${x.id} · ${x.conditional ? "? · " : ""}${esc(x.shortTitle)}</option>`).join("")}</select><small>${f.conditional ? "? means this route is conditional on unresolved system facts. " : ""}Changing the path keeps you on question ${state.question}.</small></div>`;
@@ -846,7 +850,7 @@ function investigationView() {
     input = project().input;
   let content = "";
   if (state.question === 1) {
-    content = `<section class="question-card panel">${!project().example ? `<div class="describe-start"><span class="eyebrow">HOW DO YOU WANT TO DESCRIBE THE SYSTEM?</span><div class="describe-start-actions"><button class="button primary" data-action="interview-ai">${icon("spark")} Interview me with AI / LLM</button><button class="button" data-action="interview">Guided interview</button></div><p>Or enter the system yourself below. Both interview modes create the same brief that QCDS then turns into explicit 1 / 0 / ? conditions.</p></div>` : ""}<label class="goal-field">The outcome I want to cause<textarea data-field="attackerGoal" rows="3" maxlength="1500" placeholder="For example: send a reply to someone who should not receive it.">${esc(input.attackerGoal)}</textarea></label><p class="goal-protection"><b>What we protect:</b> ${esc(input.assets.join(", ") || "Describe the important data or capability below.")}</p><details class="system-brief" ${!project().example ? "open" : ""}><summary>${project().example ? "Describe or edit this system" : "Enter or edit the system manually"}</summary><label>System name<input data-field="name" value="${esc(input.name)}" maxlength="120"></label><label>What does it do?<textarea data-field="description" rows="3" maxlength="6000">${esc(input.description)}</textarea></label><label>Assets to protect<input data-field="assets" value="${esc(input.assets.join(", "))}" maxlength="2000"></label></details></section><details class="question-card panel fact-review" ${state.model.unknown.length ? "open" : ""}><summary>System facts · 1 / 0 / ? <span>${state.model.unknown.length ? state.model.unknown.length + " unresolved (?)" : CONDITION_DEFS.length + " resolved"}</span></summary><p><b>1</b> = present · <b>0</b> = absent · <b>?</b> = unknown. A ? is valid input: QCDS carries that uncertainty forward and marks dependent routes as conditional instead of forcing a guess.</p>${compactConditions()}<button class="text-button" data-guide="1">In plain English: what is a condition?</button></details><p class="next-explained">Next, the lab uses these conditions to show possible paths to investigate.</p>`;
+    content = `<section class="question-card panel">${!project().example ? `<div class="describe-start"><span class="eyebrow">HOW DO YOU WANT TO DESCRIBE THE SYSTEM?</span><div class="describe-start-actions"><button class="button primary" data-action="interview-ai">${icon("spark")} Interview me with AI / LLM</button><button class="button" data-action="interview">Guided interview</button></div><p>Or enter the system yourself below. Both interview modes create the same brief that QCDS then turns into explicit 1 / 0 / ? conditions.</p></div>` : ""}<label class="goal-field">The outcome I want to cause<textarea data-field="attackerGoal" rows="3" maxlength="1500" placeholder="For example: send a reply to someone who should not receive it.">${esc(input.attackerGoal)}</textarea></label><p class="goal-protection"><b>What we protect:</b> ${esc(input.assets.join(", ") || "Describe the important data or capability below.")}</p><details class="system-brief" ${!project().example ? "open" : ""}><summary>${project().example ? "Describe or edit this system" : "Enter or edit the system manually"}</summary><label>System name<input data-field="name" value="${esc(input.name)}" maxlength="120"></label><label>What does it do?<textarea data-field="description" rows="3" maxlength="6000">${esc(input.description)}</textarea></label><label>Assets to protect<input data-field="assets" value="${esc(input.assets.join(", "))}" maxlength="2000"></label></details></section><details class="question-card panel fact-review" ${state.model.unknown.length ? "open" : ""}><summary>System facts · 1 / 0 / ? <span>${state.model.unknown.length ? state.model.unknown.length + " unresolved (?)" : CONDITION_DEFS.length + " resolved"}</span></summary><p><b>1</b> = present · <b>0</b> = absent · <b>?</b> = unknown. A ? is valid input: QCDS carries that uncertainty forward and marks dependent routes as conditional instead of forcing a guess.</p>${compactConditions()}<button class="text-button" data-guide="1">In plain English: what is a condition?</button></details>${state.model.clarifications.length ? `<section class="question-card panel qcds-asks"><span class="eyebrow">QCDS ASKS NEXT</span><h2>These ? facts decide which conditional routes survive.</h2><p>Answer what you know. Leave ? when you genuinely do not know. The queue recalculates after every answer.</p><div class="clarification-list">${state.model.clarifications.slice(0, 6).map((item) => `<div><div><b>${item.id} · ${esc(item.label)}</b><p>${esc(item.question)}</p><small>${item.routeIds.length ? `Affects ${item.routeIds.join(", ")}` : "Useful system context; no current route depends on it yet."}</small></div><div class="clarification-actions"><button type="button" data-answer-condition="${item.key}" data-condition-value="yes">1 · Yes</button><button type="button" data-answer-condition="${item.key}" data-condition-value="no">0 · No</button><button type="button" data-answer-condition="${item.key}" data-condition-value="unknown">? · Keep unknown</button></div></div>`).join("")}</div></section>` : ""}<p class="next-explained">Next, QCDS keeps both active and conditional routes visible and shows which facts each one depends on.</p>`;
   } else if (!f) {
     content = `<section class="question-card panel"><h2>We need a path to investigate.</h2><p>${state.model.unknown.length ? `${state.model.unknown.length} facts are still Unknown. Confirm what you know to see which paths have the conditions they need.` : "No rule matches the declared system and active perspectives. An empty result does not establish that the system is safe."}</p><button class="button primary" data-question="1">Review the system facts</button><a class="text-link" href="#trace">Inspect the detailed reasoning →</a></section>`;
   } else {
@@ -1645,6 +1649,8 @@ document.addEventListener("change", (e) => {
   if (el.dataset.condition) {
     project().input.flags[el.dataset.condition] =
       el.value === "unknown" ? null : el.value === "yes";
+    if (project().conditionBasis)
+      delete project().conditionBasis[el.dataset.condition];
     el.className = "condition-select " + el.value;
     updateDirty();
   }
@@ -1970,12 +1976,23 @@ $("#interview").addEventListener("click", async (e) => {
       .split(",")
       .map((x) => x.trim())
       .filter(Boolean);
+    const inferred = suggestConditions(p.input);
+    p.conditionBasis = {};
+    for (const suggestion of inferred) {
+      if (p.input.flags[suggestion.key] !== null) continue;
+      p.input.flags[suggestion.key] = suggestion.value;
+      p.conditionBasis[suggestion.key] = {
+        source: mini.session ? "AI / LLM interview + deterministic formation" : "guided interview + deterministic formation",
+        reason: suggestion.reason,
+        confidence: suggestion.confidence,
+      };
+    }
     state.cases.custom = p;
     $("#interview").close();
     switchCase("custom");
     goQuestion(1);
     notify(
-      "Brief transferred. Confirm the conditions before running the analysis.",
+      `Brief transferred · ${Object.keys(p.conditionBasis).length} conditions inferred from your answers. Review them; unresolved facts remain ?.`,
     );
   }
 });
