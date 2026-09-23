@@ -9,7 +9,7 @@ import {
   analyze,
   validateProject,
   markdown,
-} from "./engine.mjs?v=1.6.2";
+} from "./engine.mjs?v=1.6.3";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
@@ -335,7 +335,7 @@ function shell() {
     (r) => workRoutes.includes(r[0]),
   ).map(navLink).join("")}<div class="nav-section-label nav-learn-label">LEARN</div>${ROUTES.filter((r) => learnRoutes.includes(r[0]) && r[0] !== "examples").map(navLink).join("")}<details class="nav-tools" ${detailRoutes.includes(state.route) ? "open" : ""}><summary><span>Why this result?</span><small>Conditions, QCDS trace & analysis</small></summary>${ROUTES.filter(
     (r) => detailRoutes.includes(r[0]),
-  ).map(navLink).join("")}</details></nav><button class="new-case" data-action="new">${icon("plus")} New system</button><div class="sidebar-bottom"><div class="local-note">${icon("shield")}<span>Saved on this device.<br>No account needed.</span></div><a href="#learn" class="author">By Patrik Sundblom <span>↗</span></a><div class="version">SECURITY LAB <span>v${VERSION}</span></div></div></aside>${state.mobile ? '<button class="menu-backdrop" data-action="close-menu" aria-label="Close navigation backdrop"></button>' : ""}<div class="app-body" ${state.mobile ? "inert" : ""}><header class="topbar"><div class="breadcrumb"><button class="icon-button mobile-toggle" data-action="menu" aria-controls="site-nav" aria-label="Open navigation" aria-expanded="${state.mobile}">${icon("menu")}</button><b>${investigating ? "Q★ Security Lab" : esc(ROUTES.find((r) => r[0] === state.route)?.[1])}</b></div><div class="top-actions"><span id="save-status" class="save-status">${state.storage ? "Saved on this device" : "Not saved · export your work"}</span><button class="button small plain-button" data-system-explanation>${icon("book")} In plain English</button></div></header>${investigating ? questionPosition() : ""}<main id="main" tabindex="-1">${state.route === "investigate" ? (state.question === 1 ? casePicker() : "") : !["examples", "learn"].includes(state.route) ? casePicker() : ""}<div id="stale-slot">${staleNotice()}</div><div id="view">${view()}</div><footer class="main-footer"><span>QCDS Security Lab · Patrik Sundblom</span><a href="./LICENSE.md">COMMERCIAL LICENSE REQUIRED ${icon("external")}</a></footer></main>${investigating ? questionNavigation() : ""}</div>`;
+  ).map(navLink).join("")}</details></nav><button class="new-case" data-action="new">${icon("plus")} New system</button><div class="sidebar-bottom"><div class="local-note">${icon("shield")}<span>Saved on this device.<br>No account needed.</span></div><a href="#learn" class="author">By Patrik Sundblom <span>↗</span></a><div class="version">SECURITY LAB <span>v${VERSION}</span></div></div></aside>${state.mobile ? '<button class="menu-backdrop" data-action="close-menu" aria-label="Close navigation backdrop"></button>' : ""}<div class="app-body" ${state.mobile ? "inert" : ""}><header class="topbar"><div class="breadcrumb"><button class="icon-button mobile-toggle" data-action="menu" aria-controls="site-nav" aria-label="Open navigation" aria-expanded="${state.mobile}">${icon("menu")}</button><b>${investigating ? "Q★ Security Lab" : esc(ROUTES.find((r) => r[0] === state.route)?.[1])}</b></div><div class="top-actions"><span id="save-status" class="save-status">${state.storage ? "Saved on this device" : "Not saved · export your work"}</span><button class="button small plain-button" data-system-explanation>${icon("book")} What is this?</button></div></header>${investigating ? questionPosition() : ""}<main id="main" tabindex="-1">${state.route === "investigate" ? (state.question === 1 ? casePicker() : "") : !["examples", "learn"].includes(state.route) ? casePicker() : ""}<div id="stale-slot">${staleNotice()}</div><div id="view">${view()}</div><footer class="main-footer"><span>QCDS Security Lab · Patrik Sundblom</span><a href="./LICENSE.md">COMMERCIAL LICENSE REQUIRED ${icon("external")}</a></footer></main>${investigating ? questionNavigation() : ""}</div>`;
 }
 function staleNotice() {
   if (state.route === "investigate" && state.question === 1) return "";
@@ -549,28 +549,44 @@ function openSystemExplanation() {
   const d = $("#explanation");
   const routeName =
     ROUTES.find((r) => r[0] === state.route)?.[1] || "Security Lab";
-  d.innerHTML = `<div class="dialog-head"><div><span class="eyebrow">IN PLAIN ENGLISH</span><h2 id="explanation-title">What is QCDS Security Lab?</h2></div><button class="icon-button" data-close-explanation aria-label="Close explanation">${icon("close")}</button></div>
+  d.innerHTML = `<div class="dialog-head"><div><span class="eyebrow">WHAT IS THIS?</span><h2 id="explanation-title">QCDS Security Lab, in plain English</h2></div><button class="icon-button" data-close-explanation aria-label="Close explanation">${icon("close")}</button></div>
     <div class="explanation-body system-explanation">
-      <p class="system-explanation-lead"><b>It is a threat-modelling workspace.</b> You describe a system and something you do not want to happen. QCDS helps you work out <i>how it could happen, what should stop it, how that protection might fail, and what you would need to test.</i></p>
-      <div class="system-simple-flow" aria-label="How QCDS Security Lab works">
-        <div><span>1</span><b>Describe the system</b><small>What does it do, what matters, and what unwanted outcome are we investigating?</small></div>
-        <div><span>2</span><b>State what you know</b><small><strong>1</strong> = present · <strong>0</strong> = absent · <strong>?</strong> = we do not know yet.</small></div>
-        <div><span>3</span><b>Explore possible routes</b><small>QCDS keeps several possible explanations alive instead of jumping to the first plausible one.</small></div>
-        <div><span>4</span><b>Change the viewpoint</b><small>Look through STRIDE, OWASP/GenAI, Identity and other perspectives over the same system.</small></div>
-        <div><span>5</span><b>Challenge the protection</b><small>Ask what should stop the route, then ask how that protection itself could fail.</small></div>
-        <div><span>6</span><b>Test and report</b><small>Record observations, separate hypotheses from evidence, and export the result.</small></div>
+      <p class="system-explanation-lead"><b>This tool helps you think through how an AI system could go wrong or be misused — before it happens.</b><br>You do not need to know security frameworks or QCDS to start.</p>
+
+      <div class="system-simple-flow system-simple-flow-three" aria-label="What you do and what the lab does">
+        <div><span>1</span><b>You tell it about the system</b><small>What does the AI do? What data or actions matter? What is something you do <strong>not</strong> want to happen?</small></div>
+        <div><span>2</span><b>It explores several ways that could happen</b><small>It keeps known facts, missing information and different security viewpoints separate instead of jumping to one answer.</small></div>
+        <div><span>3</span><b>You get things to investigate</b><small>Possible routes, protections that should stop them, ways those protections could fail, and tests that can support or reject the concern.</small></div>
       </div>
+
       <div class="system-explanation-example">
-        <span class="eyebrow">A VERY SIMPLE EXAMPLE</span>
-        <p><b>System:</b> an AI reads customer email and can prepare a reply.</p>
-        <p><b>Question:</b> could text in an email make the system expose another customer's information?</p>
-        <p><b>QCDS:</b> maps the facts → keeps possible routes → looks through several security perspectives → asks what control should stop each route → challenges that control → defines a test.</p>
+        <span class="eyebrow">A 20-SECOND EXAMPLE</span>
+        <p><b>Imagine:</b> an AI reads customer emails and prepares replies.</p>
+        <p><b>You do not want:</b> one customer's email to make the AI reveal another customer's information.</p>
+        <p><b>The lab asks:</b> how could that happen → what should stop it → could that protection fail → what would we test to find out?</p>
       </div>
+
       <div class="system-explanation-two">
-        <div><span class="eyebrow">WHAT QCDS ADDS</span><p>It keeps uncertainty, alternatives and dependencies visible. A <b>?</b> is not an error, and one security framework is not treated as the whole answer.</p></div>
-        <div><span class="eyebrow">WHAT IT DOES NOT CLAIM</span><p>A candidate route is not automatically a vulnerability. The lab helps structure an investigation; observations and tests are what move a claim toward or away from evidence.</p></div>
+        <div><span class="eyebrow">WHAT ARE 1 / 0 / ?</span><p>They are simply the facts you know about the system. <b>1</b> = yes, <b>0</b> = no, <b>?</b> = we do not know yet. You are allowed to leave something as ?.</p></div>
+        <div><span class="eyebrow">WHAT ARE STRIDE / OWASP / IDENTITY?</span><p>They are different sets of security questions — different ways to look at the <b>same system</b>. You can later ask for a report from one of those viewpoints.</p></div>
       </div>
-      <p class="system-you-are-here"><b>You are currently in:</b> ${esc(routeName)}. Closing this explanation returns you exactly where you were.</p>
+
+      <div class="system-explanation-qcds">
+        <span class="eyebrow">SO WHAT IS QCDS DOING?</span>
+        <p>QCDS is the reasoning method underneath the lab. It keeps multiple possible routes and uncertainties in view, changes perspective, challenges assumptions and protections, and keeps asking until the result can be connected to something you can actually test.</p>
+        <p><b>In short:</b> describe → explore → challenge → test → report.</p>
+      </div>
+
+      <details class="system-terms">
+        <summary>A few words you may see in the lab</summary>
+        <p><b>Route:</b> one possible way the unwanted outcome could happen.</p>
+        <p><b>Control:</b> a protection that should stop that route.</p>
+        <p><b>Perspective:</b> a set of security questions, such as STRIDE or Identity.</p>
+        <p><b>Evidence:</b> what you observed when you actually checked or tested something.</p>
+        <p><b>Threat modelling:</b> the general practice of thinking through how a system could be attacked, misused or fail.</p>
+      </details>
+
+      <p class="system-you-are-here"><b>You are currently in:</b> ${esc(routeName)}. Close this explanation and you return exactly where you were.</p>
       <div class="system-explanation-actions"><a class="button" href="#examples" data-close-explanation>Show me worked examples</a><button class="button primary" data-close-explanation>Got it · back to the lab ${icon("arrow")}</button></div>
     </div>`;
   d.showModal();
