@@ -10,6 +10,11 @@ import {
 } from "../engine.mjs";
 const ids = (m) => m.findings.map((f) => f.id);
 test("examples produce distinct, numerically ordered findings", () => {
+  assert.deepEqual(ids(analyze(newProject("portal").input)), [
+    "F1",
+    "F3",
+    "F7",
+  ]);
   assert.deepEqual(ids(analyze(newProject("support").input)), [
     "F1",
     "F2",
@@ -35,9 +40,32 @@ test("examples produce distinct, numerically ordered findings", () => {
     "F8",
   ]);
 });
+test("AI perspective applies only when the target itself contains AI", () => {
+  const portal = analyze(newProject("portal").input);
+  const support = analyze(newProject("support").input);
+  const portalAI = portal.lenses.find((l) => l.name === "AI / GenAI");
+  const supportAI = support.lenses.find((l) => l.name === "AI / GenAI");
+  assert.equal(portal.input.flags.ai_component, false);
+  assert.equal(portalAI.applicable, false);
+  assert.equal(portalAI.active, false);
+  assert.equal(support.input.flags.ai_component, true);
+  assert.equal(supportAI.applicable, true);
+  assert.equal(supportAI.active, true);
+});
+test("legacy imports migrate old perspective names and missing AI target state", () => {
+  const p = newProject("portal");
+  delete p.input.flags.ai_component;
+  p.excludedLenses = ["OWASP / GenAI", "Agent / Tool Chain"];
+  const clean = validateProject(JSON.parse(JSON.stringify(p)));
+  assert.equal(clean.input.flags.ai_component, null);
+  assert.deepEqual(clean.excludedLenses, [
+    "OWASP / AppSec",
+    "Action / Tool Chain",
+  ]);
+});
 test("unknown system is not a security pass", () => {
   const m = analyze(newProject("custom").input);
-  assert.equal(m.unknown.length, 13);
+  assert.equal(m.unknown.length, 14);
   assert.equal(m.findings.length, 0);
   assert.ok(m.oracles.every((o) => !["PASS", "VERIFIED"].includes(o.state)));
 });
