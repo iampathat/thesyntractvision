@@ -1157,6 +1157,25 @@ function validateProject(value) {
       outcome: e.outcome,
     };
   });
+  const conditionBasis = {};
+  for (const [key, basis] of Object.entries(value.conditionBasis || {})) {
+    if (
+      !CONDITION_DEFS.some(([conditionKey]) => conditionKey === key) ||
+      !basis ||
+      typeof basis.reason !== "string" ||
+      basis.reason.length > 2000 ||
+      !["low", "medium", "high"].includes(basis.confidence)
+    )
+      throw new Error("Condition provenance is invalid.");
+    conditionBasis[key] = {
+      reason: basis.reason,
+      confidence: basis.confidence,
+      source:
+        typeof basis.source === "string"
+          ? basis.source.slice(0, 100)
+          : "interview",
+    };
+  }
   const actions = {};
   for (const [id, a] of Object.entries(value.actions || {})) {
     if (
@@ -1192,6 +1211,7 @@ function validateProject(value) {
       ),
     },
     excludedLenses,
+    conditionBasis,
     evidence,
     actions,
     updatedAt: new Date().toISOString(),
@@ -1204,7 +1224,7 @@ function markdown(model, project) {
     `**System:** ${model.input.name}`,
     `**Run:** ${model.generatedAt}`,
     `**Author:** Patrik Sundblom · QCDS Security Lab`,
-    `**Mode:** Deterministic browser evaluation · ${project.example ? "Example system" : "User-defined system"}`,
+    `**Mode:** QCDS browser inference · ${project.example ? "Example system" : "User-defined system"}`,
     "",
     model.input.description,
     "",
@@ -1212,10 +1232,10 @@ function markdown(model, project) {
     `**Assets:** ${model.input.assets.join(", ") || "Not specified"}`,
     "",
     "## Scope & evidence",
-    "Candidate paths come from eight shared rules. Perspective agreement is not independent evidence. This run does not scan a system, execute a quantum circuit, or automatically verify a vulnerability. Test observations are user-reported.",
+    "The browser engine forms a ternary condition space, keeps unresolved routes conditional, applies parallel security perspectives, reruns perspective and dimension comparisons, recursively challenges controls, and binds user-reported evidence. Eight seed route families initialize the current browser search space; they are not proof of a vulnerability.",
     "",
     `Excluded perspectives: ${model.excludedLenses.join(", ") || "None"}.`,
-    `${model.unknown.length} unknown conditions; ${model.archivedEvidence} evidence records belong to different system snapshots.`,
+    `${model.searchSpace.confirmedRoutes} active routes; ${model.searchSpace.conditionalRoutes} conditional routes; ${model.unknown.length} unknown conditions; ${model.archivedEvidence} evidence records belong to different system snapshots.`,
     "",
     "## 1. Conditions",
     ...model.conditions.map(
@@ -1252,8 +1272,27 @@ function markdown(model, project) {
         `- Action: ${a.status}; owner: ${a.owner || "Unassigned"}; ${a.note}`,
       );
   }
-  if (!model.findings.length)
-    lines.push("No candidate rule matched. This is not a safety conclusion.");
+  if (!model.findings.length && !model.pending.length)
+    lines.push(
+      "No current route family survives the declared conditions. This is not a safety conclusion.",
+    );
+  if (model.pending.length) {
+    lines.push(
+      "",
+      "### Conditional routes — more context needed",
+      ...model.pending.map(
+        (f) =>
+          `- ${f.id} — ${f.shortTitle}: unresolved ${f.missing
+            .map((key) => {
+              const condition = model.conditions.find(
+                (item) => item.key === key,
+              );
+              return `${condition?.id || "?"} · ${FIELD_META[key][0]}`;
+            })
+            .join(", ")}.`,
+      ),
+    );
+  }
   lines.push(
     "\n## 4. Rotation",
     ...model.rotation.map(
@@ -1265,13 +1304,17 @@ function markdown(model, project) {
       (d) =>
         `- Hide ${d.id}: retained ${d.retained.length}; lost ${d.lost.join(", ") || "none"}.`,
     ),
-    "\n## 6. Composed paths",
-    ...model.chains.map(
-      (c) => `- ${c.ids.join(" → ")}: ${c.title}. ${c.explanation}`,
+    "\n## 6. Recursive inference",
+    ...model.recursive.map(
+      (branch) =>
+        `- ${branch.id} [${branch.status}]: ${branch.stages
+          .map((stage) => `${stage.type} → ${stage.text}`)
+          .join(" | ")}`,
     ),
-    "\n## 7. More context needed",
-    ...model.pending.map(
-      (f) => `- ${f.id}: ${f.missing.map((k) => FIELD_META[k][0]).join(", ")}`,
+    "\n## 7. Next clarification questions",
+    ...model.clarifications.map(
+      (item) =>
+        `- ${item.id} · ${item.label}: ${item.question} Affects: ${item.routeIds.join(", ") || "general context"}.`,
     ),
     "",
     "Copyright © 2026 Patrik Sundblom. Commercial license required. See qcds-security-lab/LICENSE.md.",
@@ -1287,6 +1330,7 @@ export {
   SCENARIOS,
   newProject,
   fingerprint,
+  suggestConditions,
   analyze,
   validateProject,
   markdown,
