@@ -4341,6 +4341,41 @@ dialog::backdrop {
   font-size: 15px;
   line-height: 1.6;
 }
+.example-preview {
+  border-top: 1px solid var(--line);
+}
+.example-preview > summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 17px 28px;
+  cursor: pointer;
+  color: #dbe5ea;
+  background: #121a1f;
+  font-size: 13px;
+  font-weight: 620;
+  list-style: none;
+}
+.example-preview > summary::-webkit-details-marker {
+  display: none;
+}
+.example-preview > summary::before {
+  content: "+";
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid #4c5a63;
+  border-radius: 50%;
+  color: var(--acid);
+  font: 15px var(--mono);
+}
+.example-preview[open] > summary::before {
+  content: "−";
+}
+.example-preview[open] > summary {
+  border-bottom: 1px solid var(--line);
+}
 .example-flow {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -4401,7 +4436,8 @@ dialog::backdrop {
   gap: 8px;
   margin-top: 12px;
 }
-.example-lenses a {
+.example-lenses a,
+.example-lenses span {
   padding: 7px 9px;
   border: 1px solid #40505a;
   border-radius: 6px;
@@ -4519,6 +4555,9 @@ dialog::backdrop {
   .examples-primer .button,
   .example-journey-head .button {
     width: 100%;
+  }
+  .example-preview > summary {
+    padding-inline: 18px;
   }
   .example-problem {
     grid-template-columns: 1fr;
