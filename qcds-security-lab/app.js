@@ -9,7 +9,7 @@ import {
   analyze,
   validateProject,
   markdown,
-} from "./engine.mjs?v=1.7.0";
+} from "./engine.mjs?v=1.8.0";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
@@ -70,8 +70,16 @@ try {
     ["portal", "support", "knowledge", "coding", "invoice", "custom"].includes(saved.caseId)
   ) {
     const cases = {};
-    for (const id of ["portal", "support", "knowledge", "coding", "invoice", "custom"])
-      if (saved.cases?.[id]) cases[id] = validateProject(saved.cases[id]);
+    for (const id of ["portal", "support", "knowledge", "coding", "invoice", "custom"]) {
+      if (!saved.cases?.[id]) continue;
+      cases[id] = validateProject(saved.cases[id]);
+      if (
+        cases[id].example &&
+        cases[id].input.flags.ai_component === null &&
+        ["portal", "support", "knowledge", "coding", "invoice"].includes(id)
+      )
+        cases[id].input.flags.ai_component = id === "portal" ? false : true;
+    }
     if (cases[saved.caseId]) {
       state.cases = cases;
       state.caseId = saved.caseId;
@@ -253,15 +261,20 @@ function conditionSymbol(model, key) {
 
 const PERSPECTIVE_SLUGS = {
   STRIDE: "stride",
-  "OWASP / GenAI": "owasp-genai",
+  "OWASP / AppSec": "owasp-appsec",
   Identity: "identity",
-  "Agent / Tool Chain": "agent-tool-chain",
+  "Action / Tool Chain": "action-tool-chain",
   "Privacy / Supply Chain": "privacy-supply-chain",
+  "AI / GenAI": "ai-genai",
   "Open Search": "open-search",
 };
-const PERSPECTIVE_NAMES = Object.fromEntries(
-  Object.entries(PERSPECTIVE_SLUGS).map(([name, slug]) => [slug, name]),
-);
+const PERSPECTIVE_NAMES = {
+  ...Object.fromEntries(
+    Object.entries(PERSPECTIVE_SLUGS).map(([name, slug]) => [slug, name]),
+  ),
+  "owasp-genai": "AI / GenAI",
+  "agent-tool-chain": "Action / Tool Chain",
+};
 function investigationHref(
   question = state.question,
   finding = state.findingId,
@@ -403,7 +416,7 @@ const GUIDE_STEPS = [
     result:
       "A visible set of prerequisites. C1 + C2 make F1 a candidate; C6 + C7 make F2 a candidate. Missing facts remain questions.",
     why: "The next step needs explicit inputs. A declared Yes describes your system; it does not establish that a control works.",
-    flow: ["Plain-language brief", "1 / 0 / ?", "Conditions C1–C13"],
+    flow: ["Plain-language brief", "1 / 0 / ?", `Conditions C1–C${CONDITION_DEFS.length}`],
     route: "system",
     action: "Review my system conditions",
   },
@@ -455,7 +468,7 @@ const GUIDE_STEPS = [
     explanation:
       "Run the comparison in two ways: remove a perspective, then make one declared fact Unknown. Keep the original system as the baseline.",
     example:
-      "Without the OWASP / GenAI lens, F1 may still match through STRIDE or Open Search. When C2 is hidden, F1 loses a required fact. These two results answer different questions.",
+      "Without the OWASP / AppSec lens, F1 may still match through STRIDE or Open Search. When C2 is hidden, F1 loses a required fact. These two results answer different questions.",
     do: "Read Paths retained / Paths lost in the rotation table. Then read the dimension-exclusion results. Each exclusion is a separate comparison; facts are not erased from your saved system.",
     result:
       "You can distinguish dependence on a perspective from dependence on a system fact.",
@@ -666,17 +679,19 @@ const QUESTION_STEPS = [
 ];
 const ANGLES = {
   STRIDE:
-    "Could someone impersonate, alter, expose or misuse something along this path?",
-  "OWASP / GenAI":
-    "Where could untrusted content become an instruction or affect a tool?",
+    "Could identity be spoofed, information altered or exposed, service disrupted, or privilege misused along this path?",
+  "OWASP / AppSec":
+    "Where can input handling, application logic, interfaces, data exposure or trust boundaries fail?",
   Identity:
-    "Which person or service is allowed to read this data or perform this action?",
-  "Agent / Tool Chain":
-    "What can the model cause the next tool or agent to do?",
+    "Which person, service, device or role is allowed to read this resource or perform this action?",
+  "Action / Tool Chain":
+    "What connected component or interface can cause the next consequential action, and with whose authority?",
   "Privacy / Supply Chain":
-    "Which data, source or dependency carries trust into this path?",
+    "Which data, source, provider or dependency carries trust into this path?",
+  "AI / GenAI":
+    "If the target contains AI/ML, where can model context, generated output, retrieval or model-influenced actions cross a trust boundary?",
   "Open Search":
-    "Starting from the unwanted outcome, what other route or assumption should we question?",
+    "Starting from the unwanted outcome, what other route, assumption or system dimension should we question?",
 };
 function selectedFinding() {
   return allPaths().find((f) => f.id === state.findingId);
@@ -818,7 +833,7 @@ function investigationView() {
     input = project().input;
   let content = "";
   if (state.question === 1) {
-    content = `<section class="question-card panel"><label class="goal-field">The outcome I want to cause<textarea data-field="attackerGoal" rows="3" maxlength="1500" placeholder="For example: send a reply to someone who should not receive it.">${esc(input.attackerGoal)}</textarea></label><p class="goal-protection"><b>What we protect:</b> ${esc(input.assets.join(", ") || "Describe the important data or capability below.")}</p><details class="system-brief"><summary>Describe or edit this system</summary><label>System name<input data-field="name" value="${esc(input.name)}" maxlength="120"></label><label>What does it do?<textarea data-field="description" rows="3" maxlength="6000">${esc(input.description)}</textarea></label><label>Assets to protect<input data-field="assets" value="${esc(input.assets.join(", "))}" maxlength="2000"></label><button class="button" data-action="interview">${icon("spark")} Help me describe it</button></details></section><details class="question-card panel fact-review" ${state.model.unknown.length ? "open" : ""}><summary>System facts · 1 / 0 / ? <span>${state.model.unknown.length ? state.model.unknown.length + " unresolved (?)" : "13 resolved"}</span></summary><p><b>1</b> = present · <b>0</b> = absent · <b>?</b> = unknown. A ? is valid input: QCDS carries that uncertainty forward and marks dependent routes as conditional instead of forcing a guess.</p>${compactConditions()}<button class="text-button" data-guide="1">In plain English: what is a condition?</button></details><p class="next-explained">Next, the lab uses these conditions to show possible paths to investigate.</p>`;
+    content = `<section class="question-card panel"><label class="goal-field">The outcome I want to cause<textarea data-field="attackerGoal" rows="3" maxlength="1500" placeholder="For example: send a reply to someone who should not receive it.">${esc(input.attackerGoal)}</textarea></label><p class="goal-protection"><b>What we protect:</b> ${esc(input.assets.join(", ") || "Describe the important data or capability below.")}</p><details class="system-brief"><summary>Describe or edit this system</summary><label>System name<input data-field="name" value="${esc(input.name)}" maxlength="120"></label><label>What does it do?<textarea data-field="description" rows="3" maxlength="6000">${esc(input.description)}</textarea></label><label>Assets to protect<input data-field="assets" value="${esc(input.assets.join(", "))}" maxlength="2000"></label><button class="button" data-action="interview">${icon("spark")} Help me describe it</button></details></section><details class="question-card panel fact-review" ${state.model.unknown.length ? "open" : ""}><summary>System facts · 1 / 0 / ? <span>${state.model.unknown.length ? state.model.unknown.length + " unresolved (?)" : CONDITION_DEFS.length + " resolved"}</span></summary><p><b>1</b> = present · <b>0</b> = absent · <b>?</b> = unknown. A ? is valid input: QCDS carries that uncertainty forward and marks dependent routes as conditional instead of forcing a guess.</p>${compactConditions()}<button class="text-button" data-guide="1">In plain English: what is a condition?</button></details><p class="next-explained">Next, the lab uses these conditions to show possible paths to investigate.</p>`;
   } else if (!f) {
     content = `<section class="question-card panel"><h2>We need a path to investigate.</h2><p>${state.model.unknown.length ? `${state.model.unknown.length} facts are still Unknown. Confirm what you know to see which paths have the conditions they need.` : "No rule matches the declared system and active perspectives. An empty result does not establish that the system is safe."}</p><button class="button primary" data-question="1">Review the system facts</button><a class="text-link" href="#trace">Inspect the detailed reasoning →</a></section>`;
   } else {
@@ -843,17 +858,18 @@ function investigationView() {
 function perspectiveOverview() {
   const m = state.model;
   const questions = {
-    STRIDE: "Can identity, data or authority be misused?",
-    "OWASP / GenAI": "Can content influence the model or its tools?",
-    Identity: "Which actor is allowed to access or act?",
-    "Agent / Tool Chain": "What can a model decision cause downstream?",
-    "Privacy / Supply Chain": "Where could data or dependency trust fail?",
+    STRIDE: "Can identity, information, service or authority be attacked or misused?",
+    "OWASP / AppSec": "Where can application input, logic, interfaces or data handling fail?",
+    Identity: "Which principal is allowed to access or act?",
+    "Action / Tool Chain": "What connected component can cause the next consequential action?",
+    "Privacy / Supply Chain": "Where could data, provider or dependency trust fail?",
+    "AI / GenAI": "If this target uses AI/ML, where can model behavior or model-influenced actions cross a trust boundary?",
     "Open Search": "What route might the named lenses overlook?",
   };
   return `<section class="panel"><div class="panel-header"><div><span class="eyebrow muted">02 / PARALLEL PERSPECTIVES</span><h2>Same system. Different questions.</h2><p>Compare the explanations before choosing one path to deepen. These are views over shared rules, so agreement is a starting point for investigation.</p></div></div><div class="perspective-grid">${m.lenses
     .map((l) => {
       const matches = allPaths().filter((f) => f.hitLenses.includes(l.name));
-      return `<article><div>${icon("layers")}<b>${l.name}</b></div><p>${questions[l.name]}</p><div class="perspective-matches">${l.excluded ? '<span class="muted">Excluded from this analysis</span>' : matches.length ? matches.map((f) => `<button data-finding="${f.id}" aria-label="Open ${f.id}: ${esc(f.shortTitle)}">${f.id}</button>`).join("") : '<span class="muted">No candidate matches these declared facts</span>'}</div></article>`;
+      return `<article><div>${icon("layers")}<b>${l.name}</b></div><p>${questions[l.name]}</p><div class="perspective-matches">${l.excluded ? '<span class="muted">Excluded from this analysis</span>' : !l.applicable ? '<span class="muted">Not applicable to the declared target system</span>' : matches.length ? matches.map((f) => `<button data-finding="${f.id}" aria-label="Open ${f.id}: ${esc(f.shortTitle)}">${f.id}</button>`).join("") : '<span class="muted">No candidate matches these declared facts</span>'}</div></article>`;
     })
     .join(
       "",
@@ -876,7 +892,7 @@ function perspectiveMarkdown(name = state.perspective) {
     "",
     `System: ${m.input.name}`,
     `Generated: ${new Date(m.generatedAt).toLocaleString("en-GB")}`,
-    `Perspective state: ${project().excludedLenses.includes(name) ? "EXCLUDED" : "ACTIVE"}`,
+    `Perspective state: ${lens?.excluded ? "EXCLUDED" : lens && !lens.active ? "NOT APPLICABLE TO TARGET" : "ACTIVE"}`,
     "",
     "## What this perspective asks",
     ANGLES[name] || "Inspect the same system from this security perspective.",
@@ -919,14 +935,16 @@ function perspectivesView() {
     header(
       "PERSPECTIVES / SAME SYSTEM, DIFFERENT QUESTIONS",
       "Choose how you want to look at the system.",
-      "STRIDE, OWASP/GenAI, Identity and the other perspectives do not replace QCDS. They are different lenses over the same conditions, paths and evidence. Choose one to get a focused report.",
+      "STRIDE, OWASP/AppSec, Identity and the other perspectives do not replace QCDS. They are different lenses over the same conditions, paths and evidence. AI/GenAI becomes active only when the target system itself contains AI/ML.",
     ) +
     `<section class="perspective-intro panel"><div><span class="eyebrow">HOW TO USE THIS</span><h2>One QCDS run. Several report views.</h2><p>The underlying system does not change when you switch perspective. The lens changes which security questions are emphasized and which candidate findings are shown in this report.</p></div><a class="button" href="#trace">See how rotation works ${icon("arrow")}</a></section>
     <div class="perspective-picker" aria-label="Security perspectives">${Object.keys(LENSES)
       .map((n) => {
         const count = allPaths().filter((f) => f.hitLenses.includes(n)).length;
+        const lensState = m.lenses.find((l) => l.name === n);
         const excluded = project().excludedLenses.includes(n);
-        return `<a class="perspective-choice ${n === name ? "selected" : ""} ${excluded ? "excluded" : ""}" href="${perspectiveHref(n)}" aria-current="${n === name ? "true" : "false"}"><span>${icon("layers")}</span><b>${esc(n)}</b><small>${excluded ? "Excluded from current analysis" : `${count} matching candidate${count === 1 ? "" : "s"}`}</small></a>`;
+        const inactive = lensState && !lensState.active && !excluded;
+        return `<a class="perspective-choice ${n === name ? "selected" : ""} ${excluded ? "excluded" : ""} ${inactive ? "inactive" : ""}" href="${perspectiveHref(n)}" aria-current="${n === name ? "true" : "false"}"><span>${icon("layers")}</span><b>${esc(n)}</b><small>${excluded ? "Excluded from current analysis" : inactive ? "Not applicable to this target system" : `${count} matching candidate${count === 1 ? "" : "s"}`}</small></a>`;
       })
       .join("")}</div>
     <section class="panel perspective-report">
@@ -944,7 +962,7 @@ function perspectivesView() {
             return `<div><span class="mono">${condition?.id || "?"}</span><div><b>${esc(FIELD_META[key][0])}</b><small>${esc(question)}</small></div>${badge(value, value === "YES" ? "cyan" : value === "UNKNOWN" ? "warning" : "neutral")}</div>`;
           })
           .join("")}</div></section>
-        <aside><span class="eyebrow muted">ROTATION CHECK</span><h3>Does the analysis depend on ${esc(name)}?</h3><p>${rotation ? `Remove this perspective and run the same rules again: <b>${rotation.retained.length}</b> current paths remain and <b>${rotation.lost.length}</b> disappear in that comparison.` : "This perspective is excluded from the current analysis. Enable it in QCDS trace to include it in rotation comparisons."}</p><small>This tests dependence on the lens. It does not independently prove or disprove a finding.</small></aside>
+        <aside><span class="eyebrow muted">ROTATION CHECK</span><h3>Does the analysis depend on ${esc(name)}?</h3><p>${rotation ? `Remove this perspective and run the same rules again: <b>${rotation.retained.length}</b> current paths remain and <b>${rotation.lost.length}</b> disappear in that comparison.` : m.lenses.find((l) => l.name === name)?.excluded ? "This perspective is excluded from the current analysis." : "This perspective is not applicable to the declared target system, so it is not part of the current rotation."}</p><small>This tests dependence on the lens. It does not independently prove or disprove a finding.</small></aside>
       </div>
       <div class="perspective-findings-head"><div><span class="eyebrow muted">RESULTS THROUGH THIS LENS</span><h3>${matches.length} matching candidate finding${matches.length === 1 ? "" : "s"}</h3></div><small>Same underlying findings · filtered by ${esc(name)}</small></div>
       <div class="perspective-report-findings">${matches.length
@@ -962,7 +980,7 @@ function perspectivesView() {
 function comparisonReadout() {
   const m = state.model;
   const lens =
-    m.rotation.find((r) => r.name === "OWASP / GenAI") || m.rotation[0];
+    m.rotation.find((r) => r.name === "OWASP / AppSec") || m.rotation[0];
   const fact =
     m.dimensions.find((d) => d.key === "untrusted_content") ||
     m.dimensions.find((d) => d.lost.length) ||
@@ -1065,21 +1083,25 @@ function conclusionReadiness() {
 
 function metrics() {
   const m = state.model;
-  return `<div class="metrics"><div><span>Candidate findings</span><strong>${m.findings.length}<small>to investigate</small></strong></div><div><span>Perspectives active</span><strong>${m.lenses.filter((l) => l.active).length}<small>of 6 lenses</small></strong></div><div><span>Conditions unknown</span><strong class="${m.unknown.length ? "amber" : ""}">${m.unknown.length}<small>to clarify</small></strong></div><div><span>Evidence attached</span><strong>${m.findings.filter((f) => f.records.length).length}<small>of ${m.findings.length} findings</small></strong></div></div>`;
+  return `<div class="metrics"><div><span>Candidate findings</span><strong>${m.findings.length}<small>to investigate</small></strong></div><div><span>Perspectives active</span><strong>${m.lenses.filter((l) => l.active).length}<small>of ${m.lenses.length} available lenses</small></strong></div><div><span>Conditions unknown</span><strong class="${m.unknown.length ? "amber" : ""}">${m.unknown.length}<small>to clarify</small></strong></div><div><span>Evidence attached</span><strong>${m.findings.filter((f) => f.records.length).length}<small>of ${m.findings.length} findings</small></strong></div></div>`;
 }
 function graph() {
   const f = state.model.input.flags;
+  const processing =
+    f.ai_component === true
+      ? ["spark", "AI / ML component", "Target system"]
+      : ["system", "System processing", "Logic / process"];
   const steps = [
     [
       "mail",
-      f.external_input === true ? "External input" : "Input",
-      "Lower trust",
+      f.external_input === true ? "External input" : "Input boundary",
+      f.untrusted_content === true ? "Lower trust" : "Declared input",
     ],
-    ["spark", "AI assistant", "Reasoning"],
+    processing,
     [
       "database",
-      f.rag === true ? "Knowledge" : "Context",
-      f.sensitive_data === true ? "Sensitive data" : "Data boundary",
+      f.rag === true ? "Connected source" : "System state",
+      f.sensitive_data === true ? "Protected information" : "Data / context",
     ],
     [
       "shield",
@@ -1088,11 +1110,11 @@ function graph() {
     ],
     [
       "layers",
-      f.high_impact === true ? "External action" : "Answer",
-      f.tools === true ? "Tool authority" : "Output",
+      f.high_impact === true ? "Consequential outcome" : "Output / state",
+      f.tools === true ? "Connected action" : "System result",
     ],
   ];
-  return `<div class="system-map"><div class="map-bands"><span>INPUT BOUNDARY</span><span>APPLICATION BOUNDARY</span><span>OUTPUT BOUNDARY</span></div><div class="map-nodes">${steps.map(([ic, t, s], i) => `<div class="map-node ${i === 1 ? "model-node" : ""}"><span class="node-icon">${icon(ic)}</span><b>${esc(t)}</b><small>${esc(s)}</small>${i < 4 ? '<span class="edge" aria-hidden="true">→</span>' : ""}</div>`).join("")}</div><div class="map-caption"><span class="line-sample"></span> Conceptual path from your declared conditions <span class="map-tag">${f.tools === true ? "Model → tool is a trust boundary" : "Data → answer is a trust boundary"}</span></div></div>`;
+  return `<div class="system-map"><div class="map-bands"><span>INPUT BOUNDARY</span><span>SYSTEM BOUNDARY</span><span>OUTCOME BOUNDARY</span></div><div class="map-nodes">${steps.map(([ic, t, s], i) => `<div class="map-node ${i === 1 && f.ai_component === true ? "model-node" : ""}"><span class="node-icon">${icon(ic)}</span><b>${esc(t)}</b><small>${esc(s)}</small>${i < 4 ? '<span class="edge" aria-hidden="true">→</span>' : ""}</div>`).join("")}</div><div class="map-caption"><span class="line-sample"></span> Conceptual path from your declared conditions <span class="map-tag">${f.tools === true ? "Decision → connected action crosses an authority boundary" : "Input → protected outcome crosses trust boundaries"}</span></div></div>`;
 }
 function overview() {
   const m = state.model;
