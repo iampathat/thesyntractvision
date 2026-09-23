@@ -9,7 +9,7 @@ import {
   analyze,
   validateProject,
   markdown,
-} from "./engine.mjs?v=1.3.0";
+} from "./engine.mjs?v=1.4.0";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
@@ -24,19 +24,20 @@ const icon = (name, cls = "") =>
   `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${{ grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>', system: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 21h8m-4-5v5"/>', shield: '<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="M12 8v5m0 3h.01"/>', trace: '<circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="12" cy="19" r="2"/><path d="m5 7 6 10m8-10-6 10M7 5h10"/>', report: '<path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8m-8 4h6"/>', book: '<path d="M12 5c-3-2-6-2-10-1v15c4-1 7-1 10 1 3-2 6-2 10-1V4c-4-1-7-1-10 1zm0 0v15"/>', arrow: '<path d="M4 12h16m-6-6 6 6-6 6"/>', play: '<path d="m8 5 11 7-11 7z"/>', plus: '<path d="M12 5v14M5 12h14"/>', spark: '<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z"/>', download: '<path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/>', check: '<path d="m5 12 4 4L19 6"/>', close: '<path d="m6 6 12 12M6 18 18 6"/>', external: '<path d="M14 3h7v7m0-7L10 14M10 3H3v18h18v-7"/>', layers: '<path d="m12 3 10 5-10 5L2 8zm-10 9 10 5 10-5m-20 5 10 5 10-5"/>', mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 5 10 8L22 5"/>', database: '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 4 16 4 16 0V5M4 12c0 4 16 4 16 0"/>', menu: '<path d="M4 6h16M4 12h16M4 18h16"/>', undo: '<path d="m9 3-6 6 6 6M3 9h11a6 6 0 0 1 0 12"/>' }[name] || '<circle cx="12" cy="12" r="8"/>'}</svg>`;
 const ROUTES = [
   ["investigate", "Five questions", "trace"],
-  ["overview", "Overview", "grid"],
-  ["system", "System & conditions", "system"],
-  ["trace", "QCDS trace", "trace"],
+  ["perspectives", "Perspectives & reports", "layers"],
   ["findings", "Findings & evidence", "shield"],
   ["report", "Report & export", "report"],
   ["learn", "In plain English", "book"],
+  ["system", "System & conditions", "system"],
+  ["trace", "QCDS trace", "trace"],
+  ["overview", "Analysis overview", "grid"],
 ];
 const ALIASES = {
   workbench: "system",
   "mini-ai": "interview",
   "visual-guide": "learn",
   "qcds-core": "trace",
-  "perspective-map": "trace",
+  "perspective-map": "perspectives",
   method: "learn",
   oracles: "trace",
   rotation: "trace",
@@ -57,6 +58,7 @@ const state = {
   question: 1,
   explorerLens: "",
   explorerFact: "",
+  perspective: "STRIDE",
 };
 try {
   const saved = JSON.parse(localStorage.getItem(STORAGE));
@@ -98,12 +100,15 @@ function save() {
       ? "Saved in this browser"
       : "Not saved · export your work";
 }
-function notify(text) {
+function notify(text, kind = "success") {
   const el = $("#toast");
   el.textContent = text;
-  el.classList.add("visible");
+  el.classList.remove("success", "warning");
+  el.classList.add("visible", kind);
   clearTimeout(notify.timer);
-  notify.timer = setTimeout(() => el.classList.remove("visible"), 4200);
+  notify.timer = setTimeout(() => {
+    el.classList.remove("visible", "success", "warning");
+  }, kind === "warning" ? 6200 : 4200);
 }
 function run() {
   state.model = analyze(
@@ -148,11 +153,25 @@ function rememberPlace() {
     );
   } catch {}
 }
+const PERSPECTIVE_SLUGS = {
+  STRIDE: "stride",
+  "OWASP / GenAI": "owasp-genai",
+  Identity: "identity",
+  "Agent / Tool Chain": "agent-tool-chain",
+  "Privacy / Supply Chain": "privacy-supply-chain",
+  "Open Search": "open-search",
+};
+const PERSPECTIVE_NAMES = Object.fromEntries(
+  Object.entries(PERSPECTIVE_SLUGS).map(([name, slug]) => [slug, name]),
+);
 function investigationHref(
   question = state.question,
   finding = state.findingId,
 ) {
   return `#investigate/${question}${finding ? "/" + finding : ""}`;
+}
+function perspectiveHref(name = state.perspective) {
+  return `#perspectives/${PERSPECTIVE_SLUGS[name] || "stride"}`;
 }
 function goQuestion(question, finding = state.findingId) {
   if (stale()) {
@@ -169,9 +188,14 @@ function goQuestion(question, finding = state.findingId) {
     const facts = $(".fact-review");
     if (facts) {
       facts.open = true;
-      facts.scrollIntoView({ block: "start" });
+      facts.classList.add("needs-input");
+      facts.scrollIntoView({ block: "start", behavior: "smooth" });
+      setTimeout(() => facts.classList.remove("needs-input"), 6200);
     }
-    notify("Confirm the system facts to give a path its required conditions.");
+    notify(
+      "Before QCDS can build a route, answer the highlighted system facts. Unknown means the route cannot be evaluated yet.",
+      "warning",
+    );
     return;
   }
   state.question = Math.max(1, Math.min(5, Math.trunc(Number(question)) || 1));
@@ -186,19 +210,21 @@ function goQuestion(question, finding = state.findingId) {
   } else location.hash = hash;
 }
 function readLocation() {
-  const [raw, number, finding] = location.hash.slice(1).split("/");
+  const [raw, detail, finding] = location.hash.slice(1).split("/");
   const route = ALIASES[raw] || raw || "investigate";
   state.route = ROUTES.some((r) => r[0] === route) ? route : "investigate";
   if (state.route === "investigate") {
-    if (number)
+    if (detail)
       state.question = Math.max(
         1,
-        Math.min(5, Math.trunc(Number(number)) || 1),
+        Math.min(5, Math.trunc(Number(detail)) || 1),
       );
     if (state.model.findings.some((f) => f.id === finding))
       state.findingId = finding;
     rememberPlace();
   }
+  if (state.route === "perspectives" && PERSPECTIVE_NAMES[detail])
+    state.perspective = PERSPECTIVE_NAMES[detail];
   return route;
 }
 function navigate(route) {
@@ -222,17 +248,18 @@ function casePicker() {
 }
 function shell() {
   const investigating = state.route === "investigate";
-  const mainRoutes = ["investigate", "report", "learn"];
+  const mainRoutes = ["investigate", "perspectives", "findings", "report", "learn"];
+  const detailRoutes = ["system", "trace", "overview"];
   const navLink = ([id, label, ic]) =>
-    `<a href="${id === "investigate" ? investigationHref() : "#" + id}" ${state.route === id ? 'aria-current="page"' : ""}>${icon(ic)}<span>${label}</span></a>`;
+    `<a href="${id === "investigate" ? investigationHref() : id === "perspectives" ? perspectiveHref() : "#" + id}" ${state.route === id ? 'aria-current="page"' : ""}>${icon(ic)}<span>${label}</span></a>`;
   return `<aside id="site-nav" ${state.mobile ? 'role="dialog" aria-modal="true" aria-label="Navigation"' : ""} class="sidebar ${state.mobile ? "open" : ""}"><a class="brand" href="#investigate/1"><span class="brand-mark">Q<span>★</span></span><span>QCDS<span class="brand-sub">SECURITY LAB</span></span></a><div class="workspace-label">YOUR WORKSPACE <button class="icon-button menu-close" data-action="close-menu" aria-label="Close navigation">${icon("close")}</button></div><nav aria-label="Workspace">${ROUTES.filter(
     (r) => mainRoutes.includes(r[0]),
   )
     .map(navLink)
     .join(
       "",
-    )}<details class="nav-tools" ${["system", "trace", "findings", "overview"].includes(state.route) ? "open" : ""}><summary>Detailed views</summary>${ROUTES.filter(
-    (r) => !mainRoutes.includes(r[0]),
+    )}<details class="nav-tools" ${detailRoutes.includes(state.route) ? "open" : ""}><summary><span>Under the hood</span><small>Why QCDS produced the result</small></summary>${ROUTES.filter(
+    (r) => detailRoutes.includes(r[0]),
   )
     .map(navLink)
     .join(
@@ -613,6 +640,106 @@ function perspectiveOverview() {
       "",
     )}</div><p class="panel-foot">Click a finding ID to inspect its path, required conditions and next test.</p></section>`;
 }
+
+function perspectiveMarkdown(name = state.perspective) {
+  const m = state.model;
+  const matches = m.findings.filter((f) => f.hitLenses.includes(name));
+  const lens = m.lenses.find((l) => l.name === name);
+  const rotation = m.rotation.find((r) => r.name === name);
+  const signals = (LENSES[name]?.tests || []).map(([key, question]) => {
+    const condition = m.conditions.find((c) => c.key === key);
+    const value =
+      condition?.value === null ? "UNKNOWN" : condition?.value ? "YES" : "NO";
+    return `- ${condition?.id || "?"} · ${FIELD_META[key][0]}: ${value} — ${question}`;
+  });
+  return [
+    `# ${name} perspective report`,
+    "",
+    `System: ${m.input.name}`,
+    `Generated: ${new Date(m.generatedAt).toLocaleString("en-GB")}`,
+    `Perspective state: ${lens?.excluded ? "EXCLUDED" : "ACTIVE"}`,
+    "",
+    "## What this perspective asks",
+    ANGLES[name] || "Inspect the same system from this security perspective.",
+    "",
+    "## Current system signals",
+    ...(signals.length ? signals : ["No mapped signals."]),
+    "",
+    `## Candidate findings (${matches.length})`,
+    ...(matches.length
+      ? matches.flatMap((f) => [
+          `### ${f.id} — ${f.shortTitle}`,
+          `Path: ${f.path}`,
+          `Why it matches: ${f.why}`,
+          `Control to investigate: ${f.control}`,
+          `Test: ${f.verify}`,
+          `Evidence records: ${f.records.length}`,
+          "",
+        ])
+      : ["No current candidate finding is matched by this perspective.", ""]),
+    "## Rotation check",
+    rotation
+      ? `If ${name} is removed for a comparison, retained paths: ${rotation.retained.join(", ") || "none"}; lost paths: ${rotation.lost.join(", ") || "none"}.`
+      : "This perspective is currently excluded, so no leave-one-perspective-out comparison is available.",
+    "",
+    "## Scope",
+    "This report is one perspective over the same QCDS analysis. It is not an independent scan or proof of a vulnerability. Findings still require evidence and counter-tests.",
+    "",
+    "Author: Patrik Sundblom",
+  ].join("\n");
+}
+function perspectivesView() {
+  const m = state.model;
+  const name = Object.keys(LENSES).includes(state.perspective)
+    ? state.perspective
+    : "STRIDE";
+  const matches = m.findings.filter((f) => f.hitLenses.includes(name));
+  const rotation = m.rotation.find((r) => r.name === name);
+  const tests = LENSES[name]?.tests || [];
+  return (
+    header(
+      "PERSPECTIVES / SAME SYSTEM, DIFFERENT QUESTIONS",
+      "Choose how you want to look at the system.",
+      "STRIDE, OWASP/GenAI, Identity and the other perspectives do not replace QCDS. They are different lenses over the same conditions, paths and evidence. Choose one to get a focused report.",
+    ) +
+    `<section class="perspective-intro panel"><div><span class="eyebrow">HOW TO USE THIS</span><h2>One QCDS run. Several report views.</h2><p>The underlying system does not change when you switch perspective. The lens changes which security questions are emphasized and which candidate findings are shown in this report.</p></div><a class="button" href="#trace">See how rotation works ${icon("arrow")}</a></section>
+    <div class="perspective-picker" aria-label="Security perspectives">${Object.keys(LENSES)
+      .map((n) => {
+        const count = m.findings.filter((f) => f.hitLenses.includes(n)).length;
+        const excluded = project().excludedLenses.includes(n);
+        return `<a class="perspective-choice ${n === name ? "selected" : ""} ${excluded ? "excluded" : ""}" href="${perspectiveHref(n)}" aria-current="${n === name ? "true" : "false"}"><span>${icon("layers")}</span><b>${esc(n)}</b><small>${excluded ? "Excluded from current analysis" : `${count} matching candidate${count === 1 ? "" : "s"}`}</small></a>`;
+      })
+      .join("")}</div>
+    <section class="panel perspective-report">
+      <div class="perspective-report-head"><div><span class="eyebrow">${esc(name.toUpperCase())} REPORT</span><h2>${esc(name)} view of ${esc(m.input.name)}</h2><p>${esc(ANGLES[name] || "Inspect the system through this security lens.")}</p></div><div class="perspective-actions"><button class="button" data-action="export-perspective-md">${icon("download")} Download ${esc(name)} report</button><button class="button primary" data-action="print-perspective">${icon("report")} Print / save PDF</button></div></div>
+      <div class="perspective-report-grid">
+        <section><span class="eyebrow muted">WHAT THIS LENS SEES IN YOUR SYSTEM</span><div class="perspective-signals">${tests
+          .map(([key, question]) => {
+            const condition = m.conditions.find((c) => c.key === key);
+            const value =
+              condition?.value === null
+                ? "UNKNOWN"
+                : condition?.value
+                  ? "YES"
+                  : "NO";
+            return `<div><span class="mono">${condition?.id || "?"}</span><div><b>${esc(FIELD_META[key][0])}</b><small>${esc(question)}</small></div>${badge(value, value === "YES" ? "cyan" : value === "UNKNOWN" ? "warning" : "neutral")}</div>`;
+          })
+          .join("")}</div></section>
+        <aside><span class="eyebrow muted">ROTATION CHECK</span><h3>Does the analysis depend on ${esc(name)}?</h3><p>${rotation ? `Remove this perspective and run the same rules again: <b>${rotation.retained.length}</b> current paths remain and <b>${rotation.lost.length}</b> disappear in that comparison.` : "This perspective is excluded from the current analysis. Enable it in QCDS trace to include it in rotation comparisons."}</p><small>This tests dependence on the lens. It does not independently prove or disprove a finding.</small></aside>
+      </div>
+      <div class="perspective-findings-head"><div><span class="eyebrow muted">RESULTS THROUGH THIS LENS</span><h3>${matches.length} matching candidate finding${matches.length === 1 ? "" : "s"}</h3></div><small>Same underlying findings · filtered by ${esc(name)}</small></div>
+      <div class="perspective-report-findings">${matches.length
+        ? matches
+            .map(
+              (f) => `<article><div><span class="mono">${f.id}</span>${badge(f.severity, severityClass(f.severity))}</div><h3>${esc(f.shortTitle)}</h3><p>${esc(f.path)}</p><small>${f.records.length ? `${f.records.length} evidence record${f.records.length === 1 ? "" : "s"}` : "Awaiting evidence"}</small><button class="text-button" data-finding="${f.id}">Open the full finding ${icon("arrow")}</button></article>`,
+            )
+            .join("")
+        : `<div class="empty"><h3>No current finding matches ${esc(name)}</h3><p>This is not a safety conclusion. Review Unknown conditions and whether the perspective is enabled.</p></div>`}</div>
+      <div class="perspective-scope"><b>Important:</b> a perspective report is a focused view, not a separate scan. QCDS keeps the shared conditions, recursive challenges and evidence binding underneath it.</div>
+    </section>`
+  );
+}
+
 function comparisonReadout() {
   const m = state.model;
   const lens =
@@ -900,6 +1027,7 @@ function view() {
       overview: overview,
       system: systemView,
       findings: findingsView,
+      perspectives: perspectivesView,
       trace: traceView,
       report: reportView,
       learn: learnView,
@@ -1099,6 +1227,20 @@ document.addEventListener("click", async (e) => {
       break;
     case "export-json":
       exportProject();
+      break;
+    case "export-perspective-md":
+      if (!stale()) {
+        const slug = PERSPECTIVE_SLUGS[state.perspective] || "perspective";
+        download(
+          perspectiveMarkdown(),
+          `qcds-security-lab-${slug}-report.md`,
+          "text/markdown",
+        );
+        notify(`${state.perspective} report downloaded.`);
+      }
+      break;
+    case "print-perspective":
+      if (!stale()) window.print();
       break;
     case "export-md":
       if (!stale()) {
