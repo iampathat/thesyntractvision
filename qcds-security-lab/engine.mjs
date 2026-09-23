@@ -476,7 +476,7 @@ const SCENARIOS = [
       ],
       ["rag", "cross_user"],
     ),
-  },,
+  },
   {
     id: "invoice",
     label: "Invoice approval assistant",
