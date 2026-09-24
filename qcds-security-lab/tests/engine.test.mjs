@@ -45,11 +45,11 @@ test("core C conditions constrain a much larger attack-vector fabric", () => {
   const portal = analyze(newProject("portal").input);
   assert.equal(portal.searchSpace.coreConditions, 14);
   assert.equal(portal.searchSpace.ternaryConditionSpace, 4782969);
-  assert.equal(portal.searchSpace.generatedAttackVectors, 251);
-  assert.ok(portal.searchSpace.activeAttackVectors > 100);
-  assert.ok(portal.searchSpace.generatedAttackVectors > portal.searchSpace.coreConditions * 10);
+  assert.ok(portal.searchSpace.generatedAttackVectors > 500);
+  assert.ok(portal.searchSpace.activeAttackVectors > 200);
+  assert.ok(portal.searchSpace.generatedAttackVectors > portal.searchSpace.coreConditions * 30);
   const owasp = portal.frameworkViews["OWASP / AppSec"];
-  assert.ok(owasp.vectorCount > 100);
+  assert.ok(owasp.vectorCount > 200);
   assert.ok(Object.hasOwn(owasp.categories, "A01:2025 Broken Access Control"));
   assert.ok(Object.hasOwn(owasp.categories, "A05:2025 Injection"));
   assert.ok(
@@ -62,11 +62,27 @@ test("core C conditions constrain a much larger attack-vector fabric", () => {
 });
 test("unknown core facts keep attack vectors conditional rather than deleting them", () => {
   const m = analyze(newProject("custom").input);
-  assert.equal(m.searchSpace.generatedAttackVectors, 251);
+  assert.ok(m.searchSpace.generatedAttackVectors > 300);
   assert.equal(m.searchSpace.activeAttackVectors, 0);
-  assert.equal(m.searchSpace.conditionalAttackVectors, 251);
+  assert.equal(
+    m.searchSpace.conditionalAttackVectors,
+    m.searchSpace.generatedAttackVectors,
+  );
   assert.equal(m.searchSpace.rejectedAttackVectors, 0);
-  assert.ok(m.frameworkViews["OWASP / AppSec"].conditionalCount > 200);
+  assert.ok(m.frameworkViews["OWASP / AppSec"].conditionalCount > 300);
+});
+test("open search lattice scales with the modeled asset surface", () => {
+  const small = newProject("custom");
+  small.input.assets = ["A"];
+  const large = newProject("custom");
+  large.input.assets = ["A", "B", "C", "D", "E", "F"];
+  const smallModel = analyze(small.input);
+  const largeModel = analyze(large.input);
+  assert.ok(
+    largeModel.searchSpace.generatedAttackVectors >
+      smallModel.searchSpace.generatedAttackVectors,
+  );
+  assert.ok(largeModel.attackVectorSpace.openSearchVectorCount > smallModel.attackVectorSpace.openSearchVectorCount);
 });
 test("framework reports are projections over the same vector fabric", () => {
   const m = analyze(newProject("support").input);
@@ -123,7 +139,10 @@ test("unknown system is not a security pass", () => {
   assert.equal(m.findings.length, 0);
   assert.equal(m.pending.length, 8);
   assert.equal(m.searchSpace.conditionalRoutes, 8);
-  assert.equal(m.searchSpace.conditionalAttackVectors, 251);
+  assert.equal(
+    m.searchSpace.conditionalAttackVectors,
+    m.searchSpace.generatedAttackVectors,
+  );
   assert.ok(m.oracles.every((o) => !["PASS", "VERIFIED"].includes(o.state)));
 });
 test("unknown prerequisites produce questions; explicit No excludes the rule", () => {
