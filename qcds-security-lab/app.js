@@ -1610,7 +1610,7 @@ async function execute() {
   if (state.route === "system") goQuestion(2);
   else navigate(state.route);
   notify(
-    `Analysis complete · ${state.model.findings.length} resolved path${state.model.findings.length === 1 ? "" : "s"} · ${state.model.pending.length} conditional (?) · ${state.model.unknown.length} unresolved condition${state.model.unknown.length === 1 ? "" : "s"}.`,
+    `QCDS complete · ${state.model.searchSpace.generatedAttackVectors} attack vectors generated · ${state.model.searchSpace.activeAttackVectors} active · ${state.model.searchSpace.conditionalAttackVectors} conditional · ${allPaths().length} converged route clusters.`,
   );
 }
 function switchCase(id) {
