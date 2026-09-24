@@ -13,20 +13,26 @@ A perspective is a way of asking questions. An Oracle is a constraint or test th
 ~~~text
 TARGET SYSTEM
      ↓
-conditions 1 / 0 / ?
+core conditions 1 / 0 / ?  ← constraints, not attack list
      ↓
-model-assisted candidate material (optional)
+attack mechanisms × variants × targets × assets
      ↓
-perspective questions
+generated attack-vector fabric
+     ↓
+framework projections
      ↕
 QCDS rotation / constraint / recursion
      ↓
-candidate routes
+converged candidate routes
      ↓
 tests and evidence
 ~~~
 
 ## Current perspective map
+
+A perspective does **not** own a fixed handful of C-values. C1..Cn describe the target system. The perspective receives the surviving vector instances that map to its framework categories.
+
+For example, the OWASP/AppSec projection currently includes categories from **OWASP Top 10:2025** and **OWASP API Security Top 10:2023**. A single modeled system can therefore yield hundreds of OWASP-mapped vector instances even though the compact core input layer has fourteen conditions.
 
 | Lens | Typical dimension | Example Oracle |
 |---|---|---|
@@ -81,9 +87,9 @@ Equally useful is contradiction: one branch may show that an authorization Oracl
 
 ## Rotation
 
-Perspective rotation asks a specific counterfactual question:
+Perspective rotation asks a specific counterfactual question over the vector fabric:
 
-> Does this candidate still survive if one perspective is removed?
+> If this perspective is removed, which vector candidates are still supported by another active perspective and which lose their last current framework mapping?
 
 This is different from changing a system fact.
 
