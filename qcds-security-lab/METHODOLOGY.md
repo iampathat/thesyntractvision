@@ -38,11 +38,11 @@ Each answer creates or refines a **Condition**.
 
 In v1.10, the interview can form condition proposals from the user's own words. Each inferred value carries a reason and confidence marker. The user can override it. Values that cannot be supported remain **?**; they are not converted to No. Those unknowns are ranked by how many surviving conditional routes depend on them, producing the next clarification queue.
 
-Conditions are ternary:
+Conditions use ternary notation:
 
-- **1** = present
-- **0** = absent
-- **?** = unresolved
+- **1** = present / fixed true in the current mask
+- **0** = absent / fixed false in the current mask
+- **?** = unresolved and therefore branches to both logical alternatives
 
 Examples for a conventional web portal:
 
@@ -61,6 +61,8 @@ C14 The target itself does not contain AI/ML
 For an AI-enabled target, C14 becomes 1 and the AI / GenAI perspective can become applicable.
 
 The core Conditions define compact coordinates in the observable problem space. They are not the conclusion **and they are not the attack-vector list**.
+
+They also do not imply a `3^n` search. Known 1/0 values are already fixed by the mask. If `k` binary Conditions remain `?`, the unresolved logical space is `2^k`.
 
 After Condition Formation, QCDS expands attack mechanisms across route variants, targets and modeled assets. The resulting vector fabric is constrained by the current 1 / 0 / ? state. A vector whose required facts contain `?` remains **conditional** rather than being guessed away.
 
