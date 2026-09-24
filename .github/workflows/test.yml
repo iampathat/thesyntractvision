@@ -39,6 +39,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: QCDS Security Lab and Project Glasswing
+        run: |
+          node --test qcds-security-lab/tests/engine.test.mjs
+          node --test qcds-security-lab/tests/glasswing.test.mjs
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e '.[test]'
       - name: QCDS architecture, unified system, Visual Logical Robot and public ingress smoke
