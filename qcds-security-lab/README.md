@@ -11,7 +11,7 @@ LLMs and other predictive models can assist with interpretation, question genera
 
 > **Commercial license required.** Public visibility does not grant a right to use, copy, modify, deploy, benchmark, train on, integrate, distribute or commercialize this material.
 
-## Workspace v1.10
+## Workspace v1.10.1
 
 The workspace follows five human-facing questions:
 
@@ -35,7 +35,7 @@ A question mark is valid input. Interview answers can form condition proposals w
 
 These C-values are **not fourteen attack vectors** and they do not define the size of the security search. They constrain a separate generated **Attack Vector Fabric**.
 
-With fourteen ternary core dimensions there are `3^14 = 4,782,969` possible core assignments. A run evaluates the current target state and QCDS counterfactuals rather than claiming that all 4.78 million assignments were brute-forced.
+The core facts form a **mask**, not a three-way Cartesian search. Known `1` and `0` values are fixed. Only unresolved `?` dimensions branch. If `k` binary dimensions are unresolved, the logical mask space is `2^k`. The total number of described system dimensions can therefore be 14, 50, 500 or another value without implying `3^n` branching.
 
 ### Attack Vector Fabric
 
@@ -65,6 +65,14 @@ The built-in catalog contains multiple attack-mechanism seeds and a system-speci
 For example, the current Customer Records Portal generates **more than 500 attack-vector candidates** from its modeled assets and boundaries before current constraints reject or retain them.
 
 The catalog is extensible and finite. It is an implementation surface for QCDS, not a claim that a fixed number of vectors defines the theoretical QCDS search space.
+
+### Execution scale and quantum path
+
+The browser release is an inspectable classical implementation. QCDS itself is not tied to that substrate.
+
+For large unresolved logical spaces, QCDS can map candidate states onto a quantum basis, apply logical Oracles to mark or phase candidate states, amplify surviving structure and combine **parallel, sequential and hybrid** inference branches before Truth-Alignment Verification. In a quantum representation, `n` qubits expose a `2^n` basis-state space; the QCDS mask and Oracles determine which parts of that space remain relevant.
+
+This document distinguishes that execution architecture from what the current browser actually runs: the browser demonstrates the QCDS logic and vector fabric but does not claim to execute a NISQ/Grover backend.
 
 ### Perspectives are projections over the vector fabric
 
