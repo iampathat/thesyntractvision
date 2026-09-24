@@ -10,7 +10,7 @@ import {
   analyze,
   validateProject,
   markdown,
-} from "./engine.mjs?v=1.9.1";
+} from "./engine.mjs?v=1.10.0";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
@@ -979,47 +979,76 @@ function perspectiveOverview() {
 
 function perspectiveMarkdown(name = state.perspective) {
   const m = state.model;
-  const matches = allPaths().filter((f) => f.hitLenses.includes(name));
+  const view = m.frameworkViews?.[name];
   const lens = m.lenses.find((l) => l.name === name);
-  const rotation = m.rotation.find((r) => r.name === name);
-  const signals = (LENSES[name]?.tests || []).map(([key, question]) => {
+  const rotation = m.vectorRotation?.find((r) => r.name === name);
+  const categories = Object.entries(view?.categories || {});
+  const vectors = view?.vectors || [];
+  const usedKeys = [
+    ...new Set(
+      vectors.flatMap((vector) => [
+        ...vector.requires,
+        ...vector.requiresAny,
+        ...vector.supports,
+      ]),
+    ),
+  ];
+  const coreFacts = usedKeys.map((key) => {
     const condition = m.conditions.find((c) => c.key === key);
     const value =
-      condition?.value === null ? "UNKNOWN" : condition?.value ? "YES" : "NO";
-    return `- ${condition?.id || "?"} · ${FIELD_META[key][0]}: ${value} — ${question}`;
+      condition?.value === null ? "?" : condition?.value ? "1" : "0";
+    return `- ${condition?.id || "?"} · ${FIELD_META[key][0]}: ${value}`;
   });
   return [
-    `# ${name} perspective report`,
+    `# ${name} attack-vector report`,
     "",
     `System: ${m.input.name}`,
     `Generated: ${new Date(m.generatedAt).toLocaleString("en-GB")}`,
     `Perspective state: ${lens?.excluded ? "EXCLUDED" : lens && !lens.active ? "NOT APPLICABLE TO TARGET" : "ACTIVE"}`,
     "",
-    "## What this perspective asks",
-    ANGLES[name] || "Inspect the same system from this security perspective.",
+    "## QCDS vector fabric",
+    `Core system conditions: ${m.searchSpace.coreConditions} — these are constraints, not attack vectors.`,
+    `Ternary core condition space: ${m.searchSpace.ternaryConditionSpace.toLocaleString("en-US")} possible assignments.`,
+    `Generated attack-vector candidates: ${m.searchSpace.generatedAttackVectors}`,
+    `System-wide surviving attack vectors: ${m.searchSpace.survivingAttackVectors}`,
+    `${name} projection: ${view?.activeCount || 0} active + ${view?.conditionalCount || 0} conditional vectors.`,
     "",
-    "## Current system signals",
-    ...(signals.length ? signals : ["No mapped signals."]),
+    "## Framework categories",
+    ...(categories.length
+      ? categories.map(
+          ([category, data]) =>
+            `- ${category}: ${data.active} active + ${data.conditional} conditional vectors.`,
+        )
+      : ["No categories are currently applicable."]),
     "",
-    `## Candidate findings (${matches.length})`,
-    ...(matches.length
-      ? matches.flatMap((f) => [
-          `### ${f.id} — ${f.shortTitle}`,
-          `Path: ${f.path}`,
-          `Why it matches: ${f.why}`,
-          `Control to investigate: ${f.control}`,
-          `Test: ${f.verify}`,
-          `Evidence records: ${f.records.length}`,
-          "",
-        ])
-      : ["No current candidate finding is matched by this perspective.", ""]),
-    "## Rotation check",
+    "## Core facts used to constrain this perspective",
+    ...(coreFacts.length ? coreFacts : ["No core facts are currently mapped."]),
+    "",
+    `## Attack-vector register (${vectors.length})`,
+    ...vectors.flatMap((vector) => {
+      const categoriesForLens =
+        vector.frameworks.find((entry) => entry.lens === name)?.categories || [];
+      return [
+        `### ${vector.id} — ${vector.title}`,
+        `State: ${vector.state}`,
+        `Category: ${categoriesForLens.join(" · ") || "Uncategorized"}`,
+        `Route family: ${vector.routeFamily}`,
+        `Variant: ${vector.variantLabel}`,
+        `Target: ${vector.targetLabel}`,
+        `Path: ${vector.path}`,
+        `Missing constraints: ${vector.missing.join(", ") || "none"}`,
+        `Control: ${vector.control}`,
+        `Test: ${vector.verify}`,
+        "",
+      ];
+    }),
+    "## Perspective rotation",
     rotation
-      ? `If ${name} is removed for a comparison, retained paths: ${rotation.retained.join(", ") || "none"}; lost paths: ${rotation.lost.join(", ") || "none"}.`
-      : "This perspective is currently excluded, so no leave-one-perspective-out comparison is available.",
+      ? `Remove ${name}: ${rotation.retained.length} of the vectors currently seen by this perspective remain supported by another active perspective; ${rotation.lost.length} lose their last active perspective mapping.`
+      : "No vector rotation comparison is available.",
     "",
     "## Scope",
-    "This report is one perspective over the same QCDS analysis. It is not an independent scan or proof of a vulnerability. Findings still require evidence and counter-tests.",
+    "This is a projection of the same QCDS attack-vector space, not a separate scan. Core C-conditions constrain the space; they are not the vector catalog. Vectors still require testing and evidence before a security conclusion.",
     "",
     "Author: Patrik Sundblom",
   ].join("\n");
@@ -1029,55 +1058,114 @@ function perspectivesView() {
   const name = Object.keys(LENSES).includes(state.perspective)
     ? state.perspective
     : "STRIDE";
-  const matches = allPaths().filter((f) => f.hitLenses.includes(name));
-  const rotation = m.rotation.find((r) => r.name === name);
-  const tests = LENSES[name]?.tests || [];
+  const view = m.frameworkViews?.[name] || {
+    vectors: [],
+    categories: {},
+    activeCount: 0,
+    conditionalCount: 0,
+    vectorCount: 0,
+  };
+  const vectors = view.vectors || [];
+  const rotation = m.vectorRotation?.find((r) => r.name === name);
+  const usedKeys = [
+    ...new Set(
+      vectors.flatMap((vector) => [
+        ...vector.requires,
+        ...vector.requiresAny,
+        ...vector.supports,
+      ]),
+    ),
+  ];
+  const categories = Object.entries(view.categories || {}).sort(
+    (a, b) =>
+      b[1].active + b[1].conditional - (a[1].active + a[1].conditional),
+  );
+  const visibleVectors = vectors.slice(0, 36);
+
   return (
     header(
-      "PERSPECTIVES / SAME SYSTEM, DIFFERENT QUESTIONS",
-      "Choose how you want to look at the system.",
-      "STRIDE, OWASP/AppSec, Identity and the other perspectives do not replace QCDS. They are different lenses over the same conditions, paths and evidence. AI/GenAI becomes active only when the target system itself contains AI/ML.",
+      "PERSPECTIVES / ONE VECTOR SPACE, DIFFERENT REPORTS",
+      "QCDS searches the attack space first. Frameworks organize what survived.",
+      "C1–C14 are only core system constraints. They are not the attack-vector list. QCDS expands attack mechanisms across route variants and targets, constrains that space with 1 / 0 / ?, and then projects the surviving vectors into STRIDE, OWASP/AppSec, Identity and other reports.",
     ) +
-    `<section class="perspective-intro panel"><div><span class="eyebrow">HOW TO USE THIS</span><h2>One QCDS run. Several report views.</h2><p>The underlying system does not change when you switch perspective. The lens changes which security questions are emphasized and which candidate findings are shown in this report.</p></div><a class="button" href="#trace">See how rotation works ${icon("arrow")}</a></section>
+    `<section class="vector-fabric-summary panel">
+      <div><span class="eyebrow">QCDS ATTACK-VECTOR FABRIC</span><h2>${m.searchSpace.generatedAttackVectors.toLocaleString("en-US")} generated candidates</h2><p>Built from <b>${m.searchSpace.seedMechanisms}</b> attack-mechanism seeds expanded across route variants and targets. The current system constraints leave <b>${m.searchSpace.activeAttackVectors}</b> active and <b>${m.searchSpace.conditionalAttackVectors}</b> conditional vectors.</p></div>
+      <div class="vector-fabric-metrics">
+        <div><span>CORE FACTS</span><b>${m.searchSpace.coreConditions}</b><small>constraints only</small></div>
+        <div><span>3^C SPACE</span><b>${m.searchSpace.ternaryConditionSpace.toLocaleString("en-US")}</b><small>possible core assignments</small></div>
+        <div><span>SURVIVING VECTORS</span><b>${m.searchSpace.survivingAttackVectors}</b><small>active + conditional</small></div>
+        <div><span>REJECTED</span><b>${m.searchSpace.rejectedAttackVectors}</b><small>by current constraints</small></div>
+      </div>
+    </section>
+    <section class="perspective-intro panel"><div><span class="eyebrow">HOW TO READ THIS</span><h2>STRIDE and OWASP are projections — not four-condition mini scans.</h2><p>The same attack-vector fabric is viewed through each framework. A vector can appear in several frameworks at once. Rotation asks whether it still has support when one perspective is removed.</p></div><a class="button" href="#trace">See QCDS trace ${icon("arrow")}</a></section>
     <div class="perspective-picker" aria-label="Security perspectives">${Object.keys(LENSES)
       .map((n) => {
-        const count = allPaths().filter((f) => f.hitLenses.includes(n)).length;
+        const lensView = m.frameworkViews?.[n];
         const lensState = m.lenses.find((l) => l.name === n);
         const excluded = project().excludedLenses.includes(n);
         const inactive = lensState && !lensState.active && !excluded;
-        return `<a class="perspective-choice ${n === name ? "selected" : ""} ${excluded ? "excluded" : ""} ${inactive ? "inactive" : ""}" href="${perspectiveHref(n)}" aria-current="${n === name ? "true" : "false"}"><span>${icon("layers")}</span><b>${esc(n)}</b><small>${excluded ? "Excluded from current analysis" : inactive ? "Not applicable to this target system" : `${count} matching candidate${count === 1 ? "" : "s"}`}</small></a>`;
+        const count = lensView?.vectorCount || 0;
+        return `<a class="perspective-choice ${n === name ? "selected" : ""} ${excluded ? "excluded" : ""} ${inactive ? "inactive" : ""}" href="${perspectiveHref(n)}" aria-current="${n === name ? "true" : "false"}"><span>${icon("layers")}</span><b>${esc(n)}</b><small>${excluded ? "Excluded from current analysis" : inactive ? "Not applicable to this target system" : `${count} surviving vector${count === 1 ? "" : "s"}`}</small></a>`;
       })
       .join("")}</div>
     <section class="panel perspective-report">
-      <div class="perspective-report-head"><div><span class="eyebrow">${esc(name.toUpperCase())} REPORT</span><h2>${esc(name)} view of ${esc(m.input.name)}</h2><p>${esc(ANGLES[name] || "Inspect the system through this security lens.")}</p></div><div class="perspective-actions"><button class="button" data-action="export-perspective-md">${icon("download")} Download ${esc(name)} report</button><button class="button primary" data-action="print-perspective">${icon("report")} Print / save PDF</button></div></div>
-      <div class="perspective-report-grid">
-        <section><span class="eyebrow muted">WHAT THIS LENS SEES IN YOUR SYSTEM</span><div class="perspective-signals">${tests
-          .map(([key, question]) => {
-            const condition = m.conditions.find((c) => c.key === key);
+      <div class="perspective-report-head"><div><span class="eyebrow">${esc(name.toUpperCase())} VECTOR REPORT</span><h2>${view.vectorCount} surviving vectors through ${esc(name)}</h2><p>${esc(ANGLES[name] || "Inspect the same attack-vector space through this security framework.")}</p></div><div class="perspective-actions"><button class="button" data-action="export-perspective-md">${icon("download")} Download full ${esc(name)} report</button><button class="button primary" data-action="print-perspective">${icon("report")} Print / save PDF</button></div></div>
+      <div class="framework-vector-status">
+        <div><span>ACTIVE</span><b>${view.activeCount}</b><small>required constraints resolved</small></div>
+        <div><span>CONDITIONAL · ?</span><b>${view.conditionalCount}</b><small>kept alive by unknowns</small></div>
+        <div><span>FRAMEWORK CATEGORIES</span><b>${categories.length}</b><small>categories represented</small></div>
+        <div><span>CORE FACTS TOUCHED</span><b>${usedKeys.length}</b><small>of ${m.conditions.length}; not vector count</small></div>
+      </div>
+      <div class="framework-category-grid">
+        ${categories
+          .map(
+            ([category, data]) =>
+              `<article><span>${data.active + data.conditional}</span><div><b>${esc(category)}</b><small>${data.active} active · ${data.conditional} conditional</small></div></article>`,
+          )
+          .join("") || '<div class="empty">No framework categories are currently applicable.</div>'}
+      </div>
+      <details class="framework-core-facts">
+        <summary>Core system constraints used by this perspective · ${usedKeys.length} facts</summary>
+        <p><b>These C-values are not attack vectors.</b> They constrain which vectors survive.</p>
+        <div class="perspective-signals">${usedKeys
+          .map((key) => {
+            const condition = m.conditions.find((condition) => condition.key === key);
             const value =
               condition?.value === null
-                ? "UNKNOWN"
+                ? "?"
                 : condition?.value
-                  ? "YES"
-                  : "NO";
-            return `<div><span class="mono">${condition?.id || "?"}</span><div><b>${esc(FIELD_META[key][0])}</b><small>${esc(question)}</small></div>${badge(value, value === "YES" ? "cyan" : value === "UNKNOWN" ? "warning" : "neutral")}</div>`;
+                  ? "1"
+                  : "0";
+            return `<div><span class="mono">${condition?.id || "?"}</span><div><b>${esc(FIELD_META[key][0])}</b><small>${esc(FIELD_META[key][1])}</small></div>${badge(value, value === "1" ? "cyan" : value === "?" ? "warning" : "neutral")}</div>`;
           })
-          .join("")}</div></section>
-        <aside><span class="eyebrow muted">ROTATION CHECK</span><h3>Does the analysis depend on ${esc(name)}?</h3><p>${rotation ? `Remove this perspective and rerun the surviving route space: <b>${rotation.retained.length}</b> current paths remain and <b>${rotation.lost.length}</b> disappear in that comparison.` : m.lenses.find((l) => l.name === name)?.excluded ? "This perspective is excluded from the current analysis." : "This perspective is not applicable to the declared target system, so it is not part of the current rotation."}</p><small>This tests dependence on the lens. It does not independently prove or disprove a finding.</small></aside>
-      </div>
-      <div class="perspective-findings-head"><div><span class="eyebrow muted">RESULTS THROUGH THIS LENS</span><h3>${matches.length} matching route${matches.length === 1 ? "" : "s"}</h3></div><small>Same underlying route space · filtered by ${esc(name)}</small></div>
-      <div class="perspective-report-findings">${matches.length
-        ? matches
-            .map(
-              (f) => `<article><div><span class="mono">${f.id}</span>${badge(f.conditional ? "? CONDITIONAL" : f.severity, f.conditional ? "warning" : severityClass(f.severity))}</div><h3>${esc(f.shortTitle)}</h3><p>${esc(f.path)}</p><small>${f.conditional ? `Depends on ${f.missing.length} unresolved condition${f.missing.length === 1 ? "" : "s"}` : f.records.length ? `${f.records.length} evidence record${f.records.length === 1 ? "" : "s"}` : "Awaiting evidence"}</small><button class="text-button" data-finding="${f.id}">Open the full path ${icon("arrow")}</button></article>`,
-            )
-            .join("")
-        : `<div class="empty"><h3>No current finding matches ${esc(name)}</h3><p>This is not a safety conclusion. Review Unknown conditions and whether the perspective is enabled.</p></div>`}</div>
-      <div class="perspective-scope"><b>Important:</b> a perspective report is a focused view, not a separate scan. QCDS keeps the shared conditions, recursive challenges and evidence binding underneath it.</div>
+          .join("")}</div>
+      </details>
+      <div class="perspective-findings-head"><div><span class="eyebrow muted">ATTACK VECTORS THROUGH THIS LENS</span><h3>${view.vectorCount} vectors · showing first ${visibleVectors.length}</h3></div><small>Download the report for the complete register</small></div>
+      <div class="framework-vector-list">${visibleVectors
+        .map((vector) => {
+          const cats =
+            vector.frameworks.find((entry) => entry.lens === name)?.categories || [];
+          return `<article class="${vector.state === "CONDITIONAL" ? "conditional" : ""}">
+            <div class="framework-vector-id"><span class="mono">${vector.id}</span>${badge(vector.state === "CONDITIONAL" ? "? CONDITIONAL" : vector.severity, vector.state === "CONDITIONAL" ? "warning" : severityClass(vector.severity))}</div>
+            <h3>${esc(vector.title)}</h3>
+            <p>${esc(vector.path)}</p>
+            <div class="framework-vector-tags">${cats.map((category) => `<span>${esc(category)}</span>`).join("")}</div>
+            <small>${vector.variantLabel} · target: ${vector.targetLabel}${vector.missing.length ? ` · missing: ${vector.missing.join(", ")}` : ""}</small>
+          </article>`;
+        })
+        .join("") || '<div class="empty"><h3>No vector survives through this perspective</h3><p>This is not a safety conclusion. Review the target model and unresolved facts.</p></div>'}</div>
+      ${view.vectorCount > visibleVectors.length ? `<details class="framework-vector-register"><summary>Open complete on-screen vector register · ${view.vectorCount}</summary><div>${vectors
+        .map((vector) => {
+          const cats =
+            vector.frameworks.find((entry) => entry.lens === name)?.categories || [];
+          return `<div class="framework-vector-row"><span class="mono">${vector.id}</span><b>${esc(vector.title)}</b><span>${esc(cats.join(" · "))}</span><small>${vector.state}</small></div>`;
+        })
+        .join("")}</div></details>` : ""}
+      <aside class="vector-rotation-check"><span class="eyebrow muted">QCDS PERSPECTIVE ROTATION</span><h3>What survives if ${esc(name)} is removed?</h3><p>${rotation ? `Of the <b>${rotation.relevant}</b> vectors currently visible through this perspective, <b>${rotation.retained.length}</b> are also supported by another active perspective and <b>${rotation.lost.length}</b> lose their last current perspective mapping.` : "No rotation comparison is available for this perspective."}</p><small>This is a dependence test over the vector fabric. It does not prove or disprove a vulnerability.</small></aside>
+      <div class="perspective-scope"><b>Important:</b> framework reports organize the same QCDS vector space. Core conditions constrain it; they are not the vector catalog, and framework agreement is not evidence.</div>
     </section>`
   );
 }
-
 function comparisonReadout() {
   const m = state.model;
   const lens =
