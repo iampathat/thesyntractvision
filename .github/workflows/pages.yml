@@ -331,6 +331,11 @@ jobs:
           grep -F 'function suggestConditions' _site/qcds-security-lab/engine.mjs
           grep -F 'conditionalRoutes' _site/qcds-security-lab/engine.mjs
           grep -F 'recursiveInference' _site/qcds-security-lab/engine.mjs
+          grep -F 'WORKED EXAMPLE LOADED' _site/qcds-security-lab/app.js
+          grep -F 'THE 5-STEP FLOW' _site/qcds-security-lab/app.js
+          grep -F 'EXPLORE THE SAME EXAMPLE' _site/qcds-security-lab/app.js
+          grep -F 'Load example everywhere' _site/qcds-security-lab/app.js
+          grep -F 'WORKED_EXAMPLE_EVIDENCE' _site/qcds-security-lab/engine.mjs
           grep -F 'Commercial license required' _site/qcds-security-lab/LICENSE.md
           node --check _site/qcds-security-lab/app.js
           node --check _site/qcds-security-lab/engine.mjs
