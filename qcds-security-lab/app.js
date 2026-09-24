@@ -860,48 +860,66 @@ function exampleFlowCard(id) {
       return `<span class="${symbol === "?" ? "unknown-chip" : ""}">${symbol} · ${condition.id} · ${esc(FIELD_META[key][0])}</span>`;
     })
     .join("");
-  return `<article class="example-journey panel">
+  const evidence = focus.records?.[0];
+  return `<article class="example-journey panel ${state.caseId === id ? "currently-loaded" : ""}">
     <div class="example-journey-head">
       <div><span class="eyebrow">${esc(guide.level)}</span><h2>${esc(guide.title)}</h2><p>${esc(guide.story)}</p></div>
+      ${state.caseId === id ? '<span class="example-loaded-badge">LOADED ACROSS THE LAB</span>' : ""}
     </div>
     <div class="example-problem"><span>THE SECURITY QUESTION</span><strong>${esc(guide.question)}</strong></div>
-    <details class="example-preview" ${id === "portal" ? "open" : ""}><summary>Preview the whole 5-step flow</summary>
+    <details class="example-preview" ${id === "portal" ? "open" : ""}><summary>Preview this complete case from Goal to Report</summary>
     <div class="example-flow">
-      <div><span>1 · GOAL</span><b>${esc(p.input.attackerGoal)}</b><small>What unwanted outcome are we investigating?</small></div>
-      <div><span>2 · ROUTE</span><b>${esc(focus.path)}</b><small>${focus.conditional ? "? Conditional because one or more required facts are unresolved." : "A candidate route supported by the current system facts."}</small></div>
-      <div><span>3 · CONTROL</span><b>${esc(focus.control)}</b><small>What should stop the route?</small></div>
-      <div><span>4 · BYPASS</span><b>${esc(focus.bypass)}</b><small>How could that protection fail?</small></div>
-      <div><span>5 · PROOF</span><b>${esc(focus.verify)}</b><small>What observation could support or refute the route?</small></div>
+      <div><span>1 · GOAL</span><b>${esc(p.input.attackerGoal)}</b><small>This exact goal appears in Step 1.</small></div>
+      <div><span>2 · ROUTE</span><b>${esc(focus.path)}</b><small>${focus.conditional ? "? Conditional because one or more required facts are unresolved." : "This exact route appears in Step 2 and Results."}</small></div>
+      <div><span>3 · CONTROL</span><b>${esc(focus.control)}</b><small>This protection is challenged in Step 3.</small></div>
+      <div><span>4 · BYPASS</span><b>${esc(focus.bypass)}</b><small>This recursive challenge appears in Step 4.</small></div>
+      <div><span>5 · PROOF</span><b>${esc(focus.verify)}</b><small>${evidence ? `Worked evidence included: ${esc(evidence.outcome)}.` : focus.conditional ? "The unresolved ? is the lesson: evidence cannot be bound yet." : "The worked case includes the test plan."}</small></div>
+    </div>
+    <div class="example-product-map">
+      <a href="#investigate/1/${focus.id}"><span>5-STEP FLOW</span><b>Goal → Route → Control → Bypass → Proof</b></a>
+      <a href="${perspectiveHref(focus.hitLenses[0] || "STRIDE")}"><span>PERSPECTIVES</span><b>See the same route through different lenses</b></a>
+      <a href="#findings"><span>RESULTS</span><b>See why QCDS kept the route</b></a>
+      <a href="#report"><span>REPORT</span><b>See the finished case assembled</b></a>
     </div>
     <div class="example-bottom">
       <div><span class="eyebrow muted">THE 1 / 0 / ? FACTS THIS ROUTE USES</span><div class="condition-chips">${conditions}</div></div>
       <div><span class="eyebrow muted">PERSPECTIVES THAT SEE IT</span><div class="example-lenses">${focus.hitLenses.map((name) => `<span>${esc(name)}</span>`).join("")}</div></div>
     </div>
-    <div class="example-explain"><b>Why this example matters</b><p>${esc(guide.learn)}</p><p><b>Important:</b> the framework perspective is a view over the route. QCDS keeps the shared conditions, recursive challenge and evidence logic underneath it.</p></div>
+    ${evidence ? `<div class="example-evidence"><span>WORKED EXAMPLE EVIDENCE</span><p>${esc(evidence.observation)}</p><small>${esc(evidence.source)} · ${esc(evidence.outcome)}</small></div>` : ""}
+    <div class="example-explain"><b>Why this example matters</b><p>${esc(guide.learn)}</p><p><b>Important:</b> selecting this example does not open a separate tutorial. It loads this exact system into every workflow screen.</p></div>
     </details>
     <div class="example-journey-cta">
-      <div><b>Ready to try it yourself?</b><small>Walk through the same example one question at a time.</small></div>
-      <button class="button primary" data-example-walk="${id}">Walk the 5 questions ${icon("arrow")}</button>
+      <div><b>Use this exact case through the whole Security Lab</b><small>The same data stays loaded in all five steps, Perspectives, Results & explanation, and Reports.</small></div>
+      <button class="button primary" data-example-walk="${id}">${state.caseId === id ? "Open loaded example at 1 · Goal" : "Load example everywhere"} ${icon("arrow")}</button>
     </div>
   </article>`;
 }
-
 function examplesView() {
   return (
     header(
-      "EXAMPLES / START HERE",
-      "See the whole flow before building your own.",
-      "Pick a finished example, read the five steps in one screen, then walk through the same case interactively. You do not need to understand QCDS terminology first.",
+      "WORKED EXAMPLES / START HERE",
+      "Choose one example once. Then follow the same case everywhere.",
+      "A worked example is not a separate tutorial. Loading one fills the real five-step investigation, the system inputs, perspectives, results, evidence and report with the same finished case.",
     ) +
-    `<section class="examples-primer panel">
-      <div><span class="eyebrow">THE ONLY THREE SYMBOLS YOU NEED AT FIRST</span><h2>1 = yes · 0 = no · ? = we do not know yet</h2><p>QCDS does not force a guess. A ? keeps dependent routes visible as conditional possibilities while you continue the investigation.</p></div>
-      <button class="button" data-action="new">Skip examples · use my own system ${icon("arrow")}</button>
+    `<section class="example-lab-map panel">
+      <div><span class="eyebrow">HOW THE LAB FITS TOGETHER</span><h2>One system moves through one continuous workflow.</h2><p>Pick a case below. Then use the left menu without changing systems.</p></div>
+      <div class="example-lab-flow">
+        <div><span>1</span><b>Choose example</b><small>Load one complete system</small></div>
+        <i>→</i>
+        <div><span>2</span><b>Five questions</b><small>Goal → route → control → bypass → proof</small></div>
+        <i>→</i>
+        <div><span>3</span><b>Perspectives</b><small>Look at the same route from several sides</small></div>
+        <i>→</i>
+        <div><span>4</span><b>Results</b><small>See why QCDS retained it</small></div>
+        <i>→</i>
+        <div><span>5</span><b>Report</b><small>See the complete worked case</small></div>
+      </div>
+      <div class="example-lab-note"><b>1 = yes · 0 = no · ? = genuinely unresolved.</b> A ? stays alive as a conditional route instead of being guessed away.</div>
     </section>
     <div class="examples-list">${["portal", "support", "knowledge", "invoice", "coding"].map(exampleFlowCard).join("")}</div>
-    <section class="examples-after panel"><span class="eyebrow">WHAT TO NOTICE</span><h2>The five questions stay simple. QCDS does the deeper comparison underneath.</h2><div><p><b>Conditions</b> describe what is known about the system.</p><p><b>Perspectives</b> such as STRIDE or OWASP ask different questions about the same route.</p><p><b>Recursion</b> means a protection becomes the next thing to challenge.</p><p><b>Evidence</b> decides how far a claim can be trusted.</p></div></section>`
+    <section class="examples-after panel"><span class="eyebrow">WHEN THE EXAMPLE IS LOADED</span><h2>The left menu becomes the map of that same case.</h2><div><p><b>1–5</b> are the investigation itself.</p><p><b>System & inputs</b> shows the exact facts behind it.</p><p><b>Perspectives</b> changes the question, not the system.</p><p><b>Results & Report</b> show what survived and why.</p></div><button class="button" data-action="new">Or skip the examples · use my own system ${icon("arrow")}</button></section>`
   );
 }
-
 function investigationView() {
   const q = QUESTION_STEPS[state.question - 1],
     f = selectedFinding(),
@@ -1560,7 +1578,7 @@ document.addEventListener("click", async (e) => {
     save();
     rememberPlace();
     goQuestion(1, state.findingId);
-    notify("Example loaded. Follow the five questions from left to right.");
+    notify("Worked example loaded across the whole lab. Start at 1 · Goal, then follow the menu downward.");
     return;
   }
   const conditionAnswer = e.target.closest("[data-answer-condition]");
