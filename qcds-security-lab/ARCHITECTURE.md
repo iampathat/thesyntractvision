@@ -4,7 +4,17 @@
 
 ## Current implementation boundary
 
-The browser workspace uses fourteen ternary conditions, seven perspective families and eight current seed route families. The seed families initialize a browser search space; they are not treated as exhaustive QCDS knowledge. The runtime now performs interview-assisted Condition Formation, keeps unresolved routes conditional, ranks clarification questions, reruns perspective rotation, walks dimensions by changing a declared 1 to ?, recursively challenges each surviving route through control → bypass → counter-test, and binds user-reported evidence to the exact system snapshot.
+The browser workspace uses fourteen ternary **core system conditions as constraints**, not as an attack-vector list. v1.10 adds a separate Attack Vector Fabric that expands attack-mechanism seeds across route variants, target surfaces and modeled assets. A system-specific Open Search lattice adds further combinations from entry boundaries × assets × consequences × route variants.
+
+The current implementation therefore has several distinct scales:
+
+1. **Core condition coordinates** — compact 1 / 0 / ? facts about the target.
+2. **Generated attack-vector fabric** — hundreds or more vector instances depending on the modeled system.
+3. **Framework projections** — STRIDE, OWASP/AppSec, Identity and other views over the same vectors.
+4. **Converged route clusters** — a small number of human-manageable investigation threads used by the five-question workflow.
+5. **Recursive deepening** — control → bypass → next control → counter-test → evidence.
+
+The eight F-routes are therefore not the attack catalog. They are convergence clusters for investigation.
 
 It still does not claim autonomous real-world discovery, automatic verification, or a quantum/Grover execution substrate in this browser release. Those remain separate execution capabilities from the browser demonstrator.
 
@@ -41,15 +51,19 @@ PLAIN DESCRIPTION / ARCHITECTURE / CODE / OBSERVATIONS
         ↓
 OPTIONAL MODEL-ASSISTED INTERPRETATION
         ↓
-CONDITIONS 1 / 0 / ?
+CORE CONDITIONS 1 / 0 / ?
+        ↓ constraints
+ATTACK MECHANISMS × VARIANTS × TARGETS × ASSETS
+        ↓
+ATTACK-VECTOR FABRIC
         ↓
 ORACLES / CONSTRAINTS
         ↓
-PARALLEL SECURITY PERSPECTIVES
+PARALLEL SECURITY PERSPECTIVE PROJECTIONS
         ↕
-QCDS ROTATION / DIMENSION EXCLUSION
+QCDS ROTATION / DIMENSION WALK
         ↓
-CANDIDATE ROUTES
+CONVERGED CANDIDATE ROUTES
         ↓
 CONTROL / MITIGATION
         ↓
@@ -74,7 +88,9 @@ Conditions are explicit ternary system facts:
 
 Unknown is not an error.
 
-The current implementation uses fourteen stable condition IDs. The final condition explicitly records whether the **target system itself** contains an AI/ML component. This prevents optional model assistance in the analysis from being confused with AI inside the target.
+The current implementation uses fourteen stable core condition IDs. The final condition explicitly records whether the **target system itself** contains an AI/ML component.
+
+These fourteen IDs are deliberately compact input coordinates. They do **not** enumerate vulnerabilities, attack techniques or attack paths. The Attack Vector Fabric is a separate layer whose size depends on vector mechanisms, route variants, target surfaces, assets and future imported/generated analytical material.
 
 ## Oracles
 
@@ -84,7 +100,7 @@ Examples include questions about trust-boundary crossings, identity and authorit
 
 ## Perspectives
 
-Perspectives contribute questions; they are not the QCDS engine.
+Perspectives contribute categories and questions; they are not the QCDS engine and they do not own separate mini condition sets. Each perspective projects the same generated attack-vector fabric.
 
 Current UI perspective families are:
 
