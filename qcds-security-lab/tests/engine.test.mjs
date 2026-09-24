@@ -41,6 +41,21 @@ test("examples produce distinct, numerically ordered findings", () => {
     "F8",
   ]);
 });
+test("worked examples carry synthetic evidence into the real workflow", () => {
+  const portal = newProject("portal");
+  const portalModel = analyze(portal.input, portal.evidence);
+  const f3 = portalModel.findings.find((f) => f.id === "F3");
+  assert.equal(portal.example, true);
+  assert.equal(f3.records.length, 1);
+  assert.equal(f3.records[0].source.includes("Worked example"), true);
+  assert.equal(f3.status, "REFUTED · REPORTED");
+  assert.equal(portal.actions.F3.status, "done");
+
+  const invoice = newProject("invoice");
+  const invoiceModel = analyze(invoice.input, invoice.evidence);
+  assert.equal(invoice.evidence.length, 0);
+  assert.ok(invoiceModel.pending.some((f) => f.id === "F4"));
+});
 test("AI perspective applies only when the target itself contains AI", () => {
   const portal = analyze(newProject("portal").input);
   const support = analyze(newProject("support").input);
