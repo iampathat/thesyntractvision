@@ -721,6 +721,171 @@ function vectorState(seed, flags) {
   };
 }
 
+
+const OPEN_SEARCH_ENTRIES = [
+  ["external_input", "external input / actor"],
+  ["untrusted_content", "lower-trust material"],
+  ["rag", "connected source / retrieval"],
+  ["third_party", "external dependency / provider"],
+  ["secrets", "credential / privileged token"],
+  ["cross_user", "shared-principal boundary"],
+  ["tools", "connected interface / action surface"],
+];
+
+const OPEN_SEARCH_CONSEQUENCES = [
+  {
+    id: "DISCLOSURE",
+    label: "protected-data disclosure",
+    condition: "sensitive_data",
+    target: "data",
+    routeFamily: "F3",
+    severity: "CRITICAL",
+    frameworks: {
+      STRIDE: ["Information Disclosure"],
+      "OWASP / AppSec": ["A01:2025 Broken Access Control"],
+      "Privacy / Supply Chain": ["Protected-data exposure"],
+      "Open Search": ["Asset-first disclosure search"],
+    },
+    control: "principal-aware data authorization and least-data exposure at every boundary",
+    verify: "use isolated fixture assets and principals to test direct, alternate and delayed access paths",
+  },
+  {
+    id: "ACTION",
+    label: "unauthorized consequential action",
+    condition: "high_impact",
+    target: "action",
+    routeFamily: "F2",
+    severity: "CRITICAL",
+    frameworks: {
+      STRIDE: ["Elevation of Privilege", "Tampering"],
+      "OWASP / AppSec": ["A01:2025 Broken Access Control", "A06:2025 Insecure Design"],
+      Identity: ["Authority expansion"],
+      "Action / Tool Chain": ["Action-boundary crossing"],
+      "Open Search": ["Consequence-first action search"],
+    },
+    control: "action-specific authorization and least-privilege authority at the final mutation boundary",
+    verify: "attempt harmless out-of-scope fixture actions through direct and alternate paths",
+  },
+  {
+    id: "INTEGRITY",
+    label: "protected-state integrity change",
+    condition: "untrusted_content",
+    target: "service",
+    routeFamily: "F1",
+    severity: "HIGH",
+    frameworks: {
+      STRIDE: ["Tampering"],
+      "OWASP / AppSec": ["A05:2025 Injection", "A08:2025 Software or Data Integrity Failures"],
+      "Open Search": ["Integrity-first search"],
+    },
+    control: "validate trust transitions and preserve integrity through transformations and stored state",
+    verify: "introduce harmless marked fixture changes at each ingress and compare protected state transitions",
+  },
+  {
+    id: "AVAILABILITY",
+    label: "availability or resource exhaustion",
+    condition: "external_input",
+    target: "availability",
+    routeFamily: "F8",
+    severity: "HIGH",
+    frameworks: {
+      STRIDE: ["Denial of Service"],
+      "OWASP / AppSec": ["API4:2023 Unrestricted Resource Consumption", "A10:2025 Mishandling of Exceptional Conditions"],
+      "Open Search": ["Resource-first search"],
+    },
+    control: "bounded work, quotas, backpressure, graceful degradation and containment",
+    verify: "exercise bounded synthetic load across each reachable surface and observe resource ceilings",
+  },
+  {
+    id: "PROVENANCE",
+    label: "provenance or trust confusion",
+    condition: "rag",
+    target: "data",
+    routeFamily: "F4",
+    severity: "HIGH",
+    frameworks: {
+      STRIDE: ["Tampering", "Information Disclosure"],
+      "OWASP / AppSec": ["A08:2025 Software or Data Integrity Failures", "API10:2023 Unsafe Consumption of APIs"],
+      "Privacy / Supply Chain": ["Source trust / provenance"],
+      "Open Search": ["Source-first trust search"],
+    },
+    control: "preserve source identity, authorization, freshness and trust level through every transformation",
+    verify: "seed harmless low-trust fixture material and trace provenance into decisions and outputs",
+  },
+];
+
+function triStateFor(keys, flags) {
+  const values = keys.map((key) => flags[key]);
+  if (values.some((value) => value === false)) return "REJECTED";
+  return values.every((value) => value === true) ? "ACTIVE" : "CONDITIONAL";
+}
+
+function generateOpenSearchLattice(input, lensRuns, startSequence = 1) {
+  const flags = input.flags || {};
+  const activeLensNames = new Set(
+    lensRuns.filter((lens) => lens.active).map((lens) => lens.name),
+  );
+  const assets = (input.assets || []).filter(Boolean);
+  const contexts = assets.length ? assets.slice(0, 20) : ["system state"];
+  const variants = ["direct", "alternate", "async"];
+  const vectors = [];
+  let sequence = startSequence;
+
+  for (const [entryKey, entryLabel] of OPEN_SEARCH_ENTRIES) {
+    for (const consequence of OPEN_SEARCH_CONSEQUENCES) {
+      for (const asset of contexts) {
+        for (const variantId of variants) {
+          const variant = ROUTE_VARIANTS[variantId];
+          const state = triStateFor(
+            [...new Set([entryKey, consequence.condition])],
+            flags,
+          );
+          const frameworkEntries = Object.entries(consequence.frameworks)
+            .filter(([lens]) => activeLensNames.has(lens))
+            .map(([lens, categories]) => ({ lens, categories: [...categories] }));
+          const finalState =
+            frameworkEntries.length || state === "REJECTED"
+              ? state
+              : "REJECTED";
+          const required = [...new Set([entryKey, consequence.condition])];
+          const missing = required.filter((key) => flags[key] !== true && flags[key] !== false);
+          vectors.push({
+            id: "OS" + String(sequence++).padStart(4, "0"),
+            seedId: "OPEN_" + consequence.id,
+            routeFamily: consequence.routeFamily,
+            title: `${entryLabel} → ${consequence.label} · ${asset}`,
+            variant: variantId,
+            variantLabel: variant.label,
+            target: consequence.target,
+            targetLabel: asset,
+            mechanism: `${entryLabel} crosses the ${variant.segment} toward ${asset}`,
+            consequence: consequence.label,
+            path: `${entryLabel} → ${variant.segment} → ${asset} → ${consequence.label}`,
+            requires,
+            requiresAny: [],
+            supports: [],
+            missing,
+            state: finalState,
+            rejectedReason:
+              finalState === "REJECTED"
+                ? frameworkEntries.length
+                  ? "one of the open-search constraints is 0"
+                  : "no active perspective maps this vector"
+                : "",
+            severity: consequence.severity,
+            control: consequence.control,
+            verify: consequence.verify,
+            frameworks: frameworkEntries,
+            hitLenses: frameworkEntries.map((entry) => entry.lens),
+            generatedBy: "open-search-lattice",
+          });
+        }
+      }
+    }
+  }
+  return vectors;
+}
+
 function generateAttackVectorSpace(input, lensRuns = []) {
   const flags = input.flags || {};
   const activeLensNames = new Set(
@@ -776,6 +941,13 @@ function generateAttackVectorSpace(input, lensRuns = []) {
       }
     }
   }
+
+  const openSearchVectors = generateOpenSearchLattice(
+    input,
+    lensRuns,
+    sequence,
+  );
+  vectors.push(...openSearchVectors);
 
   vectors.sort(
     (a, b) =>
@@ -849,6 +1021,12 @@ function generateAttackVectorSpace(input, lensRuns = []) {
     routeFamilies,
     frameworkViews,
     coreConditionAssignmentSpace: 3 ** Object.keys(flags).length,
+    catalogVectorCount: vectors.filter(
+      (vector) => vector.generatedBy !== "open-search-lattice",
+    ).length,
+    openSearchVectorCount: vectors.filter(
+      (vector) => vector.generatedBy === "open-search-lattice",
+    ).length,
   };
 }
 
