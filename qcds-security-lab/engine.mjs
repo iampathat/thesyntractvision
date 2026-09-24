@@ -341,7 +341,7 @@ function buildFindings(input, conditions, lenses) {
   });
 }
 
-const VERSION = "1.10.0";
+const VERSION = "1.10.1";
 const FIELD_META = {
   external_input: [
     "External input",
@@ -1218,7 +1218,11 @@ function analyze(input, evidence = [], excluded = []) {
     frameworkViews: vectorSpace.frameworkViews,
     searchSpace: {
       coreConditions: conditions.length,
-      ternaryConditionSpace: vectorSpace.coreConditionAssignmentSpace,
+      knownMaskDimensions: vectorSpace.maskSpace.knownDimensions,
+      unknownMaskDimensions: vectorSpace.maskSpace.unknownDimensions,
+      unknownMaskKeys: [...vectorSpace.maskSpace.unknownKeys],
+      maskedLogicalSpace: vectorSpace.maskSpace.expression,
+      maskedLogicalStates: vectorSpace.maskSpace.exactStates,
       seedMechanisms: new Set(
         vectorSpace.vectors.map((vector) => vector.seedId),
       ).size,
@@ -1379,7 +1383,7 @@ function markdown(model, project) {
     `**Assets:** ${model.input.assets.join(", ") || "Not specified"}`,
     "",
     "## Scope & evidence",
-    `The browser engine forms a ternary condition space, expands ${model.searchSpace.generatedAttackVectors} attack-vector candidates from ${model.searchSpace.seedMechanisms} mechanism seeds across route variants and targets, keeps unresolved vectors conditional, projects the surviving vector space into security frameworks, reruns perspective and dimension comparisons, recursively challenges controls, and binds user-reported evidence. Core conditions are constraints, not the attack-vector catalog.`,
+    `The browser engine forms a QCDS mask from fixed 1 / 0 facts plus ${model.searchSpace.unknownMaskDimensions} unresolved dimensions (${model.searchSpace.maskedLogicalSpace} logical mask states), expands ${model.searchSpace.generatedAttackVectors} attack-vector candidates from ${model.searchSpace.seedMechanisms} mechanism seeds across route variants and targets, keeps unresolved vectors conditional, projects the surviving vector space into security frameworks, reruns perspective and dimension comparisons, recursively challenges controls, and binds user-reported evidence. Known 1 / 0 values are fixed mask coordinates; only ? branches the logical mask space.`,
     "",
     `Excluded perspectives: ${model.excludedLenses.join(", ") || "None"}.`,
     `${model.searchSpace.activeAttackVectors} active attack vectors; ${model.searchSpace.conditionalAttackVectors} conditional attack vectors; ${model.searchSpace.confirmedRoutes} active route families; ${model.searchSpace.conditionalRoutes} conditional route families; ${model.unknown.length} unknown core conditions.`,
@@ -1391,8 +1395,10 @@ function markdown(model, project) {
     }),
     "",
     "## 2. Attack-vector fabric",
-    `- Core ternary coordinates: ${model.searchSpace.coreConditions}`,
-    `- Possible core assignments: ${model.searchSpace.ternaryConditionSpace.toLocaleString("en-US")}`,
+    `- Core mask coordinates: ${model.searchSpace.coreConditions}`,
+    `- Fixed 1 / 0 dimensions: ${model.searchSpace.knownMaskDimensions}`,
+    `- Unresolved ? dimensions: ${model.searchSpace.unknownMaskDimensions}`,
+    `- Logical mask space: ${model.searchSpace.maskedLogicalSpace}${model.searchSpace.maskedLogicalStates !== null ? " = " + model.searchSpace.maskedLogicalStates.toLocaleString("en-US") : ""} states`,
     `- Mechanism seeds: ${model.searchSpace.seedMechanisms}`,
     `- Generated attack-vector candidates: ${model.searchSpace.generatedAttackVectors}`,
     `- Active vectors: ${model.searchSpace.activeAttackVectors}`,
