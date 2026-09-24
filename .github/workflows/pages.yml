@@ -213,6 +213,7 @@ jobs:
           cp qcds-security-lab/style.css _site/qcds-security-lab/style.css
           cp qcds-security-lab/app.js _site/qcds-security-lab/app.js
           cp qcds-security-lab/engine.mjs _site/qcds-security-lab/engine.mjs
+          cp qcds-security-lab/attack-vectors.mjs _site/qcds-security-lab/attack-vectors.mjs
           cp qcds-security-lab/README.md _site/qcds-security-lab/README.md
           cp qcds-security-lab/LICENSE.md _site/qcds-security-lab/LICENSE.md
           cp qcds-security-lab/ARCHITECTURE.md _site/qcds-security-lab/ARCHITECTURE.md
