@@ -44,7 +44,9 @@ test("examples produce distinct, numerically ordered findings", () => {
 test("core C conditions constrain a much larger attack-vector fabric", () => {
   const portal = analyze(newProject("portal").input);
   assert.equal(portal.searchSpace.coreConditions, 14);
-  assert.equal(portal.searchSpace.ternaryConditionSpace, 4782969);
+  assert.equal(portal.searchSpace.unknownMaskDimensions, 0);
+  assert.equal(portal.searchSpace.maskedLogicalSpace, "2^0");
+  assert.equal(portal.searchSpace.maskedLogicalStates, 1);
   assert.ok(portal.searchSpace.generatedAttackVectors > 500);
   assert.ok(portal.searchSpace.activeAttackVectors > 200);
   assert.ok(portal.searchSpace.generatedAttackVectors > portal.searchSpace.coreConditions * 30);
@@ -62,6 +64,9 @@ test("core C conditions constrain a much larger attack-vector fabric", () => {
 });
 test("unknown core facts keep attack vectors conditional rather than deleting them", () => {
   const m = analyze(newProject("custom").input);
+  assert.equal(m.searchSpace.unknownMaskDimensions, 14);
+  assert.equal(m.searchSpace.maskedLogicalSpace, "2^14");
+  assert.equal(m.searchSpace.maskedLogicalStates, 16384);
   assert.ok(m.searchSpace.generatedAttackVectors > 300);
   assert.equal(m.searchSpace.activeAttackVectors, 0);
   assert.equal(
@@ -71,6 +76,17 @@ test("unknown core facts keep attack vectors conditional rather than deleting th
   assert.equal(m.searchSpace.rejectedAttackVectors, 0);
   assert.ok(m.frameworkViews["OWASP / AppSec"].conditionalCount > 300);
 });
+test("only unresolved mask dimensions multiply the logical state space", () => {
+  const p = newProject("portal");
+  p.input.flags.authorization = null;
+  p.input.flags.logging = null;
+  const m = analyze(p.input);
+  assert.equal(m.searchSpace.unknownMaskDimensions, 2);
+  assert.equal(m.searchSpace.knownMaskDimensions, 12);
+  assert.equal(m.searchSpace.maskedLogicalSpace, "2^2");
+  assert.equal(m.searchSpace.maskedLogicalStates, 4);
+});
+
 test("open search lattice scales with the modeled asset surface", () => {
   const small = newProject("custom");
   small.input.assets = ["A"];
