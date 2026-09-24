@@ -180,6 +180,7 @@ No application dependencies or build tool are required. Serve the repository roo
 ```sh
 python3 -m http.server 8765
 node --test qcds-security-lab/tests/engine.test.mjs
+node --test qcds-security-lab/tests/glasswing.test.mjs
 ```
 
 Use Node 22 for the tests.
@@ -192,6 +193,21 @@ Detailed documents:
 - [PERSPECTIVES.md](./PERSPECTIVES.md)
 - [ARCHITECTURE.md](./ARCHITECTURE.md)
 - [LICENSE.md](./LICENSE.md)
+
+
+## Project Glasswing
+
+**Project Glasswing** is the executable comparison surface for the Security Lab. It runs the same declared system state at three visible inference depths:
+
+- **Single pass** — compact route surfacing.
+- **Recursive agent** — route → control → bypass → counter-test.
+- **QCDS** — the full condition mask, Attack Vector Fabric, perspective rotation, dimension walking, recursive inference and evidence-bound verification.
+
+Open `/qcds-security-lab/glasswing.html` or use the **Project Glasswing** launcher inside the Lab.
+
+Glasswing is a structural comparison harness, not a vendor-model benchmark. It deliberately separates discovery coverage from verification: more candidate routes or vectors do not by themselves mean more true vulnerabilities.
+
+See [GLASSWING.md](./GLASSWING.md) for the experiment contract.
 
 ## Licensing
 
