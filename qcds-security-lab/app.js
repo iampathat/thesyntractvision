@@ -10,7 +10,7 @@ import {
   analyze,
   validateProject,
   markdown,
-} from "./engine.mjs?v=1.9.0";
+} from "./engine.mjs?v=1.9.1";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
@@ -237,7 +237,7 @@ const EXAMPLE_GUIDES = {
 
 function canonicalExample(id) {
   const p = newProject(id);
-  const m = analyze(p.input, [], []);
+  const m = analyze(p.input, p.evidence, p.excludedLenses);
   const guide = EXAMPLE_GUIDES[id];
   const paths = [
     ...m.findings.map((f) => ({ ...f, conditional: false })),
@@ -336,30 +336,88 @@ const severityClass = (s) =>
   s === "CRITICAL" ? "danger" : s === "HIGH" ? "warning" : "neutral";
 
 function casePicker() {
-  return `<div class="casebar"><label for="case-select">SYSTEM</label><select id="case-select" aria-label="Choose a system"><option value="portal" ${state.caseId === "portal" ? "selected" : ""}>Customer records portal</option><option value="support" ${state.caseId === "support" ? "selected" : ""}>Customer support AI</option><option value="knowledge" ${state.caseId === "knowledge" ? "selected" : ""}>Internal knowledge assistant</option><option value="coding" ${state.caseId === "coding" ? "selected" : ""}>Coding & deployment agent</option><option value="invoice" ${state.caseId === "invoice" ? "selected" : ""}>Invoice approval assistant</option>${state.cases.custom ? `<option value="custom" ${state.caseId === "custom" ? "selected" : ""}>${esc(state.cases.custom.input.name)}</option>` : ""}</select>${badge(project().example ? "Example" : "Your system", "neutral")}</div>`;
+  return `<div class="casebar ${project().example ? "worked-example" : ""}">
+    <div class="casebar-context">
+      <span>WORKING WITH</span>
+      <b>${esc(project().input.name)}</b>
+      <small>${project().example ? "Worked example · the same finished case follows every step, perspective, result and report." : "Your system · the same system follows the complete workflow."}</small>
+    </div>
+    <label class="sr-only" for="case-select">Choose a system</label>
+    <select id="case-select" aria-label="Choose a system"><option value="portal" ${state.caseId === "portal" ? "selected" : ""}>Customer records portal</option><option value="support" ${state.caseId === "support" ? "selected" : ""}>Customer support AI</option><option value="knowledge" ${state.caseId === "knowledge" ? "selected" : ""}>Internal knowledge assistant</option><option value="coding" ${state.caseId === "coding" ? "selected" : ""}>Coding & deployment agent</option><option value="invoice" ${state.caseId === "invoice" ? "selected" : ""}>Invoice approval assistant</option>${state.cases.custom ? `<option value="custom" ${state.caseId === "custom" ? "selected" : ""}>${esc(state.cases.custom.input.name)}</option>` : ""}</select>
+    ${project().example ? '<a class="casebar-change" href="#examples">Change worked example</a>' : badge("Your system", "neutral")}
+  </div>`;
 }
 function shell() {
   const investigating = state.route === "investigate";
-  const workRoutes = ["investigate", "system", "perspectives", "findings", "report"];
-  const learnRoutes = ["examples", "learn"];
-  const detailRoutes = [];
+  const guide = project().example ? EXAMPLE_GUIDES[state.caseId] : null;
+  const focus =
+    (guide && allPaths().find((path) => path.id === guide.focus)) ||
+    allPaths().find((path) => path.id === state.findingId) ||
+    allPaths()[0];
+  const focusId = focus?.id || state.findingId || "";
   const navHints = {
-    examples: "See complete worked cases first",
-    investigate: "Goal → route → control → bypass → proof",
-    perspectives: "STRIDE · OWASP · Identity · more",
-    findings: "Results, reasons, QCDS checks & evidence",
-    report: "Full report + exports",
-    learn: "The method in plain English",
-    system: "Edit the facts QCDS reasons from",
-    trace: "Why this path exists and what it depends on",
-    overview: "Where this path sits among all results",
+    perspectives: "See STRIDE, OWASP, Identity and other views over this same system",
+    findings: "See the routes, why QCDS kept them and the worked evidence",
+    report: "See the same example assembled as a finished report",
+    learn: "Understand the method in plain English",
+    system: "See the exact 1 / 0 / ? facts behind this system",
   };
-  const navLink = ([id, label, ic]) =>
-    `<a href="${id === "investigate" ? investigationHref() : id === "perspectives" ? perspectiveHref() : "#" + id}" ${state.route === id ? 'aria-current="page"' : ""}>${icon(ic)}<span class="nav-copy"><b>${label}</b><em>${navHints[id] || ""}</em></span></a>`;
-  return `<aside id="site-nav" ${state.mobile ? 'role="dialog" aria-modal="true" aria-label="Navigation"' : ""} class="sidebar ${state.mobile ? "open" : ""}"><a class="brand" href="#examples"><span class="brand-mark">Q<span>★</span></span><span>QCDS<span class="brand-sub">SECURITY LAB</span></span></a><div class="workspace-label">YOUR WORKSPACE <button class="icon-button menu-close" data-action="close-menu" aria-label="Close navigation">${icon("close")}</button></div><nav aria-label="Workspace"><div class="nav-section-label">START HERE</div>${navLink(ROUTES.find((r) => r[0] === "examples"))}<div class="nav-section-label nav-work-label">WORKFLOW</div>${ROUTES.filter(
-    (r) => workRoutes.includes(r[0]),
-  ).map(navLink).join("")}<div class="nav-section-label nav-learn-label">LEARN</div>${ROUTES.filter((r) => learnRoutes.includes(r[0]) && r[0] !== "examples").map(navLink).join("")}</nav><button class="new-case" data-action="new">${icon("plus")} New system</button><div class="sidebar-bottom"><div class="local-note">${icon("shield")}<span>Saved on this device.<br>No account needed.</span></div><a href="#learn" class="author">By Patrik Sundblom <span>↗</span></a><div class="version">SECURITY LAB <span>v${VERSION}</span></div></div></aside>${state.mobile ? '<button class="menu-backdrop" data-action="close-menu" aria-label="Close navigation backdrop"></button>' : ""}<div class="app-body" ${state.mobile ? "inert" : ""}><header class="topbar"><div class="breadcrumb"><button class="icon-button mobile-toggle" data-action="menu" aria-controls="site-nav" aria-label="Open navigation" aria-expanded="${state.mobile}">${icon("menu")}</button><b>${investigating ? "Q★ Security Lab" : esc(ROUTES.find((r) => r[0] === state.route)?.[1])}</b></div><div class="top-actions"><span id="save-status" class="save-status">${state.storage ? "Saved on this device" : "Not saved · export your work"}</span><button class="button small plain-button" data-system-explanation>${icon("book")} What is this?</button></div></header>${investigating ? questionPosition() : ""}<main id="main" tabindex="-1">${state.route === "investigate" ? (state.question === 1 ? casePicker() : "") : !["examples", "learn"].includes(state.route) ? casePicker() : ""}<div id="stale-slot">${staleNotice()}</div><div id="view">${view()}</div><footer class="main-footer"><span>QCDS Security Lab · Patrik Sundblom</span><a href="./LICENSE.md">COMMERCIAL LICENSE REQUIRED ${icon("external")}</a></footer></main>${investigating ? questionNavigation() : ""}</div>`;
+  const analysisLink = (id, label, ic) =>
+    `<a href="${id === "perspectives" ? perspectiveHref() : "#" + id}" ${state.route === id ? 'aria-current="page"' : ""}>${icon(ic)}<span class="nav-copy"><b>${label}</b><em>${navHints[id]}</em></span></a>`;
+  const stepLinks = QUESTION_STEPS.map(
+    (q, i) =>
+      `<a class="nav-flow-step" href="#investigate/${i + 1}${focusId ? "/" + focusId : ""}" ${investigating && state.question === i + 1 ? 'aria-current="step"' : ""}><span class="nav-step-number">${i + 1}</span><span class="nav-copy"><b>${q.short}</b><em>${["Name the unwanted outcome", "Follow one possible path", "See what should stop it", "Challenge that protection", "See the test and worked evidence"][i]}</em></span></a>`,
+  ).join("");
+  const exampleContext = guide
+    ? `<div class="nav-example-loaded"><span>WORKED EXAMPLE LOADED</span><b>${esc(project().input.name)}</b><small>One case · every screen below</small><a href="#examples">Choose another example →</a></div>`
+    : `<a class="nav-example-picker" href="#examples">${icon("play")}<span class="nav-copy"><b>Worked examples</b><em>Load a finished case through the whole lab</em></span></a>`;
+  return `<aside id="site-nav" ${state.mobile ? 'role="dialog" aria-modal="true" aria-label="Navigation"' : ""} class="sidebar ${state.mobile ? "open" : ""}">
+    <a class="brand" href="#examples"><span class="brand-mark">Q<span>★</span></span><span>QCDS<span class="brand-sub">SECURITY LAB</span></span></a>
+    <div class="workspace-label">YOUR WORKSPACE <button class="icon-button menu-close" data-action="close-menu" aria-label="Close navigation">${icon("close")}</button></div>
+    <nav aria-label="Workspace">
+      <div class="nav-section-label">START HERE</div>
+      ${exampleContext}
+      <div class="nav-section-label nav-work-label">THE 5-STEP FLOW</div>
+      <div class="nav-flow">${stepLinks}</div>
+      <div class="nav-section-label nav-analyze-label">${guide ? "EXPLORE THE SAME EXAMPLE" : "EXPLORE THE SAME SYSTEM"}</div>
+      ${analysisLink("system", "System & 1 / 0 / ? inputs", "system")}
+      ${analysisLink("perspectives", "Perspectives", "layers")}
+      ${analysisLink("findings", "Results & explanation", "shield")}
+      ${analysisLink("report", "Reports & export", "report")}
+      <div class="nav-section-label nav-learn-label">LEARN</div>
+      ${analysisLink("learn", "In plain English", "book")}
+    </nav>
+    <button class="new-case" data-action="new">${icon("plus")} Use my own system</button>
+    <div class="sidebar-bottom"><div class="local-note">${icon("shield")}<span>Saved on this device.<br>No account needed.</span></div><a href="#learn" class="author">By Patrik Sundblom <span>↗</span></a><div class="version">SECURITY LAB <span>v${VERSION}</span></div></div>
+  </aside>
+  ${state.mobile ? '<button class="menu-backdrop" data-action="close-menu" aria-label="Close navigation backdrop"></button>' : ""}
+  <div class="app-body" ${state.mobile ? "inert" : ""}>
+    <header class="topbar"><div class="breadcrumb"><button class="icon-button mobile-toggle" data-action="menu" aria-controls="site-nav" aria-label="Open navigation" aria-expanded="${state.mobile}">${icon("menu")}</button><b>${investigating ? "Q★ Security Lab" : esc(ROUTES.find((r) => r[0] === state.route)?.[1])}</b></div><div class="top-actions"><span id="save-status" class="save-status">${state.storage ? "Saved on this device" : "Not saved · export your work"}</span><button class="button small plain-button" data-system-explanation>${icon("book")} What is this?</button></div></header>
+    ${investigating ? questionPosition() : ""}
+    <main id="main" tabindex="-1">
+      ${state.route === "investigate" ? (state.question === 1 ? casePicker() : "") : !["examples", "learn"].includes(state.route) ? casePicker() : ""}
+      <div id="stale-slot">${staleNotice()}</div>
+      <div id="view">${view()}</div>
+      ${workflowContinuation()}
+      <footer class="main-footer"><span>QCDS Security Lab · Patrik Sundblom</span><a href="./LICENSE.md">COMMERCIAL LICENSE REQUIRED ${icon("external")}</a></footer>
+    </main>
+    ${investigating ? questionNavigation() : ""}
+  </div>`;
 }
+function workflowContinuation() {
+  if (["examples", "learn", "investigate"].includes(state.route)) return "";
+  const same = project().example ? "worked example" : "system";
+  if (state.route === "system")
+    return `<section class="workflow-next panel"><span>CONTINUE THE SAME ${same.toUpperCase()}</span><div><b>Now walk the five questions.</b><p>Goal → route → control → bypass → proof uses these exact system facts.</p></div><a class="button primary" href="${investigationHref(1)}">Start at 1 · Goal ${icon("arrow")}</a></section>`;
+  if (state.route === "perspectives")
+    return `<section class="workflow-next panel"><span>CONTINUE THE SAME ${same.toUpperCase()}</span><div><b>Next: Results & explanation</b><p>See which routes survived the perspectives and why QCDS kept them.</p></div><a class="button primary" href="#findings">Open results ${icon("arrow")}</a></section>`;
+  if (state.route === "findings")
+    return `<section class="workflow-next panel"><span>CONTINUE THE SAME ${same.toUpperCase()}</span><div><b>Next: finished report</b><p>See the conditions, routes, explanation and evidence assembled together.</p></div><a class="button primary" href="#report">Open report ${icon("arrow")}</a></section>`;
+  if (state.route === "report")
+    return `<section class="workflow-next panel"><span>YOU REACHED THE END OF THIS ${same.toUpperCase()}</span><div><b>${project().example ? "Now use the same flow on another worked example — or your own system." : "Continue refining the system when new facts or evidence appear."}</b></div><div class="workflow-next-actions">${project().example ? '<a class="button" href="#examples">Choose another example</a>' : ""}<button class="button primary" data-action="new">Use my own system ${icon("arrow")}</button></div></section>`;
+  return "";
+}
+
 function staleNotice() {
   if (state.route === "investigate" && state.question === 1) return "";
   return stale()
@@ -707,15 +765,15 @@ function selectedFinding() {
   return allPaths().find((f) => f.id === state.findingId);
 }
 function questionPosition() {
-  const exampleExit =
+  const exampleTag =
     project().example && EXAMPLE_GUIDES[state.caseId]
-      ? '<a class="walkthrough-exit" href="#examples">Exit walkthrough · Examples</a>'
+      ? `<span class="walkthrough-example">WORKED EXAMPLE · ${esc(project().input.name)}</span><a class="walkthrough-exit" href="#examples">Change example</a>`
       : "";
-  return `<div class="question-position" aria-label="Current investigation position"><div><span class="question-count">${state.question} / 5</span><div><b>Question ${state.question}: ${QUESTION_STEPS[state.question - 1].short}</b><small>${esc(project().input.name)}${state.question > 1 && state.findingId ? ` · ${state.findingId}` : ""}</small>${exampleExit}</div></div><nav aria-label="Five investigation questions">${QUESTION_STEPS.map((q, i) => `<button data-question="${i + 1}" ${state.question === i + 1 ? 'aria-current="step"' : ""} aria-label="Question ${i + 1}: ${q.short}" title="${q.title}"><span>${i + 1}</span><small>${q.short}</small></button>`).join("")}</nav></div>`;
+  return `<div class="question-position" aria-label="Current investigation position"><div><span class="question-count">${state.question} / 5</span><div><b>Question ${state.question}: ${QUESTION_STEPS[state.question - 1].short}</b><small>${esc(project().input.name)}${state.question > 1 && state.findingId ? ` · ${state.findingId}` : ""}</small>${exampleTag}</div></div><nav aria-label="Five investigation questions">${QUESTION_STEPS.map((q, i) => `<button data-question="${i + 1}" ${state.question === i + 1 ? 'aria-current="step"' : ""} aria-label="Question ${i + 1}: ${q.short}" title="${q.title}"><span>${i + 1}</span><small>${q.short}</small></button>`).join("")}</nav></div>`;
 }
 function questionNavigation() {
   const empty = state.question > 1 && !selectedFinding();
-  return `<nav class="question-navigation" aria-label="Previous and next question"><div><button class="button" data-question="${state.question - 1}" ${state.question === 1 ? "disabled" : ""}>${icon("undo")} Back</button><span>${state.question} of 5</span>${state.question === 5 ? '<a class="button primary" href="#report">Review report →</a>' : `<button class="button primary" data-question="${state.question + 1}" ${empty ? "disabled" : ""}>${QUESTION_STEPS[state.question - 1].next} ${icon("arrow")}</button>`}</div></nav>`;
+  return `<nav class="question-navigation" aria-label="Previous and next question"><div><button class="button" data-question="${state.question - 1}" ${state.question === 1 ? "disabled" : ""}>${icon("undo")} Back</button><span>${state.question} of 5</span>${state.question === 5 ? '<a class="button primary" href="#perspectives">Continue with this system · Perspectives →</a>' : `<button class="button primary" data-question="${state.question + 1}" ${empty ? "disabled" : ""}>${QUESTION_STEPS[state.question - 1].next} ${icon("arrow")}</button>`}</div></nav>`;
 }
 function compactConditions() {
   return `<div class="compact-conditions">${CONDITION_DEFS.map(([k], i) => {
