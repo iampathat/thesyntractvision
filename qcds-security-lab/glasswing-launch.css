@@ -1,0 +1,23 @@
+.glasswing-launch {
+  position: fixed;
+  z-index: 40;
+  right: 14px;
+  bottom: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 13px;
+  border: 1px solid rgba(212,255,113,.34);
+  border-radius: 999px;
+  background: rgba(8,20,22,.92);
+  color: #edf8f5;
+  box-shadow: 0 12px 36px rgba(0,0,0,.28);
+  text-decoration: none;
+  font: 800 12px/1.1 Inter, ui-sans-serif, system-ui, sans-serif;
+  backdrop-filter: blur(12px);
+}
+.glasswing-launch::before { content: "◈"; color: #d4ff71; }
+.glasswing-launch:hover { border-color: #d4ff71; }
+@media (max-width: 520px) {
+  .glasswing-launch { right: 10px; bottom: 10px; padding: 9px 11px; }
+}
