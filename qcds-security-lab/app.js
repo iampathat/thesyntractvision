@@ -24,7 +24,7 @@ const esc = (s) =>
 const icon = (name, cls = "") =>
   `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${{ grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>', system: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 21h8m-4-5v5"/>', shield: '<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="M12 8v5m0 3h.01"/>', trace: '<circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="12" cy="19" r="2"/><path d="m5 7 6 10m8-10-6 10M7 5h10"/>', report: '<path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8m-8 4h6"/>', book: '<path d="M12 5c-3-2-6-2-10-1v15c4-1 7-1 10 1 3-2 6-2 10-1V4c-4-1-7-1-10 1zm0 0v15"/>', arrow: '<path d="M4 12h16m-6-6 6 6-6 6"/>', play: '<path d="m8 5 11 7-11 7z"/>', plus: '<path d="M12 5v14M5 12h14"/>', spark: '<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z"/>', download: '<path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/>', check: '<path d="m5 12 4 4L19 6"/>', close: '<path d="m6 6 12 12M6 18 18 6"/>', external: '<path d="M14 3h7v7m0-7L10 14M10 3H3v18h18v-7"/>', layers: '<path d="m12 3 10 5-10 5L2 8zm-10 9 10 5 10-5m-20 5 10 5 10-5"/>', mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 5 10 8L22 5"/>', database: '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 4 16 4 16 0V5M4 12c0 4 16 4 16 0"/>', menu: '<path d="M4 6h16M4 12h16M4 18h16"/>', undo: '<path d="m9 3-6 6 6 6M3 9h11a6 6 0 0 1 0 12"/>' }[name] || '<circle cx="12" cy="12" r="8"/>'}</svg>`;
 const ROUTES = [
-  ["examples", "Example journeys", "play"],
+  ["examples", "Worked examples", "play"],
   ["investigate", "Investigate · 5 questions", "trace"],
   ["perspectives", "Perspectives", "layers"],
   ["findings", "Results & explanation", "shield"],
@@ -73,6 +73,14 @@ try {
     const cases = {};
     for (const id of ["portal", "support", "knowledge", "coding", "invoice", "custom"]) {
       if (!saved.cases?.[id]) continue;
+      if (
+        id !== "custom" &&
+        saved.cases[id].example === true &&
+        saved.cases[id].version !== VERSION
+      ) {
+        cases[id] = newProject(id);
+        continue;
+      }
       cases[id] = validateProject(saved.cases[id]);
       if (
         cases[id].example &&
