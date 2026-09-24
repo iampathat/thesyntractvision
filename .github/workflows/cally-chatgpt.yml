@@ -111,7 +111,9 @@ jobs:
           assert 'resolve -> QCDS -> Syntract' in html
           assert '__callyCanonicalEventEntry' in html
           assert '__callySurfaceIntegrityV6' in html
-          assert 'only one top-level Cally surface' in html
+          assert '__callySurfaceCoordinatorV7' in html
+          assert 'Exactly one top-level Cally surface may be visible' in html
+          assert '--cally-v7-focus' in html
           PY
       - name: Validate ChatGPT, appearance, icon and surface JavaScript syntax
         run: |
@@ -122,3 +124,4 @@ jobs:
           node --check src/qcds_fabric/robots/cally_chatgpt/hamburger_bridge.js
           node --check src/qcds_fabric/robots/cally_chatgpt/event_entry_bridge.js
           node --check src/qcds_fabric/robots/cally_chatgpt/surface_integrity_v6.js
+          node --check src/qcds_fabric/robots/cally_chatgpt/surface_integrity_v7.js
