@@ -11,7 +11,7 @@ LLMs and other predictive models can assist with interpretation, question genera
 
 > **Commercial license required.** Public visibility does not grant a right to use, copy, modify, deploy, benchmark, train on, integrate, distribute or commercialize this material.
 
-## Workspace v1.9.1
+## Workspace v1.10
 
 The workspace follows five human-facing questions:
 
@@ -23,19 +23,50 @@ The workspace follows five human-facing questions:
 
 The user does not need to know QCDS or a security framework to start.
 
-### Conditions
+### Core Conditions are constraints — not the attack catalog
 
-Conditions are ternary:
+The browser keeps fourteen stable **core system conditions** as compact starting coordinates:
 
 - **1** = present / known true
 - **0** = absent / known false
 - **?** = unresolved
 
-A question mark is valid input. QCDS carries unresolved facts forward as conditional routes instead of forcing a guess.
+A question mark is valid input. Interview answers can form condition proposals with a visible reason and confidence marker.
 
-The current implementation exposes fourteen stable condition IDs. **C14 explicitly states whether the target system itself contains an AI/ML component.** Interview answers can now form high- or medium-confidence condition proposals, each with a visible reason. Unresolved values stay as `?` and drive the next QCDS clarification questions.
+These C-values are **not fourteen attack vectors** and they do not define the size of the security search. They constrain a separate generated **Attack Vector Fabric**.
 
-### Perspectives
+With fourteen ternary core dimensions there are `3^14 = 4,782,969` possible core assignments. A run evaluates the current target state and QCDS counterfactuals rather than claiming that all 4.78 million assignments were brute-forced.
+
+### Attack Vector Fabric
+
+v1.10 adds a separate vector layer:
+
+~~~text
+CORE SYSTEM FACTS 1 / 0 / ?
+        ↓ constraints
+ATTACK MECHANISMS
+        × route variants
+        × target surfaces
+        × modeled assets
+        ↓
+GENERATED ATTACK-VECTOR FABRIC
+        ↓ QCDS pruning / uncertainty
+ACTIVE + CONDITIONAL VECTORS
+        ↓
+STRIDE / OWASP / IDENTITY / ... projections
+        ↓
+CONVERGED ROUTE CLUSTERS
+        ↓
+CONTROL → BYPASS → COUNTER-TEST → EVIDENCE
+~~~
+
+The built-in catalog contains multiple attack-mechanism seeds and a system-specific **Open Search lattice**. The lattice expands over modeled entry boundaries, assets, consequences and route variants, so a larger modeled system produces a larger vector space.
+
+For example, the current Customer Records Portal generates **more than 500 attack-vector candidates** from its modeled assets and boundaries before current constraints reject or retain them.
+
+The catalog is extensible and finite. It is an implementation surface for QCDS, not a claim that a fixed number of vectors defines the theoretical QCDS search space.
+
+### Perspectives are projections over the vector fabric
 
 Current perspective families are:
 
@@ -48,6 +79,8 @@ Current perspective families are:
 - Open Search
 
 AI / GenAI is active only when the target system is declared to contain AI/ML. A conventional portal, process or service is not silently treated as an AI system.
+
+Each perspective now projects the **same surviving attack-vector fabric** into its own categories. OWASP/AppSec, for example, can show hundreds of vector instances across OWASP Top 10:2025 and OWASP API Security Top 10:2023 categories instead of displaying four C-values as if they were the attack space.
 
 Each perspective can produce a focused report view and Print / Save PDF output. Perspective agreement is shared analytical coverage, not independent evidence.
 
@@ -96,9 +129,12 @@ The browser release demonstrates this inspectable logic. It does not execute Gro
 
 ## Implemented contract
 
-- Fourteen ternary system conditions, with interview-to-condition formation and explicit provenance for inferred values.
-- Eight current seed route families that initialize the browser search space; unresolved prerequisites remain conditional routes instead of disappearing.
-- Seven perspective families, including a target-specific AI / GenAI lens.
+- Fourteen ternary **core system conditions** used as starting constraints, with interview-to-condition formation and provenance for inferred values.
+- A separate generated **Attack Vector Fabric** expanded from attack mechanisms across route variants, target surfaces and modeled assets.
+- A system-specific Open Search lattice that makes the candidate count grow with the modeled asset/boundary surface rather than remaining a fixed list.
+- Active, conditional and rejected attack-vector states under the current ternary constraints.
+- Eight high-level route families retained as **convergence / investigation clusters**, not as the full attack catalog.
+- Seven perspective families, including a target-specific AI / GenAI lens, each projecting the same vector fabric into framework categories.
 - A ranked clarification queue generated from the ? conditions that affect surviving routes.
 - Perspective rotation reruns the surviving route space with one lens excluded.
 - Dimension walking changes one declared 1 to ? and records which routes become weaker, remain stable or disappear.
