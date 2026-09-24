@@ -203,7 +203,9 @@ jobs:
           node-version: "22"
 
       - name: Test QCDS Security Lab analysis contracts
-        run: node --test qcds-security-lab/tests/engine.test.mjs
+        run: |
+          node --test qcds-security-lab/tests/engine.test.mjs
+          node --test qcds-security-lab/tests/glasswing.test.mjs
 
       - name: Build QCDS Security Lab commercial surface
         run: |
@@ -214,6 +216,12 @@ jobs:
           cp qcds-security-lab/app.js _site/qcds-security-lab/app.js
           cp qcds-security-lab/engine.mjs _site/qcds-security-lab/engine.mjs
           cp qcds-security-lab/attack-vectors.mjs _site/qcds-security-lab/attack-vectors.mjs
+          cp qcds-security-lab/glasswing.html _site/qcds-security-lab/glasswing.html
+          cp qcds-security-lab/glasswing.css _site/qcds-security-lab/glasswing.css
+          cp qcds-security-lab/glasswing.js _site/qcds-security-lab/glasswing.js
+          cp qcds-security-lab/glasswing.mjs _site/qcds-security-lab/glasswing.mjs
+          cp qcds-security-lab/glasswing-launch.css _site/qcds-security-lab/glasswing-launch.css
+          cp qcds-security-lab/GLASSWING.md _site/qcds-security-lab/GLASSWING.md
           cp qcds-security-lab/README.md _site/qcds-security-lab/README.md
           cp qcds-security-lab/LICENSE.md _site/qcds-security-lab/LICENSE.md
           cp qcds-security-lab/ARCHITECTURE.md _site/qcds-security-lab/ARCHITECTURE.md
@@ -337,6 +345,16 @@ jobs:
           grep -F 'Load example everywhere' _site/qcds-security-lab/app.js
           grep -F 'WORKED_EXAMPLE_EVIDENCE' _site/qcds-security-lab/engine.mjs
           test -s _site/qcds-security-lab/attack-vectors.mjs
+          test -s _site/qcds-security-lab/glasswing.html
+          test -s _site/qcds-security-lab/glasswing.css
+          test -s _site/qcds-security-lab/glasswing.js
+          test -s _site/qcds-security-lab/glasswing.mjs
+          test -s _site/qcds-security-lab/glasswing-launch.css
+          test -s _site/qcds-security-lab/GLASSWING.md
+          grep -F 'Project Glasswing' _site/qcds-security-lab/glasswing.html
+          grep -F 'runGlasswing' _site/qcds-security-lab/glasswing.mjs
+          node --check _site/qcds-security-lab/glasswing.js
+          node --check _site/qcds-security-lab/glasswing.mjs
           grep -F 'generateAttackVectorSpace' _site/qcds-security-lab/attack-vectors.mjs
           grep -F 'generateOpenSearchLattice' _site/qcds-security-lab/attack-vectors.mjs
           grep -F 'generatedAttackVectors' _site/qcds-security-lab/engine.mjs
