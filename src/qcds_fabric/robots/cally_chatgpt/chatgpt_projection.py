@@ -41,6 +41,9 @@ def cally_chatgpt_html(*, static_mode: bool = False) -> str:
             # Final narrow authority: remove legacy green depth/focus artifacts
             # and make Person quick-add use the same physical surface grammar.
             _asset("surface_integrity_v6.css"),
+            # Final v7 authority: theme-correct surfaces, one drawer geometry and
+            # no stale layer may remain visible behind the active editor.
+            _asset("surface_integrity_v7.css"),
         ]
     )
     js = "\n".join(
@@ -63,6 +66,9 @@ def cally_chatgpt_html(*, static_mode: bool = False) -> str:
             # Loaded last: legacy modules may own their content, but never more
             # than one top-level Cally surface is allowed to remain visible.
             _asset("surface_integrity_v6.js"),
+            # Loaded absolutely last: coordinates legacy async open paths and
+            # enforces one active top-level surface without touching domain state.
+            _asset("surface_integrity_v7.js"),
         ]
     )
     html = html.replace(
