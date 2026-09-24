@@ -92,6 +92,8 @@ The current implementation uses fourteen stable core condition IDs. The final co
 
 These fourteen IDs are deliberately compact input coordinates. They do **not** enumerate vulnerabilities, attack techniques or attack paths. The Attack Vector Fabric is a separate layer whose size depends on vector mechanisms, route variants, target surfaces, assets and future imported/generated analytical material.
 
+The condition layer is a **QCDS mask**. A known `1` or `0` is fixed. A `?` is unresolved and opens both logical alternatives for that dimension. With `k` unresolved binary dimensions, the logical mask space is therefore `2^k`. Known coordinates constrain the search; they do not multiply it.
+
 ## Oracles
 
 Oracles are constraint, test or evidence functions. They can retain, reject, narrow or challenge candidate paths.
@@ -115,6 +117,14 @@ Current UI perspective families are:
 The AI / GenAI lens is applicable only when the target is declared to contain AI/ML.
 
 Additional perspectives such as CIA, ATT&CK-like technique views, insider, physical safety, operational resilience or domain-specific frameworks can be added without changing the underlying QCDS role.
+
+## Execution scale and substrate
+
+The inference architecture is substrate-independent. A classical implementation can inspect a finite vector fabric. At larger logical scales, the same QCDS structure can be represented with a quantum state space: fixed mask values constrain dimensions, unresolved dimensions define alternatives, Oracles mark or phase candidate states, amplification increases useful signal, and parallel, sequential or hybrid branches can be recombined before verification.
+
+For `n` qubits, the computational basis contains `2^n` states. Not every declared system fact needs to become a qubit because fixed mask values can constrain dimensions before or during the search.
+
+The current browser release is a classical demonstrator. It exposes the QCDS mask, vector fabric, Oracles, rotation, recursive inference and verification workflow; it does not claim that the browser itself is running a NISQ/Grover backend.
 
 ## Discovery and recursion
 
