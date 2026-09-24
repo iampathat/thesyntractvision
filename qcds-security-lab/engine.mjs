@@ -340,7 +340,7 @@ function buildFindings(input, conditions, lenses) {
   });
 }
 
-const VERSION = "1.9.0";
+const VERSION = "1.9.1";
 const FIELD_META = {
   external_input: [
     "External input",
@@ -528,7 +528,7 @@ const SCENARIOS = [
         "third_party",
         "secrets",
         "logging",
-        "rollback",,
+        "rollback",
         "ai_component",
       ],
       ["rag", "cross_user"],
@@ -561,9 +561,48 @@ const SCENARIOS = [
     ),
   },
 ];
+const WORKED_EXAMPLE_EVIDENCE = {
+  portal: {
+    findingId: "F3",
+    source: "Worked example · synthetic two-account isolation test",
+    observation:
+      "Synthetic demonstration: test account A requested test account B's fixture record. Resource-level authorization rejected the cross-account request, and a direct resource-ID counter-test was also rejected.",
+    outcome: "refutes",
+    action:
+      "Keep the two-account isolation check as a regression test for every resource endpoint.",
+  },
+  support: {
+    findingId: "F1",
+    source: "Worked example · synthetic support-email boundary test",
+    observation:
+      "Synthetic demonstration: a lower-trust marker in a test customer email influenced draft text, but the protected recipient and send authorization remained independently constrained.",
+    outcome: "inconclusive",
+    action:
+      "Keep recipient authorization independent of draft content and repeat the boundary test after workflow changes.",
+  },
+  knowledge: {
+    findingId: "F3",
+    source: "Worked example · synthetic document-isolation test",
+    observation:
+      "Synthetic demonstration: employee A requested employee B's protected fixture document through both search and direct lookup. Both requests were rejected at the resource boundary.",
+    outcome: "refutes",
+    action:
+      "Retain cross-principal retrieval tests in the regression suite.",
+  },
+  coding: {
+    findingId: "F2",
+    source: "Worked example · synthetic deployment-authority test",
+    observation:
+      "Synthetic demonstration: a low-privilege test request attempted a deployment outside the approved scope. The deployment boundary rejected the action despite the upstream recommendation.",
+    outcome: "refutes",
+    action:
+      "Keep deployment authorization scoped to the approved repository, environment and action.",
+  },
+};
+
 function newProject(scenario = "support") {
   const s = SCENARIOS.find((x) => x.id === scenario);
-  return {
+  const project = {
     schema: "qcds-security-lab/project-v1",
     version: VERSION,
     example: !!s,
@@ -588,6 +627,26 @@ function newProject(scenario = "support") {
     actions: {},
     updatedAt: new Date().toISOString(),
   };
+  const worked = s ? WORKED_EXAMPLE_EVIDENCE[s.id] : null;
+  if (worked) {
+    const fp = fingerprint(project.input);
+    project.evidence.push({
+      id: "WORKED-" + s.id.toUpperCase(),
+      findingId: worked.findingId,
+      source: worked.source,
+      observation: worked.observation,
+      outcome: worked.outcome,
+      createdAt: "2026-09-24T12:00:00Z",
+      fingerprint: fp,
+    });
+    project.actions[worked.findingId] = {
+      owner: "Worked example",
+      note: worked.action,
+      status: "done",
+      fingerprint: fp,
+    };
+  }
+  return project;
 }
 function fingerprint(input, excludedLenses = []) {
   return JSON.stringify([
