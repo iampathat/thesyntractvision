@@ -1020,7 +1020,19 @@ function generateAttackVectorSpace(input, lensRuns = []) {
     conditional,
     routeFamilies,
     frameworkViews,
-    coreConditionAssignmentSpace: 3 ** Object.keys(flags).length,
+    maskSpace: (() => {
+      const unknownKeys = Object.entries(flags)
+        .filter(([, value]) => value === null)
+        .map(([key]) => key);
+      const k = unknownKeys.length;
+      return {
+        knownDimensions: Object.keys(flags).length - k,
+        unknownDimensions: k,
+        unknownKeys,
+        expression: `2^${k}`,
+        exactStates: k <= 52 ? 2 ** k : null,
+      };
+    })(),
     catalogVectorCount: vectors.filter(
       (vector) => vector.generatedBy !== "open-search-lattice",
     ).length,
