@@ -1,5 +1,6 @@
 // Copyright © 2026 Patrik Sundblom. See LICENSE.md.
-// Deterministic, inspectable Security Lab evaluation engine.
+// Inspectable QCDS Security Lab inference engine.
+import { generateAttackVectorSpace } from "./attack-vectors.mjs";
 const CONDITION_DEFS = [
   ["external_input", "External actors, users, devices or systems can submit input"],
   [
@@ -340,7 +341,7 @@ function buildFindings(input, conditions, lenses) {
   });
 }
 
-const VERSION = "1.9.1";
+const VERSION = "1.10.0";
 const FIELD_META = {
   external_input: [
     "External input",
@@ -1066,7 +1067,23 @@ function oracleResults(input, findings) {
 }
 function analyze(input, evidence = [], excluded = []) {
   const fp = fingerprint(input, excluded);
-  const candidates = candidateRun(input, excluded);
+  const lenses = lensRuns(input, excluded);
+  const vectorSpace = generateAttackVectorSpace(input, lenses);
+  const candidates = candidateRun(input, excluded).map((route) => {
+    const family = vectorSpace.routeFamilies[route.id] || {
+      active: 0,
+      conditional: 0,
+      vectorIds: [],
+      topVectors: [],
+    };
+    return {
+      ...route,
+      attackVectorCount: family.active + family.conditional,
+      activeAttackVectors: family.active,
+      conditionalAttackVectors: family.conditional,
+      attackVectors: family.topVectors,
+    };
+  });
   const findings = candidates
     .filter((f) => !f.missing.length)
     .map((f) => {
@@ -1079,6 +1096,29 @@ function analyze(input, evidence = [], excluded = []) {
     .filter((f) => f.missing.length)
     .map((f) => ({ ...f, status: "NEEDS CONTEXT" }));
   const rotation = rotationResults(input, excluded, candidates);
+  const vectorRotation = Object.keys(LENSES)
+    .filter((name) => !excluded.includes(name))
+    .map((name) => {
+      const after = generateAttackVectorSpace(
+        input,
+        lensRuns(input, [...excluded, name]),
+      );
+      const beforeIds = new Set(vectorSpace.surviving.map((vector) => vector.id));
+      const afterIds = new Set(after.surviving.map((vector) => vector.id));
+      const relevantBefore = vectorSpace.surviving.filter((vector) =>
+        vector.frameworks.some((entry) => entry.lens === name),
+      );
+      return {
+        name,
+        relevant: relevantBefore.length,
+        retained: relevantBefore
+          .filter((vector) => afterIds.has(vector.id))
+          .map((vector) => vector.id),
+        lost: relevantBefore
+          .filter((vector) => beforeIds.has(vector.id) && !afterIds.has(vector.id))
+          .map((vector) => vector.id),
+      };
+    });
   const dimensions = conditionList(input)
     .filter((condition) => condition.value === true)
     .map((condition) => {
@@ -1089,6 +1129,13 @@ function analyze(input, evidence = [], excluded = []) {
       const after = candidateRun(copy, excluded);
       const afterById = Object.fromEntries(
         after.map((route) => [route.id, route]),
+      );
+      const afterVectors = generateAttackVectorSpace(
+        copy,
+        lensRuns(copy, excluded),
+      );
+      const afterVectorById = Object.fromEntries(
+        afterVectors.vectors.map((vector) => [vector.id, vector]),
       );
       return {
         ...condition,
@@ -1109,10 +1156,34 @@ function analyze(input, evidence = [], excluded = []) {
         lost: candidates
           .filter((route) => !afterById[route.id])
           .map((route) => route.id),
+        vectorImpact: {
+          activeToConditional: vectorSpace.active
+            .filter(
+              (vector) =>
+                afterVectorById[vector.id]?.state === "CONDITIONAL",
+            )
+            .map((vector) => vector.id),
+          removed: vectorSpace.surviving
+            .filter(
+              (vector) =>
+                !afterVectorById[vector.id] ||
+                afterVectorById[vector.id].state === "REJECTED",
+            )
+            .map((vector) => vector.id),
+        },
       };
     });
   const conditions = conditionList(input);
-  const recursive = recursiveInference(candidates, conditions);
+  const recursive = recursiveInference(candidates, conditions).map((branch) => {
+    const family = vectorSpace.routeFamilies[branch.id];
+    return {
+      ...branch,
+      attackVectorCount: family
+        ? family.active + family.conditional
+        : 0,
+      vectorExamples: family?.topVectors?.slice(0, 6) || [],
+    };
+  });
   const chains = recursive.map((branch) => ({
     ids: [branch.id],
     title: branch.title,
@@ -1132,7 +1203,7 @@ function analyze(input, evidence = [], excluded = []) {
     excludedLenses: [...excluded],
     conditions,
     conditionSuggestions: suggestions,
-    lenses: lensRuns(input, excluded),
+    lenses,
     findings,
     pending,
     routes: [
@@ -1143,8 +1214,19 @@ function analyze(input, evidence = [], excluded = []) {
         conditional: true,
       })),
     ],
+    attackVectorSpace: vectorSpace,
+    frameworkViews: vectorSpace.frameworkViews,
     searchSpace: {
-      seedFamilies: Object.keys(SHORT_TITLES).length,
+      coreConditions: conditions.length,
+      ternaryConditionSpace: vectorSpace.coreConditionAssignmentSpace,
+      seedMechanisms: new Set(
+        vectorSpace.vectors.map((vector) => vector.seedId),
+      ).size,
+      generatedAttackVectors: vectorSpace.generated,
+      activeAttackVectors: vectorSpace.activeCount,
+      conditionalAttackVectors: vectorSpace.conditionalCount,
+      rejectedAttackVectors: vectorSpace.rejectedCount,
+      survivingAttackVectors: vectorSpace.survivingCount,
       survivingRoutes: candidates.length,
       confirmedRoutes: findings.length,
       conditionalRoutes: pending.length,
@@ -1153,6 +1235,7 @@ function analyze(input, evidence = [], excluded = []) {
     clarifications,
     oracles: oracleResults(input, findings),
     rotation,
+    vectorRotation,
     dimensions,
     recursive,
     chains,
@@ -1296,10 +1379,10 @@ function markdown(model, project) {
     `**Assets:** ${model.input.assets.join(", ") || "Not specified"}`,
     "",
     "## Scope & evidence",
-    "The browser engine forms a ternary condition space, keeps unresolved routes conditional, applies parallel security perspectives, reruns perspective and dimension comparisons, recursively challenges controls, and binds user-reported evidence. Eight seed route families initialize the current browser search space; they are not proof of a vulnerability.",
+    `The browser engine forms a ternary condition space, expands ${model.searchSpace.generatedAttackVectors} attack-vector candidates from ${model.searchSpace.seedMechanisms} mechanism seeds across route variants and targets, keeps unresolved vectors conditional, projects the surviving vector space into security frameworks, reruns perspective and dimension comparisons, recursively challenges controls, and binds user-reported evidence. Core conditions are constraints, not the attack-vector catalog.`,
     "",
     `Excluded perspectives: ${model.excludedLenses.join(", ") || "None"}.`,
-    `${model.searchSpace.confirmedRoutes} active routes; ${model.searchSpace.conditionalRoutes} conditional routes; ${model.unknown.length} unknown conditions; ${model.archivedEvidence} evidence records belong to different system snapshots.`,
+    `${model.searchSpace.activeAttackVectors} active attack vectors; ${model.searchSpace.conditionalAttackVectors} conditional attack vectors; ${model.searchSpace.confirmedRoutes} active route families; ${model.searchSpace.conditionalRoutes} conditional route families; ${model.unknown.length} unknown core conditions.`,
     "",
     "## 1. Conditions",
     ...model.conditions.map((c) => {
@@ -1307,10 +1390,25 @@ function markdown(model, project) {
       return `- ${c.id} · ${c.label}: **${c.value === null ? "?" : c.value ? "1" : "0"}**${basis ? ` · interview basis: ${basis.reason} (${basis.confidence})` : ""}`;
     }),
     "",
-    "## 2. Oracle checks",
+    "## 2. Attack-vector fabric",
+    `- Core ternary coordinates: ${model.searchSpace.coreConditions}`,
+    `- Possible core assignments: ${model.searchSpace.ternaryConditionSpace.toLocaleString("en-US")}`,
+    `- Mechanism seeds: ${model.searchSpace.seedMechanisms}`,
+    `- Generated attack-vector candidates: ${model.searchSpace.generatedAttackVectors}`,
+    `- Active vectors: ${model.searchSpace.activeAttackVectors}`,
+    `- Conditional vectors: ${model.searchSpace.conditionalAttackVectors}`,
+    `- Rejected by current constraints: ${model.searchSpace.rejectedAttackVectors}`,
+    "",
+    "## 3. Framework projections",
+    ...Object.entries(model.frameworkViews).map(
+      ([name, view]) =>
+        `- ${name}: ${view.activeCount} active + ${view.conditionalCount} conditional vectors across ${Object.keys(view.categories).length} categories.`,
+    ),
+    "",
+    "## 4. Oracle checks",
     ...model.oracles.map((o) => `- **${o.name} — ${o.state}**: ${o.detail}`),
     "",
-    "## 3. Active and conditional routes",
+    "## 5. Active and conditional route families",
   ];
   for (const f of model.findings) {
     lines.push(
@@ -1358,24 +1456,24 @@ function markdown(model, project) {
     );
   }
   lines.push(
-    "\n## 4. Rotation",
+    "\n## 6. Perspective rotation",
     ...model.rotation.map(
       (r) =>
         `- Without ${r.name}: retained ${r.retained.join(", ") || "none"}; lost ${r.lost.join(", ") || "none"}.`,
     ),
-    "\n## 5. Dimension walk",
+    "\n## 7. Dimension walk",
     ...model.dimensions.map(
       (d) =>
         `- Set ${d.id} to ?: retained ${d.retained.length}; weakened ${d.weakened?.join(", ") || "none"}; removed ${d.lost.join(", ") || "none"}.`,
     ),
-    "\n## 6. Recursive inference",
+    "\n## 8. Recursive inference",
     ...model.recursive.map(
       (branch) =>
         `- ${branch.id} [${branch.status}]: ${branch.stages
           .map((stage) => `${stage.type} → ${stage.text}`)
           .join(" | ")}`,
     ),
-    "\n## 7. Next clarification questions",
+    "\n## 9. Next clarification questions",
     ...model.clarifications.map(
       (item) =>
         `- ${item.id} · ${item.label}: ${item.question} Affects: ${item.routeIds.join(", ") || "general context"}.`,
