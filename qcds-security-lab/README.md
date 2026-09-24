@@ -11,7 +11,7 @@ LLMs and other predictive models can assist with interpretation, question genera
 
 > **Commercial license required.** Public visibility does not grant a right to use, copy, modify, deploy, benchmark, train on, integrate, distribute or commercialize this material.
 
-## Workspace v1.9
+## Workspace v1.9.1
 
 The workspace follows five human-facing questions:
 
@@ -51,20 +51,34 @@ AI / GenAI is active only when the target system is declared to contain AI/ML. A
 
 Each perspective can produce a focused report view and Print / Save PDF output. Perspective agreement is shared analytical coverage, not independent evidence.
 
-### Example journeys
+### Worked examples
 
-The default entry point is **Example journeys**. The first case is deliberately a conventional non-AI customer records portal. Additional examples include AI-assisted support, internal knowledge access, invoice approval with a real `?` dependency and a coding/deployment agent.
+Worked examples are continuous workspaces, not a separate tutorial surface. Loading one keeps the same system selected through the complete product:
 
-Each example can be previewed end-to-end before the user chooses **Walk the 5 questions**.
+1. Goal
+2. Route
+3. Control
+4. Bypass
+5. Proof
+6. System & 1 / 0 / ? inputs
+7. Perspectives
+8. Results & explanation
+9. Reports & export
+
+The first case is deliberately a conventional non-AI customer records portal. Additional examples include AI-assisted support, internal knowledge access, invoice approval with a real `?` dependency and a coding/deployment agent.
+
+Portal, support, knowledge and coding include clearly labelled **synthetic worked-example evidence** so Proof, Results and Report are populated. Invoice intentionally remains conditional to demonstrate how unresolved context should look.
 
 ### Navigation
 
-The sidebar separates:
+The sidebar now makes the hierarchy explicit:
 
-- **Start here** — worked examples
-- **Workflow** — investigate, perspectives, findings, reports
+- **Start here** — the currently loaded worked example or a chooser
+- **The 5-step flow** — Goal, Route, Control, Bypass, Proof as direct links
+- **Explore the same example/system** — inputs, perspectives, results, report
 - **Learn** — plain-English method
-- **Why this result?** — conditions, QCDS trace, analysis overview
+
+The example is the data being worked on; it is not a disconnected menu section.
 
 ### QCDS trace
 
