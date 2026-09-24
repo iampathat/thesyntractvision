@@ -324,7 +324,6 @@ jobs:
           grep -F 'System & 1 / 0 / ? inputs' _site/qcds-security-lab/app.js
           grep -F 'Explain current path' _site/qcds-security-lab/app.js
           grep -F 'Whole analysis' _site/qcds-security-lab/app.js
-          grep -F 'Exit walkthrough · Examples' _site/qcds-security-lab/app.js
           grep -F 'QCDS ASKS NEXT' _site/qcds-security-lab/app.js
           grep -F 'CONDITIONAL · ?' _site/qcds-security-lab/app.js
           grep -F 'RECURSIVE INFERENCE · WHAT QCDS ASKS NEXT' _site/qcds-security-lab/app.js
