@@ -41,6 +41,44 @@ test("examples produce distinct, numerically ordered findings", () => {
     "F8",
   ]);
 });
+test("core C conditions constrain a much larger attack-vector fabric", () => {
+  const portal = analyze(newProject("portal").input);
+  assert.equal(portal.searchSpace.coreConditions, 14);
+  assert.equal(portal.searchSpace.ternaryConditionSpace, 4782969);
+  assert.equal(portal.searchSpace.generatedAttackVectors, 251);
+  assert.ok(portal.searchSpace.activeAttackVectors > 100);
+  assert.ok(portal.searchSpace.generatedAttackVectors > portal.searchSpace.coreConditions * 10);
+  const owasp = portal.frameworkViews["OWASP / AppSec"];
+  assert.ok(owasp.vectorCount > 100);
+  assert.ok(Object.hasOwn(owasp.categories, "A01:2025 Broken Access Control"));
+  assert.ok(Object.hasOwn(owasp.categories, "A05:2025 Injection"));
+  assert.ok(
+    Object.hasOwn(
+      owasp.categories,
+      "API1:2023 Broken Object Level Authorization",
+    ),
+  );
+  assert.ok(portal.routes.find((route) => route.id === "F3").attackVectorCount > 20);
+});
+test("unknown core facts keep attack vectors conditional rather than deleting them", () => {
+  const m = analyze(newProject("custom").input);
+  assert.equal(m.searchSpace.generatedAttackVectors, 251);
+  assert.equal(m.searchSpace.activeAttackVectors, 0);
+  assert.equal(m.searchSpace.conditionalAttackVectors, 251);
+  assert.equal(m.searchSpace.rejectedAttackVectors, 0);
+  assert.ok(m.frameworkViews["OWASP / AppSec"].conditionalCount > 200);
+});
+test("framework reports are projections over the same vector fabric", () => {
+  const m = analyze(newProject("support").input);
+  assert.equal(m.attackVectorSpace.generated, m.searchSpace.generatedAttackVectors);
+  assert.equal(
+    m.frameworkViews["OWASP / AppSec"].vectors[0].id.startsWith("AV"),
+    true,
+  );
+  assert.ok(m.frameworkViews.STRIDE.vectorCount > 100);
+  assert.ok(m.frameworkViews.Identity.vectorCount > 20);
+  assert.equal(m.vectorRotation.length, Object.keys(LENSES).length);
+});
 test("worked examples carry synthetic evidence into the real workflow", () => {
   const portal = newProject("portal");
   const portalModel = analyze(portal.input, portal.evidence);
@@ -85,6 +123,7 @@ test("unknown system is not a security pass", () => {
   assert.equal(m.findings.length, 0);
   assert.equal(m.pending.length, 8);
   assert.equal(m.searchSpace.conditionalRoutes, 8);
+  assert.equal(m.searchSpace.conditionalAttackVectors, 251);
   assert.ok(m.oracles.every((o) => !["PASS", "VERIFIED"].includes(o.state)));
 });
 test("unknown prerequisites produce questions; explicit No excludes the rule", () => {
@@ -162,12 +201,11 @@ test("rotation reruns selected perspectives and can lose all paths", () => {
   assert.deepEqual(m.rotation[0].lost, ids(m));
   assert.equal(analyze(p.input, [], Object.keys(LENSES)).findings.length, 0);
 });
-test("dimension walk weakens routes instead of silently deleting unknowns", () => {
+test("dimension walk measures both route and attack-vector impact", () => {
   const m = analyze(newProject().input);
-  assert.deepEqual(
-    m.dimensions.find((d) => d.key === "tools").weakened,
-    ["F2"],
-  );
+  const tools = m.dimensions.find((d) => d.key === "tools");
+  assert.deepEqual(tools.weakened, ["F2"]);
+  assert.ok(tools.vectorImpact.activeToConditional.length > 0);
   assert.deepEqual(
     m.dimensions.find((d) => d.key === "human_approval").weakened,
     ["F5"],
@@ -267,7 +305,8 @@ test("report includes provenance, uncertainty, evidence, actions and scope", () 
     "Test suite 9",
     "Boundary rejected",
     "regression test",
-    "seed route families",
+    "attack-vector candidates",
+    "Framework projections",
     "Dimension walk",
     "Recursive inference",
     "REFUTED · REPORTED",
