@@ -36,7 +36,7 @@ The investigation asks questions such as:
 
 Each answer creates or refines a **Condition**.
 
-In v1.9, the interview can form condition proposals from the user's own words. Each inferred value carries a reason and confidence marker. The user can override it. Values that cannot be supported remain **?**; they are not converted to No. Those unknowns are ranked by how many surviving conditional routes depend on them, producing the next clarification queue.
+In v1.10, the interview can form condition proposals from the user's own words. Each inferred value carries a reason and confidence marker. The user can override it. Values that cannot be supported remain **?**; they are not converted to No. Those unknowns are ranked by how many surviving conditional routes depend on them, producing the next clarification queue.
 
 Conditions are ternary:
 
@@ -60,7 +60,9 @@ C14 The target itself does not contain AI/ML
 
 For an AI-enabled target, C14 becomes 1 and the AI / GenAI perspective can become applicable.
 
-The Conditions define the observable problem space. They are not the conclusion. A route whose required condition is `?` remains in the search space as **conditional** until that fact becomes 1 or 0.
+The core Conditions define compact coordinates in the observable problem space. They are not the conclusion **and they are not the attack-vector list**.
+
+After Condition Formation, QCDS expands attack mechanisms across route variants, targets and modeled assets. The resulting vector fabric is constrained by the current 1 / 0 / ? state. A vector whose required facts contain `?` remains **conditional** rather than being guessed away.
 
 ## Model-assisted analysis
 
@@ -94,9 +96,29 @@ An Oracle may reject, retain, weight or narrow candidate paths.
 
 A framework can supply Oracle families, but no framework owns the search.
 
-## Perspective lenses are inputs, not the engine
+## Attack Vector Fabric
 
-QCDS can instantiate many parallel perspectives.
+The Security Lab separates **system facts** from **attack vectors**.
+
+~~~text
+C1..Cn CORE FACTS
+     ↓
+mechanism × entry boundary × route variant × target × asset × consequence
+     ↓
+ATTACK-VECTOR FABRIC
+     ↓
+1 / 0 / ? constraints
+     ↓
+surviving active + conditional vectors
+~~~
+
+The browser ships with a finite mechanism catalog plus an Open Search lattice. The latter expands with the modeled system, so the vector count is not a fixed “14”, “140” or other universal number.
+
+A larger catalog, architecture graph, code model, imported security corpus or model-assisted candidate generator can feed additional vector material into the same QCDS loop. The inference architecture is not tied to the present browser catalog.
+
+## Perspective lenses are projections, not the engine
+
+QCDS can instantiate many parallel perspectives over the same surviving vector fabric. A framework does not receive four private C-values; it receives the vector instances relevant to its categories and questions.
 
 | Perspective lens | Example questions it contributes |
 |---|---|
@@ -220,11 +242,13 @@ DESCRIPTION / CODE / OBSERVATIONS
   ↓
 OPTIONAL MODEL-ASSISTED ANALYSIS
   ↓
-CONDITIONS 1 / 0 / ?
+CORE CONDITIONS 1 / 0 / ?
+  ↓
+ATTACK-VECTOR FABRIC
   ↓
 ORACLES
   ↓
-PARALLEL PERSPECTIVES
+PARALLEL PERSPECTIVE PROJECTIONS
   ↕
 QCDS ROTATION / DIMENSION EXCLUSION
   ↓
