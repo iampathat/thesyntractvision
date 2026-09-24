@@ -876,10 +876,10 @@ function exampleFlowCard(id) {
       <div><span>5 · PROOF</span><b>${esc(focus.verify)}</b><small>${evidence ? `Worked evidence included: ${esc(evidence.outcome)}.` : focus.conditional ? "The unresolved ? is the lesson: evidence cannot be bound yet." : "The worked case includes the test plan."}</small></div>
     </div>
     <div class="example-product-map">
-      <a href="#investigate/1/${focus.id}"><span>5-STEP FLOW</span><b>Goal → Route → Control → Bypass → Proof</b></a>
-      <a href="${perspectiveHref(focus.hitLenses[0] || "STRIDE")}"><span>PERSPECTIVES</span><b>See the same route through different lenses</b></a>
-      <a href="#findings"><span>RESULTS</span><b>See why QCDS kept the route</b></a>
-      <a href="#report"><span>REPORT</span><b>See the finished case assembled</b></a>
+      <div><span>5-STEP FLOW</span><b>Goal → Route → Control → Bypass → Proof</b></div>
+      <div><span>PERSPECTIVES</span><b>See the same route through different lenses</b></div>
+      <div><span>RESULTS</span><b>See why QCDS kept the route</b></div>
+      <div><span>REPORT</span><b>See the finished case assembled</b></div>
     </div>
     <div class="example-bottom">
       <div><span class="eyebrow muted">THE 1 / 0 / ? FACTS THIS ROUTE USES</span><div class="condition-chips">${conditions}</div></div>
