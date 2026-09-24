@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Project Glasswing by Patrik Sundblom — compare one-pass, recursive-agent and QCDS security inference over the same declared system state."
+    />
+    <meta name="theme-color" content="#071012" />
+    <title>Project Glasswing · QCDS Security Lab</title>
+    <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./glasswing.css?v=1.0.0" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="./">
+        <span class="brand-mark">Q★</span>
+        <span>QCDS Security Lab</span>
+      </a>
+      <div class="top-actions">
+        <span id="version" class="version">Glasswing</span>
+        <a class="ghost-button" href="./">Back to Lab</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <span class="eyebrow">PROJECT GLASSWING</span>
+          <h1>Same system. Same declared facts. <em>Different inference depth.</em></h1>
+          <p class="hero-lead">
+            Glasswing makes the difference visible. Run the same security problem
+            as a compact single pass, as a recursive agent, and through the full
+            QCDS inference fabric.
+          </p>
+          <p class="hero-note">
+            This is a structural comparison harness, not a vendor-model benchmark.
+            It uses the inspectable Security Lab engine and keeps evidence separate
+            from hypothesis count.
+          </p>
+        </div>
+        <div class="wing-panel" aria-hidden="true">
+          <svg viewBox="0 0 520 360" role="img">
+            <defs>
+              <linearGradient id="wing" x1="0" x2="1">
+                <stop offset="0" stop-color="#8df7df" stop-opacity=".08"/>
+                <stop offset=".55" stop-color="#8df7df" stop-opacity=".42"/>
+                <stop offset="1" stop-color="#d4ff71" stop-opacity=".12"/>
+              </linearGradient>
+            </defs>
+            <path d="M254 182C155 35 42 18 27 96c-12 65 74 106 202 108-101 20-164 66-139 111 30 53 125-9 171-104"
+              fill="url(#wing)" stroke="currentColor" stroke-width="2"/>
+            <path d="M266 182C365 35 478 18 493 96c12 65-74 106-202 108 101 20 164 66 139 111-30 53-125-9-171-104"
+              fill="url(#wing)" stroke="currentColor" stroke-width="2"/>
+            <path d="M260 80v210M145 80l115 102M375 80 260 182M112 260l148-78M408 260l-148-78"
+              stroke="currentColor" stroke-width="1" opacity=".45"/>
+            <circle cx="260" cy="182" r="7" fill="currentColor"/>
+          </svg>
+          <div class="wing-caption">
+            <span>parallel</span><span>rotate</span><span>recurse</span><span>verify</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="builder" id="builder">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">01 · DEFINE THE SAME PROBLEM</span>
+            <h2>What are we investigating?</h2>
+          </div>
+          <div class="scenario-tools">
+            <label>
+              Worked system
+              <select id="scenario"></select>
+            </label>
+            <button id="load-active" class="ghost-button" type="button">
+              Load active Lab case
+            </button>
+          </div>
+        </div>
+        <p id="load-status" class="load-status">
+          Use a worked example or load the case already saved in QCDS Security Lab.
+        </p>
+
+        <div class="form-grid">
+          <label class="wide">
+            System
+            <input id="system-name" autocomplete="off" />
+          </label>
+          <label class="wide">
+            Plain-English system description
+            <textarea id="system-description" rows="5"></textarea>
+          </label>
+          <label>
+            I am the attacker. I want to…
+            <textarea id="attacker-goal" rows="4"></textarea>
+          </label>
+          <label>
+            Protected assets · one per line
+            <textarea id="assets" rows="4"></textarea>
+          </label>
+        </div>
+
+        <div class="condition-section">
+          <div class="condition-intro">
+            <div>
+              <span class="eyebrow">CORE MASK</span>
+              <h3>1 / 0 / ? are constraints — not the attack catalog</h3>
+            </div>
+            <p>
+              Known values stay fixed. Only unresolved <b>?</b> dimensions branch.
+              The attack-vector fabric is generated separately from mechanisms,
+              boundaries, assets and route variants.
+            </p>
+          </div>
+          <div id="condition-grid" class="condition-grid"></div>
+        </div>
+
+        <div class="run-row">
+          <button id="run-button" class="run-button" type="button">Run Project Glasswing</button>
+          <button id="export-button" class="ghost-button" type="button">Export last run</button>
+          <span>Use only systems you own or are authorized to assess.</span>
+        </div>
+      </section>
+
+      <section id="results" class="results" hidden>
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">02 · COMPARE THE INFERENCE</span>
+            <h2>What changes when the reasoning architecture changes?</h2>
+          </div>
+        </div>
+        <div id="run-summary" class="run-summary"></div>
+        <div id="comparison-note" class="comparison-note"></div>
+        <div id="comparison-grid" class="comparison-grid"></div>
+      </section>
+
+      <section class="principle">
+        <span class="eyebrow">03 · READ THE RESULT CORRECTLY</span>
+        <h2>Discovery is not verification.</h2>
+        <p>
+          Glasswing deliberately separates candidate generation from truth.
+          A route can be plausible, conditional, supported, refuted or conflicting.
+          QCDS does not win by producing the longest list. It earns confidence only
+          when surviving claims remain coherent under changed perspectives,
+          changed dimensions, control challenge, counter-tests and evidence.
+        </p>
+        <div class="principle-flow">
+          <span>DISCOVER</span><i>→</i><span>CONSTRAIN</span><i>→</i><span>ROTATE</span><i>→</i><span>RECURSE</span><i>→</i><span>VERIFY</span>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>Project Glasswing · QCDS Security Lab</span>
+      <span>Author: Patrik Sundblom · Assisted by ChatGPT (OpenAI)</span>
+      <span>Commercial license required · See LICENSE.md</span>
+    </footer>
+
+    <script type="module" src="./glasswing.js?v=1.0.0"></script>
+  </body>
+</html>
