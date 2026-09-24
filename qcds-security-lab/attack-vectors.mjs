@@ -861,7 +861,7 @@ function generateOpenSearchLattice(input, lensRuns, startSequence = 1) {
             mechanism: `${entryLabel} crosses the ${variant.segment} toward ${asset}`,
             consequence: consequence.label,
             path: `${entryLabel} → ${variant.segment} → ${asset} → ${consequence.label}`,
-            requires,
+            requires: required,
             requiresAny: [],
             supports: [],
             missing,
