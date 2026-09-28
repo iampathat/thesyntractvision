@@ -342,7 +342,7 @@ test("report includes provenance, uncertainty, evidence, actions and scope", () 
     "regression test",
     "attack-vector candidates",
     "Framework projections",
-    "Dimension walk",
+    "Uncertainty comparisons",
     "Recursive inference",
     "REFUTED · REPORTED",
   ])

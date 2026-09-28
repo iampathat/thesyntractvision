@@ -1,6 +1,7 @@
 // Copyright © 2026 Patrik Sundblom. See LICENSE.md.
 // Inspectable QCDS Security Lab inference engine.
 import { generateAttackVectorSpace } from "./attack-vectors.mjs";
+import { normalizeResearch, runDimensionExperiment, dimensionMarkdown } from "./logical-space.mjs?v=1.11.0";
 const CONDITION_DEFS = [
   ["external_input", "External actors, users, devices or systems can submit input"],
   [
@@ -341,7 +342,7 @@ function buildFindings(input, conditions, lenses) {
   });
 }
 
-const VERSION = "1.10.1";
+const VERSION = "1.11.0";
 const FIELD_META = {
   external_input: [
     "External input",
@@ -1363,6 +1364,7 @@ function validateProject(value) {
     },
     excludedLenses,
     conditionBasis,
+    ...(value.research ? { research: normalizeResearch(value.research) } : {}),
     evidence,
     actions,
     updatedAt: new Date().toISOString(),
@@ -1467,7 +1469,7 @@ function markdown(model, project) {
       (r) =>
         `- Without ${r.name}: retained ${r.retained.join(", ") || "none"}; lost ${r.lost.join(", ") || "none"}.`,
     ),
-    "\n## 7. Dimension walk",
+    "\n## 7. Uncertainty comparisons (present coordinates)",
     ...model.dimensions.map(
       (d) =>
         `- Set ${d.id} to ?: retained ${d.retained.length}; weakened ${d.weakened?.join(", ") || "none"}; removed ${d.lost.join(", ") || "none"}.`,
@@ -1487,6 +1489,10 @@ function markdown(model, project) {
     "",
     "Copyright © 2026 Patrik Sundblom. Commercial license required. See qcds-security-lab/LICENSE.md.",
   );
+  if (project.research) {
+    const experiment = runDimensionExperiment(model, project.research);
+    lines.push("\n---\n", dimensionMarkdown(experiment));
+  }
   return lines.join("\n");
 }
 export {

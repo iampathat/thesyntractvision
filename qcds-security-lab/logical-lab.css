@@ -1,0 +1,693 @@
+/* QCDS dimensional workbench — Patrik Sundblom. */
+.logic-launch {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 30px;
+  margin: 24px 0;
+  background:
+    radial-gradient(ellipse at 5% 50%, #183d3d 0, transparent 55%), #121d22;
+  border: 1px solid #38645c;
+  border-radius: 16px;
+}
+.logic-launch-mark {
+  font: bold 58px/1 system-ui;
+  color: #c5ff5c;
+  flex-shrink: 0;
+  text-shadow: 0 0 32px #b8ff3930;
+}
+.logic-launch-mark span {
+  font-size: 20px;
+  vertical-align: top;
+  color: #88f2ea;
+}
+.logic-launch h2 {
+  margin: 8px 0;
+  font-size: 24px;
+  letter-spacing: -0.025em;
+}
+.logic-launch p {
+  margin: 0;
+  font-size: 14px;
+  color: #b1c4cc;
+  line-height: 1.6;
+}
+.logic-launch > .button {
+  flex-shrink: 0;
+}
+.compact-launch {
+  flex-wrap: wrap;
+  padding: 24px;
+}
+.compact-launch > div:nth-child(2) {
+  flex: 1;
+  min-width: 220px;
+}
+.compact-launch > .button {
+  margin-left: auto;
+}
+#logical-lab {
+  width: min(1320px, calc(100vw - 40px));
+  max-width: none;
+  height: calc(100dvh - 48px);
+  max-height: none;
+  padding: 0;
+  color: #e4edf1;
+  background: #0c1319;
+  border: 1px solid #486766;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 30px 150px #000b;
+}
+#logical-lab::backdrop {
+  background: #02050cdf;
+  backdrop-filter: blur(7px);
+}
+#logical-lab[open] {
+  display: flex;
+  flex-direction: column;
+}
+#logical-lab .logic-header {
+  flex-shrink: 0;
+}
+#logical-lab .logic-scroll {
+  flex: 1;
+  height: auto;
+  min-height: 0;
+}
+#logical-lab .logic-input-summary {
+  color: #baf269;
+  font-weight: 600;
+  padding: 0 0 12px;
+}
+#logical-lab .logic-oracle p,
+#logical-lab .logic-oracle li {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #acc3cd;
+}
+.logic-header {
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 28px;
+  border-bottom: 1px solid #30464d;
+  background: linear-gradient(110deg, #172e32, #111923);
+}
+.logic-brand {
+  font: bold 43px/1 system-ui;
+  color: #c2ff45;
+}
+.logic-brand span {
+  font-size: 15px;
+  vertical-align: top;
+}
+.logic-header h2 {
+  font-size: 21px;
+  margin: 5px 0;
+}
+.logic-header p {
+  font-size: 12px;
+  color: #a0b5bf;
+  margin: 0;
+}
+.logic-header > .button {
+  margin-left: auto;
+  white-space: nowrap;
+}
+.logic-header > .button > span {
+  margin-left: 14px;
+  font-size: 22px;
+}
+.logic-scroll {
+  height: calc(100% - 100px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 28px;
+  scrollbar-color: #465b66 #0e161d;
+}
+.logic-focus {
+  margin-bottom: 26px;
+}
+.logic-focus h3 {
+  margin: 9px 0;
+  font-size: 28px;
+  letter-spacing: -0.04em;
+}
+.logic-focus p {
+  color: #aec0c9;
+  font-size: 14px;
+  line-height: 1.7;
+}
+#logical-lab label {
+  display: block;
+  color: #b1c5ce;
+  font-size: 12px;
+}
+#logical-lab input,
+#logical-lab select,
+#logical-lab textarea {
+  width: 100%;
+  min-width: 0;
+  margin-top: 7px;
+  color: #e7f1f5;
+  background: #101f28;
+  border: 1px solid #3a505d;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 12px;
+}
+#logical-lab select {
+  min-height: 46px;
+}
+#logical-lab button {
+  cursor: pointer;
+}
+#logical-lab .button {
+  min-height: 44px;
+}
+.logic-focus select {
+  font-size: 15px !important;
+}
+.logic-path {
+  padding: 12px 16px;
+  border-left: 2px solid #77d8d3;
+  background: #14232a;
+  overflow-wrap: anywhere;
+}
+.logic-columns {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  align-items: start;
+  gap: 24px;
+}
+.logic-inputs {
+  border: 1px solid #2b414b;
+  border-radius: 12px;
+  padding: 20px;
+  background: #111b23;
+}
+.logic-section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.logic-section-head h3,
+.logic-result-card h3 {
+  font-size: 20px;
+  margin: 8px 0 12px;
+  letter-spacing: -0.025em;
+}
+.logic-inputs .logic-section-head {
+  flex-direction: column;
+  gap: 0;
+}
+.logic-inputs .logic-section-head > .text-button {
+  font-size: 12px;
+  text-align: left;
+  margin-bottom: 10px;
+}
+.logic-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  font-size: 11px;
+  color: #b1c1ca;
+  line-height: 1.8;
+  border-bottom: 1px solid #2c3b44;
+  padding-bottom: 13px;
+}
+.logic-legend b {
+  color: #c8ff60;
+}
+.logic-dimensions {
+  display: flex;
+  flex-direction: column;
+}
+#logical-lab .logic-dimensions > label {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 80px;
+  gap: 10px;
+  align-items: center;
+  border-bottom: 1px solid #24343e;
+  padding: 12px 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+#logical-lab .logic-dimensions select {
+  margin: 0;
+  padding: 8px;
+  color: #bfff60;
+  font:
+    600 13px ui-monospace,
+    monospace;
+}
+.logic-note {
+  font-size: 12px !important;
+  line-height: 1.65;
+  color: #94acb8;
+}
+.logic-add {
+  margin-top: 18px;
+  border-top: 1px solid #35454d;
+  padding-top: 14px;
+}
+#logical-lab summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: #c1d4dc;
+  line-height: 1.6;
+  padding: 10px 0;
+}
+.logic-add form {
+  display: grid;
+  gap: 14px;
+  padding: 14px 0;
+}
+.logic-configuration {
+  display: grid;
+  gap: 16px;
+  padding: 20px 0;
+}
+.logic-results {
+  min-width: 0;
+  transition: opacity 0.1s;
+}
+.logic-results.recalculating {
+  opacity: 0.6;
+}
+.logic-result-card {
+  background: #111c24;
+  border: 1px solid #2b414b;
+  padding: 24px;
+  margin-bottom: 18px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.logic-result-card > p {
+  font-size: 14px;
+  line-height: 1.65;
+}
+.logic-result-card > details {
+  margin-top: 16px;
+  border-top: 1px solid #30444c;
+}
+.logic-state {
+  display: inline-flex;
+  flex-shrink: 0;
+  font:
+    10px/1.5 ui-monospace,
+    monospace;
+  padding: 6px 9px;
+  color: #b8d0dd;
+  background: #263842;
+  border-radius: 6px;
+  max-width: 100%;
+}
+.logic-state.active {
+  color: #bfff5c;
+  background: #283b20;
+}
+.logic-state.conditional {
+  color: #fbd087;
+  background: #3b3021;
+}
+.logic-state.rejected {
+  color: #ffb8bd;
+  background: #40262f;
+}
+.logic-state.inactive {
+  color: #a9b4c8;
+  background: #252d3e;
+}
+.logic-flow-map {
+  display: block;
+  width: 100%;
+  max-height: 190px;
+  margin: 16px 0;
+}
+.logic-flow-map rect {
+  fill: #162b31;
+  stroke: #3f6967;
+}
+.logic-flow-map text {
+  fill: #93b1ba;
+  font:
+    11px ui-monospace,
+    monospace;
+}
+.logic-flow-map text.map-value {
+  fill: #caff7e;
+  font-size: 21px;
+}
+.logic-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
+}
+.logic-metrics b {
+  font:
+    26px/1.2 ui-monospace,
+    monospace;
+  color: #c4ff64;
+  display: block;
+  overflow-wrap: anywhere;
+}
+.logic-metrics span {
+  display: block;
+  font-size: 11px;
+  color: #91aab6;
+  margin-top: 6px;
+  line-height: 1.5;
+}
+.logic-vector-totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  margin-top: 20px;
+  padding-top: 17px;
+  border-top: 1px solid #2b414b;
+  font-size: 12px;
+  color: #a7b9c4;
+}
+.logic-vector-totals b {
+  color: #e2eaf0;
+}
+.logic-changes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+.logic-changes button {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  background: #182934;
+  border: 1px solid #304854;
+  border-radius: 6px;
+  padding: 10px;
+  font:
+    11px ui-monospace,
+    monospace;
+  color: #c4dde4;
+}
+.logic-probability {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  margin: 15px 0;
+}
+.logic-probability > b {
+  color: #bcff53;
+  font:
+    31px ui-monospace,
+    monospace;
+}
+.logic-probability > span {
+  font-size: 12px;
+  color: #a8bdc8;
+  line-height: 1.6;
+}
+.logic-amplification {
+  width: 100%;
+  height: auto;
+}
+.logic-amplification text {
+  fill: #93a9b5;
+  font:
+    10px ui-monospace,
+    monospace;
+}
+.logic-lanes {
+  margin: 16px 0;
+}
+.logic-lanes > details {
+  border-top: 1px solid #2a3d47;
+}
+.logic-lanes > details > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.logic-lanes summary > span {
+  font-size: 12px;
+}
+.logic-lanes summary > b {
+  white-space: nowrap;
+  font-size: 10px;
+  color: #99b5c4;
+  font-weight: 400;
+}
+.logic-lanes details[open] {
+  padding-bottom: 14px;
+}
+.logic-lanes p {
+  font-size: 12px;
+  color: #9db4bf;
+  line-height: 1.6;
+}
+.logic-walk {
+  padding-left: 20px;
+  max-height: 230px;
+  overflow: auto;
+}
+.logic-walk li {
+  padding: 10px 0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.logic-walk li > b {
+  display: block;
+  font-weight: 500;
+  color: #cee2ea;
+}
+.logic-walk li > span {
+  color: #8eadb8;
+  font-size: 11px;
+}
+.logic-next {
+  border-color: #486349;
+  background: linear-gradient(120deg, #162a24, #111c24 80%);
+}
+.logic-question {
+  padding: 16px;
+  background: #182d2d;
+  border: 1px solid #345452;
+  border-radius: 9px;
+  margin: 12px 0;
+}
+.logic-question > b {
+  font-size: 14px;
+}
+.logic-question p {
+  font-size: 12px;
+  color: #b3c9ce;
+}
+.logic-question > div {
+  display: flex;
+  gap: 10px;
+}
+.logic-recursion {
+  margin: 20px 0;
+  padding-left: 20px;
+}
+.logic-recursion li {
+  border-left: 1px solid #659859;
+  padding: 0 0 20px 18px;
+}
+.logic-recursion li > span {
+  display: block;
+  font:
+    10px ui-monospace,
+    monospace;
+  color: #bded7f;
+}
+.logic-recursion li > b {
+  display: block;
+  margin-top: 9px;
+  font-size: 14px;
+}
+.logic-recursion p,
+.logic-observation p {
+  color: #adc2ce;
+  font-size: 12px;
+  line-height: 1.65;
+}
+.logic-frameworks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.logic-frameworks > div {
+  padding: 14px;
+  border: 1px solid #2a444d;
+  border-radius: 8px;
+  background: #14242c;
+}
+.logic-frameworks b,
+.logic-frameworks span,
+.logic-frameworks small {
+  display: block;
+}
+.logic-frameworks b {
+  font-size: 13px;
+  margin-bottom: 9px;
+}
+.logic-frameworks span {
+  color: #b9d78c;
+  font-size: 12px;
+}
+.logic-frameworks small {
+  color: #859daa;
+  font-size: 10px;
+  margin-top: 7px;
+}
+.logic-exports {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+}
+.logic-footer {
+  font-size: 11px;
+  text-align: center;
+  padding: 22px 0 0;
+  color: #8299a7;
+}
+.logic-observation {
+  border-left: 2px solid #7ba88a;
+  padding: 12px 16px;
+  margin: 16px 0;
+  background: #172a2b;
+}
+.logic-observation b {
+  font-size: 13px;
+}
+.logic-running {
+  padding: 50px;
+  color: #b8ff39;
+  text-align: center;
+}
+@media (max-width: 1000px) {
+  .logic-launch {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .logic-launch > div:nth-child(2) {
+    flex: 1;
+    min-width: 200px;
+  }
+  .logic-launch > .button {
+    margin-left: auto;
+  }
+  .logic-columns {
+    grid-template-columns: 1fr;
+  }
+  .logic-dimensions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 25px;
+  }
+}
+@media (max-width: 600px) {
+  #logical-lab {
+    width: 100vw;
+    height: 100dvh;
+    margin: 0;
+    border-radius: 0;
+    border: 0;
+  }
+  .logic-header {
+    padding: 14px;
+    min-height: 90px;
+    gap: 10px;
+  }
+  .logic-brand {
+    font-size: 28px;
+  }
+  .logic-header h2 {
+    font-size: 15px;
+    max-width: 160px;
+  }
+  .logic-header p {
+    font-size: 10px;
+    max-width: 190px;
+  }
+  .logic-header .eyebrow {
+    font-size: 8px;
+  }
+  #logical-lab .logic-header .button {
+    font-size: 11px;
+    padding: 8px;
+    min-width: 42px;
+  }
+  .logic-header .button > span {
+    display: none;
+  }
+  .logic-scroll {
+    padding: 18px 12px 35px;
+    height: calc(100% - 90px);
+  }
+  .logic-focus h3 {
+    font-size: 24px;
+  }
+  .logic-dimensions {
+    grid-template-columns: 1fr;
+  }
+  .logic-inputs,
+  .logic-result-card {
+    padding: 18px;
+  }
+  .logic-section-head {
+    flex-wrap: wrap;
+    gap: 0;
+  }
+  .logic-state {
+    margin-bottom: 10px;
+  }
+  .logic-metrics {
+    gap: 10px;
+  }
+  .logic-metrics b {
+    font-size: 21px;
+  }
+  .logic-metrics span {
+    font-size: 10px;
+  }
+  .logic-probability {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .logic-frameworks,
+  .logic-changes {
+    grid-template-columns: 1fr;
+  }
+  .logic-exports .button {
+    width: 100%;
+  }
+  .logic-launch {
+    padding: 20px;
+  }
+  .logic-launch h2 {
+    font-size: 21px;
+  }
+  .logic-launch > .button {
+    width: 100%;
+  }
+  .logic-launch-mark {
+    font-size: 37px;
+  }
+  .compact-launch > div:nth-child(2) {
+    min-width: 175px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .logic-results {
+    transition: none;
+  }
+}

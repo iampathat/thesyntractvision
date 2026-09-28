@@ -10,7 +10,8 @@ import {
   analyze,
   validateProject,
   markdown,
-} from "./engine.mjs?v=1.10.1";
+} from "./engine.mjs?v=1.11.0";
+import { createLogicalLab, researchLaunch } from "./logical-lab.js?v=1.11.0";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
@@ -73,14 +74,6 @@ try {
     const cases = {};
     for (const id of ["portal", "support", "knowledge", "coding", "invoice", "custom"]) {
       if (!saved.cases?.[id]) continue;
-      if (
-        id !== "custom" &&
-        saved.cases[id].example === true &&
-        saved.cases[id].version !== VERSION
-      ) {
-        cases[id] = newProject(id);
-        continue;
-      }
       cases[id] = validateProject(saved.cases[id]);
       if (
         cases[id].example &&
@@ -819,7 +812,7 @@ function explorerContent(f) {
   }<details class="fact-comparison"><summary>What if one system fact were ?</summary><p>In this lab, a dimension is one system fact. Set one to ? in a comparison to see what the path depends on.</p><label class="station-label" for="fact-choice">Fact to question<select id="fact-choice">${state.model.dimensions.map((d) => `<option value="${d.key}" ${d.key === fact?.key ? "selected" : ""}>${d.id} · ${FIELD_META[d.key][0]}</option>`).join("")}</select></label><p class="fact-result" role="status">${fact ? `If <b>${fact.id}</b> were ?, <b>${fact.lost.includes(f.id) ? `${f.id} would become more conditional and need more context.` : `${f.id} would still have its required facts.`}</b>` : "No declared Yes conditions are available for this comparison."}</p><small>Your declared facts remain saved. This comparison does not establish whether a finding is true.</small></details><button class="text-button" data-guide="4">In plain English: why change dimensions?</button>`;
 }
 function dimensionStation(f) {
-  return `<details class="dimension-station panel"><summary>${icon("layers")} Rotate the view / walk a dimension <span>${f.hitLenses.length} perspectives match this path · compare another lens or hide one fact without leaving the question</span></summary><div id="dimension-content">${explorerContent(f)}</div></details>`;
+  return researchLaunch(project().input.name, true) + `<details class="dimension-station panel"><summary>${icon("layers")} Compare framework perspectives <span>${f.hitLenses.length} perspectives match this path · keep the same system in focus</span></summary><div id="dimension-content">${explorerContent(f)}</div></details>`;
 }
 function refreshExplorer(focusId) {
   const f = selectedFinding();
@@ -904,6 +897,7 @@ function exampleFlowCard(id) {
 }
 function examplesView() {
   return (
+    researchLaunch(project().input.name) +
     header(
       "WORKED EXAMPLES / START HERE",
       "Choose one example once. Then follow the same case everywhere.",
@@ -2287,4 +2281,11 @@ $("#interview").addEventListener("close", () => {
 run();
 const initial = readLocation();
 render();
+createLogicalLab({
+  getModel: () => { if (stale()) run(); return state.model; },
+  getProject: project,
+  getFinding: () => state.findingId,
+  save,
+  notify,
+});
 if (initial === "interview") openInterview();

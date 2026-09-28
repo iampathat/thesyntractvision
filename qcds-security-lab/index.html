@@ -10,10 +10,72 @@
     <meta name="theme-color" content="#101419" />
     <title>QCDS Security Lab · From questions to evidence</title>
     <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./style.css?v=1.10.1" />
+    <link rel="stylesheet" href="./style.css?v=1.11.0" />
+    <link rel="stylesheet" href="./logical-lab.css?v=1.11.0" />
+    <link rel="stylesheet" href="./intro.css?v=1.11.0" />
+    <script src="./intro.js?v=1.11.0" defer></script>
     <link rel="stylesheet" href="./glasswing-launch.css?v=1.0.0" />
   </head>
   <body>
+    <div
+      class="security-intro"
+      id="security-intro"
+      aria-label="Q Security Lab introduction"
+    >
+      <div class="q-intro-grid" aria-hidden="true"></div>
+      <div class="q-intro-coordinates" aria-hidden="true">
+        <b>QCDS / SECURITY LAB</b><br />LOGICAL SPACE · v1.11
+      </div>
+      <button class="q-intro-skip" type="button">Enter lab ↗</button>
+      <div class="q-intro-stage" aria-hidden="true">
+        <div class="q-intro-orbit a"></div>
+        <div class="q-intro-orbit b"></div>
+        <div class="q-intro-orbit c"></div>
+        <svg class="q-intro-svg" viewBox="0 0 300 300" fill="none">
+          <defs>
+            <linearGradient
+              id="q-intro-metal"
+              x1="60"
+              y1="60"
+              x2="240"
+              y2="240"
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop stop-color="#d9ff89" />
+              <stop offset=".45" stop-color="#baff38" />
+              <stop offset="1" stop-color="#46dfe9" />
+            </linearGradient>
+          </defs>
+          <g class="q-intro-cube">
+            <path
+              d="M150 12 270 81V219L150 288 30 219V81Z M150 12V150L270 219 M30 81 150 150 270 81 M150 150V288 M30 219 150 81 270 219 M30 81 150 219 270 81"
+            />
+            <circle cx="150" cy="150" r="132" stroke-dasharray="2 15" />
+            <path d="M0 150H36M264 150H300M150 0V28M150 272V300" />
+          </g>
+          <path
+            class="q-intro-q"
+            d="M210 150C210 105 190 78 150 78C110 78 90 105 90 150C90 195 110 222 150 222C190 222 210 195 210 150Z M165 184 219 236"
+            stroke-linecap="square"
+          />
+          <path
+            class="q-intro-star"
+            d="m224 49 5 15 16 5-16 5-5 16-5-16-16-5 16-5Z"
+          />
+        </svg>
+      </div>
+      <div class="q-intro-wordmark">
+        <h1>Q SECURITY LAB</h1>
+        <p>SECURITY, IN EVERY DIMENSION.</p>
+      </div>
+      <div class="q-intro-bottom">
+        <span>CONDITION · EVOLUTION<br />INFERENCE · ALIGNMENT</span>
+        <div>
+          ENTERING THE LOGICAL SPACE
+          <div class="q-intro-progress"><span></span></div>
+        </div>
+      </div>
+    </div>
     <a href="#main" class="skip-link">Skip to workspace</a>
     <div id="app">
       <main class="loading">
@@ -38,6 +100,6 @@
       accept="application/json,.json"
       hidden
     />
-    <script type="module" src="./app.js?v=1.10.1"></script>
+    <script type="module" src="./app.js?v=1.11.0"></script>
   </body>
 </html>

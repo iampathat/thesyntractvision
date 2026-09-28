@@ -4,7 +4,7 @@ import {
   SCENARIOS,
   projectFromScenario,
   runGlasswing,
-} from "./glasswing.mjs?v=1.0.0";
+} from "./glasswing.mjs?v=1.1.0";
 
 const $ = (selector) => document.querySelector(selector);
 const esc = (value) =>
@@ -107,6 +107,7 @@ function renderTrack(track) {
           ${metric("Surviving vectors", Number(track.metrics.generatedVectorsVisible || 0).toLocaleString("en-US"))}
           ${metric("Mask space", track.metrics.maskedLogicalSpace || "1")}
         </div>
+        ${track.dimensionalRun ? `<details class="deep-panel"><summary>Executable dimensional inference · ${track.dimensionalRun.lanes.length} independent lanes</summary><p>Each lane removes a real coordinate and deactivates dependent oracle predicates. The complete run, canonical rotation checks and compressed Grover distributions are included in the JSON export.</p><p><b>${track.dimensionalRun.final.maskSpace}</b> masked states · <b>${track.dimensionalRun.final.markedStates}</b> assignments match ${esc(track.dimensionalRun.focus.id)} · <b>${track.dimensionalRun.final.amplification.iterations}</b> ideal Grover iterations selected within a finite budget.</p><p>Classical symbolic execution. Search probability is not vulnerability probability.</p></details>` : ""}
         <details class="deep-panel">
           <summary>Rotation, dimension walk & Oracles</summary>
           <div class="deep-grid">

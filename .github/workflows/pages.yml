@@ -206,6 +206,7 @@ jobs:
         run: |
           node --test qcds-security-lab/tests/engine.test.mjs
           node --test qcds-security-lab/tests/glasswing.test.mjs
+          node --test qcds-security-lab/tests/logical-space.test.mjs
 
       - name: Build QCDS Security Lab commercial surface
         run: |
@@ -216,6 +217,8 @@ jobs:
           cp qcds-security-lab/app.js _site/qcds-security-lab/app.js
           cp qcds-security-lab/engine.mjs _site/qcds-security-lab/engine.mjs
           cp qcds-security-lab/attack-vectors.mjs _site/qcds-security-lab/attack-vectors.mjs
+          cp qcds-security-lab/logical-space.mjs qcds-security-lab/logical-worker.mjs qcds-security-lab/logical-lab.js qcds-security-lab/logical-lab.css _site/qcds-security-lab/
+          cp qcds-security-lab/intro.js qcds-security-lab/intro.css qcds-security-lab/DIMENSION_ENGINE.md _site/qcds-security-lab/
           cp qcds-security-lab/glasswing.html _site/qcds-security-lab/glasswing.html
           cp qcds-security-lab/glasswing.css _site/qcds-security-lab/glasswing.css
           cp qcds-security-lab/glasswing.js _site/qcds-security-lab/glasswing.js

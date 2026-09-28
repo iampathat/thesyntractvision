@@ -11,7 +11,24 @@ LLMs and other predictive models can assist with interpretation, question genera
 
 > **Commercial license required.** Public visibility does not grant a right to use, copy, modify, deploy, benchmark, train on, integrate, distribute or commercialize this material.
 
-## Workspace v1.10.1
+## Workspace v1.11.0
+
+**Run dimensional inference** opens a live workbench for the current system
+and its generated attack vectors. It runs exact symbolic mask counts, true
+coordinate exclusion, canonical orientation checks, parallel/sequential/hybrid
+comparisons, finite ideal-Grover amplification, and user-defined recursive
+control predicates. Observations bind to the exact resulting scope; STRIDE
+and OWASP project the same changed vector states. The full run and compressed
+distributions export as JSON, with a plain-language Markdown report.
+
+The two-second Q Security Lab introduction is built with CSS 3D and SVG.
+It has an immediate entry button, reduced-motion behavior and an independent
+timeout, so it cannot hold the workspace behind an unfinished animation.
+
+See [DIMENSION_ENGINE.md](./DIMENSION_ENGINE.md) for execution semantics,
+the difference between `?` and true absence, and the classical reference's
+scope and resource budgets. Project Glasswing also includes the executable
+dimensional run in its QCDS track and JSON output.
 
 The workspace follows five human-facing questions:
 

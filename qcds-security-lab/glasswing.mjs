@@ -6,9 +6,10 @@ import {
   SCENARIOS,
   analyze,
   newProject,
-} from "./engine.mjs";
+} from "./engine.mjs?v=1.11.0";
+import { runDimensionExperiment } from "./logical-space.mjs?v=1.11.0";
 
-const GLASSWING_VERSION = "1.0.0";
+const GLASSWING_VERSION = "1.1.0";
 
 const MODE_META = {
   baseline: {
@@ -141,7 +142,7 @@ function agenticTrack(model) {
   };
 }
 
-function qcdsTrack(model) {
+function qcdsTrack(model, research) {
   const routes = model.routes.map(routeView);
   const independentRotation = model.rotation.filter(
     (run) => run.retained.length || run.lost.length,
@@ -160,6 +161,7 @@ function qcdsTrack(model) {
   );
   return {
     id: "qcds",
+    dimensionalRun: model.lenses.some((l) => l.active) ? runDimensionExperiment(model, research || {}) : null,
     ...MODE_META.qcds,
     routes,
     metrics: {
@@ -244,7 +246,7 @@ function runGlasswing(project) {
   const tracks = [
     baselineTrack(model),
     agenticTrack(model),
-    qcdsTrack(model),
+    qcdsTrack(model, project.research),
   ];
   return {
     schema: "qcds-security-lab/glasswing-run-v1",
