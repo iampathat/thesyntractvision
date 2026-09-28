@@ -6,10 +6,10 @@ import {
   SCENARIOS,
   analyze,
   newProject,
-} from "./engine.mjs?v=1.11.0";
+} from "./engine.mjs?v=1.12.0";
 import { runDimensionExperiment } from "./logical-space.mjs?v=1.11.0";
 
-const GLASSWING_VERSION = "1.1.1";
+const GLASSWING_VERSION = "1.2.0";
 
 const MODE_META = {
   baseline: {

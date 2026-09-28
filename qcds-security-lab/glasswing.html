@@ -120,10 +120,12 @@
         <div class="run-row">
           <button id="run-button" class="run-button" type="button">Run Project Glasswing</button>
           <button id="export-button" class="ghost-button" type="button">Export last run</button>
+          <button id="pdf-button" class="ghost-button" type="button" disabled>Download report PDF</button>
           <span>Use only systems you own or are authorized to assess.</span>
         </div>
       </section>
 
+      <p id="pdf-status" role="status">The PDF exports the last completed run, with charts, sector maps and evidence.</p>
       <section id="results" class="results" hidden>
         <div class="section-head">
           <div>
@@ -158,6 +160,6 @@
       <span>Commercial license required · See LICENSE.md</span>
     </footer>
 
-    <script type="module" src="./glasswing.js?v=1.1.1"></script>
+    <script type="module" src="./glasswing.js?v=1.2.0"></script>
   </body>
 </html>

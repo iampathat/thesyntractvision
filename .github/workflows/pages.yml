@@ -207,6 +207,7 @@ jobs:
           node --test qcds-security-lab/tests/engine.test.mjs
           node --test qcds-security-lab/tests/glasswing.test.mjs
           node --test qcds-security-lab/tests/logical-space.test.mjs
+          node --test qcds-security-lab/tests/report.test.mjs
 
       - name: Build QCDS Security Lab commercial surface
         run: |
@@ -224,6 +225,9 @@ jobs:
           cp qcds-security-lab/glasswing.js _site/qcds-security-lab/glasswing.js
           cp qcds-security-lab/glasswing.mjs _site/qcds-security-lab/glasswing.mjs
           cp qcds-security-lab/glasswing-launch.css _site/qcds-security-lab/glasswing-launch.css
+          cp qcds-security-lab/report-pdf.mjs qcds-security-lab/report-export.js qcds-security-lab/report-screen.css _site/qcds-security-lab/
+          mkdir -p _site/qcds-security-lab/vendor
+          cp qcds-security-lab/vendor/jspdf.umd.min.js qcds-security-lab/vendor/jspdf-LICENSE.txt qcds-security-lab/vendor/report-fonts.mjs qcds-security-lab/vendor/report-fonts-LICENSE.txt _site/qcds-security-lab/vendor/
           cp qcds-security-lab/GLASSWING.md _site/qcds-security-lab/GLASSWING.md
           cp qcds-security-lab/README.md _site/qcds-security-lab/README.md
           cp qcds-security-lab/LICENSE.md _site/qcds-security-lab/LICENSE.md

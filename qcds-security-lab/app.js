@@ -10,8 +10,9 @@ import {
   analyze,
   validateProject,
   markdown,
-} from "./engine.mjs?v=1.11.0";
+} from "./engine.mjs?v=1.12.0";
 import { createLogicalLab, researchLaunch } from "./logical-lab.js?v=1.11.0";
+import { downloadSecurityPdf } from "./report-export.js?v=1.0.0";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
@@ -385,6 +386,7 @@ function shell() {
       ${analysisLink("perspectives", "Perspectives", "layers")}
       ${analysisLink("findings", "Results & explanation", "shield")}
       ${analysisLink("report", "Reports & export", "report")}
+      <a href="./glasswing.html">${icon("layers")}<span class="nav-copy"><b>Project Glasswing</b><em>Compare inference approaches on the same case</em></span></a>
       <div class="nav-section-label nav-learn-label">LEARN</div>
       ${analysisLink("learn", "In plain English", "book")}
     </nav>
@@ -400,7 +402,7 @@ function shell() {
       <div id="stale-slot">${staleNotice()}</div>
       <div id="view">${view()}</div>
       ${workflowContinuation()}
-      <footer class="main-footer"><span>QCDS Security Lab · Patrik Sundblom</span><a href="./LICENSE.md">COMMERCIAL LICENSE REQUIRED ${icon("external")}</a></footer>
+      <footer class="main-footer"><span>QCDS Security Lab · Patrik Sundblom</span><a href="./glasswing.html">Project Glasswing ${icon("external")}</a><a href="./LICENSE.md">COMMERCIAL LICENSE REQUIRED ${icon("external")}</a></footer>
     </main>
     ${investigating ? questionNavigation() : ""}
   </div>`;
@@ -1103,7 +1105,7 @@ function perspectivesView() {
       })
       .join("")}</div>
     <section class="panel perspective-report">
-      <div class="perspective-report-head"><div><span class="eyebrow">${esc(name.toUpperCase())} VECTOR REPORT</span><h2>${view.vectorCount} surviving vectors through ${esc(name)}</h2><p>${esc(ANGLES[name] || "Inspect the same attack-vector space through this security framework.")}</p></div><div class="perspective-actions"><button class="button" data-action="export-perspective-md">${icon("download")} Download full ${esc(name)} report</button><button class="button primary" data-action="print-perspective">${icon("report")} Print / save PDF</button></div></div>
+      <div class="perspective-report-head"><div><span class="eyebrow">${esc(name.toUpperCase())} VECTOR REPORT</span><h2>${view.vectorCount} surviving vectors through ${esc(name)}</h2><p>${esc(ANGLES[name] || "Inspect the same attack-vector space through this security framework.")}</p></div><div class="perspective-actions"><button class="button" data-action="export-perspective-md">${icon("download")} Download full ${esc(name)} report</button><button class="button primary" data-action="print-perspective">${icon("report")} Download PDF report</button></div></div>
       <div class="framework-vector-status">
         <div><span>ACTIVE</span><b>${view.activeCount}</b><small>required constraints resolved</small></div>
         <div><span>CONDITIONAL · ?</span><b>${view.conditionalCount}</b><small>kept alive by unknowns</small></div>
@@ -1484,41 +1486,25 @@ function traceView() {
   );
 }
 function reportView() {
-  const m = state.model;
-  const routeRows = allPaths()
-    .map(
-      (f) =>
-        `<div class="report-row ${f.conditional ? "conditional" : ""}"><span class="mono">${f.id}</span><b>${esc(f.shortTitle)}</b><small>${f.conditional ? "? · CONDITIONAL · needs " + f.missing.map((key) => m.conditions.find((condition) => condition.key === key)?.id).join(", ") : f.status}</small></div>`,
-    )
-    .join("");
-  const detailRows = allPaths()
-    .map((f) => {
-      const a = currentAction(f.id);
-      return `<article><h3>${f.id} — ${esc(f.shortTitle)} ${f.conditional ? "· CONDITIONAL ?" : ""}</h3><p><b>Path:</b> ${esc(f.path)}</p><p><b>Basis:</b> ${esc(f.why)}</p><p><b>Required conditions:</b> ${f.requires.map((key) => {
-        const condition = m.conditions.find((item) => item.key === key);
-        return `${condition?.id}=${condition?.value === true ? "1" : condition?.value === false ? "0" : "?"}`;
-      }).join(" · ")}</p><p><b>Control:</b> ${esc(f.control)}</p><p><b>Challenge:</b> ${esc(f.bypass)}</p><p><b>Test:</b> ${esc(f.verify)}</p>${f.conditional ? `<p><b>Needs context:</b> ${f.missing.map((key) => FIELD_META[key][0]).join(", ")}</p>` : f.records.map((e) => `<p><b>${esc(e.outcome)} · ${esc(e.createdAt)}</b><br>${esc(e.observation)}<br>Source: ${esc(e.source)}</p>`).join("") + `<p><b>Action:</b> ${esc(a.status)} · ${esc(a.owner || "Unassigned")} · ${esc(a.note)}</p>`}</article>`;
-    })
-    .join("");
-  return (
-    header(
-      "04 / EVIDENCE BINDING",
-      "A report that shows both what survived and what is still conditional.",
-      "QCDS does not turn ? into No. Active routes, conditional routes, next clarification questions and evidence stay visible together.",
-    ) +
-    conclusionReadiness() +
-    `<div class="report-grid"><section class="panel report-paper"><div class="report-brand">Q★ <span>QCDS SECURITY LAB / THREAT MODEL</span></div><h2>${esc(m.input.name)}</h2><p>${esc(m.input.description) || "No system description yet."}</p><div class="report-meta"><div><small>ANALYZED</small><b>${new Date(m.generatedAt).toLocaleString("en-GB")}</b></div><div><small>SCOPE</small><b>${project().example ? "Example system" : "User-defined system"}</b></div></div>
-    <h3>QCDS attack-vector search-space summary</h3><ul><li><b>${m.searchSpace.coreConditions}</b> core mask coordinates: <b>${m.searchSpace.knownMaskDimensions}</b> are fixed 1 / 0 and only <b>${m.searchSpace.unknownMaskDimensions}</b> unresolved ? dimensions branch the logical mask space into <b>${m.searchSpace.maskedLogicalSpace}</b>${m.searchSpace.maskedLogicalStates !== null ? " = <b>" + m.searchSpace.maskedLogicalStates.toLocaleString("en-US") + "</b>" : ""} states. These mask coordinates are constraints, not attack vectors.</li><li><b>${m.searchSpace.generatedAttackVectors}</b> attack-vector candidates were generated from <b>${m.searchSpace.seedMechanisms}</b> mechanism seeds expanded across variants and targets.</li><li><b>${m.searchSpace.activeAttackVectors}</b> vectors are active; <b>${m.searchSpace.conditionalAttackVectors}</b> remain conditional because of ?; <b>${m.searchSpace.rejectedAttackVectors}</b> are rejected by current constraints.</li><li>The surviving vector fabric converges into <b>${m.searchSpace.confirmedRoutes}</b> active and <b>${m.searchSpace.conditionalRoutes}</b> conditional investigation route families.</li><li><b>${m.findings.filter((f) => f.records.length).length}</b> route families have user-reported evidence.</li></ul><h3>Framework projections</h3>${Object.entries(m.frameworkViews).map(([name, view]) => `<p><b>${esc(name)}</b>: ${view.activeCount} active + ${view.conditionalCount} conditional vectors across ${Object.keys(view.categories).length} represented categories.</p>`).join("")}
-    <h3>Surviving routes</h3>${routeRows || "<p>No current seed route survives the declared conditions. This is not a safety conclusion.</p>"}
-    ${m.clarifications.length ? `<h3>QCDS asks next</h3>${m.clarifications.map((item) => `<p><b>${item.id} · ${esc(item.label)}</b>: ${esc(item.question)}<br><small>${item.routeIds.length ? "Affects " + item.routeIds.join(", ") : "General context"}</small></p>`).join("")}` : ""}
-    <h3>Scope of the conclusion</h3><p class="small">This browser implementation forms core ternary system constraints, expands a data-driven attack-vector fabric across mechanisms, variants and targets, projects surviving vectors into security frameworks, performs perspective and dimension comparisons, recursively challenges converged route families and binds evidence. It does not autonomously scan the target, execute a quantum circuit or independently certify a vulnerability. The current vector catalog is extensible and finite; QCDS architecture itself is not defined by a fixed C-count or fixed list of attack vectors.</p>
-    <section class="print-details"><h3>Detailed routes and observations</h3>${detailRows}<h3>Declared conditions</h3>${m.conditions.map((condition) => {
-      const basis = project().conditionBasis?.[condition.key];
-      return `<p>${condition.id} · ${esc(condition.label)}: <b>${condition.value === null ? "?" : condition.value ? "1" : "0"}</b>${basis ? `<br><small>Interview basis: ${esc(basis.reason)} · ${esc(basis.confidence)} confidence</small>` : ""}</p>`;
-    }).join("")}<h3>Oracle checks</h3>${m.oracles.map((o) => `<p><b>${o.name} — ${o.state}</b>: ${o.detail}</p>`).join("")}<h3>Perspective rotation</h3>${m.rotation.map((r) => `<p>Without ${r.name}: retained ${r.retained.join(", ") || "none"}; lost ${r.lost.join(", ") || "none"}.</p>`).join("")}<h3>Dimension walk</h3>${m.dimensions.map((d) => `<p>Set ${d.id} to ?: weakened ${d.weakened?.join(", ") || "none"}; removed ${d.lost.join(", ") || "none"}.</p>`).join("")}<h3>Recursive inference</h3>${m.recursive.map((branch) => `<p><b>${branch.id}</b>: ${branch.nextQuestions.map(esc).join(" → ")}</p>`).join("")}</section><div class="report-signoff">Author: Patrik Sundblom · Commercial license required.</div></section>
-    <aside class="report-tools"><section class="panel compact"><div class="eyebrow">TAKE IT WITH YOU</div><h2>Export this run</h2><button class="button primary full" data-action="export-md" ${stale() ? "disabled" : ""}>${icon("download")} Download report (.md)</button><button class="button full" data-action="export-json" ${stale() ? "disabled" : ""}>${icon("download")} Export project (.json)</button><button class="button full" data-action="copy-report" ${stale() ? "disabled" : ""}>${icon("report")} Copy report</button><button class="button full" data-action="print" ${stale() ? "disabled" : ""}>${icon("report")} Print / save PDF</button><p class="small muted">The JSON includes conditions, interview provenance, evidence history, action plans and the full current analysis.</p></section><section class="panel compact"><h3>Continue an earlier project</h3><p>Open an exported Security Lab project. Its data is imported; routes are recalculated.</p><button class="button full" data-action="import">${icon("undo")} Import project</button></section></aside></div>`
-  );
+  const m = state.model, disabled = stale() ? 'disabled' : '';
+  return header('REPORTS / READY TO SHARE', 'Turn the investigation into a clear decision.', 'A designed A4 report with vector charts, security sectors, attack paths, controls and scoped evidence.') + conclusionReadiness() + `
+    <div class="report-studio">
+      <section class="report-cover-preview"><span class="report-stamp">Q★ / SECURITY LAB / REPORT EDITION</span><h2>SECURITY<br>ASSESSMENT</h2><h3>${esc(m.input.name)}</h3><p>${esc(m.input.attackerGoal || 'Understand the paths. Challenge the controls. Follow the evidence.')}</p>
+        <svg viewBox="0 0 500 160" role="img" aria-label="The report follows input, boundaries, protected assets and evidence"><g fill="none" stroke="#39676d"><path d="M50 80 180 20 320 20 450 80 320 140 180 140Z M50 80H450 M180 20 320 140 M320 20 180 140 M180 20V140 M320 20V140"/></g><g fill="#bceb52"><circle cx="50" cy="80" r="7"/><circle cx="450" cy="80" r="7"/></g><g fill="#53d4d0"><circle cx="180" cy="20" r="5"/><circle cx="320" cy="20" r="5"/><circle cx="320" cy="140" r="5"/><circle cx="180" cy="140" r="5"/></g><g fill="#c4dce1" font-size="12" font-family="sans-serif" text-anchor="middle"><text x="65" y="111">INPUT</text><text x="250" y="76">TRUST BOUNDARIES</text><text x="432" y="111">EVIDENCE</text></g></svg>
+        <div class="report-cover-stats"><div><b>${m.searchSpace.generatedAttackVectors}</b><small>modeled vectors</small></div><div><b>${m.searchSpace.survivingAttackVectors}</b><small>retain a basis</small></div><div><b>${allPaths().length}</b><small>route families</small></div></div>
+        <footer>Patrik Sundblom · QCDS Security Lab<br>${project().example ? 'Worked example · synthetic observations' : 'Your system · current analysis snapshot'}</footer>
+      </section>
+      <section class="report-download-panel"><span class="eyebrow">DESIGNED PDF / A4</span><h2>Make the result easy to act on.</h2><p>Readable on screen, sharp in print. Every chart is calculated from this investigation.</p><ul class="report-contents">
+        <li><strong>01</strong><div>Executive brief & priorities<small>Scope, assumptions and a clear review register.</small></div></li>
+        <li><strong>02</strong><div>Security radar & framework charts<small>Six target sectors, STRIDE, OWASP and labeled scales.</small></div></li>
+        <li><strong>03</strong><div>Illustrated attack paths<small>Entry → mechanism → target → consequence, with controls and counter-tests.</small></div></li>
+        <li><strong>04</strong><div>Evidence, ownership & traceability<small>QCDS reasoning, scoped observations, actions and the complete mechanism register.</small></div></li></ul>
+        <button class="button primary" data-action="print" ${disabled}>${icon('download')} Download designed PDF</button><p class="report-privacy-note">Generated on this device. Your case is not uploaded to a PDF service.</p>
+        <div class="report-export-secondary"><button class="button" data-action="export-json" ${disabled}>Project JSON</button><button class="button" data-action="export-md" ${disabled}>Markdown</button><button class="button" data-action="import">Import project</button></div>
+      </section>
+    </div>`;
 }
+
 function learnView() {
   return (
     header(
@@ -1590,6 +1576,20 @@ function exportProject() {
     "application/json",
   );
   notify("Project exported with evidence and action plans.");
+}
+let pdfBusy = false;
+async function exportDesignedPdf(perspective = null) {
+  if (stale()) return notify('Run the updated analysis before exporting.');
+  if (pdfBusy) return;
+  pdfBusy = true;
+  const buttons = [...document.querySelectorAll('[data-action="print"], [data-action="print-perspective"]')];
+  buttons.forEach(b => { b.disabled = true; b.setAttribute('aria-busy', 'true'); });
+  notify('Building your illustrated PDF report…');
+  try {
+    const summary = await downloadSecurityPdf(state.model, structuredClone(project()), { perspective });
+    notify(`PDF downloaded · ${summary.pages} pages · charts, attack paths and evidence.`);
+  } catch (error) { notify(error.message || 'PDF export failed. Please retry.'); }
+  finally { pdfBusy = false; buttons.forEach(b => { b.disabled = false; b.removeAttribute('aria-busy'); }); }
 }
 async function execute() {
   if (state.busy) return;
@@ -1831,7 +1831,7 @@ document.addEventListener("click", async (e) => {
       }
       break;
     case "print-perspective":
-      if (!stale()) window.print();
+      await exportDesignedPdf(state.perspective);
       break;
     case "export-md":
       if (!stale()) {
@@ -1858,7 +1858,7 @@ document.addEventListener("click", async (e) => {
         }
       break;
     case "print":
-      if (!stale()) window.print();
+      await exportDesignedPdf();
       break;
     case "import":
       $("#import-file").click();

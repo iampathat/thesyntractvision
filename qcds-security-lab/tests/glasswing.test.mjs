@@ -8,7 +8,7 @@ import {
 
 test("Glasswing produces three ordered inference tracks", () => {
   const run = runGlasswing(projectFromScenario("portal"));
-  assert.equal(GLASSWING_VERSION, "1.1.1");
+  assert.equal(GLASSWING_VERSION, "1.2.0");
   assert.deepEqual(
     run.tracks.map((track) => track.id),
     ["baseline", "agentic", "qcds"],

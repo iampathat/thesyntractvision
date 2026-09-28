@@ -11,7 +11,27 @@ LLMs and other predictive models can assist with interpretation, question genera
 
 > **Commercial license required.** Public visibility does not grant a right to use, copy, modify, deploy, benchmark, train on, integrate, distribute or commercialize this material.
 
-## Workspace v1.11.0
+## Workspace v1.12.0
+
+**Download designed PDF** creates an A4 report directly on the device. The
+report includes a decision brief, a six-sector radar, framework and category
+bar charts, illustrated attack paths, controls and counter-tests, current
+evidence, an action register and the complete mechanism register. Radar axes
+show retained candidates divided by all candidates in that sector; they are
+not security scores. Framework totals can overlap and are labelled as such.
+Worked cases label their evidence as synthetic throughout the report.
+
+The same renderer supports focused perspective reports and **Project
+Glasswing 1.2.0** exports of its last completed run. Glasswing is available in
+the normal navigation and footer, without a floating link over mobile actions.
+The local, pinned jsPDF dependency is loaded only when exporting a report.
+
+For release QA, render the browser's PDF in Node with:
+
+```sh
+node qcds-security-lab/scripts/render-report.mjs coding output/pdf/QCDS-Coding-Deployment-Report.pdf
+node --test qcds-security-lab/tests/*.test.mjs
+```
 
 **Run dimensional inference** opens a live workbench for the current system
 and its generated attack vectors. It runs exact symbolic mask counts, true
@@ -107,7 +127,7 @@ AI / GenAI is active only when the target system is declared to contain AI/ML. A
 
 Each perspective now projects the **same surviving attack-vector fabric** into its own categories. OWASP/AppSec, for example, can show hundreds of vector instances across OWASP Top 10:2025 and OWASP API Security Top 10:2023 categories instead of displaying four C-values as if they were the attack space.
 
-Each perspective can produce a focused report view and Print / Save PDF output. Perspective agreement is shared analytical coverage, not independent evidence.
+Each perspective can produce a focused report view and a designed PDF download. Perspective agreement is shared analytical coverage, not independent evidence.
 
 ### Worked examples
 

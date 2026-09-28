@@ -4,7 +4,9 @@ import {
   SCENARIOS,
   projectFromScenario,
   runGlasswing,
-} from "./glasswing.mjs?v=1.1.1";
+} from "./glasswing.mjs?v=1.2.0";
+import { analyze } from "./engine.mjs?v=1.12.0";
+import { downloadSecurityPdf } from "./report-export.js?v=1.0.0";
 
 const $ = (selector) => document.querySelector(selector);
 const esc = (value) =>
@@ -19,6 +21,7 @@ const esc = (value) =>
 const LAB_STORAGE = "qcds-security-lab:workspace:v1";
 let project = projectFromScenario("portal");
 let lastRun = null;
+let lastProject = null;
 
 function tri(value) {
   return value === true ? "1" : value === false ? "0" : "?";
@@ -59,6 +62,7 @@ function syncForm() {
   renderConditions();
 }
 function readForm() {
+  const previousInput = JSON.stringify(project.input);
   project.input.name = $("#system-name").value.trim() || "Untitled system";
   project.input.description = $("#system-description").value.trim();
   project.input.attackerGoal = $("#attacker-goal").value.trim();
@@ -70,7 +74,7 @@ function readForm() {
   document.querySelectorAll("[data-condition]").forEach((select) => {
     project.input.flags[select.dataset.condition] = fromTri(select.value);
   });
-  project.example = false;
+  if (JSON.stringify(project.input) !== previousInput) project.example = false;
   project.updatedAt = new Date().toISOString();
 }
 function routeCard(route, mode) {
@@ -201,6 +205,8 @@ function renderRun() {
 function runExperiment() {
   readForm();
   lastRun = runGlasswing(project);
+  lastProject = structuredClone(project);
+  $("#pdf-button").disabled = false;
   renderRun();
   $("#run-button").textContent = "Run Glasswing again";
 }
@@ -208,6 +214,8 @@ function loadScenario(id) {
   project = projectFromScenario(id);
   syncForm();
   lastRun = null;
+  lastProject = null;
+  $("#pdf-button").disabled = true;
   $("#results").hidden = true;
 }
 function loadActiveLabCase() {
@@ -217,6 +225,10 @@ function loadActiveLabCase() {
     if (!current?.input) throw new Error("No saved Security Lab case found in this browser.");
     project = structuredClone(current);
     syncForm();
+    lastRun = null;
+    lastProject = null;
+    $("#pdf-button").disabled = true;
+    $("#results").hidden = true;
     $("#scenario").value = "current";
     $("#load-status").textContent = `Loaded active Security Lab case: ${project.input.name}`;
   } catch (error) {
@@ -260,6 +272,17 @@ function init() {
   $("#load-active").addEventListener("click", loadActiveLabCase);
   $("#run-button").addEventListener("click", runExperiment);
   $("#export-button").addEventListener("click", exportRun);
+  $("#pdf-button").addEventListener("click", async () => {
+    if (!lastProject) return;
+    const button = $("#pdf-button"), snapshot = structuredClone(lastProject);
+    button.disabled = true; button.textContent = "Building PDF…";
+    try {
+      const model = analyze(snapshot.input, snapshot.evidence, snapshot.excludedLenses);
+      const result = await downloadSecurityPdf(model, snapshot);
+      $("#pdf-status").textContent = `${result.pages}-page PDF downloaded for ${snapshot.input.name}.`;
+    } catch (error) { $("#pdf-status").textContent = error.message || "PDF export failed. Please retry."; }
+    finally { button.disabled = false; button.textContent = "Download report PDF"; }
+  });
   $("#condition-grid").addEventListener("change", () => {
     $("#results").hidden = true;
   });
