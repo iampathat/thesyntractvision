@@ -1,4 +1,7 @@
 /* QCDS dimensional workbench — Patrik Sundblom. */
+html:has(#logical-lab[open]) {
+  overflow: hidden;
+}
 .logic-launch {
   display: flex;
   align-items: center;
