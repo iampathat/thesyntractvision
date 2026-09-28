@@ -4,7 +4,7 @@ import {
   SCENARIOS,
   projectFromScenario,
   runGlasswing,
-} from "./glasswing.mjs?v=1.1.0";
+} from "./glasswing.mjs?v=1.1.1";
 
 const $ = (selector) => document.querySelector(selector);
 const esc = (value) =>
@@ -103,10 +103,11 @@ function renderTrack(track) {
     track.id === "qcds"
       ? `
         <div class="fabric-strip">
-          ${metric("Generated fabric", Number(track.metrics.generatedVectorsTotal || 0).toLocaleString("en-US"))}
-          ${metric("Surviving vectors", Number(track.metrics.generatedVectorsVisible || 0).toLocaleString("en-US"))}
-          ${metric("Mask space", track.metrics.maskedLogicalSpace || "1")}
+          ${metric("Generated attack vectors", Number(track.metrics.generatedVectorsTotal || 0).toLocaleString("en-US"))}
+          ${metric("Active + conditional vectors", Number(track.metrics.generatedVectorsVisible || 0).toLocaleString("en-US"))}
+          ${metric("Possible fact combinations", Number(track.metrics.maskedLogicalStates ?? 1).toLocaleString("en-US"), `${track.metrics.unknownMaskDimensions} unresolved facts (?) · ${track.metrics.knownMaskDimensions} fixed facts (1 / 0).`)}
         </div>
+        <p class="mask-explanation">${track.metrics.unknownMaskDimensions === 0 ? "All input facts are already set to 1 or 0. With no ? facts, the current mask has one possible combination (2⁰ = 1)." : `Only the ${track.metrics.unknownMaskDimensions} unresolved (?) facts branch into alternatives: ${esc(track.metrics.maskedLogicalSpace)} = ${Number(track.metrics.maskedLogicalStates).toLocaleString("en-US")} possible combinations.`} This counts combinations of input facts, not attack vectors. Set a fact to ? above and rerun to explore both possibilities. Five ? facts give 32 combinations; ten give 1,024.</p>
         ${track.dimensionalRun ? `<details class="deep-panel"><summary>Executable dimensional inference · ${track.dimensionalRun.lanes.length} independent lanes</summary><p>Each lane removes a real coordinate and deactivates dependent oracle predicates. The complete run, canonical rotation checks and compressed Grover distributions are included in the JSON export.</p><p><b>${track.dimensionalRun.final.maskSpace}</b> masked states · <b>${track.dimensionalRun.final.markedStates}</b> assignments match ${esc(track.dimensionalRun.focus.id)} · <b>${track.dimensionalRun.final.amplification.iterations}</b> ideal Grover iterations selected within a finite budget.</p><p>Classical symbolic execution. Search probability is not vulnerability probability.</p></details>` : ""}
         <details class="deep-panel">
           <summary>Rotation, dimension walk & Oracles</summary>

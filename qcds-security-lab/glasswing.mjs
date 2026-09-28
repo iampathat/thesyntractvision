@@ -9,7 +9,7 @@ import {
 } from "./engine.mjs?v=1.11.0";
 import { runDimensionExperiment } from "./logical-space.mjs?v=1.11.0";
 
-const GLASSWING_VERSION = "1.1.0";
+const GLASSWING_VERSION = "1.1.1";
 
 const MODE_META = {
   baseline: {
@@ -176,6 +176,9 @@ function qcdsTrack(model, research) {
       evidenceBoundRoutes: evidenceBound.length,
       unresolvedQuestions: model.clarifications.length,
       maskedLogicalSpace: model.searchSpace.maskedLogicalSpace,
+      maskedLogicalStates: model.searchSpace.maskedLogicalStates,
+      unknownMaskDimensions: model.searchSpace.unknownMaskDimensions,
+      knownMaskDimensions: model.searchSpace.knownMaskDimensions,
     },
     trace: [
       `Form ${model.searchSpace.coreConditions} core condition coordinates`,
