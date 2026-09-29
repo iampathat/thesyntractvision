@@ -11,7 +11,7 @@ LLMs and other predictive models can assist with interpretation, question genera
 
 > **Commercial license required.** Public visibility does not grant a right to use, copy, modify, deploy, benchmark, train on, integrate, distribute or commercialize this material.
 
-## Consumer app v1.14.0
+## Consumer app v1.14.1
 
 Q Security now opens on a focused Home screen. Create personal, business, app or
 AI investigations without replacing previous cases. Each case preserves its

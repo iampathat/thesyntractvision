@@ -5,8 +5,8 @@ import {
   SCENARIOS,
   projectFromScenario,
   runGlasswing,
-} from "./glasswing.mjs?v=1.14.0";
-import { analyze } from "./engine.mjs?v=1.14.0";
+} from "./glasswing.mjs?v=1.14.1";
+import { analyze } from "./engine.mjs?v=1.14.1";
 import { downloadSecurityPdf } from "./report-export.js?v=1.1.0";
 
 const $ = (selector) => document.querySelector(selector);

@@ -1,5 +1,5 @@
 // QCDS by Patrik Sundblom. Contributor: ChatGPT (OpenAI). LICENSE.md.
-import { STARTERS } from './workspace.mjs?v=1.0.0';
+import { STARTERS } from './workspace.mjs?v=1.0.1';
 const esc = value => String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const steps=['Goal','Route','Control','Bypass','Proof'];
 const date = value => new Intl.DateTimeFormat('en',{month:'short',day:'numeric'}).format(new Date(value));

@@ -1,7 +1,7 @@
 // QCDS Security Lab. Author: Patrik Sundblom. Contributor: ChatGPT (OpenAI).
 // Vector PDF composition; jsPDF is injected so the same renderer runs in Node and the browser.
 import { registerReportFonts } from "./vendor/report-fonts.mjs";
-import { runDimensionExperiment } from "./logical-space.mjs?v=1.14.0";
+import { runDimensionExperiment } from "./logical-space.mjs?v=1.14.1";
 
 export const REPORT_VERSION = "1.0.0";
 const P = {

@@ -22,6 +22,17 @@ export function writeWorkspace(storage, state) {
   // One atomic setItem: quota failure leaves the previously saved workspace intact.
   storage.setItem(WORKSPACE_KEY,JSON.stringify({caseId:state.caseId,cases:state.cases,places:state.places,archived:state.archived,...(state.recovery?{recovery:state.recovery}:{})}));
 }
+export function mergeWorkspace(current, incoming, makeId) {
+  const cases={...current.cases},places={...current.places},archived=[...current.archived],ids={};
+  for(const [oldId,p] of Object.entries(incoming.cases)) {
+    const id=makeId();
+    if(!isCaseId(id)||cases[id])throw new Error('Could not create an independent case ID. Please retry.');
+    ids[oldId]=id;cases[id]=structuredClone(p);
+    places[id]=structuredClone(incoming.places[oldId]||{question:1,findingId:null});
+    if(incoming.archived.includes(oldId))archived.push(id);
+  }
+  return {cases,places,archived,caseId:ids[incoming.caseId],recovery:current.recovery||incoming.recovery||null};
+}
 export function copyAsOwnProject(project, name) {
   const copy=structuredClone(project);
   copy.example=false;

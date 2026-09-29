@@ -6,8 +6,8 @@ import {
   SCENARIOS,
   analyze,
   newProject,
-} from "./engine.mjs?v=1.14.0";
-import { runDimensionExperiment } from "./logical-space.mjs?v=1.14.0";
+} from "./engine.mjs?v=1.14.1";
+import { runDimensionExperiment } from "./logical-space.mjs?v=1.14.1";
 
 const GLASSWING_VERSION = "1.2.0";
 

@@ -1,6 +1,6 @@
 # One oracle, three executions
 
-QCDS Security Lab 1.14.0 · quantum executor 1.1.0
+QCDS Security Lab 1.14.1 · quantum executor 1.1.0
 QCDS by Patrik Sundblom. Contributor: ChatGPT (OpenAI). [License](./LICENSE.md).
 
 The browser now runs actual small quantum circuits on the CPU. It does not

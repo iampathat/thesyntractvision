@@ -145,3 +145,6 @@
   #consumer-new-case { max-height:calc(100dvh - 20px); }
 }
 @media print { .consumer-bottom-nav,.consumer-trust,.consumer-nav-more { display:none !important; } }
+
+.consumer-interview-help { margin:18px 0 12px; padding:12px 14px; background:#1b2a24; }
+.consumer-interview-help > summary { font-size:13px; cursor:pointer; color:#bfd7b5; }

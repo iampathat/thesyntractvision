@@ -1,5 +1,5 @@
 // QCDS by Patrik Sundblom. Versioned offline application cache, scoped to this app.
-const VERSION='1.14.0';
+const VERSION='1.14.1';
 const PREFIX='qcds-security-app-';
 const CACHE=PREFIX+VERSION;
 const root=new URL('./',self.location.href);

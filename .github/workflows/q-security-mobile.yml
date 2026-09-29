@@ -37,7 +37,7 @@ jobs:
         run: ./gradlew assembleDebug bundleRelease --no-daemon
       - uses: actions/upload-artifact@v4
         with:
-          name: Q-Security-Android-1.14.0
+          name: Q-Security-Android-1.14.1
           retention-days: 30
           if-no-files-found: error
           path: |
@@ -68,7 +68,7 @@ jobs:
         run: ditto -c -k --sequesterRsrc --keepParent build-ios/Build/Products/Debug-iphonesimulator/App.app Q-Security-iOS-Simulator.zip
       - uses: actions/upload-artifact@v4
         with:
-          name: Q-Security-iOS-Simulator-1.14.0
+          name: Q-Security-iOS-Simulator-1.14.1
           retention-days: 30
           if-no-files-found: error
           path: qcds-security-lab/Q-Security-iOS-Simulator.zip

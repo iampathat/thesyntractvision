@@ -55,7 +55,7 @@ physical iPhone. A debug APK is for device testing, not store distribution.
 | --- | --- |
 | App name | Q Security |
 | Application / bundle ID | `org.syntract.qsecurity` — confirm ownership before first store upload |
-| Version / build | `1.14.0` / `11400` |
+| Version / build | `1.14.1` / `11401` |
 | Android target SDK | 36 |
 | Minimum Android | API 24 |
 | Runtime | Capacitor 8.5.2; assets bundled; no remote `server.url` |

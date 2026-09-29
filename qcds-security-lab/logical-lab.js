@@ -3,7 +3,7 @@ import { saveDeviceFile } from "./device-files.js?v=1.0.0";
 import {
   normalizeResearch,
   dimensionMarkdown,
-} from "./logical-space.mjs?v=1.14.0";
+} from "./logical-space.mjs?v=1.14.1";
 import { createQuantumPanel } from "./quantum-panel.js?v=1.1.0";
 import { comparisonMarkdown } from "./quantum-compare.mjs?v=1.1.0";
 const esc = (s) =>
@@ -192,7 +192,7 @@ export function createLogicalLab({
     $("#logic-results").classList.add("recalculating");
     worker?.terminate();
     worker = new Worker(
-      new URL("./logical-worker.mjs?v=1.14.0", import.meta.url),
+      new URL("./logical-worker.mjs?v=1.14.1", import.meta.url),
       { type: "module" },
     );
     const id = ++serial;

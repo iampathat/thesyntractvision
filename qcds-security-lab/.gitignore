@@ -7,3 +7,4 @@ build-ios/
 *.jks
 .env*
 !mobile/store.env.example
+Q-Security-iOS-Simulator.zip
