@@ -1,3 +1,4 @@
+import { saveDeviceFile } from "./device-files.js?v=1.0.0";
 // PDF export stays on this device. No system details are sent to a report service.
 let loading;
 async function pdfEngine() {
@@ -36,6 +37,6 @@ export async function downloadSecurityPdf(model, project, options = {}) {
   const lens = options.perspective
     ? "-" + options.perspective.toLowerCase().replace(/[^a-z0-9]+/g, "-")
     : "";
-  doc.save(`QCDS-${slug}${lens}-security-report.pdf`);
+  await saveDeviceFile(doc.output("blob"), `QCDS-${slug}${lens}-security-report.pdf`, "application/pdf");
   return summary;
 }

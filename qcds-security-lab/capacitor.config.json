@@ -1,0 +1,8 @@
+{
+  "appId": "org.syntract.qsecurity",
+  "appName": "Q Security",
+  "webDir": "dist",
+  "backgroundColor": "#111519",
+  "ios": {"contentInset":"automatic"},
+  "android": {"allowMixedContent":false,"backgroundColor":"#111519"}
+}

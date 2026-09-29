@@ -3,11 +3,46 @@
   "aer": "0.17.1",
   "cases": [
     {
-      "name": "and3",
+      "name": "noisy_threshold",
+      "spec": {
+        "count": 2
+      },
+      "options": {
+        "selection": "noisy",
+        "noise": {
+          "single": 0.0001,
+          "two": 0.001,
+          "readout": 0.001
+        }
+      },
+      "status": "verified",
+      "qubits": 2,
+      "idealMaxError": 1.3322676295501878e-15,
+      "idealProbabilities": [
+        1.5955770627550177e-68,
+        5.577060207443597e-34,
+        9.071053470133364e-35,
+        0.9999999999999991
+      ],
+      "noisyProbabilities": [
+        0.0012238280413424032,
+        0.002365260429266094,
+        0.0023652604292662286,
+        0.9940456511001247
+      ],
+      "noisyMaxError": 1.7763568394002505e-15,
+      "aerShots": 4096,
+      "aerHits": 4068,
+      "aerSampleProbability": 0.9931640625
+    },
+    {
+      "name": "noisy_best_checkpoint",
       "spec": {
         "count": 3
       },
-      "options": {},
+      "options": {
+        "selection": "noisy"
+      },
       "status": "verified",
       "qubits": 3,
       "idealMaxError": 3.4416913763379853e-15,
@@ -35,6 +70,62 @@
       "aerShots": 4096,
       "aerHits": 2669,
       "aerSampleProbability": 0.651611328125
+    },
+    {
+      "name": "unreachable_half",
+      "spec": {
+        "count": 1
+      },
+      "options": {},
+      "status": "verified",
+      "qubits": 1,
+      "idealMaxError": 2.220446049250313e-16,
+      "idealProbabilities": [
+        0.4999999999999999,
+        0.4999999999999999
+      ],
+      "noisyProbabilities": [
+        0.5000000000000001,
+        0.49999999999999983
+      ],
+      "noisyMaxError": 2.7755575615628914e-16,
+      "aerShots": 4096,
+      "aerHits": 2051,
+      "aerSampleProbability": 0.500732421875
+    },
+    {
+      "name": "and3",
+      "spec": {
+        "count": 3
+      },
+      "options": {},
+      "status": "verified",
+      "qubits": 3,
+      "idealMaxError": 1.2212453270876722e-14,
+      "idealProbabilities": [
+        3.0517578125002026e-05,
+        3.0517578124999553e-05,
+        3.0517578124998462e-05,
+        3.0517578124998845e-05,
+        3.0517578124999017e-05,
+        3.0517578124998252e-05,
+        3.051757812500166e-05,
+        0.999786376953116
+      ],
+      "noisyProbabilities": [
+        0.07978554695953212,
+        0.08294659381036368,
+        0.08903968781157123,
+        0.09825315321232918,
+        0.08027973063222768,
+        0.09626356153755368,
+        0.09475881727609865,
+        0.37867290876030524
+      ],
+      "noisyMaxError": 6.439293542825908e-15,
+      "aerShots": 4096,
+      "aerHits": 1561,
+      "aerSampleProbability": 0.381103515625
     },
     {
       "name": "or_and_barrier",
@@ -143,12 +234,12 @@
       },
       "status": "verified",
       "qubits": 2,
-      "idealMaxError": 7.771561172376096e-16,
+      "idealMaxError": 7.216449660063518e-16,
       "idealProbabilities": [
-        0.24999999999999944,
-        0.2499999999999995,
-        0.24999999999999956,
-        0.24999999999999956
+        0.2499999999999996,
+        0.2499999999999996,
+        0.2499999999999996,
+        0.2499999999999996
       ],
       "noisyProbabilities": [
         0.2499999999999989,

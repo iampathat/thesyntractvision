@@ -1,4 +1,4 @@
-import { runDimensionExperiment } from "./logical-space.mjs?v=1.11.0";
+import { runDimensionExperiment } from "./logical-space.mjs?v=1.14.0";
 self.onmessage = ({ data }) => {
   try {
     self.postMessage({

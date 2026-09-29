@@ -10,9 +10,13 @@ import {
   analyze,
   validateProject,
   markdown,
-} from "./engine.mjs?v=1.13.0";
-import { createLogicalLab, researchLaunch } from "./logical-lab.js?v=1.13.0.1";
-import { downloadSecurityPdf } from "./report-export.js?v=1.0.0";
+} from "./engine.mjs?v=1.14.0";
+import { createLogicalLab, researchLaunch } from "./logical-lab.js?v=1.14.0";
+import { downloadSecurityPdf } from "./report-export.js?v=1.1.0";
+import { WORKSPACE_KEY, restoreWorkspace, writeWorkspace, copyAsOwnProject, STARTERS, isCaseId } from "./workspace.mjs?v=1.0.0";
+import { homeView, casesView, newCaseMarkup, consumerNav } from "./consumer-ui.js?v=1.0.0";
+import { initAppInstall, refreshAppStatus } from "./app-install.js?v=1.0.0";
+import { saveDeviceFile, initNativeApp } from "./device-files.js?v=1.0.0";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
 const esc = (s) =>
@@ -26,6 +30,8 @@ const esc = (s) =>
 const icon = (name, cls = "") =>
   `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${{ grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>', system: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 21h8m-4-5v5"/>', shield: '<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="M12 8v5m0 3h.01"/>', trace: '<circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="12" cy="19" r="2"/><path d="m5 7 6 10m8-10-6 10M7 5h10"/>', report: '<path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8m-8 4h6"/>', book: '<path d="M12 5c-3-2-6-2-10-1v15c4-1 7-1 10 1 3-2 6-2 10-1V4c-4-1-7-1-10 1zm0 0v15"/>', arrow: '<path d="M4 12h16m-6-6 6 6-6 6"/>', play: '<path d="m8 5 11 7-11 7z"/>', plus: '<path d="M12 5v14M5 12h14"/>', spark: '<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z"/>', download: '<path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/>', check: '<path d="m5 12 4 4L19 6"/>', close: '<path d="m6 6 12 12M6 18 18 6"/>', external: '<path d="M14 3h7v7m0-7L10 14M10 3H3v18h18v-7"/>', layers: '<path d="m12 3 10 5-10 5L2 8zm-10 9 10 5 10-5m-20 5 10 5 10-5"/>', mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 5 10 8L22 5"/>', database: '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 4 16 4 16 0V5M4 12c0 4 16 4 16 0"/>', menu: '<path d="M4 6h16M4 12h16M4 18h16"/>', undo: '<path d="m9 3-6 6 6 6M3 9h11a6 6 0 0 1 0 12"/>' }[name] || '<circle cx="12" cy="12" r="8"/>'}</svg>`;
 const ROUTES = [
+  ["home", "Home", "grid"],
+  ["cases", "My investigations", "shield"],
   ["examples", "Worked examples", "play"],
   ["investigate", "Investigate · 5 questions", "trace"],
   ["perspectives", "Perspectives", "layers"],
@@ -48,12 +54,14 @@ const ALIASES = {
   examples: "examples",
   license: "learn",
 };
-const STORAGE = "qcds-security-lab:workspace:v1";
+const STORAGE = WORKSPACE_KEY;
 const state = {
   caseId: "portal",
   cases: { portal: newProject("portal") },
   model: null,
-  route: "examples",
+  route: "home",
+  places: {},
+  archived: [],
   findingId: null,
   filter: "all",
   query: "",
@@ -66,31 +74,16 @@ const state = {
   perspective: "STRIDE",
 };
 try {
-  const saved = JSON.parse(localStorage.getItem(STORAGE));
-  if (
-    saved &&
-    typeof saved === "object" &&
-    ["portal", "support", "knowledge", "coding", "invoice", "custom"].includes(saved.caseId)
-  ) {
-    const cases = {};
-    for (const id of ["portal", "support", "knowledge", "coding", "invoice", "custom"]) {
-      if (!saved.cases?.[id]) continue;
-      cases[id] = validateProject(saved.cases[id]);
-      if (
-        cases[id].example &&
-        cases[id].input.flags.ai_component === null &&
-        ["portal", "support", "knowledge", "coding", "invoice"].includes(id)
-      )
-        cases[id].input.flags.ai_component = id === "portal" ? false : true;
-    }
-    if (cases[saved.caseId]) {
-      state.cases = cases;
-      state.caseId = saved.caseId;
-    }
+  const raw = localStorage.getItem(STORAGE);
+  state.recovery = raw;
+  const saved = restoreWorkspace(JSON.parse(raw), validateProject);
+  if (saved) {
+    Object.assign(state, {caseId:saved.caseId,cases:saved.cases,places:saved.places,archived:saved.archived,recovery:saved.recovery});
+    state.question = state.places[state.caseId]?.question || 1;
+    state.findingId = state.places[state.caseId]?.findingId || null;
+
   }
-} catch {
-  state.storage = false;
-}
+} catch { state.storage = false; }
 const project = () => state.cases[state.caseId];
 const stale = () =>
   !state.model ||
@@ -99,14 +92,13 @@ const stale = () =>
 function save() {
   project().updatedAt = new Date().toISOString();
   try {
-    localStorage.setItem(
-      STORAGE,
-      JSON.stringify({ caseId: state.caseId, cases: state.cases }),
-    );
+    writeWorkspace(localStorage,state);
     state.storage = true;
   } catch {
     state.storage = false;
   }
+  document.body.classList.toggle("storage-unavailable",!state.storage);
+  const warning=$("#storage-warning"); if(warning) warning.hidden=state.storage;
   const el = $("#save-status");
   if (el)
     el.textContent = state.storage
@@ -165,7 +157,9 @@ try {
   /* Navigation can still work without browser storage. */
 }
 function rememberPlace() {
+  state.places[state.caseId]={question:state.question,findingId:state.findingId};
   try {
+    writeWorkspace(localStorage,state);
     sessionStorage.setItem(
       PLACE_KEY,
       JSON.stringify({
@@ -176,7 +170,7 @@ function rememberPlace() {
         fact: state.explorerFact,
       }),
     );
-  } catch {}
+  } catch { state.storage=false; }
 }
 
 const EXAMPLE_GUIDES = {
@@ -305,7 +299,7 @@ function goQuestion(question, finding = state.findingId) {
 }
 function readLocation() {
   const [raw, detail, finding] = location.hash.slice(1).split("/");
-  const route = ALIASES[raw] || raw || "examples";
+  const route = ALIASES[raw] || raw || "home";
   state.route = ROUTES.some((r) => r[0] === route) ? route : "investigate";
   if (state.route === "investigate") {
     if (detail)
@@ -345,7 +339,7 @@ function casePicker() {
       <small>${project().example ? "Worked example · the same finished case follows every step, perspective, result and report." : "Your system · the same system follows the complete workflow."}</small>
     </div>
     <label class="sr-only" for="case-select">Choose a system</label>
-    <select id="case-select" aria-label="Choose a system"><option value="portal" ${state.caseId === "portal" ? "selected" : ""}>Customer records portal</option><option value="support" ${state.caseId === "support" ? "selected" : ""}>Customer support AI</option><option value="knowledge" ${state.caseId === "knowledge" ? "selected" : ""}>Internal knowledge assistant</option><option value="coding" ${state.caseId === "coding" ? "selected" : ""}>Coding & deployment agent</option><option value="invoice" ${state.caseId === "invoice" ? "selected" : ""}>Invoice approval assistant</option>${state.cases.custom ? `<option value="custom" ${state.caseId === "custom" ? "selected" : ""}>${esc(state.cases.custom.input.name)}</option>` : ""}</select>
+    <select id="case-select" aria-label="Choose a system"><option value="portal" ${state.caseId === "portal" ? "selected" : ""}>Customer records portal</option><option value="support" ${state.caseId === "support" ? "selected" : ""}>Customer support AI</option><option value="knowledge" ${state.caseId === "knowledge" ? "selected" : ""}>Internal knowledge assistant</option><option value="coding" ${state.caseId === "coding" ? "selected" : ""}>Coding & deployment agent</option><option value="invoice" ${state.caseId === "invoice" ? "selected" : ""}>Invoice approval assistant</option>${Object.entries(state.cases).filter(([id,p])=>(!p.example||id.startsWith("case-")) && !state.archived.includes(id)).map(([id,p])=>`<option value="${id}" ${state.caseId===id?'selected':''}>${esc(p.input.name)}</option>`).join('')}</select>
     ${project().example ? '<a class="casebar-change" href="#examples">Change worked example</a>' : badge("Your system", "neutral")}
   </div>`;
 }
@@ -374,41 +368,47 @@ function shell() {
     ? `<div class="nav-example-loaded"><span>WORKED EXAMPLE LOADED</span><b>${esc(project().input.name)}</b><small>One case · every screen below</small><a href="#examples">Choose another example →</a></div>`
     : `<a class="nav-example-picker" href="#examples">${icon("play")}<span class="nav-copy"><b>Worked examples</b><em>Load a finished case through the whole lab</em></span></a>`;
   return `<aside id="site-nav" ${state.mobile ? 'role="dialog" aria-modal="true" aria-label="Navigation"' : ""} class="sidebar ${state.mobile ? "open" : ""}">
-    <a class="brand" href="#examples"><span class="brand-mark">Q<span>★</span></span><span>QCDS<span class="brand-sub">SECURITY LAB</span></span></a>
+    <a class="brand" href="#home"><span class="brand-mark">Q<span>★</span></span><span>QCDS<span class="brand-sub">SECURITY LAB</span></span></a>
     <div class="workspace-label">YOUR WORKSPACE <button class="icon-button menu-close" data-action="close-menu" aria-label="Close navigation">${icon("close")}</button></div>
     <nav aria-label="Workspace">
-      <div class="nav-section-label">START HERE</div>
-      ${exampleContext}
-      <div class="nav-section-label nav-work-label">THE 5-STEP FLOW</div>
+      <a href="#home" ${state.route==='home'?'aria-current="page"':''}>${icon('grid')}<span class="nav-copy"><b>Home</b><em>Your next step, in one place</em></span></a>
+      <a href="#cases" ${state.route==='cases'?'aria-current="page"':''}>${icon('shield')}<span class="nav-copy"><b>My investigations</b><em>Saved cases and backups</em></span></a>
+      <div class="nav-section-label">CURRENT INVESTIGATION</div>
+      <div class="consumer-nav-case"><b>${esc(project().input.name)}</b><small>${project().example?'Practice case · synthetic evidence':'Your system · saved locally'}</small></div>
       <div class="nav-flow">${stepLinks}</div>
-      <div class="nav-section-label nav-analyze-label">${guide ? "EXPLORE THE SAME EXAMPLE" : "EXPLORE THE SAME SYSTEM"}</div>
-      ${analysisLink("system", "System & 1 / 0 / ? inputs", "system")}
-      ${analysisLink("perspectives", "Perspectives", "layers")}
-      ${analysisLink("findings", "Results & explanation", "shield")}
-      ${analysisLink("report", "Reports & export", "report")}
-      <a href="./glasswing.html">${icon("layers")}<span class="nav-copy"><b>Project Glasswing</b><em>Compare inference approaches on the same case</em></span></a>
-      <div class="nav-section-label nav-learn-label">LEARN</div>
-      ${analysisLink("learn", "In plain English", "book")}
+      ${analysisLink('report','My report','report')}
+      <details class="consumer-nav-more" ${['system','perspectives','findings','trace','overview'].includes(state.route)?'open':''}><summary>Perspectives & lab</summary>
+        ${analysisLink('system','System facts','system')}
+        ${analysisLink('findings','Results & explanation','shield')}
+        ${analysisLink('perspectives','Security perspectives','layers')}
+        <button class="text-button" data-open-logical>Dimensional & quantum lab ↗</button>
+        <a href="./glasswing.html">${icon('layers')}<span>Project Glasswing</span></a>
+      </details>
+      <a href="#examples">${icon('play')}<span>Worked examples</span></a>
+      ${analysisLink('learn','In plain English','book')}
     </nav>
-    <button class="new-case" data-action="new">${icon("plus")} Use my own system</button>
+    <button class="new-case" data-action="new">${icon("plus")} New investigation</button>
     <div class="sidebar-bottom"><div class="local-note">${icon("shield")}<span>Saved on this device.<br>No account needed.</span></div><a href="#learn" class="author">By Patrik Sundblom <span>↗</span></a><div class="version">SECURITY LAB <span>v${VERSION}</span></div></div>
   </aside>
   ${state.mobile ? '<button class="menu-backdrop" data-action="close-menu" aria-label="Close navigation backdrop"></button>' : ""}
   <div class="app-body" ${state.mobile ? "inert" : ""}>
-    <header class="topbar"><div class="breadcrumb"><button class="icon-button mobile-toggle" data-action="menu" aria-controls="site-nav" aria-label="Open navigation" aria-expanded="${state.mobile}">${icon("menu")}</button><b>${investigating ? "Q★ Security Lab" : esc(ROUTES.find((r) => r[0] === state.route)?.[1])}</b></div><div class="top-actions"><span id="save-status" class="save-status">${state.storage ? "Saved on this device" : "Not saved · export your work"}</span><button class="button small plain-button" data-system-explanation>${icon("book")} What is this?</button></div></header>
+    <header class="topbar"><div class="breadcrumb"><button class="icon-button mobile-toggle" data-action="menu" aria-controls="site-nav" aria-label="Open navigation" aria-expanded="${state.mobile}">${icon("menu")}</button><b>${investigating ? "Q★ Security" : esc(ROUTES.find((r) => r[0] === state.route)?.[1])}</b></div><div class="top-actions"><span id="save-status" class="save-status">${state.storage ? "Saved on this device" : "Not saved · export your work"}</span><button class="button small plain-button" data-system-explanation>${icon("book")} What is this?</button></div></header>
     ${investigating ? questionPosition() : ""}
     <main id="main" tabindex="-1">
-      ${state.route === "investigate" ? (state.question === 1 ? casePicker() : "") : !["examples", "learn"].includes(state.route) ? casePicker() : ""}
+      ${state.route === "investigate" ? (state.question === 1 ? casePicker() : "") : !["examples", "learn", "home", "cases"].includes(state.route) ? casePicker() : ""}
+      <div id="storage-warning" class="notice" role="alert" ${state.storage?"hidden":""}>Changes are not saved on this device. <button class="button" data-consumer-backup>Export a backup</button></div>
+      ${state.recovery?'<div class="notice">Some older data could not be opened. The original is preserved inside your workspace backup. <button class="button" data-consumer-backup>Save recovery backup</button></div>':''}
       <div id="stale-slot">${staleNotice()}</div>
       <div id="view">${view()}</div>
       ${workflowContinuation()}
-      <footer class="main-footer"><span>QCDS Security Lab · Patrik Sundblom</span><a href="./glasswing.html">Project Glasswing ${icon("external")}</a><a href="./LICENSE.md">COMMERCIAL LICENSE REQUIRED ${icon("external")}</a></footer>
+      <footer class="main-footer"><span>QCDS Security Lab · Patrik Sundblom</span><a href="./glasswing.html">Project Glasswing ${icon("external")}</a><a href="./privacy.html">Privacy</a><a href="#learn">About & license</a></footer>
     </main>
     ${investigating ? questionNavigation() : ""}
+    ${consumerNav({route:state.route,question:state.question,icon,investigationHref})}
   </div>`;
 }
 function workflowContinuation() {
-  if (["examples", "learn", "investigate"].includes(state.route)) return "";
+  if (["examples", "learn", "investigate", "home", "cases"].includes(state.route)) return "";
   const same = project().example ? "worked example" : "system";
   if (state.route === "system")
     return `<section class="workflow-next panel"><span>CONTINUE THE SAME ${same.toUpperCase()}</span><div><b>Now walk the five questions.</b><p>Goal → route → control → bypass → proof uses these exact system facts.</p></div><a class="button primary" href="${investigationHref(1)}">Start at 1 · Goal ${icon("arrow")}</a></section>`;
@@ -422,7 +422,7 @@ function workflowContinuation() {
 }
 
 function staleNotice() {
-  if (state.route === "investigate" && state.question === 1) return "";
+  if (["home","cases"].includes(state.route) || (state.route === "investigate" && state.question === 1)) return "";
   return stale()
     ? `<div class="notice stale" role="status"><span>${icon("undo")} System changed. Run again to update findings and the evidence scope.</span><button class="button small primary" data-action="run">Update analysis ${icon("arrow")}</button></div>`
     : "";
@@ -814,7 +814,7 @@ function explorerContent(f) {
   }<details class="fact-comparison"><summary>What if one system fact were ?</summary><p>In this lab, a dimension is one system fact. Set one to ? in a comparison to see what the path depends on.</p><label class="station-label" for="fact-choice">Fact to question<select id="fact-choice">${state.model.dimensions.map((d) => `<option value="${d.key}" ${d.key === fact?.key ? "selected" : ""}>${d.id} · ${FIELD_META[d.key][0]}</option>`).join("")}</select></label><p class="fact-result" role="status">${fact ? `If <b>${fact.id}</b> were ?, <b>${fact.lost.includes(f.id) ? `${f.id} would become more conditional and need more context.` : `${f.id} would still have its required facts.`}</b>` : "No declared Yes conditions are available for this comparison."}</p><small>Your declared facts remain saved. This comparison does not establish whether a finding is true.</small></details><button class="text-button" data-guide="4">In plain English: why change dimensions?</button>`;
 }
 function dimensionStation(f) {
-  return researchLaunch(project().input.name, true) + `<details class="dimension-station panel"><summary>${icon("layers")} Compare framework perspectives <span>${f.hitLenses.length} perspectives match this path · keep the same system in focus</span></summary><div id="dimension-content">${explorerContent(f)}</div></details>`;
+  return `<details class="consumer-inline-lab"><summary>Explore dimensions & quantum execution</summary>${researchLaunch(project().input.name, true)}</details>` + `<details class="dimension-station panel"><summary>${icon("layers")} Compare framework perspectives <span>${f.hitLenses.length} perspectives match this path · keep the same system in focus</span></summary><div id="dimension-content">${explorerContent(f)}</div></details>`;
 }
 function refreshExplorer(focusId) {
   const f = selectedFinding();
@@ -899,7 +899,6 @@ function exampleFlowCard(id) {
 }
 function examplesView() {
   return (
-    researchLaunch(project().input.name) +
     header(
       "WORKED EXAMPLES / START HERE",
       "Choose one example once. Then follow the same case everywhere.",
@@ -930,7 +929,7 @@ function investigationView() {
     input = project().input;
   let content = "";
   if (state.question === 1) {
-    content = `<section class="question-card panel">${!project().example ? `<div class="describe-start"><span class="eyebrow">HOW DO YOU WANT TO DESCRIBE THE SYSTEM?</span><div class="describe-start-actions"><button class="button primary" data-action="interview-ai">${icon("spark")} Interview me with AI / LLM</button><button class="button" data-action="interview">Guided interview</button></div><p>Or enter the system yourself below. Both interview modes create the same brief that QCDS then turns into explicit 1 / 0 / ? conditions.</p></div>` : ""}<label class="goal-field">The outcome I want to cause<textarea data-field="attackerGoal" rows="3" maxlength="1500" placeholder="For example: send a reply to someone who should not receive it.">${esc(input.attackerGoal)}</textarea></label><p class="goal-protection"><b>What we protect:</b> ${esc(input.assets.join(", ") || "Describe the important data or capability below.")}</p><details class="system-brief" ${!project().example ? "open" : ""}><summary>${project().example ? "Describe or edit this system" : "Enter or edit the system manually"}</summary><label>System name<input data-field="name" value="${esc(input.name)}" maxlength="120"></label><label>What does it do?<textarea data-field="description" rows="3" maxlength="6000">${esc(input.description)}</textarea></label><label>Assets to protect<input data-field="assets" value="${esc(input.assets.join(", "))}" maxlength="2000"></label></details></section><details class="question-card panel fact-review" ${state.model.unknown.length ? "open" : ""}><summary>System facts · 1 / 0 / ? <span>${state.model.unknown.length ? state.model.unknown.length + " unresolved (?)" : CONDITION_DEFS.length + " resolved"}</span></summary><p><b>1</b> = present · <b>0</b> = absent · <b>?</b> = unknown. A ? is valid input: QCDS carries that uncertainty forward and marks dependent routes as conditional instead of forcing a guess.</p>${compactConditions()}<button class="text-button" data-guide="1">In plain English: what is a condition?</button></details>${state.model.clarifications.length ? `<section class="question-card panel qcds-asks"><span class="eyebrow">QCDS ASKS NEXT</span><h2>These ? facts decide which conditional routes survive.</h2><p>Answer what you know. Leave ? when you genuinely do not know. The queue recalculates after every answer.</p><div class="clarification-list">${state.model.clarifications.slice(0, 6).map((item) => `<div><div><b>${item.id} · ${esc(item.label)}</b><p>${esc(item.question)}</p><small>${item.routeIds.length ? `Affects ${item.routeIds.join(", ")}` : "Useful system context; no current route depends on it yet."}</small></div><div class="clarification-actions"><button type="button" data-answer-condition="${item.key}" data-condition-value="yes">1 · Yes</button><button type="button" data-answer-condition="${item.key}" data-condition-value="no">0 · No</button><button type="button" data-answer-condition="${item.key}" data-condition-value="unknown">? · Keep unknown</button></div></div>`).join("")}</div></section>` : ""}<p class="next-explained">Next, QCDS keeps both active and conditional routes visible and shows which facts each one depends on.</p>`;
+    content = `<section class="question-card panel">${!project().example ? `<div class="describe-start"><span class="eyebrow">HOW DO YOU WANT TO DESCRIBE THE SYSTEM?</span><div class="describe-start-actions"><button class="button primary" data-action="interview-ai">${icon("spark")} Interview me with AI / LLM</button><button class="button" data-action="interview">Guided interview</button></div><p>Or enter the system yourself below. Both interview modes create the same brief that QCDS then turns into explicit 1 / 0 / ? conditions.</p></div>` : ""}<label class="goal-field">The unwanted outcome to investigate<textarea data-field="attackerGoal" rows="3" maxlength="1500" placeholder="For example: send a reply to someone who should not receive it.">${esc(input.attackerGoal)}</textarea></label><p class="goal-protection"><b>What we protect:</b> ${esc(input.assets.join(", ") || "Describe the important data or capability below.")}</p><details class="system-brief" ${!project().example ? "open" : ""}><summary>${project().example ? "Describe or edit this system" : "Enter or edit the system manually"}</summary><label>System name<input data-field="name" value="${esc(input.name)}" maxlength="120"></label><label>What does it do?<textarea data-field="description" rows="3" maxlength="6000">${esc(input.description)}</textarea></label><label>Assets to protect<input data-field="assets" value="${esc(input.assets.join(", "))}" maxlength="2000"></label></details></section><details class="question-card panel fact-review" ><summary>System facts · 1 / 0 / ? <span>${state.model.unknown.length ? state.model.unknown.length + " unresolved (?)" : CONDITION_DEFS.length + " resolved"}</span></summary><p><b>1</b> = present · <b>0</b> = absent · <b>?</b> = unknown. A ? is valid input: QCDS carries that uncertainty forward and marks dependent routes as conditional instead of forcing a guess.</p>${compactConditions()}<button class="text-button" data-guide="1">In plain English: what is a condition?</button></details>${state.model.clarifications.length ? `<section class="question-card panel qcds-asks"><span class="eyebrow">QCDS ASKS NEXT</span><h2>These ? facts decide which conditional routes survive.</h2><p>Answer what you know. Leave ? when you genuinely do not know. The queue recalculates after every answer.</p><div class="clarification-list">${state.model.clarifications.slice(0, 3).map((item) => `<div><div><b>${item.id} · ${esc(item.label)}</b><p>${esc(item.question)}</p><small>${item.routeIds.length ? `Affects ${item.routeIds.join(", ")}` : "Useful system context; no current route depends on it yet."}</small></div><div class="clarification-actions"><button type="button" data-answer-condition="${item.key}" data-condition-value="yes">1 · Yes</button><button type="button" data-answer-condition="${item.key}" data-condition-value="no">0 · No</button><button type="button" data-answer-condition="${item.key}" data-condition-value="unknown">? · Keep unknown</button></div></div>`).join("")}</div></section>` : ""}<p class="next-explained">Next, QCDS keeps both active and conditional routes visible and shows which facts each one depends on.</p>`;
   } else if (!f) {
     content = `<section class="question-card panel"><h2>We need a path to investigate.</h2><p>${state.model.unknown.length ? `${state.model.unknown.length} facts are still Unknown. Confirm what you know to see which paths have the conditions they need.` : "No rule matches the declared system and active perspectives. An empty result does not establish that the system is safe."}</p><button class="button primary" data-question="1">Review the system facts</button><a class="text-link" href="#trace">Inspect the detailed reasoning →</a></section>`;
   } else {
@@ -1518,6 +1517,8 @@ function learnView() {
 function view() {
   return (
     {
+      home: () => {if(stale()) run(); return homeView({project:project(),caseId:state.caseId,question:state.question,model:state.model,cases:state.cases,archived:state.archived,icon});},
+      cases: () => casesView({cases:state.cases,places:state.places,archived:state.archived,caseId:state.caseId,icon}),
       examples: examplesView,
       investigate: investigationView,
       overview: overview,
@@ -1542,6 +1543,7 @@ function render() {
   );
   document.body.classList.toggle("menu-open", state.mobile);
   $("#app").innerHTML = shell();
+  refreshAppStatus();
   document.title = `${ROUTES.find((r) => r[0] === state.route)?.[1] || "Overview"} · QCDS Security Lab`;
   window.scrollTo(0, y);
 }
@@ -1559,15 +1561,9 @@ function updateDirty() {
   }
 }
 function download(content, filename, type) {
-  const url = URL.createObjectURL(new Blob([content], { type }));
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.append(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 5000);
+  return saveDeviceFile(content,filename,type).catch(error => notify(error.message,'warning'));
 }
+
 function exportProject() {
   if (stale()) return notify("Run the updated analysis before exporting.");
   download(
@@ -1587,7 +1583,7 @@ async function exportDesignedPdf(perspective = null) {
   notify('Building your illustrated PDF report…');
   try {
     const summary = await downloadSecurityPdf(state.model, structuredClone(project()), { perspective });
-    notify(`PDF downloaded · ${summary.pages} pages · charts, attack paths and evidence.`);
+    notify(`PDF ready · ${summary.pages} pages · charts, attack paths and evidence.`);
   } catch (error) { notify(error.message || 'PDF export failed. Please retry.'); }
   finally { pdfBusy = false; buttons.forEach(b => { b.disabled = false; b.removeAttribute('aria-busy'); }); }
 }
@@ -1608,9 +1604,11 @@ async function execute() {
   );
 }
 function switchCase(id) {
+  if (!isCaseId(id)) return;
   if (!state.cases[id]) state.cases[id] = newProject(id);
   state.caseId = id;
-  state.question = 1;
+  state.question = state.places[id]?.question || 1;
+  state.findingId = state.places[id]?.findingId || null;
   state.explorerLens = "";
   state.explorerFact = "";
   state.query = "";
@@ -1618,7 +1616,7 @@ function switchCase(id) {
   run();
   save();
   rememberPlace();
-  if (state.route === "investigate") goQuestion(1);
+  if (state.route === "investigate") goQuestion(state.question);
   else render();
 }
 function setMenu(open) {
@@ -1761,9 +1759,7 @@ document.addEventListener("click", async (e) => {
       setMenu(!state.mobile);
       break;
     case "new":
-      if (!state.cases.custom) state.cases.custom = newProject("custom");
-      switchCase("custom");
-      goQuestion(1);
+      openNewCase();
       break;
     case "reset":
       if (
@@ -1976,18 +1972,18 @@ $("#import-file").addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) return;
   try {
-    if (file.size > 2_000_000)
-      throw new Error("Choose a project smaller than 2 MB.");
-    const data = validateProject(JSON.parse(await file.text()));
-    if (
-      state.cases.custom &&
-      !confirm(
-        "Replace your current custom system with this project? Export it first if you want to keep both.",
-      )
-    )
-      return;
-    state.cases.custom = data;
-    switchCase("custom");
+    if (file.size > 20_000_000)
+      throw new Error("Choose a project or backup smaller than 20 MB.");
+    const parsed=JSON.parse(await file.text());
+    if(parsed.schema==='qcds-security-lab/workspace-backup-v1') {
+      const recovered=restoreWorkspace(parsed.workspace,validateProject);
+      if(!recovered || recovered.rejected.length) throw new Error('This backup contains unreadable cases. Nothing was imported.');
+      for(const p of Object.values(recovered.cases)) addPersonalCase(p,false);
+      save(); navigate('cases'); notify('Backup imported as separate cases. Existing work is preserved.'); return;
+    }
+    const data = validateProject(parsed);
+    const id=addPersonalCase(data);
+    switchCase(id);
     goQuestion(1);
     notify("Project imported. Analysis recalculated from its conditions.");
   } catch (err) {
@@ -2210,13 +2206,6 @@ $("#interview").addEventListener("click", async (e) => {
     if ($("#mini-enable")) $("#mini-enable").disabled = false;
   }
   if (action === "apply") {
-    if (
-      state.cases.custom &&
-      !confirm(
-        "Replace the current custom system brief with these answers? Export the earlier project first to keep both.",
-      )
-    )
-      return;
     const p = newProject("custom");
     p.input.name =
       mini.answers[0].split(/[.!?]/)[0].slice(0, 80) || "Interviewed system";
@@ -2251,9 +2240,9 @@ $("#interview").addEventListener("click", async (e) => {
         confidence: suggestion.confidence,
       };
     }
-    state.cases.custom = p;
+    const newId=addPersonalCase(p);
     $("#interview").close();
-    switchCase("custom");
+    switchCase(newId);
     goQuestion(1);
     notify(
       `Brief transferred · ${Object.keys(p.conditionBasis).length} conditions inferred from your answers. Review them; unresolved facts remain ?.`,
@@ -2278,6 +2267,34 @@ $("#interview").addEventListener("close", () => {
   mini.controller?.abort();
   mini.busy = false;
 });
+function addPersonalCase(p, stamp=true) {
+  const id='case-'+crypto.randomUUID();
+  state.cases[id]=structuredClone(p);
+  if(stamp) state.cases[id].updatedAt=new Date().toISOString();
+  state.places[id]={question:1,findingId:null};
+  return id;
+}
+const newCaseDialog=document.createElement('dialog');
+newCaseDialog.id='consumer-new-case';newCaseDialog.setAttribute('aria-labelledby','new-case-title');document.body.append(newCaseDialog);
+function openNewCase(){if(state.mobile)setMenu(false);newCaseDialog.innerHTML=newCaseMarkup(icon);newCaseDialog.showModal();}
+newCaseDialog.addEventListener('click',e=>{if(e.target.closest('[data-close-new-case]'))newCaseDialog.close();});
+newCaseDialog.addEventListener('submit',e=>{
+  if(e.target.id!=='consumer-new-case-form')return;e.preventDefault();
+  const data=new FormData(e.target),starter=STARTERS.find(s=>s.id===data.get('starter'))||STARTERS[0];
+  const p=newProject('custom');p.input.name=data.get('name').trim();if(!p.input.name)return;
+  p.input.description=data.get('description').trim();p.input.attackerGoal=starter.goal;p.input.assets=[...starter.assets];
+  const id=addPersonalCase(p);newCaseDialog.close();switchCase(id);goQuestion(1);notify('Investigation created. Review your starting goal and answer what you know.');
+});
+document.addEventListener('click',e=>{
+  const open=e.target.closest('[data-consumer-open]');if(open){switchCase(open.dataset.consumerOpen);goQuestion(state.question);return;}
+  const copy=e.target.closest('[data-consumer-copy]');if(copy){const p=state.cases[copy.dataset.consumerCopy];if(!p)return;const id=addPersonalCase(copyAsOwnProject(p));switchCase(id);navigate('cases');notify('Independent copy saved.');return;}
+  const archive=e.target.closest('[data-consumer-archive]');if(archive){const id=archive.dataset.consumerArchive;if(id===state.caseId)return;state.archived=[...new Set([...state.archived,id])];save();render();notify('Archived. You can restore it from My investigations.');return;}
+  const restore=e.target.closest('[data-consumer-restore]');if(restore){state.archived=state.archived.filter(id=>id!==restore.dataset.consumerRestore);save();render();return;}
+  if(e.target.closest('[data-consumer-backup]')) download(JSON.stringify({schema:'qcds-security-lab/workspace-backup-v1',exportedAt:new Date().toISOString(),workspace:{caseId:state.caseId,cases:state.cases,places:state.places,archived:state.archived,...(state.recovery?{recovery:state.recovery}:{})}},null,2),'Q-Security-workspace-backup.json','application/json');
+});
+initAppInstall({notify});
+initNativeApp().catch(()=>notify('Native file sharing could not initialize. Your investigation remains available.','warning'));
+
 run();
 const initial = readLocation();
 render();

@@ -1,3 +1,4 @@
+import { groverPlan } from "./grover-policy.mjs?v=1.0.0";
 // QCDS by Patrik Sundblom. Assistant contributor: ChatGPT (OpenAI).
 // Commercial license: LICENSE.md. Symbolic classical reference, no QPU calls.
 export const ABSENT = "ABSENT";
@@ -139,27 +140,16 @@ export class LogicalSpace {
 // Boolean phase oracle. Stores every state's weight by oracle membership.
 // https://quantum.cloud.ibm.com/learning/en/courses/fundamentals-of-quantum-algorithms/grover-algorithm/analysis
 export function amplify(marked, total, maxIterations = 40) {
-  const m = BigInt(marked),
-    n = BigInt(total);
-  if (n < 1n || m < 0n || m > n) throw new Error("Invalid oracle cardinality.");
-  const cap = Math.max(0, Math.min(40, Math.trunc(maxIterations)));
-  const fraction = Number(m) / Number(n),
-    theta = Math.asin(Math.sqrt(fraction));
-  const trace = [];
-  for (let t = 0; t <= cap; t++) {
-    const probability =
-      m === 0n ? 0 : m === n ? 1 : Math.sin((2 * t + 1) * theta) ** 2;
-    trace.push({ iteration: t, probability });
-  }
-  const best = trace.reduce((a, b) =>
-    b.probability > a.probability + 1e-12 ? b : a,
-  );
+  const m = BigInt(marked), n = BigInt(total);
+  const plan = groverPlan(m, n, { maxIterations });
+  const cap = plan.cap, fraction = plan.initialProbability, trace = plan.trace, best = plan.selected;
   return {
     substrate: "classical-symbolic / ideal Grover reference",
     markedStates: m.toString(),
     totalStates: n.toString(),
     iterations: best.iteration,
     iterationBudget: cap,
+    alignment: { threshold: plan.threshold, reached: plan.reached, reason: plan.reason, bestWithinBudget: plan.best },
     initialProbability: fraction,
     probability: best.probability,
     lift: fraction ? best.probability / fraction : 0,

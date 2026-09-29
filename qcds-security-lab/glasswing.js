@@ -1,12 +1,13 @@
+import { saveDeviceFile, initNativeApp } from "./device-files.js?v=1.0.0";
 import {
   GLASSWING_VERSION,
   CONDITION_DEFS,
   SCENARIOS,
   projectFromScenario,
   runGlasswing,
-} from "./glasswing.mjs?v=1.2.1";
-import { analyze } from "./engine.mjs?v=1.13.0";
-import { downloadSecurityPdf } from "./report-export.js?v=1.0.0";
+} from "./glasswing.mjs?v=1.14.0";
+import { analyze } from "./engine.mjs?v=1.14.0";
+import { downloadSecurityPdf } from "./report-export.js?v=1.1.0";
 
 const $ = (selector) => document.querySelector(selector);
 const esc = (value) =>
@@ -241,15 +242,7 @@ function exportRun() {
     ...lastRun,
     model: undefined,
   };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], {
-    type: "application/json",
-  });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `project-glasswing-${Date.now()}.json`;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  saveDeviceFile(JSON.stringify(payload,null,2),`project-glasswing-${Date.now()}.json`,'application/json').catch(error=>{$('#pdf-status').textContent=error.message;});
 }
 function initScenarioMenu() {
   $("#scenario").innerHTML = [
@@ -279,7 +272,7 @@ function init() {
     try {
       const model = analyze(snapshot.input, snapshot.evidence, snapshot.excludedLenses);
       const result = await downloadSecurityPdf(model, snapshot);
-      $("#pdf-status").textContent = `${result.pages}-page PDF downloaded for ${snapshot.input.name}.`;
+      $("#pdf-status").textContent = `${result.pages}-page PDF ready for ${snapshot.input.name}.`;
     } catch (error) { $("#pdf-status").textContent = error.message || "PDF export failed. Please retry."; }
     finally { button.disabled = false; button.textContent = "Download report PDF"; }
   });
@@ -288,3 +281,5 @@ function init() {
   });
 }
 init();
+
+initNativeApp().catch(()=>{});

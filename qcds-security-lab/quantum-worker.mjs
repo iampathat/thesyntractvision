@@ -1,4 +1,4 @@
-import { compareExecution } from "./quantum-compare.mjs?v=1.0.0";
+import { compareExecution } from "./quantum-compare.mjs?v=1.1.0";
 self.onmessage = ({ data }) => {
   try {
     self.postMessage({

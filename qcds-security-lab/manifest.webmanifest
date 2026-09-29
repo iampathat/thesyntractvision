@@ -1,0 +1,22 @@
+{
+  "id": "./",
+  "name": "Q Security — QCDS Security Lab",
+  "short_name": "Q Security",
+  "description": "Investigate security risks, follow the evidence and create clear reports. By Patrik Sundblom.",
+  "lang": "en",
+  "start_url": "./index.html#home",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#111519",
+  "theme_color": "#111c22",
+  "categories": ["productivity", "utilities", "education"],
+  "icons": [
+    {"src":"./assets/app-icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"./assets/app-icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+  ],
+  "shortcuts": [
+    {"name":"My investigations","short_name":"My cases","url":"./index.html#cases"},
+    {"name":"Worked examples","short_name":"Examples","url":"./index.html#examples"}
+  ]
+}

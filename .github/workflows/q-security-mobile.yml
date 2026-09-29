@@ -1,0 +1,74 @@
+name: Q Security mobile builds
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'qcds-security-lab/**'
+      - '.github/workflows/q-security-mobile.yml'
+permissions:
+  contents: read
+concurrency:
+  group: q-security-mobile-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: qcds-security-lab
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: qcds-security-lab/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci --ignore-scripts
+      - run: npm test
+      - run: npm run prepare:android
+      - name: Compile test APK and unsigned release bundle
+        working-directory: qcds-security-lab/android
+        run: ./gradlew assembleDebug bundleRelease --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Q-Security-Android-1.14.0
+          retention-days: 30
+          if-no-files-found: error
+          path: |
+            qcds-security-lab/android/app/build/outputs/apk/debug/app-debug.apk
+            qcds-security-lab/android/app/build/outputs/bundle/release/app-release.aab
+  ios:
+    runs-on: macos-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: qcds-security-lab
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: qcds-security-lab/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm run prepare:ios
+      - name: Compile iPhone simulator app
+        run: >-
+          xcodebuild -project ios/App/App.xcodeproj -scheme App
+          -configuration Debug -sdk iphonesimulator
+          -destination 'generic/platform=iOS Simulator'
+          -derivedDataPath build-ios CODE_SIGNING_ALLOWED=NO build
+      - name: Bundle simulator application
+        run: ditto -c -k --sequesterRsrc --keepParent build-ios/Build/Products/Debug-iphonesimulator/App.app Q-Security-iOS-Simulator.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Q-Security-iOS-Simulator-1.14.0
+          retention-days: 30
+          if-no-files-found: error
+          path: qcds-security-lab/Q-Security-iOS-Simulator.zip

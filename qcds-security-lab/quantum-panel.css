@@ -213,3 +213,10 @@
     font-size: 21px;
   }
 }
+
+.quantum-alignment { padding: 18px; margin-top: 22px; border: 1px solid #5b7552; border-radius: 12px; background: #213628; }
+.quantum-alignment.unreached { border-color: #7c6242; background: #302a20; }
+.quantum-alignment h4 { margin: 6px 0; font-size: 22px; }
+.quantum-alignment p:last-child { margin-bottom: 0; }
+.quantum-discovery article { padding: 14px; margin: 10px 0; border-radius: 8px; background: #172e35; font-size: 12px; line-height: 1.7; }
+.quantum-discovery ul { padding-left: 18px; }

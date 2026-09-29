@@ -1,7 +1,7 @@
 // Copyright © 2026 Patrik Sundblom. See LICENSE.md.
 // Inspectable QCDS Security Lab inference engine.
 import { generateAttackVectorSpace } from "./attack-vectors.mjs";
-import { normalizeResearch, runDimensionExperiment, dimensionMarkdown } from "./logical-space.mjs?v=1.11.0";
+import { normalizeResearch, runDimensionExperiment, dimensionMarkdown } from "./logical-space.mjs?v=1.14.0";
 const CONDITION_DEFS = [
   ["external_input", "External actors, users, devices or systems can submit input"],
   [
@@ -342,7 +342,7 @@ function buildFindings(input, conditions, lenses) {
   });
 }
 
-const VERSION = "1.13.0";
+const VERSION = "1.14.0";
 const FIELD_META = {
   external_input: [
     "External input",

@@ -88,8 +88,11 @@ test("finite symbolic Grover matches a dense 8-bit amplitude simulation", () => 
     const mean = amplitudes.reduce((a, b) => a + b, 0) / 256;
     amplitudes = amplitudes.map((x) => 2 * mean - x);
   }
-  assert.equal(run.iterations, 12);
-  assert.ok(run.probability > 0.9999);
+  assert.equal(run.iterations, 11);
+  assert.equal(run.alignment.reached, true);
+  assert.ok(run.probability >= 0.95);
+  assert.ok(run.trace[10].probability < 0.95);
+  assert.ok(run.alignment.bestWithinBudget.probability > 0.9999);
   assert.equal(run.distribution.marked.count, "1");
   assert.equal(run.distribution.unmarked.count, "255");
   assert.equal(amplify(0n, 4n).probability, 0);

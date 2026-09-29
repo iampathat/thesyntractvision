@@ -120,3 +120,54 @@ test("browser distributions match independent Qiskit and Aer golden results", ()
       );
   }
 });
+
+
+test("automatic selection reaches the threshold without stopping at an inadequate first peak", () => {
+  const r = compareExecution(fixture({count:3}));
+  assert.equal(r.circuit.iterations,6);
+  assert.ok(r.trace.slice(0,-1).every(t => t.ideal < .95));
+  assert.equal(r.alignment.idealReached,true);
+  assert.equal(r.alignment.noisyReached,false);
+  const short = fixture({count:3}); short.config.maxIterations=2;
+  const limited=compareExecution(short);
+  assert.equal(limited.circuit.iterations,2);
+  assert.equal(limited.alignment.reached,false);
+  assert.throws(() => compareExecution(short,{iterations:3}),/budget/);
+  short.config.maxIterations=999;
+  assert.equal(compareExecution(short).alignment.maxIterations,40);
+  const half=compareExecution(fixture({count:1}));
+  assert.equal(half.circuit.iterations,0);
+  assert.equal(half.alignment.reached,false);
+  assert.throws(() => compareExecution(short,{threshold:0}),/threshold/);
+});
+test("noisy selection retains a real earlier checkpoint and honors work and iteration limits", () => {
+  const run=fixture({count:3}),r=compareExecution(run,{selection:'noisy'});
+  assert.equal(r.alignment.executedIterations,40);
+  assert.equal(r.circuit.iterations,2);
+  assert.equal(r.alignment.reached,false);
+  const fixed=compareExecution(run,{iterations:2});
+  assert.deepEqual(r.distribution,fixed.distribution);
+  assert.deepEqual(r.circuit.gates,fixed.circuit.gates);
+  const early=compareExecution(fixture({count:2}),{selection:'noisy',noise:{single:.0001,two:.001,readout:.001}});
+  assert.equal(early.alignment.reached,true);
+  assert.equal(early.alignment.executedIterations,1);
+  const bounded=compareExecution(fixture({count:6}),{selection:'noisy'});
+  assert.ok(bounded.alignment.executedIterations<40);
+  assert.ok(bounded.alignment.densityWork<=35000000);
+  assert.equal(bounded.alignment.reason,'resource_limit');
+});
+test("discovered configurations come from accepted sampled outcomes and do not certify evidence", () => {
+  const run=fixture({count:3,requires:['d0'],any:['d1','d2'],spectators:4});
+  const r=compareExecution(run);
+  assert.equal(r.discovery.status,'candidate_found');
+  assert.equal(r.discovery.distinctAcceptedOutcomes,3);
+  for (const found of r.discovery.candidates) {
+    const outcome=r.distribution.find(x=>x.bits===found.bits);
+    assert.ok(outcome.marked && outcome.noisyCount>0);
+    assert.equal(found.shots,outcome.noisyCount);
+    assert.equal(found.assignments.length,3);
+  }
+  assert.equal(r.discovery.evidenceStatus,run.binding.status);
+  assert.equal(r.circuit.factoredDimensions.length,4);
+  assert.equal(compareExecution(fixture({count:2,fixed:{d0:false}})).discovery.status,'no_solutions');
+});

@@ -202,40 +202,17 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Test QCDS Security Lab analysis contracts
-        run: |
-          node --test qcds-security-lab/tests/engine.test.mjs
-          node --test qcds-security-lab/tests/glasswing.test.mjs
-          node --test qcds-security-lab/tests/logical-space.test.mjs qcds-security-lab/tests/quantum.test.mjs
-          node --test qcds-security-lab/tests/report.test.mjs
+      - name: Install Q Security build dependencies
+        working-directory: qcds-security-lab
+        run: npm ci --ignore-scripts
 
-      - name: Build QCDS Security Lab commercial surface
-        run: |
-          mkdir -p _site/qcds-security-lab/assets _site/qcds-security-lab/qa
-          cp qcds-security-lab/index.html _site/qcds-security-lab/index.html
-          cp qcds-security-lab/qa/fold.html _site/qcds-security-lab/qa/fold.html
-          cp qcds-security-lab/style.css _site/qcds-security-lab/style.css
-          cp qcds-security-lab/app.js _site/qcds-security-lab/app.js
-          cp qcds-security-lab/engine.mjs _site/qcds-security-lab/engine.mjs
-          cp qcds-security-lab/attack-vectors.mjs _site/qcds-security-lab/attack-vectors.mjs
-          cp qcds-security-lab/logical-space.mjs qcds-security-lab/logical-worker.mjs qcds-security-lab/logical-lab.js qcds-security-lab/logical-lab.css _site/qcds-security-lab/
-          cp qcds-security-lab/intro.js qcds-security-lab/intro.css qcds-security-lab/DIMENSION_ENGINE.md _site/qcds-security-lab/
-          cp qcds-security-lab/quantum-compare.mjs qcds-security-lab/quantum-worker.mjs qcds-security-lab/quantum-panel.js qcds-security-lab/quantum-panel.css qcds-security-lab/QUANTUM_EXECUTION.md _site/qcds-security-lab/
-          cp qcds-security-lab/glasswing.html _site/qcds-security-lab/glasswing.html
-          cp qcds-security-lab/glasswing.css _site/qcds-security-lab/glasswing.css
-          cp qcds-security-lab/glasswing.js _site/qcds-security-lab/glasswing.js
-          cp qcds-security-lab/glasswing.mjs _site/qcds-security-lab/glasswing.mjs
-          cp qcds-security-lab/glasswing-launch.css _site/qcds-security-lab/glasswing-launch.css
-          cp qcds-security-lab/report-pdf.mjs qcds-security-lab/report-export.js qcds-security-lab/report-screen.css _site/qcds-security-lab/
-          mkdir -p _site/qcds-security-lab/vendor
-          cp qcds-security-lab/vendor/jspdf.umd.min.js qcds-security-lab/vendor/jspdf-LICENSE.txt qcds-security-lab/vendor/report-fonts.mjs qcds-security-lab/vendor/report-fonts-LICENSE.txt _site/qcds-security-lab/vendor/
-          cp qcds-security-lab/GLASSWING.md _site/qcds-security-lab/GLASSWING.md
-          cp qcds-security-lab/README.md _site/qcds-security-lab/README.md
-          cp qcds-security-lab/LICENSE.md _site/qcds-security-lab/LICENSE.md
-          cp qcds-security-lab/ARCHITECTURE.md _site/qcds-security-lab/ARCHITECTURE.md
-          cp qcds-security-lab/METHODOLOGY.md _site/qcds-security-lab/METHODOLOGY.md
-          cp qcds-security-lab/PERSPECTIVES.md _site/qcds-security-lab/PERSPECTIVES.md
-          cp qcds-security-lab/assets/*.svg _site/qcds-security-lab/assets/
+      - name: Test QCDS Security Lab analysis contracts
+        working-directory: qcds-security-lab
+        run: npm test
+
+      - name: Build Q Security installable app
+        working-directory: qcds-security-lab
+        run: node scripts/build-web.mjs --out ../_site/qcds-security-lab
 
       - name: Build isolated Cally.One Pages surface from tribute
         run: |

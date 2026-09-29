@@ -1,10 +1,11 @@
+import { saveDeviceFile } from "./device-files.js?v=1.0.0";
 // QCDS by Patrik Sundblom. Assisted by ChatGPT (OpenAI). LICENSE.md.
 import {
   normalizeResearch,
   dimensionMarkdown,
-} from "./logical-space.mjs?v=1.11.0";
-import { createQuantumPanel } from "./quantum-panel.js?v=1.0.1";
-import { comparisonMarkdown } from "./quantum-compare.mjs?v=1.0.0";
+} from "./logical-space.mjs?v=1.14.0";
+import { createQuantumPanel } from "./quantum-panel.js?v=1.1.0";
+import { comparisonMarkdown } from "./quantum-compare.mjs?v=1.1.0";
 const esc = (s) =>
   String(s ?? "").replace(
     /[&<>"']/g,
@@ -70,12 +71,7 @@ export function createLogicalLab({
     save();
   }
   function download(text, name, type) {
-    const url = URL.createObjectURL(new Blob([text], { type })),
-      a = document.createElement("a");
-    a.href = url;
-    a.download = name;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    return saveDeviceFile(text,name,type).catch(error=>notify(error.message,'warning'));
   }
   function controls() {
     return `<details class="logic-inputs" ${matchMedia("(min-width: 1001px)").matches ? "open" : ""}><summary class="logic-input-summary">Edit mask · ${dims().length} dimensions</summary><div class="logic-section-head"><div><span class="eyebrow">01 / CONDITION FORMATION</span><h3>What do we know?</h3></div><button class="text-button" data-logic="reopen">Reopen this path’s assumptions</button></div><p class="logic-legend"><b>1</b> True <b>0</b> False <b>?</b> Unresolved <b>∅</b> Remove coordinate</p><div class="logic-dimensions">${dims()
@@ -154,7 +150,7 @@ export function createLogicalLab({
               )}</div>${r.changed.length > 60 ? "<small>The JSON export contains every changed vector.</small>" : ""}</details>`
           : ""
       }</section>
-      <section class="logic-result-card quantum-card"><span class="eyebrow">EXECUTION / SAME ORACLE</span><h3>Does circuit noise change the answer?</h3><p>Compare the classical prediction with ideal and noisy quantum-circuit simulation. Your selected path and current assumptions stay in scope.</p>${quantum.markup(r)}<details><summary>Explore the ideal formula across the iteration budget</summary><div class="logic-probability"><b>${percent(a.probability)}</b><span>selected-subspace mass at iteration <strong>${a.iterations}</strong><br>initial mass ${percent(a.initialProbability)} · lift ${a.lift.toFixed(2)}×</span></div>${pulse(r)}<p class="logic-note">Exact counts + ideal Grover formula, evaluated classically within ${a.iterationBudget} iterations. This view selects the best value anywhere in that budget. The comparison above defaults to the first ideal peak to avoid unnecessary gates. This is search probability, not the probability of a real vulnerability.</p></details></section>
+      <section class="logic-result-card quantum-card"><span class="eyebrow">EXECUTION / SAME ORACLE</span><h3>Does circuit noise change the answer?</h3><p>Compare the classical prediction with ideal and noisy quantum-circuit simulation. Your selected path and current assumptions stay in scope.</p>${quantum.markup(r)}<details><summary>Explore the ideal formula across the iteration budget</summary><div class="logic-probability"><b>${percent(a.probability)}</b><span>selected-subspace mass at iteration <strong>${a.iterations}</strong><br>initial mass ${percent(a.initialProbability)} · lift ${a.lift.toFixed(2)}×</span></div>${pulse(r)}<p class="logic-note">Exact counts + ideal Grover formula, evaluated classically within ${a.iterationBudget} iterations. Auto chooses the first value reaching 95%, or the earliest best value if the target is unreachable. The circuit comparison follows the same policy and can optimize for the noisy circuit. This is search probability, not the probability of a real vulnerability.</p></details></section>
       <section class="logic-result-card"><span class="eyebrow">03 / RECURSIVE INFERENCE</span><h3>What changes when a dimension disappears?</h3><p>Each row is a separate logical space. Dependent predicates become inactive; the dimension is not converted to ?.</p>${r.lanes.length ? `<div class="logic-lanes">${r.lanes.map((l) => `<details><summary><span>${esc(l.label)}</span><b>${l.counts.inactive} inactive</b></summary><p>${l.present} coordinates · ${l.maskSpace} mask states · selected vector ${l.focusState?.state.toLowerCase()}.</p><p>${l.affected.length} vector states changed. ${l.retained.length} candidates retain a basis in this lane.</p><button class="text-button" data-logic-exclude="${l.excluded}">Follow this reduced space →</button></details>`).join("")}</div>` : '<p class="logic-note">Sequential mode follows your changed facts below. Select Hybrid to also compare independent exclusion lanes.</p>'}<details><summary>Orientation rotation: ${r.rotations.filter((x) => x.agrees).length} / ${r.rotations.length} canonical results agree</summary><p>Dimensions and their predicates rotate together, then results map back to the original keys. In this ideal model, a coordinate reorder should not change the answer. This checks representation stability; it does not establish bias removal or truth.</p></details>${r.sequential.length ? `<details open><summary>Your sequential walk · ${r.sequential.length} changes</summary><ol class="logic-walk">${r.sequential.map((s) => `<li><b>${esc(dims().find((d) => d.key === s.key)?.label)} → ${s.value === "ABSENT" ? "∅" : s.value}</b><span>${s.maskSpace} · ${s.focusState?.state} · ${s.markedStates} marked assignments</span></li>`).join("")}</ol></details>` : ""}</section>
       <section class="logic-result-card logic-next"><span class="eyebrow">LET THE NEXT QUESTION CHANGE THE ORACLE</span><h3>${r.impacts.find((i) => i.decisive) ? "Resolve the fact that splits this path." : "Challenge the protection, then go deeper."}</h3>${r.impacts
         .filter((i) => i.relevant)
@@ -196,7 +192,7 @@ export function createLogicalLab({
     $("#logic-results").classList.add("recalculating");
     worker?.terminate();
     worker = new Worker(
-      new URL("./logical-worker.mjs?v=1.11.0", import.meta.url),
+      new URL("./logical-worker.mjs?v=1.14.0", import.meta.url),
       { type: "module" },
     );
     const id = ++serial;

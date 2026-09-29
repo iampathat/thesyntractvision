@@ -1,6 +1,7 @@
 // QCDS by Patrik Sundblom. Contributor: ChatGPT (OpenAI). See LICENSE.md.
 // Gate-by-gate CPU simulation. No QPU calls and no device-calibration claim.
-export const QUANTUM_VERSION = "1.0.0";
+import { groverPlan, DEFAULT_ALIGNMENT, NUMERICAL_TOLERANCE } from "./grover-policy.mjs?v=1.0.0";
+export const QUANTUM_VERSION = "1.1.0";
 export const LIMITS = Object.freeze({
   qubits: 8,
   noisyQubits: 6,
@@ -452,183 +453,96 @@ export function openQasm(circuit, gates) {
 }
 
 export function compareExecution(run, raw = {}) {
-  const start = clock(),
-    circuit = compileOracle(run),
-    n = circuit.qubits,
-    width = 2 ** n;
+  const start = clock(), circuit = compileOracle(run), n = circuit.qubits, width = 2 ** n;
   const noise = { ...DEFAULT_NOISE, ...raw.noise };
-  for (const key of ["single", "two", "readout"])
-    if (!Number.isFinite(noise[key]) || noise[key] < 0 || noise[key] > 1)
-      throw new Error("Noise parameters must be between 0 and 1.");
-  const shots = raw.shots ?? 4096,
-    seed = raw.seed ?? 173;
-  if (
-    !Number.isInteger(shots) ||
-    shots < 128 ||
-    shots > 16384 ||
-    !Number.isInteger(seed) ||
-    seed < 0 ||
-    seed > 4294967295
-  )
-    throw new Error("Use 128–16384 shots and an unsigned 32-bit seed.");
-  const fraction = circuit.markedCount / width,
-    theta = Math.asin(Math.sqrt(fraction));
-  const firstPeak =
-    fraction === 0 || fraction === 1
-      ? 0
-      : Math.max(0, Math.floor(Math.PI / (4 * theta)));
-  const iterations =
-    raw.iterations ?? Math.min(run.config?.maxIterations ?? 40, firstPeak);
-  if (!Number.isInteger(iterations) || iterations < 0 || iterations > 40)
-    throw new Error("Choose 0–40 Grover iterations.");
+  for (const key of ['single', 'two', 'readout'])
+    if (!Number.isFinite(noise[key]) || noise[key] < 0 || noise[key] > 1) throw new Error('Noise parameters must be between 0 and 1.');
+  const shots = raw.shots ?? 4096, seed = raw.seed ?? 173;
+  if (!Number.isInteger(shots) || shots < 128 || shots > 16384 || !Number.isInteger(seed) || seed < 0 || seed > 4294967295)
+    throw new Error('Use 128–16384 shots and an unsigned 32-bit seed.');
+  const threshold = raw.threshold ?? DEFAULT_ALIGNMENT;
+  const selection = raw.selection ?? 'ideal';
+  if (!['ideal', 'noisy'].includes(selection)) throw new Error('Choose ideal or noisy iteration selection.');
+  const requested = groverPlan(circuit.markedCount, width, {maxIterations: run.config?.maxIterations ?? 40, threshold});
+  const manual = raw.iterations !== undefined;
+  if (manual && (!Number.isInteger(raw.iterations) || raw.iterations < 0 || raw.iterations > requested.cap))
+    throw new Error(`Choose 0–40 Grover iterations, within this run’s ${requested.cap}-iteration budget.`);
   const cycle = [...circuit.oracle, ...circuit.diffusion];
-  const gates = [
-    ...circuit.preparation,
-    ...Array.from({ length: iterations }, () => cycle).flat(),
-  ];
-  if (gates.length > LIMITS.gates)
-    throw new Error(
-      "This compiled circuit exceeds the browser gate budget. Reduce the iteration count; no partial run was substituted.",
-    );
-  const expected = (t) =>
-    fraction === 0
-      ? 0
-      : fraction === 1
-        ? 1
-        : Math.sin((2 * t + 1) * theta) ** 2;
+  const capFor = gateLimit => cycle.length ? Math.max(0, Math.floor((gateLimit - circuit.preparation.length) / cycle.length)) : 0;
+  const gateCap = capFor(LIMITS.gates);
+  const densityCap = capFor(Math.floor(LIMITS.densityWork / (width * width)));
+  if (manual && raw.iterations > gateCap) throw new Error('This compiled circuit exceeds the browser gate budget. Reduce the iteration count; no partial run was substituted.');
+  if (!manual && selection === 'noisy' && n > LIMITS.noisyQubits) throw new Error(`Noisy selection needs at most ${LIMITS.noisyQubits} interacting qubits. Select the ideal circuit or an explicitly smaller scope.`);
+  const effectiveCap = Math.min(requested.cap, gateCap, !manual && selection === 'noisy' ? densityCap : 40);
+  const plan = groverPlan(circuit.markedCount, width, {maxIterations: effectiveCap, threshold});
+  const constant = plan.initialProbability === 0 || plan.initialProbability === 1;
+  const target = manual ? raw.iterations : constant ? 0 : selection === 'noisy' ? effectiveCap : plan.selected.iteration;
+  const noisyReason = n > LIMITS.noisyQubits
+    ? `The exact noisy simulator supports up to ${LIMITS.noisyQubits} interacting qubits; this circuit needs ${n}.`
+    : target > densityCap ? 'The requested density-matrix run exceeds the browser work budget. Lower the iteration count or use a smaller explicitly scoped oracle.' : null;
   const referenceMs = clock() - start;
-  const noisyReason =
-    n > LIMITS.noisyQubits
-      ? `The exact noisy simulator supports up to ${LIMITS.noisyQubits} interacting qubits; this circuit needs ${n}.`
-      : gates.length * width * width > LIMITS.densityWork
-        ? "The requested density-matrix run exceeds the browser work budget. Lower the iteration count or use a smaller explicitly scoped oracle."
-        : null;
-  const ideal = new Statevector(n),
-    density = noisyReason ? null : new DensityMatrix(n),
-    trace = [];
-  let idealMs = 0,
-    noisyMs = 0;
+  const ideal = new Statevector(n), density = noisyReason ? null : new DensityMatrix(n), trace = [];
+  let idealMs = 0, noisyMs = 0, chosen;
   function apply(batch) {
-    let t = clock();
-    batch.forEach((g) => ideal.apply(g));
-    idealMs += clock() - t;
-    if (density) {
-      t = clock();
-      batch.forEach((g) => {
-        density.apply(g);
-        density.depolarize(
-          g.qubits,
-          g.name === "cx" ? noise.two : noise.single,
-        );
-      });
-      noisyMs += clock() - t;
-    }
+    let t = clock(); batch.forEach(g => ideal.apply(g)); idealMs += clock() - t;
+    if (density) { t = clock(); batch.forEach(g => {density.apply(g); density.depolarize(g.qubits, g.name === 'cx' ? noise.two : noise.single);}); noisyMs += clock() - t; }
   }
   function record(iteration) {
-    const p = ideal.probabilities(),
-      q = density
-        ? readoutChannel(density.probabilities(), n, noise.readout)
-        : null;
-    trace.push({
-      iteration,
-      reference: expected(iteration),
-      ideal: probabilityMass(p, circuit.marked),
-      noisy: q ? probabilityMass(q, circuit.marked) : null,
-    });
+    const p = ideal.probabilities(), q = density ? readoutChannel(density.probabilities(), n, noise.readout) : null;
+    const row = {iteration, reference: requested.trace[iteration].probability, ideal: probabilityMass(p,circuit.marked), noisy: q ? probabilityMass(q,circuit.marked) : null};
+    trace.push(row);
+    if (manual || selection === 'ideal' || !chosen || row.noisy > chosen.row.noisy + 1e-12) chosen = {row,p,q};
+    return !manual && selection === 'noisy' && row.noisy + NUMERICAL_TOLERANCE >= threshold;
   }
   apply(circuit.preparation);
-  record(0);
-  for (let i = 1; i <= iterations; i++) {
-    apply(cycle);
-    record(i);
-  }
-  const p = validateDistribution(ideal.probabilities()),
-    q = density
-      ? validateDistribution(
-          readoutChannel(density.probabilities(), n, noise.readout),
-        )
-      : null;
-  const maxReferenceError = Math.max(
-    ...trace.map((t) => Math.abs(t.reference - t.ideal)),
-  );
-  if (maxReferenceError > 1e-8)
-    throw new Error(
-      "The compiled circuit disagrees with the independent classical reference. Comparison stopped.",
-    );
-  const idealCounts = sample(p, shots, seed),
-    noisyCounts = q ? sample(q, shots, (seed + 1) >>> 0) : null;
+  let reached = record(0);
+  for (let i = 1; i <= target && !reached; i++) {apply(cycle); reached = record(i);}
+  const selected = chosen.row, iterations = selected.iteration;
+  const p = validateDistribution(chosen.p), q = chosen.q ? validateDistribution(chosen.q) : null;
+  const maxReferenceError = Math.max(...trace.map(t => Math.abs(t.reference-t.ideal)));
+  if (maxReferenceError > 1e-8) throw new Error('The compiled circuit disagrees with the independent classical reference. Comparison stopped.');
+  const gates = [...circuit.preparation, ...Array.from({length:iterations}, () => cycle).flat()];
+  const idealCounts = sample(p,shots,seed), noisyCounts = q ? sample(q,shots,(seed+1)>>>0) : null;
   function sampled(counts) {
     if (!counts) return null;
-    const hits = sum(counts.filter((_, i) => circuit.marked[i]));
-    return {
-      shots,
-      hits,
-      successRate: hits / shots,
-      interval95: interval(hits, shots),
-    };
+    const hits = sum(counts.filter((_,i) => circuit.marked[i]));
+    return {shots,hits,successRate:hits/shots,interval95:interval(hits,shots)};
   }
-  const last = trace[trace.length - 1];
+  const reachedFor = value => value !== null && value + NUMERICAL_TOLERANCE >= threshold;
+  const selectedValue = selection === 'noisy' && q ? selected.noisy : selected.ideal;
+  const reason = constant ? plan.reason : manual ? 'fixed_iterations' : reachedFor(selectedValue) ? 'threshold_reached' : effectiveCap < requested.cap ? 'resource_limit' : 'threshold_not_reached';
+  const alignment = {
+    threshold, backend: selection, reached: reachedFor(selectedValue), idealReached: reachedFor(selected.ideal), noisyReached: q ? reachedFor(selected.noisy) : null,
+    reason, selectedIteration: iterations, executedIterations: trace.at(-1).iteration,
+    maxIterations: requested.cap, effectiveCap,
+    executedGateCount: circuit.preparation.length + trace.at(-1).iteration * cycle.length,
+    densityWork: density ? (circuit.preparation.length + trace.at(-1).iteration * cycle.length) * width * width : 0,
+    referenceBestWithinBudget: requested.best,
+    meaning: 'Oracle alignment means calculated accepted-subspace mass reaches the selected threshold. It is not Syntract evidence binding or real-world verification.',
+  };
+  const distribution = p.map((probability,i) => ({bits:n ? i.toString(2).padStart(n,'0') : 'empty',marked:circuit.marked[i],ideal:probability,noisy:q?.[i]??null,idealCount:idealCounts[i],noisyCount:noisyCounts?.[i]??null}));
+  const sampledBackend = q ? 'noisy' : 'ideal';
+  const observed = distribution.filter(x => x.marked && x[`${sampledBackend}Count`] > 0).sort((a,b) => b[`${sampledBackend}Count`] - a[`${sampledBackend}Count`]);
+  const discovery = {
+    status: !n ? (circuit.markedCount ? 'constant_predicate' : 'no_solutions') : observed.length ? 'candidate_found' : 'no_candidate_sampled',
+    backend: sampledBackend, distinctAcceptedOutcomes: observed.length,
+    candidates: observed.map(x => ({bits:x.bits,shots:x[`${sampledBackend}Count`],oracleAccepted:true,assignments:circuit.keys.map((key,i) => ({key,label:circuit.labels[i],value:Number(x.bits[x.bits.length-1-i])}))})),
+    evidenceStatus:run.binding?.status ?? 'UNVERIFIED',
+    meaning:'Observed simulated measurement outcomes checked against the original Boolean oracle. They are compatible assignments to investigate, not observed exploits. Factored coordinates remain unresolved.',
+  };
   return {
-    schema: "qcds-security-lab/quantum-comparison-v1",
-    version: QUANTUM_VERSION,
-    generatedAt: new Date().toISOString(),
-    bindingKey: run.bindingKey,
-    system: run.system,
-    vectorId: run.focus.id,
-    substrate: "CPU statevector + density-matrix simulation; no QPU job",
-    circuit: {
-      ...circuit,
-      gates,
-      metrics: circuitMetrics(gates, n),
-      iterations,
-      iterationSelection:
-        raw.iterations === undefined
-          ? "First ideal peak within the selected budget, using the classical reference count"
-          : "User-selected; identical for every backend",
-    },
-    reference: {
-      fullMaskStates: circuit.fullMaskStates,
-      fullMarkedStates: circuit.fullMarkedStates,
-      initialProbability: fraction,
-      expectedProbability: last.reference,
-      runtimeMs: referenceMs,
-    },
-    ideal: {
-      probability: last.ideal,
-      maxReferenceError,
-      runtimeMs: idealMs,
-      sample: sampled(idealCounts),
-    },
-    noisy: q
-      ? {
-          status: "completed",
-          probability: last.noisy,
-          runtimeMs: noisyMs,
-          sample: sampled(noisyCounts),
-          totalVariationDistance: sum(p.map((v, i) => Math.abs(v - q[i]))) / 2,
-        }
-      : { status: "limited", reason: noisyReason },
-    noise: {
-      ...noise,
-      model:
-        "Local depolarizing channel after each H/X/RZ and CX; independent symmetric readout flips. No device calibration, T1/T2, idle noise or crosstalk.",
-      seed,
-      shots,
-    },
-    trace,
-    distribution: p.map((probability, i) => ({
-      bits: n ? i.toString(2).padStart(n, "0") : "empty",
-      marked: circuit.marked[i],
-      ideal: probability,
-      noisy: q?.[i] ?? null,
-      idealCount: idealCounts[i],
-      noisyCount: noisyCounts?.[i] ?? null,
-    })),
-    interpretation:
-      "Success means measuring an assignment accepted by this declared oracle. It is not evidence of an exploit, truth or a quantum speedup. Classical counting, statevector simulation and density-matrix simulation have different costs.",
-    bitOrder:
-      "Little endian: q[0] is the rightmost bit. Every reduced-register outcome is exported; factored spectator coordinates are listed separately.",
-    runtimeMs: clock() - start,
+    schema:'qcds-security-lab/quantum-comparison-v1',version:QUANTUM_VERSION,generatedAt:new Date().toISOString(),bindingKey:run.bindingKey,system:run.system,vectorId:run.focus.id,
+    substrate:'CPU statevector + density-matrix simulation; no QPU job',
+    circuit:{...circuit,gates,metrics:circuitMetrics(gates,n),iterations,iterationSelection:manual ? 'User-selected iteration; identical for every backend' : `Earliest ${selection} result reaching ${(threshold*100).toFixed(1)}%, otherwise the earliest best within ${effectiveCap} iterations. Both circuits below use that same selected iteration.`},
+    alignment,discovery,
+    reference:{fullMaskStates:circuit.fullMaskStates,fullMarkedStates:circuit.fullMarkedStates,initialProbability:plan.initialProbability,expectedProbability:selected.reference,runtimeMs:referenceMs},
+    ideal:{probability:selected.ideal,maxReferenceError,runtimeMs:idealMs,sample:sampled(idealCounts)},
+    noisy:q ? {status:'completed',probability:selected.noisy,runtimeMs:noisyMs,sample:sampled(noisyCounts),totalVariationDistance:sum(p.map((v,i) => Math.abs(v-q[i])))/2} : {status:'limited',reason:noisyReason},
+    noise:{...noise,model:'Local depolarizing channel after each H/X/RZ and CX; independent symmetric readout flips. No device calibration, T1/T2, idle noise or crosstalk.',seed,shots},
+    trace,distribution,
+    interpretation:'Success means measuring an assignment accepted by this declared oracle. It is not evidence of an exploit, truth or a quantum speedup. Simulation selection can inspect intermediate distributions; a physical QPU would require separate measurement runs.',
+    bitOrder:'Little endian: q[0] is the rightmost bit. Every reduced-register outcome is exported; factored spectator coordinates are listed separately.',
+    runtimeMs:clock()-start,
   };
 }
 
@@ -639,7 +553,9 @@ export function comparisonMarkdown(r) {
       `Author: Patrik Sundblom. Contributor: ChatGPT (OpenAI).`,
       `System: ${r.system}. Vector: ${r.vectorId}.`,
       r.substrate,
-      `Same oracle, ${r.circuit.qubits} interacting qubits, ${r.circuit.iterations} Grover iterations.`,
+      `Oracle alignment: ${r.alignment.reached ? "threshold reached" : "threshold not reached"} on ${r.alignment.backend}; target ${r.alignment.threshold}; selected iteration ${r.circuit.iterations}, explored ${r.alignment.executedIterations}, cap ${r.alignment.maxIterations}.`,
+    `${r.discovery.distinctAcceptedOutcomes} distinct accepted outcomes found in ${r.discovery.backend} samples. ${r.discovery.meaning}`,
+    `Same oracle, ${r.circuit.qubits} interacting qubits, ${r.circuit.iterations} Grover iterations.`,
       `Full mask: ${r.reference.fullMarkedStates} marked / ${r.reference.fullMaskStates} states.`,
       `Reference: ${r.reference.expectedProbability}. Ideal circuit: ${r.ideal.probability}. Maximum discrepancy: ${r.ideal.maxReferenceError}.`,
       r.noisy.status === "completed"

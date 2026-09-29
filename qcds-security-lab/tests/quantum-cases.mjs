@@ -43,6 +43,9 @@ export function fixture({
   });
 }
 export const cases = [
+  { name: "noisy_threshold", spec: {count:2}, options: {selection:"noisy",noise:{single:0.0001,two:0.001,readout:0.001}} },
+  { name: "noisy_best_checkpoint", spec: {count:3}, options: {selection:"noisy"} },
+  { name: "unreachable_half", spec: {count:1}, options: {} },
   { name: "and3", spec: { count: 3 }, options: {} },
   {
     name: "or_and_barrier",

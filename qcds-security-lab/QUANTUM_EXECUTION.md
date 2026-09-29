@@ -1,6 +1,6 @@
 # One oracle, three executions
 
-QCDS Security Lab 1.13.0 · quantum executor 1.0.0  
+QCDS Security Lab 1.14.0 · quantum executor 1.1.0
 QCDS by Patrik Sundblom. Contributor: ChatGPT (OpenAI). [License](./LICENSE.md).
 
 The browser now runs actual small quantum circuits on the CPU. It does not
@@ -67,12 +67,27 @@ or device-wide idle behaviour.
 states. A constant predicate needs no quantum circuit; the UI asks the user to
 reopen relevant assumptions before running a circuit comparison.
 
-By default, the comparator chooses the first ideal peak within the selected
-iteration budget using the classical count. This is an informed simulation
-comparison, not a count-free quantum search algorithm. The optional formula
-explorer instead finds the best value anywhere in the finite budget. Users
-can set 0–40 iterations explicitly. All three executions use the same count;
-the noisy circuit is not independently optimized or error-mitigated.
+Auto selects the first iteration reaching **95% accepted-subspace mass**, up
+to **40 iterations**. If no iteration reaches the target, it retains the earliest
+best result and explicitly reports `threshold_not_reached`. Numerical comparisons
+allow `1e-10` floating-point tolerance. Manual counts must fit the selected budget.
+The symbolic formula explorer uses the same policy. This is informed simulation
+using exact classical counts, not a count-free quantum search algorithm.
+
+Select **Noisy circuit** to search actual noisy checkpoints within the density
+work budget. It stops on reaching the target or keeps its best evaluated
+checkpoint. Circuit exports, gates, shots and all three comparison bars use that
+same selected iteration. `executedIterations` and `executedGateCount` also expose
+the cost of searching later checkpoints. Resource limits may stop before 40.
+The predicate and noise are never changed to manufacture alignment.
+
+**Configurations found** lists assignments actually present in the simulated
+shot counts and accepted by the original oracle. These are logical candidates,
+not discovered vulnerabilities. Unused factored dimensions remain unresolved;
+fixed facts remain attached to the circuit export. Sampled candidates do not
+change evidence or Syntract binding. For example, a three-qubit AND reaches
+95% at iteration 6 rather than its first peak at iteration 2; with default noise
+the best noisy checkpoint is instead iteration 2 and does not reach 95%.
 
 ## Noise model
 
@@ -123,10 +138,11 @@ release validates a specific binary predicate family on CPU simulators.
 
 ## Reproduce the independent checks
 
-The repository contains five independent Qiskit/Aer fixtures: AND; OR with a
+The repository contains eight independent Qiskit/Aer fixtures: AND; OR with a
 negative control barrier; fixed facts plus uniform spectators; a six-qubit
 noisy circuit; and an eight-qubit ideal circuit with an explicit noisy limit.
-Every outcome is compared, not just total success mass.
+Additional fixtures verify a reachable noisy threshold, an earlier noisy checkpoint,
+and an unreachable half-marked target. Every outcome is compared, not just total success mass.
 
 Verified distributions agree within `1e-8`; observed maximum ideal error is
 below `6e-14` and maximum noisy error below `4e-15` for these fixtures. Golden

@@ -11,7 +11,27 @@ LLMs and other predictive models can assist with interpretation, question genera
 
 > **Commercial license required.** Public visibility does not grant a right to use, copy, modify, deploy, benchmark, train on, integrate, distribute or commercialize this material.
 
-## Workspace v1.13.0
+## Consumer app v1.14.0
+
+Q Security now opens on a focused Home screen. Create personal, business, app or
+AI investigations without replacing previous cases. Each case preserves its
+place in the five questions. My investigations supports independent copies,
+archive/restore and complete workspace backups. Imported projects get new IDs.
+Facts start unknown and example evidence is never copied into a personal case.
+
+The web app installs to the home screen and caches its complete local engine,
+workers and PDF assets for offline use. Updates require an explicit Update tap.
+Android and iOS package the same assets through Capacitor, use native file sharing
+and keep their own local workspace. No account or subscription backend is implied.
+See [native build and store handoff](./MOBILE_RELEASE.md).
+
+Grover auto-selection uses a 95% target and at most 40 iterations. A noisy mode
+selects real density-matrix checkpoints, with explicit work limits and honest
+unreachable-target reporting. Eight independent Qiskit/Aer cases verify the
+selected circuits. Candidate assignments must appear in the sampled counts and
+pass the original oracle. They do not become vulnerability evidence.
+
+## Quantum execution introduced in v1.13.0
 
 **Compare classical, ideal & noisy execution** now compiles the selected
 binary oracle into H/X/RZ/CX gates, executes an ideal statevector and a noisy
