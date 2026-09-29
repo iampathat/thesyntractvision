@@ -11,7 +11,7 @@ import {
   validateProject,
   markdown,
 } from "./engine.mjs?v=1.13.0";
-import { createLogicalLab, researchLaunch } from "./logical-lab.js?v=1.13.0";
+import { createLogicalLab, researchLaunch } from "./logical-lab.js?v=1.13.0.1";
 import { downloadSecurityPdf } from "./report-export.js?v=1.0.0";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);

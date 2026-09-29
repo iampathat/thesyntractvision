@@ -14,7 +14,9 @@ const esc = (value) =>
         c
       ],
   );
-const percent = (value) => `${(value * 100).toFixed(2)}%`;
+// Remove sub-picoprobability floating-point drift before display rounding.
+// Raw exported probabilities and comparisons remain untouched.
+const percent = (value) => `${(Math.round(value * 1e12) / 1e10).toFixed(2)}%`;
 const count = (value) => Number(value).toLocaleString("en-US");
 
 function chart(result) {
@@ -114,7 +116,7 @@ export function createQuantumPanel({ dialog, getRun, onComparison }) {
     const form = el.querySelector("form"),
       status = el.querySelector("[data-quantum-status]"),
       output = el.querySelector("[data-quantum-results]");
-    form.addEventListener("change", (e) => {
+    form.addEventListener("input", (e) => {
       if (!(e.target.name in options)) return;
       options[e.target.name] = e.target.value;
       if (current) {

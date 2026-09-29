@@ -3,7 +3,7 @@ import {
   normalizeResearch,
   dimensionMarkdown,
 } from "./logical-space.mjs?v=1.11.0";
-import { createQuantumPanel } from "./quantum-panel.js?v=1.0.0";
+import { createQuantumPanel } from "./quantum-panel.js?v=1.0.1";
 import { comparisonMarkdown } from "./quantum-compare.mjs?v=1.0.0";
 const esc = (s) =>
   String(s ?? "").replace(
