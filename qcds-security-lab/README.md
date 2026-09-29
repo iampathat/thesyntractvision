@@ -11,7 +11,23 @@ LLMs and other predictive models can assist with interpretation, question genera
 
 > **Commercial license required.** Public visibility does not grant a right to use, copy, modify, deploy, benchmark, train on, integrate, distribute or commercialize this material.
 
-## Workspace v1.12.0
+## Workspace v1.13.0
+
+**Compare classical, ideal & noisy execution** now compiles the selected
+binary oracle into H/X/RZ/CX gates, executes an ideal statevector and a noisy
+density matrix, and checks the ideal answer against exact classical counts.
+The comparison is inside **Run dimensional inference**, with noise settings
+and detailed outcomes folded away. It exports complete comparison JSON,
+OpenQASM and a readable report. The simulator is independently checked against
+Qiskit 2.1.2 / Aer 0.17.1; no QPU is connected. Limits are 8 ideal / 6 noisy
+interacting qubits, with explicit circuit budgets and no silent truncation.
+See [QUANTUM_EXECUTION.md](./QUANTUM_EXECUTION.md) for the complete model,
+coordinate reduction, resource limits and reproducible verification.
+
+The Q introduction now stays for **3.5 seconds**, with immediate skip and
+reduced-motion support.
+
+### Designed reports (introduced in v1.12)
 
 **Download designed PDF** creates an A4 report directly on the device. The
 report includes a decision brief, a six-sector radar, framework and category
@@ -41,7 +57,7 @@ control predicates. Observations bind to the exact resulting scope; STRIDE
 and OWASP project the same changed vector states. The full run and compressed
 distributions export as JSON, with a plain-language Markdown report.
 
-The two-second Q Security Lab introduction is built with CSS 3D and SVG.
+The 3.5-second Q Security Lab introduction is built with CSS 3D and SVG.
 It has an immediate entry button, reduced-motion behavior and an independent
 timeout, so it cannot hold the workspace behind an unfinished animation.
 
@@ -105,11 +121,11 @@ The catalog is extensible and finite. It is an implementation surface for QCDS, 
 
 ### Execution scale and quantum path
 
-The browser release is an inspectable classical implementation. QCDS itself is not tied to that substrate.
+The browser release runs symbolic classical analysis and small ideal/noisy circuit simulations on the CPU. QCDS architecture can target other substrates, but each requires its own validated encoding and executor.
 
 For large unresolved logical spaces, QCDS can map candidate states onto a quantum basis, apply logical Oracles to mark or phase candidate states, amplify surviving structure and combine **parallel, sequential and hybrid** inference branches before Truth-Alignment Verification. In a quantum representation, `n` qubits expose a `2^n` basis-state space; the QCDS mask and Oracles determine which parts of that space remain relevant.
 
-This document distinguishes that execution architecture from what the current browser actually runs: the browser demonstrates the QCDS logic and vector fabric but does not claim to execute a NISQ/Grover backend.
+This document distinguishes the execution architecture from the current browser: it now executes small Grover circuits in local CPU simulation with an explicit noise model. It does not connect to a NISQ device or claim hardware speedup.
 
 ### Perspectives are projections over the vector fabric
 
@@ -170,7 +186,7 @@ The trace follows the same candidate route through:
 - control → bypass challenge
 - Truth-Alignment Verification
 
-The browser release demonstrates this inspectable logic. It does not execute Grover amplification, autonomous real-world scanning or automatic verification tests.
+The browser release demonstrates this inspectable logic. It can simulate small Grover circuits locally, but does not run autonomous real-world scanning, automatic security verification tests or hardware QPU jobs.
 
 ## Implemented contract
 

@@ -70,8 +70,11 @@ membership graph, exact cardinalities, fixed-coordinate mask, marked and
 unmarked total masses, and per-state probabilities within each subspace.
 Nothing is discarded to a top-k list. Probability arithmetic uses JavaScript
 floating point; state counts are exact. The formula is an ideal classical
-reference calculation; there is no QPU/NISQ connection, quantum execution,
-noise model, quantum speedup measurement or claim of a measured vulnerability.
+reference calculation. The separate [execution comparator](./QUANTUM_EXECUTION.md)
+compiles the same predicate into a small ideal/noisy quantum circuit and
+simulates it gate by gate on the CPU. There is no QPU/NISQ connection, quantum
+speedup measurement or claim of a measured vulnerability. The symbolic
+engine’s formula remains separate from that simulator.
 
 Reference: [IBM Quantum — Grover analysis](https://quantum.cloud.ibm.com/learning/en/courses/fundamentals-of-quantum-algorithms/grover-algorithm/analysis).
 

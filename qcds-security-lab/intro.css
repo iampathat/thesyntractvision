@@ -8,7 +8,7 @@
   display: grid;
   place-items: center;
   isolation: isolate;
-  animation: q-depart 0.3s 1.7s forwards;
+  animation: q-depart 0.3s 3.2s forwards;
 }
 .security-intro:before {
   content: "";
@@ -193,7 +193,7 @@
   height: 100%;
   background: linear-gradient(90deg, #67e2d8, #c4ff4c);
   transform-origin: left;
-  animation: q-progress 1.7s cubic-bezier(0.2, 0.5, 0.35, 1) both;
+  animation: q-progress 3.2s cubic-bezier(0.2, 0.5, 0.35, 1) both;
 }
 @keyframes q-depart {
   to {

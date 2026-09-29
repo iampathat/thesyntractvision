@@ -1,0 +1,215 @@
+/* QCDS by Patrik Sundblom. Local execution comparison. */
+.quantum-card {
+  border-color: #426962;
+  background: linear-gradient(145deg, #162b2d, #111c24 70%);
+}
+#logical-lab .quantum-panel > summary {
+  color: #c4ff70;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 16px 0;
+}
+.quantum-body {
+  min-width: 0;
+}
+.quantum-body p {
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.quantum-scope {
+  padding: 14px;
+  border-left: 2px solid #8be9df;
+  background: #182f34;
+}
+.quantum-body fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.quantum-body fieldset:disabled {
+  opacity: 0.5;
+}
+.quantum-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  padding: 10px 0;
+}
+.quantum-run {
+  width: 100%;
+  margin-top: 14px;
+  justify-content: space-between;
+  white-space: normal;
+  text-align: left;
+}
+.quantum-status {
+  color: #b9e8d7;
+}
+.quantum-status:empty {
+  display: none;
+}
+.quantum-result-heading {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid #3c5759;
+}
+.quantum-result-heading h4 {
+  font-size: 23px;
+  letter-spacing: -0.035em;
+  margin: 8px 0;
+}
+.quantum-result-heading p {
+  color: #a8beca;
+}
+.quantum-bars {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+  border: 1px solid #35565b;
+  border-radius: 12px;
+  background: #0b191f;
+}
+.quantum-bar > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 13px;
+  margin-bottom: 9px;
+}
+.quantum-bar b {
+  font:
+    600 21px ui-monospace,
+    monospace;
+}
+.quantum-track {
+  height: 10px;
+  border-radius: 4px;
+  background: #23353f;
+  overflow: hidden;
+}
+.quantum-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+.quantum-bar.reference b {
+  color: #bcff69;
+}
+.quantum-bar.reference .quantum-track > span {
+  background: #bcff69;
+}
+.quantum-bar.ideal b {
+  color: #9ae1ff;
+}
+.quantum-bar.ideal .quantum-track > span {
+  background: #9ae1ff;
+}
+.quantum-bar.noisy b {
+  color: #ffbd69;
+}
+.quantum-bar.noisy .quantum-track > span {
+  background: #ffbd69;
+}
+.quantum-verdict {
+  padding: 16px;
+  border: 1px solid #455e50;
+  border-radius: 8px;
+  background: #1a2d29;
+}
+.quantum-verdict > b {
+  display: block;
+  color: #d0eec5;
+  margin-bottom: 4px;
+}
+.quantum-body [data-quantum-results] > details {
+  border-top: 1px solid #30474f;
+}
+.quantum-trace {
+  width: 100%;
+  height: auto;
+  margin-top: 12px;
+}
+.quantum-trace text {
+  font:
+    11px ui-monospace,
+    monospace;
+  fill: #adc0cb;
+}
+.quantum-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-size: 11px !important;
+}
+.quantum-legend span:nth-child(1) {
+  color: #bcff69;
+}
+.quantum-legend span:nth-child(2) {
+  color: #9ae1ff;
+}
+.quantum-legend span:nth-child(3) {
+  color: #ffbd69;
+}
+.quantum-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 14px 0;
+  border: 1px solid #30474f;
+  border-radius: 8px;
+}
+.quantum-table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  text-align: left;
+}
+.quantum-table-wrap th,
+.quantum-table-wrap td {
+  padding: 10px;
+  border-bottom: 1px solid #293e49;
+  white-space: nowrap;
+}
+.quantum-table-wrap thead {
+  color: #a2bdc9;
+  background: #162931;
+}
+.quantum-table-wrap tbody th {
+  font-weight: 500;
+}
+.quantum-coordinates {
+  padding-left: 20px;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.quantum-coordinates code {
+  color: #baff65;
+}
+.quantum-exports {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 20px;
+}
+@media (max-width: 600px) {
+  .quantum-fields {
+    grid-template-columns: 1fr;
+  }
+  .quantum-bars {
+    padding: 16px 12px;
+  }
+  .quantum-bar > div:first-child {
+    font-size: 12px;
+  }
+  .quantum-bar b {
+    font-size: 19px;
+  }
+  .quantum-exports > .button {
+    width: 100%;
+  }
+  .quantum-result-heading h4 {
+    font-size: 21px;
+  }
+}

@@ -1,4 +1,4 @@
-// A two-second introduction, independent of the application boot path.
+// A 3.5-second introduction, independent of the application boot path.
 (() => {
   const intro = document.querySelector("#security-intro");
   if (!intro) return;
@@ -13,6 +13,6 @@
   document.addEventListener("keydown", escape);
   setTimeout(
     finish,
-    matchMedia("(prefers-reduced-motion: reduce)").matches ? 200 : 2000,
+    matchMedia("(prefers-reduced-motion: reduce)").matches ? 200 : 3500,
   );
 })();

@@ -10,8 +10,8 @@ import {
   analyze,
   validateProject,
   markdown,
-} from "./engine.mjs?v=1.12.0";
-import { createLogicalLab, researchLaunch } from "./logical-lab.js?v=1.11.0";
+} from "./engine.mjs?v=1.13.0";
+import { createLogicalLab, researchLaunch } from "./logical-lab.js?v=1.13.0";
 import { downloadSecurityPdf } from "./report-export.js?v=1.0.0";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
@@ -573,7 +573,7 @@ const GUIDE_STEPS = [
       "A deeper control-and-failure chain with a concrete test for the next boundary.",
     why: "‘We added approval’ is only a proposal. The recursive question is: what has to be true for that approval to fail?",
     architecture:
-      "In the broader QCDS architecture, oracle-constrained candidates are amplified — using Grover in the quantum realization — and challenged again through recursive cycles. This browser workspace demonstrates the explicit path, control and exclusion logic; it does not execute Grover amplification.",
+      "In the broader QCDS architecture, oracle-constrained candidates are amplified — using Grover in the quantum realization — and challenged again through recursive cycles. Open dimensional inference to compare the same oracle through exact classical counts, an ideal quantum circuit and a noisy circuit. All three run locally on the CPU; no QPU is connected.",
     kind: "loop",
     flow: ["Possible path", "Proposed control", "Failure question"],
     route: "findings",
@@ -1512,7 +1512,7 @@ function learnView() {
       "One question. More than one way to look.",
       "Keep the same system in view. Change the perspective, question an assumption, follow what survives and test it.",
     ) +
-    `<section class="panel question-card"><h2>The five questions</h2><ol class="plain-question-list">${QUESTION_STEPS.map((q, i) => `<li><a href="${investigationHref(i + 1)}">${q.title}</a></li>`).join("")}</ol><p>Different views can reveal different dependencies. QCDS connects those questions into a path you can challenge, deepen and bind to evidence.</p></section><section class="plain-topic-list">${GUIDE_STEPS.map((step, i) => `<details class="panel"><summary>${step.title}</summary><div><p>${step.explanation}</p><div class="guide-example"><span class="eyebrow">FOR EXAMPLE</span><p>${step.example}</p></div><p><b>Why:</b> ${step.why}</p>${step.architecture ? `<p>${step.architecture}</p>` : ""}</div></details>`).join("")}</section><details class="panel question-card"><summary>Authorship, implementation & license</summary><p>QCDS by Patrik Sundblom. Assistant contributor: ChatGPT (OpenAI).</p><p>This browser lab uses core 1 / 0 / ? system facts as constraints, expands them into a much larger attack-vector fabric across attack mechanisms, route variants and targets, projects surviving vectors into security frameworks, rotates perspectives, walks dimensions, recursively challenges converged route families and binds observations to exact system snapshots. Core C-values are not the attack catalog. It does not execute Grover amplification, run autonomous security scans or independently certify evidence.</p><p>New Security Lab material requires a separate commercial license. Earlier QCDS material retains its original grants.</p><a class="text-link" href="./METHODOLOGY.md">Full methodology →</a><a class="text-link" href="./LICENSE.md">Commercial license →</a></details>`
+    `<section class="panel question-card"><h2>The five questions</h2><ol class="plain-question-list">${QUESTION_STEPS.map((q, i) => `<li><a href="${investigationHref(i + 1)}">${q.title}</a></li>`).join("")}</ol><p>Different views can reveal different dependencies. QCDS connects those questions into a path you can challenge, deepen and bind to evidence.</p></section><section class="plain-topic-list">${GUIDE_STEPS.map((step, i) => `<details class="panel"><summary>${step.title}</summary><div><p>${step.explanation}</p><div class="guide-example"><span class="eyebrow">FOR EXAMPLE</span><p>${step.example}</p></div><p><b>Why:</b> ${step.why}</p>${step.architecture ? `<p>${step.architecture}</p>` : ""}</div></details>`).join("")}</section><details class="panel question-card"><summary>Authorship, implementation & license</summary><p>QCDS by Patrik Sundblom. Assistant contributor: ChatGPT (OpenAI).</p><p>This browser lab uses core 1 / 0 / ? system facts as constraints, expands them into a much larger attack-vector fabric across attack mechanisms, route variants and targets, projects surviving vectors into security frameworks, rotates perspectives, walks dimensions, recursively challenges converged route families and binds observations to exact system snapshots. Core C-values are not the attack catalog. It also simulates small ideal and noisy Grover circuits locally. It does not connect to a QPU, run autonomous security scans or independently certify evidence.</p><p>New Security Lab material requires a separate commercial license. Earlier QCDS material retains its original grants.</p><a class="text-link" href="./METHODOLOGY.md">Full methodology →</a><a class="text-link" href="./LICENSE.md">Commercial license →</a></details>`
   );
 }
 function view() {
