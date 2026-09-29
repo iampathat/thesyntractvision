@@ -313,7 +313,7 @@ jobs:
           grep -F 'QCDS Security Lab' _site/qcds-security-lab/index.html
           test -s _site/qcds-security-lab/engine.mjs
           test -s _site/qcds-security-lab/assets/favicon.svg
-          grep -F 'COMMERCIAL LICENSE REQUIRED' _site/qcds-security-lab/app.js
+          grep -F 'href="./LICENSE.md"' _site/qcds-security-lab/app.js
           grep -F 'Model-assisted interviewer' _site/qcds-security-lab/app.js
           grep -F 'System & 1 / 0 / ? inputs' _site/qcds-security-lab/app.js
           grep -F 'Explain current path' _site/qcds-security-lab/app.js
@@ -325,8 +325,8 @@ jobs:
           grep -F 'conditionalRoutes' _site/qcds-security-lab/engine.mjs
           grep -F 'recursiveInference' _site/qcds-security-lab/engine.mjs
           grep -F 'WORKED EXAMPLE LOADED' _site/qcds-security-lab/app.js
-          grep -F 'THE 5-STEP FLOW' _site/qcds-security-lab/app.js
-          grep -F 'EXPLORE THE SAME EXAMPLE' _site/qcds-security-lab/app.js
+          grep -F 'Current position: step' _site/qcds-security-lab/consumer-ui.js
+          grep -F 'Try a complete example' _site/qcds-security-lab/consumer-ui.js
           grep -F 'Load example everywhere' _site/qcds-security-lab/app.js
           grep -F 'WORKED_EXAMPLE_EVIDENCE' _site/qcds-security-lab/engine.mjs
           test -s _site/qcds-security-lab/attack-vectors.mjs
