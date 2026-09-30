@@ -235,7 +235,12 @@ jobs:
           grep -F 'QCDS CANCER LAB' _site/qcds-cancer-lab/index.html
           grep -F '128 → 8 → 1' _site/qcds-cancer-lab/index.html
           grep -F 'Company / organizational use requires a separate license.' _site/qcds-cancer-lab/index.html
-          grep -F 'No ? is required' _site/qcds-cancer-lab/index.html || true
+          grep -F 'LIVE QCDS WORKBENCH' _site/qcds-cancer-lab/index.html
+          grep -F 'RUN QCDS' _site/qcds-cancer-lab/index.html
+          grep -F 'function runQCDS' _site/qcds-cancer-lab/app.js
+          grep -F 'PARALLEL_BRANCHES = 128' _site/qcds-cancer-lab/app.js
+          grep -F 'MAX_GROVER_ITERS = 40' _site/qcds-cancer-lab/app.js
+          node --check _site/qcds-cancer-lab/app.js
 
       - name: Build isolated Cally.One Pages surface from tribute
         run: |
