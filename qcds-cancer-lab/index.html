@@ -84,7 +84,7 @@
         <article class="step cyan"><i>01</i><h3>Logic state</h3><p>Observed facts bind dimensions to <b>0</b> or <b>1</b>. Unresolved dimensions remain <b>?</b>.</p><div class="viz states" id="maskViz"></div></article>
         <article class="step violet"><i>02</i><h3>Syntract</h3><p>The active context determines which dimensions, relations and constraints are meaningful here.</p><div class="rings"><span></span><span></span><span></span><b>context</b></div></article>
         <article class="step magenta"><i>03</i><h3>Top-down oracles</h3><p>Human knowledge, data and LLM assistance propose testable oracle hypotheses. QCDS tests them.</p><div class="oracle-stack"><b>O₀</b><b>O₁</b><b>O₂</b><b>…</b></div></article>
-        <article class="step blue"><i>04</i><h3>Parallel + rotation</h3><p>128 perspectives rotate logical dimensions and exclude them in turn to test dimensional influence.</p><div class="orbit"><b>128</b><span></span><span></span><span></span><span></span></div></article>
+        <article class="step blue"><i>04</i><h3>Parallel + rotation</h3><p>Sixteen unique balanced input rotations move every semantic dimension through every oracle position twice. The same oracle bank stays fixed on every lane; true-null exclusion is tested separately.</p><div class="orbit"><b>128</b><span></span><span></span><span></span><span></span></div></article>
         <article class="step gold"><i>05</i><h3>128 → 8 → 1 funnel</h3><p>Parallel breadth becomes sequential depth: eight true-null families are Syntract-bound into one higher-order inference node, followed by a fresh Parent Grover.</p><div class="funnel"><div class="f128">128</div><div class="f8">8</div><div class="f1">1</div></div></article>
         <article class="step green"><i>06</i><h3>Recursive return</h3><p>Stable structure becomes a new oracle. The next pass starts with stronger logic.</p><div class="loop">S₁ → O₁ → S₂ → O₂ → …</div></article>
       </div>
@@ -120,7 +120,7 @@
         <section class="control-panel">
           <div class="panel-title"><span>02</span><div><small>TOP-DOWN</small><strong>Oracle hypotheses</strong></div></div>
           <div id="oracleControls" class="oracle-controls"></div>
-          <p class="hint">These masks are research/demo hypotheses, not clinical rules. Disable any oracle to see whether the inferred structure depends on it.</p>
+          <p class="hint">These masks are research/demo oracle templates, not clinical rules. The exact same enabled oracle bank is applied to every rotated input lane; only the input-to-position mapping changes.</p>
         </section>
 
         <section class="control-panel run-panel">
@@ -132,7 +132,7 @@
             <label><span>Recursive depth</span>
               <select id="depthSelect"><option>1</option><option>2</option><option selected>3</option><option>4</option></select>
             </label>
-            <label><span>Rotation banks</span><strong>16</strong></label>
+            <label><span>Unique balanced rotations</span><strong>16</strong></label>
           </div>
           <button id="runButton" class="run-button"><span>▶</span> RUN QCDS</button>
           <div class="run-state" id="runState">Ready. No target state is supplied to the engine.</div>
@@ -143,7 +143,7 @@
         <div class="results-running" id="resultsRunning" hidden>
           <div class="result-orb spin">Q</div>
           <h3>QCDS is running.</h3>
-          <p>128 perspectives are being rotated, excluded and funneled into eight families and one consensus.</p>
+          <p>128 lanes are running: 16 unique input rotations × 8 true-null exclusions, all through the same oracle bank.</p>
         </div>
 
         <div class="results-empty" id="resultsEmpty">
