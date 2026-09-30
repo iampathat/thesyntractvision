@@ -241,6 +241,8 @@ jobs:
           grep -F 'PARALLEL_LANES = ROTATION_BANKS * LANES_PER_BANK' _site/qcds-cancer-lab/qcds-core.js
           grep -F 'function runGrover' _site/qcds-cancer-lab/qcds-core.js
           grep -F 'function parentGrover' _site/qcds-cancer-lab/qcds-core.js
+          grep -F 'function rotationOrder' _site/qcds-cancer-lab/qcds-core.js
+          grep -F 'Every rotated lane receives the SAME oracle bank.' _site/qcds-cancer-lab/qcds-core.js
           if grep -F 'stableConsensus' _site/qcds-cancer-lab/app.js _site/qcds-cancer-lab/qcds-core.js; then
             echo 'Forbidden simplified consensus shortcut found'
             exit 1
