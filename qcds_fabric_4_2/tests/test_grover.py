@@ -26,3 +26,15 @@ def test_no_marks_remains_uniform_and_visible():
     assert run.iterations == 0
     assert run.marked_mass == 0.0
     assert abs(run.top_probability - 1 / 128) < 1e-12
+
+
+def test_first_tangent_not_later_periodic_recurrence():
+    # N=128,M=1 has a later near-perfect recurrence around m=26.
+    # QCDS must stop at the first Grover tangent, m=8.
+    assert peak_iteration_count(128, 1, max_iterations=40) == 8
+
+
+def test_iteration_count_is_not_hard_coded_to_twelve():
+    # N=256,M=2 reaches its first tangent at m=8, not 12 and not
+    # the later periodic recurrence around m=26.
+    assert peak_iteration_count(256, 2, max_iterations=40) == 8
