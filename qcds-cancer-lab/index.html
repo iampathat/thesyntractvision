@@ -35,7 +35,7 @@
       <div class="hero-copy">
         <div class="eyebrow">QCDS CANCER LAB · LIVE RECURSIVE INFERENCE</div>
         <h1>From unresolved biology<br><em>to recursive logic.</em></h1>
-        <p class="lede">This page now runs the research engine in-browser. Set the logical state, select top-down oracle hypotheses, and run the 128 → 8 → 1 funnel. No target answer is hard-coded.</p>
+        <p class="lede">This page runs the QCDS cancer engine in-browser. Set the Condition, select top-down oracle hypotheses, and run 128 true-null QCDS lanes → 8 rotational Syntract families → 1 bound Syntract → fresh Parent Grover. No target answer is hard-coded.</p>
         <div class="hero-actions">
           <a class="primary" href="#workbench">Run QCDS now</a>
           <a href="./LICENSE.md">License</a>
@@ -94,7 +94,7 @@
       <div class="section-head">
         <span>LIVE QCDS WORKBENCH</span>
         <h2>Run the cancer Syntract in your browser.</h2>
-        <p class="section-copy">This is the experiment surface—not a list of source files. The browser executes the same bounded logical architecture: compatible-state expansion, oracle scoring, Grover-style amplitude amplification, dimension exclusion, physical-position rotation/noise, 128→8→1 consensus and recursive oracle creation.</p>
+        <p class="section-copy">This is the experiment surface—not a list of source files. The browser port uses the same QCDS primitives as the reference engine: true dimension nulling, exact bounded Grover, full-distribution Rotational Syntract Bind, fresh Parent Grover, recursive oracle return and the multi-signal stability gate.</p>
       </div>
 
       <div class="bench-grid">
@@ -132,9 +132,7 @@
             <label><span>Recursive depth</span>
               <select id="depthSelect"><option>1</option><option>2</option><option selected>3</option><option>4</option></select>
             </label>
-            <label><span>Shots / perspective</span>
-              <select id="shotsSelect"><option>256</option><option selected>512</option><option>1024</option><option>2048</option></select>
-            </label>
+            <label><span>Rotation banks</span><strong>16</strong></label>
           </div>
           <button id="runButton" class="run-button"><span>▶</span> RUN QCDS</button>
           <div class="run-state" id="runState">Ready. No target state is supplied to the engine.</div>
@@ -156,15 +154,15 @@
 
         <div class="results-live" id="resultsLive" hidden>
           <div class="result-head">
-            <div><small>CONSENSUS STATE</small><strong id="finalState">—</strong></div>
-            <div><small>CONSENSUS PROBABILITY</small><strong id="finalP">—</strong></div>
-            <div><small>DERIVED LOGIC</small><strong id="finalLogic">—</strong></div>
+            <div><small>PARENT GROVER STATE</small><strong id="finalState">—</strong></div>
+            <div><small>PARENT GROVER PROBABILITY</small><strong id="finalP">—</strong></div>
+            <div><small>BOUND LOGIC</small><strong id="finalLogic">—</strong></div>
             <div><small>ROUNDS EXECUTED</small><strong id="roundCount">—</strong></div>
           </div>
 
           <div class="result-grid">
             <article class="result-card">
-              <div class="result-title">Recursive convergence</div>
+              <div class="result-title">Recursive QCDS return</div>
               <div id="roundTimeline" class="round-timeline"></div>
             </article>
             <article class="result-card">
@@ -175,7 +173,7 @@
           </div>
 
           <article class="result-card distribution-card">
-            <div class="result-title">Final consensus distribution · top states</div>
+            <div class="result-title">Final Parent-Grover distribution · mapped states</div>
             <div id="distributionChart" class="distribution-chart"></div>
           </article>
 
@@ -194,7 +192,7 @@
       <div>
         <span>NISQ / QUANTUM LAYER</span>
         <h2>The quantum part is not “the answer”. It is the substrate for manipulating the possibility field.</h2>
-        <p>The browser build emulates amplitude amplification over compatible logical states, oracle phase marking, diffusion, logical-to-physical rotation, per-position noise and finite-shot measurement. It is explicitly an emulator—not a claim of current hardware advantage.</p>
+        <p>The browser build runs the ideal bounded amplitude-amplification kernel and balanced semantic/position rotations. It does not inject invented device-calibration noise. Real NISQ noise belongs in a separate substrate layer driven by an actual hardware/noise model, while the QCDS logical semantics stay unchanged.</p>
       </div>
       <div class="quantum-viz"><div class="cloud"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><strong>?</strong></div><div class="arrow">→</div><div class="peak"><span></span><span></span><span></span><span class="winner"></span><span></span><span></span></div></div>
     </section>
@@ -218,6 +216,7 @@
       <div>Experimental research build · © 2026 Patrik Sundblom · <a href="./LICENSE.md">Commercial license notice</a></div>
     </footer>
   </main>
+  <script src="./qcds-core.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>
