@@ -281,7 +281,12 @@
     const topCanonical = ranked.reduce((best, state) =>
       mappedDistribution[state] > mappedDistribution[best] ? state : best, ranked[0]);
     const markedCanonical = marked.filter(i => i < ranked.length).map(i => ranked[i]);
-    const resolved = markedCanonical.length > 0 && markedCanonical.length < ranked.length;
+    const baselineMarkedMass = marked.length / parentN;
+    const resolved =
+      grover.iterations > 0 &&
+      grover.markedMass > baselineMarkedMass + 1e-12 &&
+      markedCanonical.length > 0 &&
+      markedCanonical.length < ranked.length;
 
     return {
       ranked, scores, marked, markedCanonical, grover, mappedDistribution,
@@ -408,7 +413,7 @@
       history.push({ distribution: result.boundDistribution, influence: result.influence });
       recursiveStates = result.parent.markedCanonical.slice();
       result.stability = stabilityReport(history);
-      if (cycles.length >= minCycles && result.stability.stable) break;
+      if (cycles.length >= minCycles && result.stability.stable && result.parent.resolved) break;
     }
 
     const last = cycles[cycles.length - 1];
@@ -430,6 +435,7 @@
       finalProbability: last.parent.mappedDistribution[last.parent.topCanonical] || 0,
       finalLogic: last.derivedLogic,
       finalDistribution,
+      finalResolved: last.parent.resolved,
       parallelLanesPerCycle: PARALLEL_LANES,
       exclusionFamilies: 8,
       maxGroverIterations: MAX_GROVER_ITERS
@@ -491,7 +497,7 @@
       history.push({ distribution: boundDistribution, influence });
       recursiveStates = parent.markedCanonical.slice();
       result.stability = stabilityReport(history);
-      if (cycles.length >= minCycles && result.stability.stable) break;
+      if (cycles.length >= minCycles && result.stability.stable && result.parent.resolved) break;
     }
 
     const last = cycles[cycles.length - 1];
@@ -506,6 +512,7 @@
       finalProbability: last.parent.mappedDistribution[last.parent.topCanonical] || 0,
       finalLogic: last.derivedLogic,
       finalDistribution,
+      finalResolved: last.parent.resolved,
       parallelLanesPerCycle: PARALLEL_LANES,
       exclusionFamilies: 8,
       maxGroverIterations: MAX_GROVER_ITERS

@@ -43,6 +43,13 @@ def test_fixed_input_bits_are_never_lost_globally():
     assert all(state_matches_mask(sum(int(bit) << i for i, bit in enumerate(state)), mask) for state in result.final_distribution)
 
 
+def test_partial_condition_keeps_all_sixteen_parent_states():
+    result = QCDSCancerEngine(max_cycles=1, min_cycles=1).run("1111????", ())
+    assert len(result.final_distribution) == 16
+    assert abs(sum(result.final_distribution.values()) - 1.0) < 1e-12
+    assert all(abs(p - 1 / 16) < 1e-12 for p in result.final_distribution.values())
+
+
 def test_complete_logic_is_valid_condition():
     result = QCDSCancerEngine(max_cycles=1, min_cycles=1).run("01101001", DEFAULT_HYPOTHESES)
     assert result.final_state == "01101001"
@@ -60,6 +67,7 @@ if __name__ == "__main__":
     test_canonical_grover_256_single_target_peak_is_12()
     test_cancer_cycle_is_128_to_8_to_parent_grover()
     test_fixed_input_bits_are_never_lost_globally()
+    test_partial_condition_keeps_all_sixteen_parent_states()
     test_complete_logic_is_valid_condition()
     test_recursive_parent_structure_returns_as_oracle()
     print("QCDS Cancer Python engine tests: PASS")

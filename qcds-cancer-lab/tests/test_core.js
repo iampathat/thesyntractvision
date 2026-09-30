@@ -39,6 +39,10 @@ const fullParent = Q.runCancerQCDS({
 assert.strictEqual(Object.keys(fullParent.finalDistribution).length, 16, "1111???? must preserve the full sixteen-state Parent space");
 const fullMass = Object.values(fullParent.finalDistribution).reduce((a, b) => a + b, 0);
 assert(Math.abs(fullMass - 1) < 1e-12, "Parent distribution must normalize to 1");
+assert.strictEqual(fullParent.finalResolved, false, "flat sixteen-state Parent space must remain explicitly unresolved");
+for (const p of Object.values(fullParent.finalDistribution)) {
+  assert(Math.abs(p - 1 / 16) < 1e-12, "unresolved sixteen-state Parent distribution must stay uniform");
+}
 
 const complete = Q.runCancerQCDS({
   inputMask: "01101001",
