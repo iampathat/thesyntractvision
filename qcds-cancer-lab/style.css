@@ -54,22 +54,42 @@ h1 em{font-style:normal;color:#baaaff;text-shadow:0 0 35px rgba(139,108,255,.25)
 .section-head h2,.quantum h2,.source h2{font-size:clamp(28px,3vw,46px);letter-spacing:-.035em;line-height:1.15;margin:10px 0 0}
 .engine{padding:25px 0 72px}
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.step{position:relative;min-height:360px;padding:28px 24px 22px;border-radius:20px;border:1px solid var(--line);background:rgba(5,10,25,.84);overflow:hidden}
-.step:after{content:"";position:absolute;inset:auto -20% -50% 20%;height:170px;filter:blur(40px);opacity:.18;border-radius:50%}
-.step i{font-style:normal;font:900 12px/1 monospace;letter-spacing:.1em;display:inline-flex;width:38px;height:38px;align-items:center;justify-content:center;border-radius:50%;border:1px solid currentColor;margin-bottom:42px}
-.step h3{font-size:28px;margin:0 0 12px;letter-spacing:-.03em}
-.step p{color:#aabbd1;line-height:1.55;max-width:90%}
+.step{
+  position:relative;
+  min-height:390px;
+  padding:28px 24px 22px;
+  border-radius:20px;
+  border:1px solid var(--line);
+  background:rgba(5,10,25,.84);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.step:after{content:"";position:absolute;inset:auto -20% -50% 20%;height:170px;filter:blur(40px);opacity:.18;border-radius:50%;pointer-events:none}
+.step i{font-style:normal;font:900 12px/1 monospace;letter-spacing:.1em;display:inline-flex;width:38px;height:38px;align-items:center;justify-content:center;border-radius:50%;border:1px solid currentColor;margin-bottom:28px;flex:0 0 auto}
+.step h3{font-size:28px;margin:0 0 12px;letter-spacing:-.03em;position:relative;z-index:1}
+.step p{color:#aabbd1;line-height:1.55;max-width:100%;margin:0 0 24px;position:relative;z-index:1}
 .step.cyan{border-color:rgba(105,233,255,.34)}.step.cyan i{color:var(--cyan)}.step.cyan:after{background:var(--cyan)}
 .step.violet{border-color:rgba(143,124,255,.35)}.step.violet i{color:var(--violet)}.step.violet:after{background:var(--violet)}
 .step.magenta{border-color:rgba(223,112,255,.34)}.step.magenta i{color:var(--magenta)}.step.magenta:after{background:var(--magenta)}
 .step.blue{border-color:rgba(90,164,255,.36)}.step.blue i{color:var(--blue)}.step.blue:after{background:var(--blue)}
 .step.gold{border-color:rgba(255,214,107,.38)}.step.gold i{color:var(--gold)}.step.gold:after{background:var(--gold)}
 .step.green{border-color:rgba(100,240,184,.36)}.step.green i{color:var(--green)}.step.green:after{background:var(--green)}
-.viz,.rings,.oracle-stack,.orbit,.funnel,.loop{position:absolute;left:24px;right:24px;bottom:25px;height:86px}
+.viz,.rings,.oracle-stack,.orbit,.funnel,.loop{
+  position:relative;
+  left:auto;
+  right:auto;
+  bottom:auto;
+  width:100%;
+  height:96px;
+  margin-top:auto;
+  flex:0 0 96px;
+  z-index:1;
+}
 .states{display:flex;align-items:end;gap:5px}
 .states span{flex:1;border-radius:4px 4px 1px 1px;background:linear-gradient(to top,rgba(105,233,255,.12),rgba(105,233,255,.8));height:var(--h)}
-.rings{display:grid;place-items:center}
-.rings span{position:absolute;border:1px solid rgba(143,124,255,.4);border-radius:50%;width:150px;height:58px}
+.rings{display:grid;place-items:center;min-height:96px}
+.rings span{position:absolute;border:1px solid rgba(143,124,255,.4);border-radius:50%;width:min(150px,62%);height:58px}
 .rings span:nth-child(2){transform:rotate(55deg)}.rings span:nth-child(3){transform:rotate(-55deg)}
 .rings b{font-size:12px;letter-spacing:.12em;color:#c9beff}
 .oracle-stack{display:flex;gap:8px;align-items:center}
@@ -78,8 +98,8 @@ h1 em{font-style:normal;color:#baaaff;text-shadow:0 0 35px rgba(139,108,255,.25)
 .orbit b{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(90,164,255,.5);box-shadow:0 0 35px rgba(90,164,255,.16)}
 .orbit span{position:absolute;width:7px;height:7px;border-radius:50%;background:var(--blue);box-shadow:0 0 14px var(--blue)}
 .orbit span:nth-child(2){transform:translate(-85px,-17px)}.orbit span:nth-child(3){transform:translate(88px,16px)}.orbit span:nth-child(4){transform:translate(-35px,42px)}.orbit span:nth-child(5){transform:translate(38px,-45px)}
-.funnel{display:grid;place-items:center;gap:5px}
-.funnel div{height:22px;display:grid;place-items:center;font:900 11px monospace;border:1px solid rgba(255,214,107,.35);background:rgba(255,214,107,.08)}
+.funnel{display:grid;place-items:center;align-content:center;gap:7px;height:112px;flex-basis:112px}
+.funnel div{height:24px;display:grid;place-items:center;font:900 11px monospace;border:1px solid rgba(255,214,107,.35);background:rgba(255,214,107,.08)}
 .f128{width:88%}.f8{width:48%}.f1{width:18%;color:var(--gold)}
 .loop{display:grid;place-items:center;font:900 19px monospace;color:#b9ffe3;border:1px dashed rgba(100,240,184,.25);border-radius:12px;background:rgba(100,240,184,.06)}
 .quantum{margin:0 0 72px;padding:34px;border:1px solid rgba(105,233,255,.2);border-radius:24px;background:linear-gradient(145deg,rgba(6,14,37,.88),rgba(31,13,57,.72));display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center}
@@ -129,7 +149,10 @@ footer strong{color:#b9cbe0}footer a{color:#9eb9da}
   .hero-copy{padding-top:24px}h1{font-size:49px}.lede{font-size:16px}.license-card{margin-top:25px}
   .statement{padding:30px 20px}
   .logic-strip{display:block}.logic-strip article{margin-bottom:12px}.logic-strip .or{height:28px}
-  .steps{grid-template-columns:1fr}.step{min-height:330px}
+  .steps{grid-template-columns:1fr}
+  .step{min-height:0;padding:26px 22px 24px}
+  .step p{margin-bottom:28px}
+  .viz,.rings,.oracle-stack,.orbit,.funnel,.loop{margin-top:8px}
   .quantum{grid-template-columns:1fr;padding:24px}.quantum-viz{transform:scale(.86);margin:-15px}
   .mask-input{gap:6px}.mask-input button{height:58px;font-size:24px}
   .metrics{grid-template-columns:1fr}
@@ -268,3 +291,14 @@ footer strong{color:#b9cbe0}footer a{color:#9eb9da}
 }
 .results-running h3{margin:13px 0 5px;font-size:22px}
 .results-running p{color:#8094b1;margin:0;max-width:680px;line-height:1.5}
+
+/* Step-card anti-overlap fallback: graphics always follow text, even with
+   browser zoom, Android font scaling or Fold-style narrow viewports. */
+@media(max-width:900px){
+  .step{height:auto}
+  .step h3{font-size:clamp(25px,7vw,34px)}
+  .step p{font-size:clamp(15px,4.2vw,19px);line-height:1.55}
+  .rings{min-height:118px;height:118px;flex-basis:118px}
+  .rings span{width:min(180px,58%);height:66px}
+  .funnel{min-height:124px;height:124px;flex-basis:124px}
+}
