@@ -227,7 +227,7 @@ footer strong{color:#b9cbe0}footer a{color:#9eb9da}
 
 
 /* Completed runs must fully replace the running state; keep the spinner itself unchanged. */
-.results-empty[hidden], .results-live[hidden]{display:none!important}
+.results-running[hidden], .results-empty[hidden], .results-live[hidden]{display:none!important}
 
 .plain-result{
   margin-top:14px;
@@ -256,3 +256,15 @@ footer strong{color:#b9cbe0}footer a{color:#9eb9da}
   max-width:1120px;
 }
 .plain-result p+p{margin-top:11px}
+
+.results-running{
+  min-height:300px;
+  display:grid;
+  place-items:center;
+  align-content:center;
+  text-align:center;
+  padding:30px;
+  border-bottom:1px solid rgba(105,233,255,.10);
+}
+.results-running h3{margin:13px 0 5px;font-size:22px}
+.results-running p{color:#8094b1;margin:0;max-width:680px;line-height:1.5}
