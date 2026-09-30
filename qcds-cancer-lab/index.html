@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#050816" />
   <title>QCDS Cancer Lab — Recursive Inference</title>
-  <meta name="description" content="QCDS Cancer Lab: recursive oracle construction, parallel rotation, 128→8→1 funnel and NISQ-oriented inference research." />
+  <meta name="description" content="Run the QCDS Cancer Lab recursive 128→8→1 inference engine in your browser." />
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
@@ -13,23 +13,40 @@
   <main class="shell">
     <header class="hero">
       <div class="brand">
-        <div class="qmark">Q<span>★</span></div>
+        <svg class="syntract-logo" viewBox="0 0 138 106" role="img" aria-label="Q star — The Syntract Vision">
+          <defs>
+            <linearGradient id="qg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#e9fbff"/>
+              <stop offset=".45" stop-color="#7eeeff"/>
+              <stop offset="1" stop-color="#907cff"/>
+            </linearGradient>
+            <filter id="glow"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+          <circle cx="49" cy="45" r="30" fill="none" stroke="url(#qg)" stroke-width="8"/>
+          <path d="M68 66 L94 92" fill="none" stroke="url(#qg)" stroke-width="9" stroke-linecap="round"/>
+          <g transform="translate(101 25)" filter="url(#glow)">
+            <path d="M0 -17 C2 -7 4 -3 15 0 C4 3 2 7 0 17 C-2 7 -4 3 -15 0 C-4 -3 -2 -7 0 -17Z" fill="#ffd66b"/>
+            <path d="M0 -10 L0 10 M-10 0 L10 0" stroke="#fff4bc" stroke-width="2.2" stroke-linecap="round"/>
+          </g>
+        </svg>
         <div class="vision">THE SYNTRACT VISION</div>
       </div>
+
       <div class="hero-copy">
-        <div class="eyebrow">QCDS CANCER LAB · RECURSIVE INFERENCE ENGINE</div>
+        <div class="eyebrow">QCDS CANCER LAB · LIVE RECURSIVE INFERENCE</div>
         <h1>From unresolved biology<br><em>to recursive logic.</em></h1>
-        <p class="lede">A research build for exploring large cancer hypothesis spaces without hard-coding a target answer. Logic may be complete (<code>0110</code>) or open (<code>10?10?</code>). Unknowns expand the live state space; QCDS uses oracles, rotation, parallelism and sequential funneling to resolve what survives.</p>
+        <p class="lede">This page now runs the research engine in-browser. Set the logical state, select top-down oracle hypotheses, and run the 128 → 8 → 1 funnel. No target answer is hard-coded.</p>
         <div class="hero-actions">
-          <a class="primary" href="#engine">Explore the engine</a>
+          <a class="primary" href="#workbench">Run QCDS now</a>
           <a href="./LICENSE.md">License</a>
-          <a href="./README.md">Technical README</a>
+          <a href="./README.md">Method</a>
         </div>
       </div>
+
       <aside class="license-card">
         <div class="license-kicker">PUBLIC TO VIEW · NOT FREE TO USE</div>
         <strong>Company / organizational use requires a separate license.</strong>
-        <p>Same commercial model as QCDS Security Lab. Publication is for evaluation; operational, research, product, service or organizational use requires agreement.</p>
+        <p>Public access is for evaluation. Operational, research, product, service or organizational use requires a separate agreement.</p>
         <a href="./LICENSE.md">Read the full terms →</a>
       </aside>
     </header>
@@ -64,72 +81,110 @@
         <h2>One recursive loop. Six explicit stages.</h2>
       </div>
       <div class="steps">
-        <article class="step cyan">
-          <i>01</i><h3>Logic state</h3>
-          <p>Observed facts bind dimensions to <b>0</b> or <b>1</b>. Unresolved dimensions remain <b>?</b>. The state may already be complete.</p>
-          <div class="viz states" id="maskViz"></div>
-        </article>
-        <article class="step violet">
-          <i>02</i><h3>Syntract</h3>
-          <p>The current problem context determines which dimensions, relations and constraints are meaningful <em>here</em>.</p>
-          <div class="rings"><span></span><span></span><span></span><b>context</b></div>
-        </article>
-        <article class="step magenta">
-          <i>03</i><h3>Top-down oracles</h3>
-          <p>Human knowledge, data and LLM assistance propose testable oracle hypotheses. QCDS does not have to accept them.</p>
-          <div class="oracle-stack"><b>O₀</b><b>O₁</b><b>O₂</b><b>…</b></div>
-        </article>
-        <article class="step blue">
-          <i>04</i><h3>Parallel + rotation</h3>
-          <p>128 perspectives rotate logical dimensions and exclude them in turn. The question becomes: <em>what survives a changed viewpoint?</em></p>
-          <div class="orbit"><b>128</b><span></span><span></span><span></span><span></span></div>
-        </article>
-        <article class="step gold">
-          <i>05</i><h3>128 → 8 → 1 funnel</h3>
-          <p>Parallel breadth becomes sequential depth: eight dimension families merge into one consensus Syntract.</p>
-          <div class="funnel"><div class="f128">128</div><div class="f8">8</div><div class="f1">1</div></div>
-        </article>
-        <article class="step green">
-          <i>06</i><h3>Recursive return</h3>
-          <p>Stable structure becomes a new condition and a stronger oracle. The next pass starts with better logic than the previous pass.</p>
-          <div class="loop">S₁ → O₁ → S₂ → O₂ → …</div>
-        </article>
+        <article class="step cyan"><i>01</i><h3>Logic state</h3><p>Observed facts bind dimensions to <b>0</b> or <b>1</b>. Unresolved dimensions remain <b>?</b>.</p><div class="viz states" id="maskViz"></div></article>
+        <article class="step violet"><i>02</i><h3>Syntract</h3><p>The active context determines which dimensions, relations and constraints are meaningful here.</p><div class="rings"><span></span><span></span><span></span><b>context</b></div></article>
+        <article class="step magenta"><i>03</i><h3>Top-down oracles</h3><p>Human knowledge, data and LLM assistance propose testable oracle hypotheses. QCDS tests them.</p><div class="oracle-stack"><b>O₀</b><b>O₁</b><b>O₂</b><b>…</b></div></article>
+        <article class="step blue"><i>04</i><h3>Parallel + rotation</h3><p>128 perspectives rotate logical dimensions and exclude them in turn to test dimensional influence.</p><div class="orbit"><b>128</b><span></span><span></span><span></span><span></span></div></article>
+        <article class="step gold"><i>05</i><h3>128 → 8 → 1 funnel</h3><p>Parallel breadth becomes sequential depth: eight dimension families merge into one consensus Syntract.</p><div class="funnel"><div class="f128">128</div><div class="f8">8</div><div class="f1">1</div></div></article>
+        <article class="step green"><i>06</i><h3>Recursive return</h3><p>Stable structure becomes a new oracle. The next pass starts with stronger logic.</p><div class="loop">S₁ → O₁ → S₂ → O₂ → …</div></article>
       </div>
+    </section>
+
+    <section id="workbench" class="workbench">
+      <div class="section-head">
+        <span>LIVE QCDS WORKBENCH</span>
+        <h2>Run the cancer Syntract in your browser.</h2>
+        <p class="section-copy">This is the experiment surface—not a list of source files. The browser executes the same bounded logical architecture: compatible-state expansion, oracle scoring, Grover-style amplitude amplification, dimension exclusion, physical-position rotation/noise, 128→8→1 consensus and recursive oracle creation.</p>
+      </div>
+
+      <div class="bench-grid">
+        <section class="control-panel">
+          <div class="panel-title"><span>01</span><div><small>INPUT</small><strong>Logical state</strong></div></div>
+          <div class="dimension-head"><span>Tap any dimension: ? → 0 → 1</span><button id="resetMask" class="ghost">Reset</button></div>
+          <div class="dimension-labels" id="dimensionLabels"></div>
+          <div class="mask-input" id="maskInput" aria-label="interactive QCDS input mask"></div>
+
+          <div class="metrics compact">
+            <div><small>UNKNOWN</small><strong id="unknownCount">8</strong></div>
+            <div><small>LIVE STATES</small><strong id="stateCount">256</strong></div>
+            <div><small>MODE</small><strong id="modeText">OPEN</strong></div>
+          </div>
+
+          <div class="preset-row">
+            <button class="preset" data-mask="????????">Open 8D</button>
+            <button class="preset" data-mask="1?11????">Partial</button>
+            <button class="preset" data-mask="01101001">Complete</button>
+          </div>
+        </section>
+
+        <section class="control-panel">
+          <div class="panel-title"><span>02</span><div><small>TOP-DOWN</small><strong>Oracle hypotheses</strong></div></div>
+          <div id="oracleControls" class="oracle-controls"></div>
+          <p class="hint">These masks are research/demo hypotheses, not clinical rules. Disable any oracle to see whether the inferred structure depends on it.</p>
+        </section>
+
+        <section class="control-panel run-panel">
+          <div class="panel-title"><span>03</span><div><small>EXECUTION</small><strong>128 → 8 → 1</strong></div></div>
+          <div class="run-settings">
+            <label><span>Parallel branches</span><strong>128</strong></label>
+            <label><span>Exclusion families</span><strong>8</strong></label>
+            <label><span>Max Grover iterations</span><strong>40</strong></label>
+            <label><span>Recursive depth</span>
+              <select id="depthSelect"><option>1</option><option>2</option><option selected>3</option><option>4</option></select>
+            </label>
+            <label><span>Shots / perspective</span>
+              <select id="shotsSelect"><option>256</option><option selected>512</option><option>1024</option><option>2048</option></select>
+            </label>
+          </div>
+          <button id="runButton" class="run-button"><span>▶</span> RUN QCDS</button>
+          <div class="run-state" id="runState">Ready. No target state is supplied to the engine.</div>
+        </section>
+      </div>
+
+      <section class="results" id="results" aria-live="polite">
+        <div class="results-empty" id="resultsEmpty">
+          <div class="result-orb">?</div>
+          <h3>No run yet.</h3>
+          <p>Choose the logical state and oracle set, then run QCDS.</p>
+        </div>
+
+        <div class="results-live" id="resultsLive" hidden>
+          <div class="result-head">
+            <div><small>CONSENSUS STATE</small><strong id="finalState">—</strong></div>
+            <div><small>CONSENSUS PROBABILITY</small><strong id="finalP">—</strong></div>
+            <div><small>DERIVED LOGIC</small><strong id="finalLogic">—</strong></div>
+            <div><small>ROUNDS EXECUTED</small><strong id="roundCount">—</strong></div>
+          </div>
+
+          <div class="result-grid">
+            <article class="result-card">
+              <div class="result-title">Recursive convergence</div>
+              <div id="roundTimeline" class="round-timeline"></div>
+            </article>
+            <article class="result-card">
+              <div class="result-title">Dimension influence</div>
+              <div id="influenceChart" class="influence-chart"></div>
+              <p class="chart-note">Total-variation distance from the no-exclusion baseline. Larger bars mean the consensus changed more when that dimension was removed.</p>
+            </article>
+          </div>
+
+          <article class="result-card distribution-card">
+            <div class="result-title">Final consensus distribution · top states</div>
+            <div id="distributionChart" class="distribution-chart"></div>
+          </article>
+
+          <div class="research-warning"><b>Research only.</b> This output is a logical simulation result. It is not a diagnosis, treatment recommendation, biological validation or clinical conclusion.</div>
+        </div>
+      </section>
     </section>
 
     <section class="quantum">
       <div>
         <span>NISQ / QUANTUM LAYER</span>
         <h2>The quantum part is not “the answer”. It is the substrate for manipulating the possibility field.</h2>
-        <p>The current build emulates uniform amplitude over compatible logical states, phase marking from the active oracle set, Grover-style diffusion/amplitude amplification, logical-to-physical rotation, per-qubit noise and finite-shot measurement. It is explicitly an emulator—not a claim of current hardware advantage.</p>
+        <p>The browser build emulates amplitude amplification over compatible logical states, oracle phase marking, diffusion, logical-to-physical rotation, per-position noise and finite-shot measurement. It is explicitly an emulator—not a claim of current hardware advantage.</p>
       </div>
-      <div class="quantum-viz">
-        <div class="cloud">
-          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-          <strong>?</strong>
-        </div>
-        <div class="arrow">→</div>
-        <div class="peak">
-          <span></span><span></span><span></span><span class="winner"></span><span></span><span></span>
-        </div>
-      </div>
-    </section>
-
-    <section class="interactive">
-      <div class="section-head">
-        <span>TRY THE LOGIC</span>
-        <h2>See what <code>?</code> changes before any oracle is applied.</h2>
-      </div>
-      <div class="mask-panel">
-        <label>8-dimensional input mask</label>
-        <div class="mask-input" id="maskInput" aria-label="interactive QCDS mask"></div>
-        <div class="metrics">
-          <div><small>UNKNOWN DIMENSIONS</small><strong id="unknownCount">8</strong></div>
-          <div><small>COMPATIBLE BINARY STATES</small><strong id="stateCount">256</strong></div>
-          <div><small>MODE</small><strong id="modeText">OPEN</strong></div>
-        </div>
-        <p class="hint">Tap a cell to cycle <b>?</b> → <b>0</b> → <b>1</b>. A complete mask reaches one compatible state; QCDS still runs because <code>?</code> is optional.</p>
-      </div>
+      <div class="quantum-viz"><div class="cloud"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><strong>?</strong></div><div class="arrow">→</div><div class="peak"><span></span><span></span><span></span><span class="winner"></span><span></span><span></span></div></div>
     </section>
 
     <section class="cancer">
@@ -140,24 +195,10 @@
       <div class="cancer-grid">
         <article><b>Input</b><p>Genomic, pathway, phenotype, immune, microenvironment, response and resistance evidence—bound where known, open where unresolved.</p></article>
         <article><b>Oracle factory</b><p>Top-down mechanistic hypotheses become masks and constraints. An LLM may help propose or translate them; provenance stays visible.</p></article>
-        <article><b>Dimension discovery</b><p>Rotation and exclusion measure how much each dimension changes convergence. Fragile conclusions should collapse when the wrong support is removed.</p></article>
+        <article><b>Dimension discovery</b><p>Rotation and exclusion measure how much each dimension changes convergence. Fragile conclusions should collapse when support is removed.</p></article>
         <article><b>Recursive mechanism search</b><p>What survives the funnel becomes new logic for the next round, allowing the hypothesis space to deepen rather than restart from zero.</p></article>
       </div>
       <div class="medical-note"><b>Research only.</b> This build is not a diagnostic or treatment system and is not for clinical decision-making. The objective is to test the QCDS inference architecture against increasingly real biological data.</div>
-    </section>
-
-    <section class="source">
-      <div>
-        <span>SOURCE</span>
-        <h2>The web page is the map. The code is the experiment.</h2>
-      </div>
-      <nav>
-        <a href="./engine.py">engine.py</a>
-        <a href="./case_cancer.py">case_cancer.py</a>
-        <a href="./run_demo.py">run_demo.py</a>
-        <a href="./tests/test_engine.py">tests</a>
-        <a href="./example_result.json">example result</a>
-      </nav>
     </section>
 
     <footer>
