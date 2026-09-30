@@ -425,9 +425,33 @@
     return p >= 0.01 ? (p * 100).toFixed(2) + "%" : (p * 100).toFixed(4) + "%";
   }
 
+  function renderLaymanExplanation(result) {
+    const box = $("laymanExplanation");
+    const first = result.rounds[0];
+    const last = result.rounds[result.rounds.length - 1];
+    const unresolved = [...result.finalLogic].filter(x => x === "?").length;
+    const strongest = Object.entries(last.dimensionInfluence).sort((a, b) => b[1] - a[1]).slice(0, 2);
+    const strongestText = strongest.length
+      ? strongest.map(([name]) => name).join(" and ")
+      : "no single dimension";
+
+    box.innerHTML = "";
+    const p1 = document.createElement("p");
+    p1.textContent =
+      `QCDS started with ${first.stateCount.toLocaleString("en-US")} logically compatible state${first.stateCount === 1 ? "" : "s"} and repeatedly asked which patterns survived the oracle hypotheses, rotation and one-dimension-at-a-time removal. After ${result.rounds.length} recursive round${result.rounds.length === 1 ? "" : "s"}, the strongest remaining simulated state was ${result.finalState}. The derived logic ${result.finalLogic} means that some dimensions became stable 0/1 conditions while ${unresolved} dimension${unresolved === 1 ? "" : "s"} remained unresolved as ?. `;
+
+    const p2 = document.createElement("p");
+    p2.textContent =
+      `The dimension-influence bars explain why that result matters: removing ${strongestText} changed the final distribution the most, so the current conclusion depends more strongly on those parts of the Syntract. The consensus probability (${formatP(result.finalP)}) is only the share of this final QCDS simulation distribution assigned to the leading state—it is not a medical probability, diagnosis or treatment confidence. The useful question is whether the same structure stays stable when better evidence and better oracles are added in the next run.`;
+
+    box.append(p1, p2);
+  }
+
   function renderResults(result) {
     resultsEmpty.hidden = true;
+    resultsEmpty.style.display = "none";
     resultsLive.hidden = false;
+    resultsLive.style.display = "";
     $("finalState").textContent = result.finalState;
     $("finalP").textContent = formatP(result.finalP);
     $("finalLogic").textContent = result.finalLogic;
@@ -477,6 +501,7 @@
       dist.appendChild(col);
     });
 
+    renderLaymanExplanation(result);
     resultsLive.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
@@ -491,7 +516,9 @@
       runButton.disabled = true;
       runButton.classList.add("running");
       resultsEmpty.hidden = false;
+      resultsEmpty.style.display = "grid";
       resultsLive.hidden = true;
+      resultsLive.style.display = "none";
       resultsEmpty.innerHTML = '<div class="result-orb spin">Q</div><h3>QCDS is running.</h3><p>128 perspectives are being rotated, excluded and funneled into eight families and one consensus.</p>';
 
       const result = await runQCDS(logic, oracles, depth, shots);
@@ -500,7 +527,9 @@
     } catch (err) {
       runState.textContent = "Run stopped: " + err.message;
       resultsEmpty.hidden = false;
+      resultsEmpty.style.display = "grid";
       resultsLive.hidden = true;
+      resultsLive.style.display = "none";
       resultsEmpty.innerHTML = `<div class="result-orb error">!</div><h3>Input needs attention.</h3><p>${err.message}</p>`;
     } finally {
       runButton.disabled = false;
