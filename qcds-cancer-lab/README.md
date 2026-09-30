@@ -2,115 +2,173 @@
 
 **Theory and creation by Patrik Sundblom**
 
-This directory contains a research implementation of the current QCDS cancer architecture. It is separate from the older BRCA2 / mutation scripts so the historical work remains intact.
+This directory contains the current QCDS cancer research engine. It is deliberately separate from the older BRCA2 / mutation scripts so the historical work remains intact.
 
 ## Live site — run it in the browser
 
 **QCDS Cancer Lab:** https://iampathat.github.io/thesyntractvision/qcds-cancer-lab/
 
-The public surface is a runnable browser workbench: edit the 0/1/? logic, enable or disable top-down oracle hypotheses, execute the 128 → 8 → 1 funnel, inspect recursive rounds, dimension influence and the final consensus distribution. The Python files remain the reference implementation; visitors do not need to open or run them to use the lab.
-
+The public surface is a runnable workbench. You can edit the 0/1/? Condition, enable or disable top-down cancer-oracle hypotheses, run the full 128 → 8 → 1 QCDS path, inspect the local and parent Grover depths, dimensional influence, recursive return and the final Parent-Grover distribution.
 
 > **License:** public to view for evaluation; company / organizational use requires a separate agreement. See [LICENSE.md](./LICENSE.md).
 
-## What changed
+## What this build is
 
-This engine does **not** start from a known `target_state`.
+This build does **not** start from a known `target_state`.
 
-It starts from a **Syntract**:
+It starts from:
 
-- a logical condition such as `01101001` (already complete), or `10?10???` / `????????` (partly or fully unresolved),
-- top-down candidate oracles built from data, domain knowledge, hypotheses, or an LLM,
-- a set of named dimensions.
+- a QCDS **Condition** such as `01101001` (complete), `1111????` (partly unresolved), or `????????` (open),
+- top-down cancer-oracle hypotheses,
+- eight named semantic dimensions,
+- recursive structure returned by the previous Parent-Grover pass.
 
-`?` is not required. It means a dimension is unresolved and therefore opens compatible binary states. A fully bound state works without any `?`.
+`?` is not a third truth value and it is not required. It means that a represented binary dimension is unresolved.
 
-## The engine
+Rotational exclusion is different: the excluded dimension is **absent / null in that lane**. A fixed `0` or `1` is never silently changed into `?` to fake exclusion.
 
-```text
-logic / evidence
-      ↓
-Syntract
-      ↓
-top-down candidate oracles
-      ↓
-128 parallel perspectives
-  - dimension exclusion
-  - logical→physical qubit rotation
-  - repeated NISQ-like sampling
-      ↓
-8 exclusion families
-      ↓
-1 consensus Syntract
-      ↓
-recursive oracle generated from what survived
-      ↺ next depth
-```
-
-### Why 128 → 8 → 1
-
-For the current eight-dimensional demonstrator, 128 parallel branches are grouped into eight families. Each family removes one logical dimension and rotates the remaining logical structure across physical qubit positions. This exposes **dimension influence** and positional/noise sensitivity instead of trusting one fixed orientation.
-
-The eight family distributions are merged into one consensus distribution. Stable structure becomes a new oracle for the next recursion depth.
-
-## Intelligence bandwidth
-
-The design does not equate intelligence with qubit count.
-
-The working concept is that inference capacity depends on the combination of:
-
-- representational richness,
-- the number of live alternatives,
-- parallel perspectives and rotations,
-- sequential funnel depth,
-- recursive oracle growth.
-
-Bits/qubits define part of the substrate. Syntract defines interpretation. Rotation tests dimensions. The funnel converts breadth into depth. Recursion makes the next pass logically stronger.
-
-## Quantum / NISQ emulation
-
-`engine.py` currently emulates:
-
-1. uniform amplitude over states compatible with the current logic,
-2. oracle marking based on the current oracle set rather than a hard-coded answer,
-3. Grover-style phase inversion + diffusion inside that compatible subspace,
-4. logical-to-physical rotation,
-5. reproducible per-physical-qubit bit-flip noise and finite-shot measurement.
-
-This is **not claimed to be execution on quantum hardware or proof of quantum advantage**. It is an emulator for developing and testing the QCDS architecture against increasingly realistic inputs.
-
-## Recursive oracle growth
+## Current QCDS path
 
 ```text
-O₀ (human / data / LLM hypotheses)
-   ↓ QCDS
-S₁ (surviving Syntract)
-   ↓
-O₁ (derived oracle)
-   ↓ QCDS
-S₂
-   ↓
-O₂ ...
+Condition (0 / 1 / ?)
+        ↓
+top-down cancer oracle set
+        ↓
+16 balanced rotation banks × 8 true-null lanes
+        ↓
+128 independent local QCDS Grover runs
+        ↓
+128 → 8 Rotational Syntract family binds
+        ↓
+8 → 1 higher-order Syntract bind
+        ↓
+fresh Parent Grover
+        ↓
+parent-marked structure becomes the next oracle
+        ↓
+rotate again / recursive return
+        ↓
+multi-signal stability gate
 ```
 
-An LLM can help create, translate or explain candidate oracles. It does not decide which oracle is true. QCDS tests them through exclusion, rotation, amplification, convergence and recursive return.
+### 128 → 8 → 1 does not mean majority voting
 
-## Cancer case
+The first 128 objects are **full QCDS lane distributions**, not 128 scalar votes.
 
-The included masks are research/demo hypotheses carried forward from earlier QCDS cancer work (`dna_repair`, `pi3k_axis`, `receptor_axis`, `hr_plus_broad`, `pi3k_hr_combo`). They are not clinical rules.
+Each of the eight semantic dimensions has a true-null family containing sixteen balanced rotations. The family is bound with the same logarithmic full-distribution operator used by the canonical `RotationalSyntractBind`.
 
-The research objective is to test whether a large unresolved logical space can be narrowed into stable mechanistic structure, and whether the surviving structure can recursively create better oracles.
+The eight family distributions are then bound into one higher-order Syntract. That bound structure is **not the final answer**: it becomes the input to a fresh executable **Parent Grover**. The Parent-Grover marked structures form the recursive oracle for the next QCDS cycle.
 
-This is not a diagnostic or treatment system and must not be used for clinical decisions.
+There is no separate `meanDistributions()`, winner averaging or ad-hoc "consensus state" algorithm in the current engine.
 
-## Run
+## Grover
+
+The local and parent kernels use the canonical bounded QCDS Fabric Grover implementation from:
+
+`qcds_fabric_4_2/src/qcds_fabric_4_2/grover.py`
+
+The iteration count is selected by evaluating the exact ideal Grover success envelope from `m = 0 ... 40` and choosing its best peak for the actual `N` and `M`.
+
+For the canonical validation case `N=256, M=1`, the selected peak is `m=12`, with probability approximately `0.999947`.
+
+The browser core ports the same equations and exposes the actual local Grover range and Parent-Grover depth for every recursive cycle.
+
+## Input invariants
+
+A user-supplied Condition remains globally binding.
+
+For example:
+
+```text
+1111????
+```
+
+opens the sixteen states whose first four semantic dimensions are `1111`.
+
+True-null lanes are allowed to temporarily remove one dimension to measure its influence, but after the complementary views are rebound, states that violate the original fixed `1111` Condition are not permitted to enter the Parent-Grover candidate space.
+
+The automated tests assert this invariant.
+
+## Top-down cancer oracles
+
+The included masks are research/demo hypotheses carried forward from earlier QCDS cancer work:
+
+- `dna_repair`
+- `pi3k_axis`
+- `receptor_axis`
+- `hr_plus_broad`
+- `pi3k_hr_combo`
+
+They are treated as **alternative top-down oracle hypotheses (union / OR)** under the hard input Condition. If a true-null lane removes a semantic dimension required by a particular hypothesis, that hypothesis is inactive in that lane rather than being evaluated with fabricated data.
+
+A recursive Parent-Grover return is an additional constraint on the next cycle.
+
+These demo masks are not clinical rules.
+
+## Quantum / NISQ boundary
+
+The current browser build uses exact ideal bounded amplitude amplification plus balanced semantic/position rotations. It does **not** inject an invented hardware-noise calculation into the QCDS result.
+
+That separation is intentional:
+
+- QCDS logical semantics: Condition, oracle, true null, Grover, Syntract Bind, Parent Grover, recursion.
+- physical / NISQ layer: actual qubit mapping, readout/connectivity/transpilation effects and device noise.
+
+A future NISQ-noise pass should be driven by a declared simulator or real hardware calibration model and compared against the same ideal logical run. It should not silently alter the QCDS mathematics.
+
+## Recursive stability
+
+The run does not stop merely because one state happens to be top once.
+
+The stability gate tracks the same families of signals used by QCDS Fabric:
+
+- distribution change,
+- entropy change,
+- top identity,
+- Top-K overlap,
+- dimension-influence change.
+
+The maximum cycle count is a safety bound. Stable recursive structure can terminate earlier once the configured gate is satisfied.
+
+## Browser core and Python reference
+
+The browser engine is in:
+
+`qcds-core.js`
+
+The Python orchestration layer is:
+
+`engine.py`
+
+The Python engine imports and reuses the canonical QCDS Fabric Grover and Rotational Syntract primitives already in this repository rather than carrying a separate Grover implementation.
+
+The browser core ports those same bounded primitives so the live page can execute without a server.
+
+## Run locally
 
 ```bash
-python run_demo.py
-python run_demo.py --complete
-python -m pytest -q
+cd qcds-cancer-lab
+python run_demo.py --mask '????????'
+python run_demo.py --mask '1111????'
+python run_demo.py --mask '01101001'
 ```
 
-Default open case: `????????` → 256 compatible logical states before oracle constraints.
+Tests:
 
-Complete-logic test: `01101001` → exactly one compatible state; no `?` is required.
+```bash
+PYTHONPATH=../qcds_fabric_4_2/src python -m pytest -q tests/test_engine.py
+node tests/test_core.js
+```
+
+The test suite checks, among other things:
+
+- canonical `256 / 1` Grover peak = `m=12`,
+- 128 local QCDS lanes per cancer cycle,
+- eight true-null families,
+- fresh Parent Grover execution,
+- complete logic without `?`,
+- fixed input bits such as `1111????` cannot disappear from the final output distribution.
+
+## Research / medical boundary
+
+This is an experimental inference architecture. It is not a diagnostic system, medical device or treatment recommendation and must not be used for clinical decision-making without appropriate validation, regulation and qualified medical oversight.
