@@ -37,7 +37,7 @@ from qcds_fabric_4_2.bind import RotationalSyntractBind, total_variation
 from qcds_fabric_4_2.grover import run_grover
 from qcds_fabric_4_2.rotation import RotationalIngressCell
 from qcds_fabric_4_2.stability import StabilityEngine
-from qcds_fabric_4_2.types import BindResult, LaneResult, ParentResult
+from qcds_fabric_4_2.types import BindResult, LaneResult, ParentResult, RotationalView
 
 DIMENSIONS = (
     "mutation_load",
@@ -95,16 +95,12 @@ class CancerHypothesis:
     def __post_init__(self) -> None:
         validate_mask(self.mask)
 
-    @property
-    def required_dimensions(self) -> frozenset[str]:
-        return frozenset(DIMENSIONS[i] for i, b in enumerate(self.mask) if b != "?")
-
-    def matches_assignment(self, assignment: dict[str, int]) -> bool:
-        for i, bit in enumerate(self.mask):
-            if bit == "?":
+    def matches_positions(self, positional_assignment: Sequence[int | None]) -> bool:
+        for position, bit in enumerate(self.mask):
+            actual = positional_assignment[position]
+            if bit == "?" or actual is None:
                 continue
-            dim = DIMENSIONS[i]
-            if dim not in assignment or assignment[dim] != int(bit):
+            if actual != int(bit):
                 return False
         return True
 
@@ -116,6 +112,34 @@ DEFAULT_HYPOTHESES = (
     CancerHypothesis("hr_plus_broad", "1??1????", "legacy cancer hypothesis"),
     CancerHypothesis("pi3k_hr_combo", "??11????", "legacy cancer hypothesis"),
 )
+
+
+def rotation_order(bank_id: int) -> tuple[str, ...]:
+    """Sixteen unique balanced input rotations against one fixed oracle bank."""
+    n = len(DIMENSIONS)
+    phase = bank_id % (2 * n)
+    mirrored = phase >= n
+    shift = phase % n
+    base = tuple(reversed(DIMENSIONS)) if mirrored else DIMENSIONS
+    return tuple(base[(position + shift) % n] for position in range(n))
+
+
+def build_rotation_view(excluded_index: int, bank_id: int) -> RotationalView:
+    ordered = rotation_order(bank_id)
+    excluded = DIMENSIONS[excluded_index]
+    active = tuple(dim for dim in ordered if dim != excluded)
+    p2s = {position: dim for position, dim in enumerate(ordered)}
+    s2p = {dim: position for position, dim in p2s.items()}
+    return RotationalView(
+        lane_id=(bank_id % ROTATION_BANKS) * LANES_PER_BANK + excluded_index,
+        bank_id=bank_id,
+        canonical_dimensions=DIMENSIONS,
+        ordered_dimensions=ordered,
+        active_dimensions=active,
+        excluded_dimension=excluded,
+        position_to_semantic=p2s,
+        semantic_to_position=s2p,
+    )
 
 
 @dataclass
@@ -156,14 +180,7 @@ class CancerRunResult:
 
 
 class CancerOracleCompiler:
-    """Compile Condition + union-of-hypotheses + recursive parent structure.
-
-    Hard 0/1 input conditions are conjunctive.
-    Candidate cancer hypotheses are alternative top-down oracles (union/OR).
-    A hypothesis that requires a nulled dimension is inactive in that lane.
-    A recursive parent oracle is an additional conjunctive restriction built
-    from the parent-marked canonical states of the preceding cycle.
-    """
+    """Rotate semantic input through one fixed top-down oracle bank."""
 
     def __init__(
         self,
@@ -175,30 +192,30 @@ class CancerOracleCompiler:
         self.hypotheses = tuple(hypotheses)
         self.recursive_states = recursive_states
 
-    def compile(self, view) -> frozenset[int]:
+    def compile(self, view: RotationalView) -> frozenset[int]:
         active_set = frozenset(view.active_dimensions)
-        active_hypotheses = tuple(
-            h for h in self.hypotheses if h.required_dimensions <= active_set
-        )
-
         marked: set[int] = set()
+
         for local_state in range(view.state_count):
-            assignment = RotationalIngressCell.decode_local_state(view, local_state)
+            semantic_assignment = RotationalIngressCell.decode_local_state(view, local_state)
+            positional_assignment: list[int | None] = [None] * len(DIMENSIONS)
+            for dim, value in semantic_assignment.items():
+                positional_assignment[view.semantic_to_position[dim]] = value
 
             hard_ok = True
             for i, bit in enumerate(self.input_logic):
                 if bit == "?":
                     continue
                 dim = DIMENSIONS[i]
-                if dim in active_set and assignment[dim] != int(bit):
+                if dim in active_set and semantic_assignment[dim] != int(bit):
                     hard_ok = False
                     break
             if not hard_ok:
                 continue
 
             hypothesis_ok = (
-                True if not active_hypotheses
-                else any(h.matches_assignment(assignment) for h in active_hypotheses)
+                True if not self.hypotheses
+                else any(h.matches_positions(positional_assignment) for h in self.hypotheses)
             )
             if not hypothesis_ok:
                 continue
@@ -207,7 +224,7 @@ class CancerOracleCompiler:
                 recursive_ok = False
                 for canonical_state in self.recursive_states:
                     if all(
-                        assignment[dim] == ((canonical_state >> DIMENSIONS.index(dim)) & 1)
+                        semantic_assignment[dim] == ((canonical_state >> DIMENSIONS.index(dim)) & 1)
                         for dim in view.active_dimensions
                     ):
                         recursive_ok = True
@@ -217,7 +234,6 @@ class CancerOracleCompiler:
 
             marked.add(local_state)
         return frozenset(marked)
-
 
 def _full_distribution_bind(distributions: Sequence[tuple[float, ...]], *, epsilon: float = 1e-15) -> tuple[float, ...]:
     """The same logarithmic opinion-pool operator used by RotationalSyntractBind.
@@ -360,7 +376,6 @@ class QCDSCancerEngine:
         self.max_cycles = max_cycles
         self.min_cycles = min(min_cycles, max_cycles)
         self.max_grover_iterations = max_grover_iterations
-        self.ingress = RotationalIngressCell(DIMENSIONS)
         self.family_binder = RotationalSyntractBind()
         self.stability = StabilityEngine(window=3)
 
@@ -383,10 +398,12 @@ class QCDSCancerEngine:
             families: dict[str, list[LaneResult]] = {dim: [] for dim in DIMENSIONS}
             all_lanes: list[LaneResult] = []
 
-            # 16 balanced banks x 8 true-null dimensions = 128 independent QCDS lanes.
+            # 16 unique balanced input rotations x 8 semantic true-null
+            # exclusions = 128 lanes. The oracle bank is identical on every lane.
             for bank in range(self.rotation_banks):
-                bank_id = cycle + bank  # self-rotation across recursive cycles
-                for view in self.ingress.build_bank(bank_id=bank_id):
+                bank_id = cycle * self.rotation_banks + bank
+                for excluded_index in range(len(DIMENSIONS)):
+                    view = build_rotation_view(excluded_index, bank_id)
                     marked = compiler.compile(view)
                     grover = run_grover(
                         view.state_count,
@@ -401,7 +418,11 @@ class QCDSCancerEngine:
                         metadata={
                             "cycle": cycle,
                             "bank_id": bank_id,
+                            "rotation_order": view.ordered_dimensions,
                             "oracle_version": f"cancer-oracle-v{cycle}",
+                            "oracle_count": len(hypotheses),
+                            "oracle_names": tuple(h.name for h in hypotheses),
+                            "fixed_oracle_bank": True,
                             "recursive_oracle": bool(recursive_states),
                         },
                     )
