@@ -449,8 +449,14 @@
   }
 
   function renderResults(result) {
-    resultsRunning.hidden = true;
-    resultsRunning.style.display = "none";
+    const runningOrb = resultsRunning.querySelector(".result-orb");
+    const runningTitle = resultsRunning.querySelector("h3");
+    const runningText = resultsRunning.querySelector("p");
+    resultsRunning.hidden = false;
+    resultsRunning.style.display = "grid";
+    runningOrb.classList.remove("spin");
+    runningTitle.textContent = "QCDS complete.";
+    runningText.textContent = "The recursive run is finished. The Q has stopped rotating; the result is shown below.";
     resultsEmpty.hidden = true;
     resultsEmpty.style.display = "none";
     resultsLive.hidden = false;
@@ -518,6 +524,12 @@
 
       runButton.disabled = true;
       runButton.classList.add("running");
+      const runningOrb = resultsRunning.querySelector(".result-orb");
+      const runningTitle = resultsRunning.querySelector("h3");
+      const runningText = resultsRunning.querySelector("p");
+      runningOrb.classList.add("spin");
+      runningTitle.textContent = "QCDS is running.";
+      runningText.textContent = "128 perspectives are being rotated, excluded and funneled into eight families and one consensus.";
       resultsRunning.hidden = false;
       resultsRunning.style.display = "grid";
       resultsEmpty.hidden = true;
