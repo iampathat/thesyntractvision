@@ -17,22 +17,55 @@ def grover_success_probability(state_count: int, marked_count: int, iterations: 
     return math.sin((2 * iterations + 1) * theta) ** 2
 
 
-def peak_iteration_count(state_count: int, marked_count: int, *, max_iterations: int = 40) -> int:
-    """Choose the best ideal amplitude peak in the declared finite range.
+def peak_iteration_count(
+    state_count: int,
+    marked_count: int,
+    *,
+    max_iterations: int = 40,
+    alignment_threshold: float = 0.999,
+) -> int:
+    """Choose the first Grover tangent/peak, never a later periodic recurrence.
 
-    The policy is explicitly not a fixed three-iteration rule. It uses only N,
-    M and the declared iteration ceiling, never a hidden answer identity.
+    Grover success is periodic. Searching the entire [0,max] window for the
+    absolute largest value can incorrectly choose a later recurrence. QCDS
+    instead walks the envelope forward:
+
+    1. stop immediately when the declared alignment threshold is reached;
+    2. otherwise stop at the first local maximum (the first tangent);
+    3. max_iterations is only a safety ceiling.
+
+    Nothing here hard-codes m=12 (or any other m). For N=256,M=1 the first
+    tangent happens to be m=12.
     """
     if max_iterations < 0:
         raise ValueError("max_iterations must be >= 0")
+    if not 0.0 < alignment_threshold <= 1.0:
+        raise ValueError("alignment_threshold must lie in (0,1]")
     if marked_count == state_count:
         return 0
+
+    prev = grover_success_probability(state_count, marked_count, 0)
+    if prev >= alignment_threshold:
+        return 0
+
     best_k = 0
-    best_mass = -1.0
-    for k in range(max_iterations + 1):
+    best_mass = prev
+    for k in range(1, max_iterations + 1):
         mass = grover_success_probability(state_count, marked_count, k)
+
+        if mass >= alignment_threshold:
+            return k
+
         if mass > best_mass + 1e-15:
-            best_mass, best_k = mass, k
+            best_k, best_mass = k, mass
+
+        # First tangent: once the envelope has started falling, return the
+        # preceding best point rather than chasing a later periodic peak.
+        if mass < prev - 1e-15:
+            return best_k
+
+        prev = mass
+
     return best_k
 
 
