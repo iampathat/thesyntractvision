@@ -1,4 +1,4 @@
-name: Living Logical Robot + Cally.One + Cally ChatGPT + Fabric 4.2 + Security Lab Pages
+name: Living Logical Robot + Cally.One + Cally ChatGPT + Fabric 4.2 + Security Lab + Cancer Lab Pages
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
       - "src/qcds_fabric/**"
       - "qcds_fabric_4_2/**"
       - "qcds-security-lab/**"
+      - "qcds-cancer-lab/**"
       - "robots/legal/sweden_housing/**"
       - "web/session_core_worker.js"
       - "web/assets/**"
@@ -213,6 +214,28 @@ jobs:
       - name: Build Q Security installable app
         working-directory: qcds-security-lab
         run: node scripts/build-web.mjs --out ../_site/qcds-security-lab
+
+      - name: Publish QCDS Cancer Lab static surface
+        run: |
+          mkdir -p _site/qcds-cancer-lab
+          cp -a qcds-cancer-lab/. _site/qcds-cancer-lab/
+
+      - name: Validate QCDS Cancer Lab surface
+        run: |
+          test -s _site/qcds-cancer-lab/index.html
+          test -s _site/qcds-cancer-lab/style.css
+          test -s _site/qcds-cancer-lab/app.js
+          test -s _site/qcds-cancer-lab/LICENSE.md
+          test -s _site/qcds-cancer-lab/README.md
+          test -s _site/qcds-cancer-lab/engine.py
+          test -s _site/qcds-cancer-lab/case_cancer.py
+          test -s _site/qcds-cancer-lab/run_demo.py
+          test -s _site/qcds-cancer-lab/tests/test_engine.py
+          test -s _site/qcds-cancer-lab/example_result.json
+          grep -F 'QCDS CANCER LAB' _site/qcds-cancer-lab/index.html
+          grep -F '128 → 8 → 1' _site/qcds-cancer-lab/index.html
+          grep -F 'Company / organizational use requires a separate license.' _site/qcds-cancer-lab/index.html
+          grep -F 'No ? is required' _site/qcds-cancer-lab/index.html || true
 
       - name: Build isolated Cally.One Pages surface from tribute
         run: |
