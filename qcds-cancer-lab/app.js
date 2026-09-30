@@ -137,7 +137,7 @@
     box.innerHTML = "";
     const p1 = document.createElement("p");
     p1.textContent = result.finalResolved
-      ? `QCDS ran ${first.laneCount} true-null Grover lanes in the first cycle: sixteen rotated banks of eight complementary views. Those 128 full lane distributions were bound into eight rotational families, then into one Syntract, and a fresh Parent Grover was executed over the bound structures. After ${result.cycles.length} recursive cycle${result.cycles.length === 1 ? "" : "s"}, Parent Grover separated a leading state: ${result.finalState}. The bound logic ${result.finalLogic} shows which dimensions stayed fixed and which ${unresolved} dimension${unresolved === 1 ? "" : "s"} remain unresolved as ?.`
+      ? `QCDS ran ${first.laneCount} Grover lanes in the first cycle: sixteen unique balanced rotations moved the same semantic input through one fixed oracle bank, while eight true-null families tested each dimension separately. Those 128 full lane distributions were bound into eight rotational families, then into one Syntract, and a fresh Parent Grover was executed over the bound structures. After ${result.cycles.length} recursive cycle${result.cycles.length === 1 ? "" : "s"}, Parent Grover separated a leading state: ${result.finalState}. The bound logic ${result.finalLogic} shows which dimensions stayed fixed and which ${unresolved} dimension${unresolved === 1 ? "" : "s"} remain unresolved as ?.`
       : `QCDS completed ${result.cycles.length} recursive cycle${result.cycles.length === 1 ? "" : "s"}, but Parent Grover did not yet create a discriminating amplification. That is an unresolved result, not a winning state. The bound logic remains ${result.finalLogic}; ${unresolved} dimension${unresolved === 1 ? "" : "s"} are still open as ?. The next useful step is stronger evidence or more selective top-down oracles, not pretending one equal-height bar won.`;
 
     const p2 = document.createElement("p");
@@ -235,7 +235,7 @@
       const orb = resultsRunning.querySelector(".result-orb");
       orb.classList.add("spin");
       resultsRunning.querySelector("h3").textContent = "QCDS is running.";
-      resultsRunning.querySelector("p").textContent = "128 true-null Grover lanes are rotating through the 128 → 8 → 1 QCDS funnel.";
+      resultsRunning.querySelector("p").textContent = "128 QCDS lanes: 16 unique balanced input rotations × 8 true-null exclusions, all through the same fixed oracle bank.";
       resultsRunning.hidden = false;
       resultsRunning.style.display = "grid";
       resultsEmpty.hidden = true;
