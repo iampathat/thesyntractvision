@@ -7,6 +7,7 @@ sys.path.insert(0, LAB)
 
 from engine import (
     DEFAULT_HYPOTHESES,
+    DIMENSIONS,
     PARALLEL_LANES,
     CancerHypothesis,
     CancerOracleCompiler,
