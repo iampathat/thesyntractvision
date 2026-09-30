@@ -4,6 +4,11 @@
 
 This directory contains a research implementation of the current QCDS cancer architecture. It is separate from the older BRCA2 / mutation scripts so the historical work remains intact.
 
+## Live site
+
+**QCDS Cancer Lab:** https://iampathat.github.io/thesyntractvision/qcds-cancer-lab/
+
+
 > **License:** public to view for evaluation; company / organizational use requires a separate agreement. See [LICENSE.md](./LICENSE.md).
 
 ## What changed
