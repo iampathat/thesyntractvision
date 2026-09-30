@@ -54,15 +54,29 @@
     return Math.sin((2 * iterations + 1) * theta) ** 2;
   }
 
-  function peakIterationCount(stateCount, markedCount, maxIterations = MAX_GROVER_ITERS) {
+  function peakIterationCount(stateCount, markedCount, maxIterations = MAX_GROVER_ITERS, alignmentThreshold = 0.999) {
     if (markedCount === 0 || markedCount === stateCount) return 0;
-    let bestK = 0, bestMass = -1;
-    for (let k = 0; k <= maxIterations; k++) {
+    if (!(alignmentThreshold > 0 && alignmentThreshold <= 1)) throw new Error("alignmentThreshold must lie in (0,1]");
+
+    let prev = groverSuccessProbability(stateCount, markedCount, 0);
+    if (prev >= alignmentThreshold) return 0;
+
+    let bestK = 0;
+    let bestMass = prev;
+    for (let k = 1; k <= maxIterations; k++) {
       const mass = groverSuccessProbability(stateCount, markedCount, k);
+
+      if (mass >= alignmentThreshold) return k;
+
       if (mass > bestMass + 1e-15) {
-        bestMass = mass;
         bestK = k;
+        bestMass = mass;
       }
+
+      // Stop at the first tangent/peak. Do not chase a later periodic Grover recurrence.
+      if (mass < prev - 1e-15) return bestK;
+
+      prev = mass;
     }
     return bestK;
   }
