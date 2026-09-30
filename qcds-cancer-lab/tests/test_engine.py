@@ -54,3 +54,12 @@ def test_recursive_parent_structure_returns_as_oracle():
     assert len(result.cycles) >= 2
     assert result.cycles[0].derived_logic
     assert result.cycles[1].lane_count == 128
+
+
+if __name__ == "__main__":
+    test_canonical_grover_256_single_target_peak_is_12()
+    test_cancer_cycle_is_128_to_8_to_parent_grover()
+    test_fixed_input_bits_are_never_lost_globally()
+    test_complete_logic_is_valid_condition()
+    test_recursive_parent_structure_returns_as_oracle()
+    print("QCDS Cancer Python engine tests: PASS")
