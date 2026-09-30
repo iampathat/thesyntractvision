@@ -1,29 +1,17 @@
 (() => {
   "use strict";
 
-  const DIMENSIONS = [
-    "Mutation load",
-    "DNA repair",
-    "Growth signal",
-    "Apoptosis escape",
-    "Immune evasion",
-    "Target engagement",
-    "Resistance",
-    "Cell process"
-  ];
+  const CORE = globalThis.QCDSCore;
+  if (!CORE) throw new Error("QCDSCore failed to load.");
 
+  const DIMENSIONS = CORE.DIMENSIONS;
   const DEFAULT_ORACLES = [
-    { name: "DNA repair", mask: "11??0???", weight: 1.20, provenance: "legacy cancer hypothesis" },
-    { name: "PI3K axis", mask: "??1?1???", weight: 1.00, provenance: "legacy cancer hypothesis" },
-    { name: "Receptor axis", mask: "???111??", weight: 1.10, provenance: "legacy cancer hypothesis" },
-    { name: "HR + broad", mask: "1??1????", weight: 0.90, provenance: "legacy cancer hypothesis" },
-    { name: "PI3K + HR", mask: "??11????", weight: 1.05, provenance: "legacy cancer hypothesis" }
+    { name: "DNA repair", mask: "11??0???", provenance: "legacy cancer hypothesis" },
+    { name: "PI3K axis", mask: "??1?1???", provenance: "legacy cancer hypothesis" },
+    { name: "Receptor axis", mask: "???111??", provenance: "legacy cancer hypothesis" },
+    { name: "HR + broad", mask: "1??1????", provenance: "legacy cancer hypothesis" },
+    { name: "PI3K + HR", mask: "??11????", provenance: "legacy cancer hypothesis" }
   ];
-
-  const PHYSICAL_BITFLIP = [0.008, 0.012, 0.009, 0.015, 0.010, 0.013, 0.011, 0.014];
-  const MAX_GROVER_ITERS = 40;
-  const PARALLEL_BRANCHES = 128;
-  const FUNNEL_WIDTH = 8;
 
   let mask = Array(8).fill("?");
   let oracleRows = DEFAULT_ORACLES.map(o => ({ ...o, enabled: true }));
@@ -42,44 +30,8 @@
   const resultsEmpty = $("resultsEmpty");
   const resultsLive = $("resultsLive");
 
-  function validMask(value) {
-    return typeof value === "string" && value.length === 8 && /^[01?]{8}$/.test(value);
-  }
-
   function cycleBit(v) {
     return v === "?" ? "0" : v === "0" ? "1" : "?";
-  }
-
-  function expandMask(value) {
-    if (!validMask(value)) throw new Error("Mask must contain exactly eight 0 / 1 / ? symbols.");
-    let states = [""];
-    for (const ch of value) {
-      if (ch === "?") {
-        const next = [];
-        for (const s of states) { next.push(s + "0", s + "1"); }
-        states = next;
-      } else {
-        states = states.map(s => s + ch);
-      }
-    }
-    return states;
-  }
-
-  function maskMatches(state, oracleMask, excluded = -1) {
-    for (let i = 0; i < state.length; i++) {
-      if (i === excluded) continue;
-      const m = oracleMask[i];
-      if (m !== "?" && state[i] !== m) return false;
-    }
-    return true;
-  }
-
-  function logicMatches(state, logic) {
-    for (let i = 0; i < state.length; i++) {
-      const m = logic[i];
-      if (m !== "?" && state[i] !== m) return false;
-    }
-    return true;
   }
 
   function renderDimensions() {
@@ -117,8 +69,7 @@
     const bars = Math.min(16, Math.max(4, 2 ** Math.min(u, 4)));
     for (let i = 0; i < bars; i++) {
       const s = document.createElement("span");
-      const wave = 24 + ((i * 31 + u * 17) % 58);
-      s.style.setProperty("--h", wave + "%");
+      s.style.setProperty("--h", (24 + ((i * 31 + u * 17) % 58)) + "%");
       maskViz.appendChild(s);
     }
   }
@@ -129,7 +80,7 @@
       const row = document.createElement("div");
       row.className = "oracle-row";
       row.innerHTML = `
-        <label class="oracle-switch" title="Enable oracle">
+        <label class="oracle-switch" title="Enable oracle hypothesis">
           <input type="checkbox" ${o.enabled ? "checked" : ""} aria-label="Enable ${o.name}">
           <span></span>
         </label>
@@ -138,12 +89,10 @@
           <small>${o.provenance}</small>
         </div>
         <input class="oracle-mask" value="${o.mask}" maxlength="8" spellcheck="false" aria-label="${o.name} mask">
-        <input class="oracle-weight" type="number" min="0.05" max="5" step="0.05" value="${o.weight.toFixed(2)}" aria-label="${o.name} weight">
       `;
 
       const checkbox = row.querySelector('input[type="checkbox"]');
       const maskField = row.querySelector(".oracle-mask");
-      const weightField = row.querySelector(".oracle-weight");
 
       checkbox.addEventListener("change", e => {
         oracleRows[index].enabled = e.target.checked;
@@ -152,346 +101,20 @@
       maskField.addEventListener("input", e => {
         const value = e.target.value.trim();
         oracleRows[index].mask = value;
-        e.target.classList.toggle("invalid", !validMask(value));
-      });
-      weightField.addEventListener("input", e => {
-        const value = Number(e.target.value);
-        oracleRows[index].weight = Number.isFinite(value) && value > 0 ? value : 1;
+        let valid = true;
+        try { CORE.validateMask(value); } catch { valid = false; }
+        e.target.classList.toggle("invalid", !valid);
       });
       row.classList.toggle("disabled", !o.enabled);
       oracleControls.appendChild(row);
     });
   }
 
-  function oracleScores(states, oracles, excluded) {
-    const scores = new Map();
-    for (const state of states) {
-      let score = 0;
-      for (const oracle of oracles) {
-        if (maskMatches(state, oracle.mask, excluded)) score += oracle.weight;
-      }
-      scores.set(state, score);
-    }
-    return scores;
-  }
-
-  function markedStates(states, scores) {
-    if (!states.length) return [];
-    let best = -Infinity;
-    for (const s of states) best = Math.max(best, scores.get(s));
-    return states.filter(s => scores.get(s) >= best - 1e-12);
-  }
-
-  function optimalGroverIterations(n, markedCount) {
-    if (n <= 0 || markedCount <= 0 || markedCount >= n) return 0;
-
-    // Exact Grover angle for M marked states in N compatible states.
-    // Choose the first peak, bounded by MAX_GROVER_ITERS.
-    const theta = Math.asin(Math.sqrt(markedCount / n));
-    const raw = (Math.PI / (4 * theta)) - 0.5;
-    const floorK = Math.max(0, Math.min(MAX_GROVER_ITERS, Math.floor(raw)));
-    const ceilK = Math.max(0, Math.min(MAX_GROVER_ITERS, Math.ceil(raw)));
-    const candidates = [...new Set([floorK, ceilK])];
-
-    const markedProbability = k => Math.sin((2 * k + 1) * theta) ** 2;
-    candidates.sort((ka, kb) => {
-      const delta = markedProbability(kb) - markedProbability(ka);
-      return Math.abs(delta) > 1e-15 ? delta : ka - kb;
-    });
-    return candidates[0] ?? 0;
-  }
-
-  function amplify(states, marked) {
-    const n = states.length;
-    if (!n) return { distribution: {}, iters: 0 };
-    const markedSet = new Set(marked);
-    if (!marked.length || marked.length === n) {
-      const p = 1 / n;
-      return { distribution: Object.fromEntries(states.map(s => [s, p])), iters: 0 };
-    }
-
-    const m = optimalGroverIterations(n, marked.length);
-    const amp = new Map(states.map(s => [s, 1 / Math.sqrt(n)]));
-    for (let iter = 0; iter < m; iter++) {
-      for (const s of markedSet) amp.set(s, -amp.get(s));
-      let mean = 0;
-      for (const a of amp.values()) mean += a;
-      mean /= n;
-      for (const s of states) amp.set(s, 2 * mean - amp.get(s));
-    }
-
-    const distribution = {};
-    let z = 0;
-    for (const s of states) {
-      const p = amp.get(s) ** 2;
-      distribution[s] = p;
-      z += p;
-    }
-    if (z > 0) for (const s of states) distribution[s] /= z;
-    return { distribution, iters: m };
-  }
-
-  function flipBit(state, i) {
-    return state.slice(0, i) + (state[i] === "0" ? "1" : "0") + state.slice(i + 1);
-  }
-
-  function applyPhysicalNoise(distribution, rotation) {
-    let current = { ...distribution };
-    const n = 8;
-    for (let logical = 0; logical < n; logical++) {
-      const physical = (logical + rotation) % n;
-      const e = PHYSICAL_BITFLIP[physical];
-      const next = {};
-      for (const [state, p] of Object.entries(current)) {
-        next[state] = (next[state] || 0) + p * (1 - e);
-        const flipped = flipBit(state, logical);
-        next[flipped] = (next[flipped] || 0) + p * e;
-      }
-      current = next;
-    }
-    return current;
-  }
-
-  function conditionDistribution(distribution, allowedLogic) {
-    const out = {};
-    let z = 0;
-    for (const [state, p] of Object.entries(distribution)) {
-      if (!logicMatches(state, allowedLogic)) continue;
-      out[state] = p;
-      z += p;
-    }
-    if (z <= 0) return {};
-    for (const state of Object.keys(out)) out[state] /= z;
-    return out;
-  }
-
-  function stableConsensus(distributions) {
-    if (!distributions.length) return {};
-    const keys = new Set();
-    distributions.forEach(d => Object.keys(d).forEach(k => keys.add(k)));
-    const eps = 1e-12;
-    const out = {};
-    for (const state of keys) {
-      let logSum = 0;
-      for (const d of distributions) logSum += Math.log(Math.max(d[state] || 0, eps));
-      out[state] = Math.exp(logSum / distributions.length);
-    }
-    const z = Object.values(out).reduce((sum, p) => sum + p, 0) || 1;
-    for (const state of Object.keys(out)) out[state] /= z;
-    return out;
-  }
-
-  function mulberry32(seed) {
-    return function() {
-      let t = seed += 0x6D2B79F5;
-      t = Math.imul(t ^ t >>> 15, t | 1);
-      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-      return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    };
-  }
-
-  function finiteShots(distribution, shots, seed) {
-    const entries = Object.entries(distribution).filter(([, p]) => p > 0).sort((a, b) => a[0].localeCompare(b[0]));
-    let cumulative = 0;
-    const cdf = entries.map(([s, p]) => [s, cumulative += p]);
-    if (!cdf.length) return {};
-    cdf[cdf.length - 1][1] = 1;
-
-    const rng = mulberry32(seed >>> 0);
-    const counts = {};
-    for (let k = 0; k < shots; k++) {
-      const r = rng();
-      let lo = 0, hi = cdf.length - 1;
-      while (lo < hi) {
-        const mid = (lo + hi) >> 1;
-        if (r <= cdf[mid][1]) hi = mid; else lo = mid + 1;
-      }
-      const state = cdf[lo][0];
-      counts[state] = (counts[state] || 0) + 1;
-    }
-    return Object.fromEntries(Object.entries(counts).map(([s, c]) => [s, c / shots]));
-  }
-
-  function branchRun(logic, hardInput, oracles, excluded, rotation, perspective, depth, shots, seedOffset = 0) {
-    const chars = logic.split("");
-
-    // Dimension exclusion may reopen a dimension inferred by a previous recursive
-    // round, but it must NEVER reopen a 0/1 condition explicitly supplied by the user.
-    if (excluded >= 0 && hardInput[excluded] === "?") chars[excluded] = "?";
-    const branchLogic = chars.join("");
-
-    const states = expandMask(branchLogic);
-    const scores = oracleScores(states, oracles, excluded);
-    const marked = markedStates(states, scores);
-    const amp = amplify(states, marked);
-    const noisy = applyPhysicalNoise(amp.distribution, rotation);
-
-    // Physical/NISQ noise may flip measured bits, but those flips are not allowed
-    // to become new logical candidates that violate the active branch conditions.
-    const conditioned = conditionDistribution(noisy, branchLogic);
-    const seed = 173 + seedOffset + depth * 100000 + Math.max(0, excluded) * 10000 + rotation * 100 + perspective;
-    const measured = finiteShots(conditioned, shots, seed);
-    const top = topState(measured);
-    return { excluded, rotation, perspective, markedCount: marked.length, groverIters: amp.iters, distribution: measured, topState: top.state, topP: top.p };
-  }
-
-  function meanDistributions(distributions) {
-    if (!distributions.length) return {};
-    const out = {};
-    for (const d of distributions) {
-      for (const [s, p] of Object.entries(d)) out[s] = (out[s] || 0) + p / distributions.length;
-    }
-    let z = Object.values(out).reduce((a, b) => a + b, 0) || 1;
-    for (const s of Object.keys(out)) out[s] /= z;
-    return out;
-  }
-
-  function topState(distribution) {
-    let state = "", p = -1;
-    for (const [s, v] of Object.entries(distribution)) {
-      if (v > p) { state = s; p = v; }
-    }
-    return { state, p: Math.max(0, p) };
-  }
-
-  function familyStability(branches) {
-    const counts = {};
-    for (const b of branches) counts[b.topState] = (counts[b.topState] || 0) + 1;
-    return Math.max(0, ...Object.values(counts)) / Math.max(1, branches.length);
-  }
-
-  function deriveLogic(distribution, topK = FUNNEL_WIDTH, bindThreshold = 0.875) {
-    const top = Object.entries(distribution).sort((a, b) => b[1] - a[1]).slice(0, topK);
-    const total = top.reduce((sum, [, p]) => sum + p, 0) || 1;
-    let logic = "";
-    for (let i = 0; i < 8; i++) {
-      const p1 = top.reduce((sum, [s, p]) => sum + (s[i] === "1" ? p : 0), 0) / total;
-      logic += p1 >= bindThreshold ? "1" : p1 <= (1 - bindThreshold) ? "0" : "?";
-    }
-    return logic;
-  }
-
-  function totalVariation(a, b) {
-    const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
-    let sum = 0;
-    for (const k of keys) sum += Math.abs((a[k] || 0) - (b[k] || 0));
-    return 0.5 * sum;
-  }
-
-  async function runRound(logic, hardInput, oracles, depth, shots, onProgress) {
-    const baselineBranches = [];
-    for (let r = 0; r < 16; r++) {
-      baselineBranches.push(branchRun(logic, hardInput, oracles, -1, r % 8, Math.floor(r / 8), depth, shots, 700000));
-    }
-    const baseline = meanDistributions(baselineBranches.map(b => b.distribution));
-    const baselineTop = topState(baseline);
-
-    const families = [];
-    const branchesPerFamily = PARALLEL_BRANCHES / 8;
-    for (let dim = 0; dim < 8; dim++) {
-      const branches = [];
-      for (let j = 0; j < branchesPerFamily; j++) {
-        branches.push(branchRun(logic, hardInput, oracles, dim, j % 8, Math.floor(j / 8), depth, shots, 0));
-      }
-      const distribution = meanDistributions(branches.map(b => b.distribution));
-      const top = topState(distribution);
-      families.push({
-        excludedDimension: dim,
-        distribution,
-        topState: top.state,
-        topP: top.p,
-        stability: familyStability(branches),
-        groverMin: Math.min(...branches.map(b => b.groverIters)),
-        groverMax: Math.max(...branches.map(b => b.groverIters))
-      });
-      onProgress?.(dim + 1, 8);
-      await new Promise(requestAnimationFrame);
-    }
-
-    // 8 -> 1 must reward states that survive ALL exclusion families, not a state
-    // that is huge in just one family. Geometric consensus penalizes instability.
-    const consensus = stableConsensus(families.map(f => f.distribution));
-    const ctop = topState(consensus);
-    const derivedLogic = deriveLogic(consensus);
-    const influence = {};
-    families.forEach(f => {
-      influence[DIMENSIONS[f.excludedDimension]] = totalVariation(baseline, f.distribution);
-    });
-
-    return {
-      depth,
-      inputLogic: logic,
-      unknowns: [...logic].filter(x => x === "?").length,
-      stateCount: 2 ** [...logic].filter(x => x === "?").length,
-      baselineTop: baselineTop.state,
-      baselineP: baselineTop.p,
-      families,
-      consensusDistribution: consensus,
-      consensusTop: ctop.state,
-      consensusP: ctop.p,
-      derivedLogic,
-      dimensionInfluence: influence,
-      groverMin: Math.min(...families.map(f => f.groverMin)),
-      groverMax: Math.max(...families.map(f => f.groverMax))
-    };
-  }
-
-  async function runQCDS(logic, initialOracles, recursionDepth, shots) {
-    const hardInput = logic;
-    let currentLogic = logic;
-    let oracles = initialOracles.map(o => ({ ...o }));
-    const rounds = [];
-    let lastTop = null;
-    let stableCount = 0;
-
-    for (let depth = 0; depth < recursionDepth; depth++) {
-      runState.textContent = `Round ${depth + 1}/${recursionDepth}: running 128 perspectives → 8 families…`;
-      const round = await runRound(currentLogic, hardInput, oracles, depth, shots, (family, total) => {
-        runState.textContent = `Round ${depth + 1}/${recursionDepth}: family ${family}/${total} · rotating + excluding dimensions…`;
-      });
-
-      const derivedOracle = {
-        name: `Recursive consensus d${depth}`,
-        mask: round.derivedLogic,
-        weight: 1 + 0.25 * depth,
-        provenance: "QCDS 128→8→1 consensus"
-      };
-      round.addedOracle = derivedOracle;
-      rounds.push(round);
-      oracles.push(derivedOracle);
-      currentLogic = round.derivedLogic;
-
-      if (round.consensusTop === lastTop) stableCount += 1; else stableCount = 0;
-      lastTop = round.consensusTop;
-
-      if (!currentLogic.includes("?") || stableCount >= 1) break;
-      await new Promise(requestAnimationFrame);
-    }
-
-    const finalRound = rounds[rounds.length - 1];
-    for (const state of Object.keys(finalRound.consensusDistribution)) {
-      if (!logicMatches(state, hardInput) && finalRound.consensusDistribution[state] > 1e-12) {
-        throw new Error("Internal invariant failed: final state violated the user-supplied 0/1 logic.");
-      }
-    }
-    return {
-      rounds,
-      finalState: finalRound.consensusTop,
-      finalP: finalRound.consensusP,
-      finalLogic: currentLogic,
-      finalOracles: oracles
-    };
-  }
-
   function collectOracles() {
-    const bad = oracleRows.find(o => o.enabled && !validMask(o.mask));
-    if (bad) throw new Error(`Invalid oracle mask: ${bad.name}. Use exactly eight 0 / 1 / ? symbols.`);
-    return oracleRows.filter(o => o.enabled).map(o => ({
-      name: o.name,
-      mask: o.mask,
-      weight: Number(o.weight) || 1,
-      provenance: o.provenance
-    }));
+    return oracleRows.filter(o => o.enabled).map(o => {
+      CORE.validateMask(o.mask);
+      return { name: o.name, mask: o.mask, provenance: o.provenance };
+    });
   }
 
   function formatP(p) {
@@ -501,62 +124,64 @@
 
   function renderLaymanExplanation(result) {
     const box = $("laymanExplanation");
-    const first = result.rounds[0];
-    const last = result.rounds[result.rounds.length - 1];
+    const first = result.cycles[0];
+    const last = result.cycles[result.cycles.length - 1];
     const unresolved = [...result.finalLogic].filter(x => x === "?").length;
-    const strongest = Object.entries(last.dimensionInfluence).sort((a, b) => b[1] - a[1]).slice(0, 2);
-    const strongestText = strongest.length
-      ? strongest.map(([name]) => name).join(" and ")
-      : "no single dimension";
+    const strongest = last.influence
+      .map((v, i) => [DIMENSIONS[i], v])
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 2)
+      .map(([name]) => name)
+      .join(" and ");
 
     box.innerHTML = "";
     const p1 = document.createElement("p");
     p1.textContent =
-      `QCDS started with ${first.stateCount.toLocaleString("en-US")} logically compatible state${first.stateCount === 1 ? "" : "s"} and repeatedly asked which patterns survived the oracle hypotheses, rotation and one-dimension-at-a-time removal. After ${result.rounds.length} recursive round${result.rounds.length === 1 ? "" : "s"}, the strongest remaining simulated state was ${result.finalState}. The derived logic ${result.finalLogic} means that some dimensions became stable 0/1 conditions while ${unresolved} dimension${unresolved === 1 ? "" : "s"} remained unresolved as ?. `;
+      `QCDS ran ${first.laneCount} true-null Grover lanes in the first cycle: sixteen rotated banks of eight complementary views. Those 128 full lane distributions were bound into eight rotational families, then into one Syntract, and a fresh Parent Grover was executed over the strongest bound structures. After ${result.cycles.length} recursive cycle${result.cycles.length === 1 ? "" : "s"}, the leading Parent-Grover state was ${result.finalState}. The bound logic ${result.finalLogic} shows which dimensions stayed fixed and which ${unresolved} dimension${unresolved === 1 ? "" : "s"} remain unresolved as ?. `;
 
     const p2 = document.createElement("p");
     p2.textContent =
-      `The dimension-influence bars explain why that result matters: removing ${strongestText} changed the final distribution the most, so the current conclusion depends more strongly on those parts of the Syntract. The consensus probability (${formatP(result.finalP)}) is only the share of this final QCDS simulation distribution assigned to the leading state—it is not a medical probability, diagnosis or treatment confidence. The useful question is whether the same structure stays stable when better evidence and better oracles are added in the next run.`;
+      `The influence bars are a sensitivity check, not a vote: they show how much the bound distribution changes when each semantic dimension is truly absent. In this run, ${strongest || "no single dimension"} changed it the most. The displayed probability (${formatP(result.finalProbability)}) is the Parent-Grover probability inside this QCDS run—not a medical probability or treatment confidence. What matters is whether the same structure survives new evidence, oracle changes and recursive return.`;
 
     box.append(p1, p2);
   }
 
   function renderResults(result) {
-    const runningOrb = resultsRunning.querySelector(".result-orb");
-    const runningTitle = resultsRunning.querySelector("h3");
-    const runningText = resultsRunning.querySelector("p");
+    const orb = resultsRunning.querySelector(".result-orb");
     resultsRunning.hidden = false;
     resultsRunning.style.display = "grid";
-    runningOrb.classList.remove("spin");
-    runningTitle.textContent = "QCDS complete.";
-    runningText.textContent = "The recursive run is finished. The Q has stopped rotating; the result is shown below.";
+    orb.classList.remove("spin");
+    resultsRunning.querySelector("h3").textContent = "QCDS complete.";
+    resultsRunning.querySelector("p").textContent = "The Q has stopped because the recursive QCDS run is finished. The result is shown below.";
+
     resultsEmpty.hidden = true;
     resultsEmpty.style.display = "none";
     resultsLive.hidden = false;
     resultsLive.style.display = "";
+
     $("finalState").textContent = result.finalState;
-    $("finalP").textContent = formatP(result.finalP);
+    $("finalP").textContent = formatP(result.finalProbability);
     $("finalLogic").textContent = result.finalLogic;
-    $("roundCount").textContent = String(result.rounds.length);
+    $("roundCount").textContent = String(result.cycles.length);
 
     const timeline = $("roundTimeline");
     timeline.innerHTML = "";
-    result.rounds.forEach((r, i) => {
+    result.cycles.forEach((r, i) => {
       const row = document.createElement("div");
       row.className = "round-row";
+      const stableText = r.stability?.stable ? "stable" : "re-enter";
       row.innerHTML = `
         <div class="round-index">R${i + 1}</div>
-        <div class="round-path"><code>${r.inputLogic}</code><span>→</span><code>${r.derivedLogic}</code></div>
-        <div class="round-meta"><b>${r.stateCount.toLocaleString("en-US")}</b> states · Grover m=${r.groverMin === r.groverMax ? r.groverMin : r.groverMin + "–" + r.groverMax} · top <code>${r.consensusTop}</code> · ${formatP(r.consensusP)}</div>
+        <div class="round-path"><code>${r.derivedLogic}</code><span>·</span><code>${stableText}</code></div>
+        <div class="round-meta"><b>${r.laneCount}</b> lanes · local Grover m=${r.groverMin === r.groverMax ? r.groverMin : r.groverMin + "–" + r.groverMax} · Parent Grover m=${r.parent.grover.iterations} · top <code>${CORE.stateToBits(r.parent.topCanonical)}</code> · ${formatP(r.parent.grover.topProbability)}</div>
       `;
       timeline.appendChild(row);
     });
 
-    const last = result.rounds[result.rounds.length - 1];
     const influence = $("influenceChart");
     influence.innerHTML = "";
-    const influenceEntries = Object.entries(last.dimensionInfluence).sort((a, b) => b[1] - a[1]);
-    const maxInfluence = Math.max(...influenceEntries.map(([, v]) => v), 1e-9);
+    const influenceEntries = lastInfluenceEntries(result);
+    const maxInfluence = Math.max(...influenceEntries.map(([, v]) => v), 1e-12);
     influenceEntries.forEach(([name, value]) => {
       const row = document.createElement("div");
       row.className = "bar-row";
@@ -570,8 +195,8 @@
 
     const dist = $("distributionChart");
     dist.innerHTML = "";
-    const topStates = Object.entries(last.consensusDistribution).sort((a, b) => b[1] - a[1]).slice(0, 10);
-    const maxP = Math.max(...topStates.map(([, p]) => p), 1e-9);
+    const topStates = Object.entries(result.finalDistribution).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    const maxP = Math.max(...topStates.map(([, p]) => p), 1e-12);
     topStates.forEach(([state, p], i) => {
       const col = document.createElement("div");
       col.className = "dist-col" + (i === 0 ? " winner" : "");
@@ -587,22 +212,27 @@
     resultsLive.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  function lastInfluenceEntries(result) {
+    const last = result.cycles[result.cycles.length - 1];
+    return last.influence.map((v, i) => [DIMENSIONS[i], v]).sort((a, b) => b[1] - a[1]);
+  }
+
   async function execute() {
     if (runButton.disabled) return;
+
     try {
-      const logic = mask.join("");
-      const oracles = collectOracles();
-      const depth = Number($("depthSelect").value);
-      const shots = Number($("shotsSelect").value);
+      const inputMask = mask.join("");
+      CORE.validateMask(inputMask);
+      const hypotheses = collectOracles();
+      const maxCycles = Number($("depthSelect").value);
 
       runButton.disabled = true;
       runButton.classList.add("running");
-      const runningOrb = resultsRunning.querySelector(".result-orb");
-      const runningTitle = resultsRunning.querySelector("h3");
-      const runningText = resultsRunning.querySelector("p");
-      runningOrb.classList.add("spin");
-      runningTitle.textContent = "QCDS is running.";
-      runningText.textContent = "128 perspectives are being rotated, excluded and funneled into eight families and one consensus.";
+
+      const orb = resultsRunning.querySelector(".result-orb");
+      orb.classList.add("spin");
+      resultsRunning.querySelector("h3").textContent = "QCDS is running.";
+      resultsRunning.querySelector("p").textContent = "128 true-null Grover lanes are rotating through the 128 → 8 → 1 QCDS funnel.";
       resultsRunning.hidden = false;
       resultsRunning.style.display = "grid";
       resultsEmpty.hidden = true;
@@ -610,11 +240,22 @@
       resultsLive.hidden = true;
       resultsLive.style.display = "none";
 
-      const result = await runQCDS(logic, oracles, depth, shots);
-      runState.textContent = `Complete. ${result.rounds.length} recursive round${result.rounds.length === 1 ? "" : "s"} executed. No target state was supplied.`;
+      await new Promise(requestAnimationFrame);
+
+      const result = await CORE.runCancerQCDSAsync({
+        inputMask,
+        hypotheses,
+        maxCycles,
+        onProgress(info) {
+          runState.textContent = `Cycle ${info.cycle + 1}/${maxCycles}: ${info.lanesDone}/${info.lanesTotal} QCDS lanes complete · rotation bank ${info.bank}/${info.banks}`;
+        }
+      });
+
+      const last = result.cycles[result.cycles.length - 1];
+      runState.textContent =
+        `Complete · ${result.cycles.length} recursive cycle${result.cycles.length === 1 ? "" : "s"} · 128→8→1 · Parent Grover m=${last.parent.grover.iterations} · no target state supplied.`;
       renderResults(result);
     } catch (err) {
-      runState.textContent = "Run stopped: " + err.message;
       resultsRunning.hidden = true;
       resultsRunning.style.display = "none";
       resultsEmpty.hidden = false;
@@ -622,6 +263,7 @@
       resultsLive.hidden = true;
       resultsLive.style.display = "none";
       resultsEmpty.innerHTML = `<div class="result-orb error">!</div><h3>Input needs attention.</h3><p>${err.message}</p>`;
+      runState.textContent = "Run stopped: " + err.message;
     } finally {
       runButton.disabled = false;
       runButton.classList.remove("running");
