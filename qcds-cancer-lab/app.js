@@ -74,6 +74,14 @@
     return true;
   }
 
+  function logicMatches(state, logic) {
+    for (let i = 0; i < state.length; i++) {
+      const m = logic[i];
+      if (m !== "?" && state[i] !== m) return false;
+    }
+    return true;
+  }
+
   function renderDimensions() {
     dimensionLabels.innerHTML = "";
     DIMENSIONS.forEach((name, i) => {
@@ -174,6 +182,25 @@
     return states.filter(s => scores.get(s) >= best - 1e-12);
   }
 
+  function optimalGroverIterations(n, markedCount) {
+    if (n <= 0 || markedCount <= 0 || markedCount >= n) return 0;
+
+    // Exact Grover angle for M marked states in N compatible states.
+    // Choose the first peak, bounded by MAX_GROVER_ITERS.
+    const theta = Math.asin(Math.sqrt(markedCount / n));
+    const raw = (Math.PI / (4 * theta)) - 0.5;
+    const floorK = Math.max(0, Math.min(MAX_GROVER_ITERS, Math.floor(raw)));
+    const ceilK = Math.max(0, Math.min(MAX_GROVER_ITERS, Math.ceil(raw)));
+    const candidates = [...new Set([floorK, ceilK])];
+
+    const markedProbability = k => Math.sin((2 * k + 1) * theta) ** 2;
+    candidates.sort((ka, kb) => {
+      const delta = markedProbability(kb) - markedProbability(ka);
+      return Math.abs(delta) > 1e-15 ? delta : ka - kb;
+    });
+    return candidates[0] ?? 0;
+  }
+
   function amplify(states, marked) {
     const n = states.length;
     if (!n) return { distribution: {}, iters: 0 };
@@ -183,11 +210,7 @@
       return { distribution: Object.fromEntries(states.map(s => [s, p])), iters: 0 };
     }
 
-    const m = Math.max(1, Math.min(
-      MAX_GROVER_ITERS,
-      Math.round((Math.PI / 4) * Math.sqrt(n / marked.length) - 0.5)
-    ));
-
+    const m = optimalGroverIterations(n, marked.length);
     const amp = new Map(states.map(s => [s, 1 / Math.sqrt(n)]));
     for (let iter = 0; iter < m; iter++) {
       for (const s of markedSet) amp.set(s, -amp.get(s));
@@ -229,6 +252,35 @@
     return current;
   }
 
+  function conditionDistribution(distribution, allowedLogic) {
+    const out = {};
+    let z = 0;
+    for (const [state, p] of Object.entries(distribution)) {
+      if (!logicMatches(state, allowedLogic)) continue;
+      out[state] = p;
+      z += p;
+    }
+    if (z <= 0) return {};
+    for (const state of Object.keys(out)) out[state] /= z;
+    return out;
+  }
+
+  function stableConsensus(distributions) {
+    if (!distributions.length) return {};
+    const keys = new Set();
+    distributions.forEach(d => Object.keys(d).forEach(k => keys.add(k)));
+    const eps = 1e-12;
+    const out = {};
+    for (const state of keys) {
+      let logSum = 0;
+      for (const d of distributions) logSum += Math.log(Math.max(d[state] || 0, eps));
+      out[state] = Math.exp(logSum / distributions.length);
+    }
+    const z = Object.values(out).reduce((sum, p) => sum + p, 0) || 1;
+    for (const state of Object.keys(out)) out[state] /= z;
+    return out;
+  }
+
   function mulberry32(seed) {
     return function() {
       let t = seed += 0x6D2B79F5;
@@ -260,16 +312,25 @@
     return Object.fromEntries(Object.entries(counts).map(([s, c]) => [s, c / shots]));
   }
 
-  function branchRun(logic, oracles, excluded, rotation, perspective, depth, shots, seedOffset = 0) {
+  function branchRun(logic, hardInput, oracles, excluded, rotation, perspective, depth, shots, seedOffset = 0) {
     const chars = logic.split("");
-    if (excluded >= 0) chars[excluded] = "?";
-    const states = expandMask(chars.join(""));
+
+    // Dimension exclusion may reopen a dimension inferred by a previous recursive
+    // round, but it must NEVER reopen a 0/1 condition explicitly supplied by the user.
+    if (excluded >= 0 && hardInput[excluded] === "?") chars[excluded] = "?";
+    const branchLogic = chars.join("");
+
+    const states = expandMask(branchLogic);
     const scores = oracleScores(states, oracles, excluded);
     const marked = markedStates(states, scores);
     const amp = amplify(states, marked);
     const noisy = applyPhysicalNoise(amp.distribution, rotation);
+
+    // Physical/NISQ noise may flip measured bits, but those flips are not allowed
+    // to become new logical candidates that violate the active branch conditions.
+    const conditioned = conditionDistribution(noisy, branchLogic);
     const seed = 173 + seedOffset + depth * 100000 + Math.max(0, excluded) * 10000 + rotation * 100 + perspective;
-    const measured = finiteShots(noisy, shots, seed);
+    const measured = finiteShots(conditioned, shots, seed);
     const top = topState(measured);
     return { excluded, rotation, perspective, markedCount: marked.length, groverIters: amp.iters, distribution: measured, topState: top.state, topP: top.p };
   }
@@ -317,10 +378,10 @@
     return 0.5 * sum;
   }
 
-  async function runRound(logic, oracles, depth, shots, onProgress) {
+  async function runRound(logic, hardInput, oracles, depth, shots, onProgress) {
     const baselineBranches = [];
     for (let r = 0; r < 16; r++) {
-      baselineBranches.push(branchRun(logic, oracles, -1, r % 8, Math.floor(r / 8), depth, shots, 700000));
+      baselineBranches.push(branchRun(logic, hardInput, oracles, -1, r % 8, Math.floor(r / 8), depth, shots, 700000));
     }
     const baseline = meanDistributions(baselineBranches.map(b => b.distribution));
     const baselineTop = topState(baseline);
@@ -330,7 +391,7 @@
     for (let dim = 0; dim < 8; dim++) {
       const branches = [];
       for (let j = 0; j < branchesPerFamily; j++) {
-        branches.push(branchRun(logic, oracles, dim, j % 8, Math.floor(j / 8), depth, shots, 0));
+        branches.push(branchRun(logic, hardInput, oracles, dim, j % 8, Math.floor(j / 8), depth, shots, 0));
       }
       const distribution = meanDistributions(branches.map(b => b.distribution));
       const top = topState(distribution);
@@ -339,13 +400,17 @@
         distribution,
         topState: top.state,
         topP: top.p,
-        stability: familyStability(branches)
+        stability: familyStability(branches),
+        groverMin: Math.min(...branches.map(b => b.groverIters)),
+        groverMax: Math.max(...branches.map(b => b.groverIters))
       });
       onProgress?.(dim + 1, 8);
       await new Promise(requestAnimationFrame);
     }
 
-    const consensus = meanDistributions(families.map(f => f.distribution));
+    // 8 -> 1 must reward states that survive ALL exclusion families, not a state
+    // that is huge in just one family. Geometric consensus penalizes instability.
+    const consensus = stableConsensus(families.map(f => f.distribution));
     const ctop = topState(consensus);
     const derivedLogic = deriveLogic(consensus);
     const influence = {};
@@ -365,11 +430,14 @@
       consensusTop: ctop.state,
       consensusP: ctop.p,
       derivedLogic,
-      dimensionInfluence: influence
+      dimensionInfluence: influence,
+      groverMin: Math.min(...families.map(f => f.groverMin)),
+      groverMax: Math.max(...families.map(f => f.groverMax))
     };
   }
 
   async function runQCDS(logic, initialOracles, recursionDepth, shots) {
+    const hardInput = logic;
     let currentLogic = logic;
     let oracles = initialOracles.map(o => ({ ...o }));
     const rounds = [];
@@ -378,7 +446,7 @@
 
     for (let depth = 0; depth < recursionDepth; depth++) {
       runState.textContent = `Round ${depth + 1}/${recursionDepth}: running 128 perspectives → 8 families…`;
-      const round = await runRound(currentLogic, oracles, depth, shots, (family, total) => {
+      const round = await runRound(currentLogic, hardInput, oracles, depth, shots, (family, total) => {
         runState.textContent = `Round ${depth + 1}/${recursionDepth}: family ${family}/${total} · rotating + excluding dimensions…`;
       });
 
@@ -401,6 +469,11 @@
     }
 
     const finalRound = rounds[rounds.length - 1];
+    for (const state of Object.keys(finalRound.consensusDistribution)) {
+      if (!logicMatches(state, hardInput) && finalRound.consensusDistribution[state] > 1e-12) {
+        throw new Error("Internal invariant failed: final state violated the user-supplied 0/1 logic.");
+      }
+    }
     return {
       rounds,
       finalState: finalRound.consensusTop,
@@ -474,7 +547,7 @@
       row.innerHTML = `
         <div class="round-index">R${i + 1}</div>
         <div class="round-path"><code>${r.inputLogic}</code><span>→</span><code>${r.derivedLogic}</code></div>
-        <div class="round-meta"><b>${r.stateCount.toLocaleString("en-US")}</b> states · top <code>${r.consensusTop}</code> · ${formatP(r.consensusP)}</div>
+        <div class="round-meta"><b>${r.stateCount.toLocaleString("en-US")}</b> states · Grover m=${r.groverMin === r.groverMax ? r.groverMin : r.groverMin + "–" + r.groverMax} · top <code>${r.consensusTop}</code> · ${formatP(r.consensusP)}</div>
       `;
       timeline.appendChild(row);
     });
