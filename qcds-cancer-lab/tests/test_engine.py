@@ -8,7 +8,11 @@ sys.path.insert(0, LAB)
 from engine import (
     DEFAULT_HYPOTHESES,
     PARALLEL_LANES,
+    CancerHypothesis,
+    CancerOracleCompiler,
     QCDSCancerEngine,
+    build_rotation_view,
+    rotation_order,
     state_matches_mask,
 )
 
@@ -17,6 +21,27 @@ FABRIC_SRC = os.path.join(ROOT, "qcds_fabric_4_2", "src")
 sys.path.insert(0, FABRIC_SRC)
 
 from qcds_fabric_4_2.grover import peak_iteration_count, run_grover
+
+
+
+def test_sixteen_bandwidth_rotations_are_unique_and_balanced():
+    orders = [rotation_order(i) for i in range(16)]
+    assert len(set(orders)) == 16
+    for dim in DIMENSIONS:
+        counts = [sum(order[pos] == dim for order in orders) for pos in range(8)]
+        assert counts == [2] * 8
+
+
+def test_same_oracle_bank_survives_rotation_and_true_null():
+    oracle = CancerHypothesis("position-zero", "1???????", "rotation-test")
+    compiler = CancerOracleCompiler("????????", (oracle,), None)
+    a = build_rotation_view(7, 0)
+    b = build_rotation_view(7, 1)
+    assert a.ordered_dimensions[0] != b.ordered_dimensions[0]
+    assert len(compiler.compile(a)) == 64
+    assert len(compiler.compile(b)) == 64
+    null_at_position_zero = build_rotation_view(0, 0)
+    assert len(compiler.compile(null_at_position_zero)) == 128
 
 
 def test_canonical_grover_256_single_target_peak_is_12():
@@ -64,6 +89,8 @@ def test_recursive_parent_structure_returns_as_oracle():
 
 
 if __name__ == "__main__":
+    test_sixteen_bandwidth_rotations_are_unique_and_balanced()
+    test_same_oracle_bank_survives_rotation_and_true_null()
     test_canonical_grover_256_single_target_peak_is_12()
     test_cancer_cycle_is_128_to_8_to_parent_grover()
     test_fixed_input_bits_are_never_lost_globally()
