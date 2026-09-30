@@ -1,0 +1,56 @@
+{
+  "note": "Research/demo output only; not a clinical result.",
+  "syntract_name": "cancer_open_syntract",
+  "dimensions": [
+    "mutation_load",
+    "dna_repair_state",
+    "growth_signal",
+    "apoptosis_escape",
+    "immune_evasion",
+    "drug_target_engagement",
+    "resistance_state",
+    "cell_process_state"
+  ],
+  "rounds": [
+    {
+      "depth": 0,
+      "input_logic": "????????",
+      "unknowns": 8,
+      "state_count": 256,
+      "derived_logic": "1?1111??",
+      "consensus_top": "11111111",
+      "consensus_p": 0.0886688232421875,
+      "dimension_influence": {
+        "mutation_load": 0.510009765625,
+        "dna_repair_state": 0.0164794921875,
+        "growth_signal": 0.50555419921875,
+        "apoptosis_escape": 0.49639892578125,
+        "immune_evasion": 0.50537109375,
+        "drug_target_engagement": 0.49749755859375,
+        "resistance_state": 0.01666259765625,
+        "cell_process_state": 0.01806640625
+      }
+    },
+    {
+      "depth": 1,
+      "input_logic": "1?1111??",
+      "unknowns": 3,
+      "state_count": 8,
+      "derived_logic": "1?1111??",
+      "consensus_top": "10111111",
+      "consensus_p": 0.08258056640625
+    },
+    {
+      "depth": 2,
+      "input_logic": "1?1111??",
+      "unknowns": 3,
+      "state_count": 8,
+      "derived_logic": "1?1111??",
+      "consensus_top": "11111111",
+      "consensus_p": 0.08377838134765625
+    }
+  ],
+  "final_state": "11111111",
+  "final_p": 0.08377838134765625,
+  "final_logic": "1?1111??"
+}
