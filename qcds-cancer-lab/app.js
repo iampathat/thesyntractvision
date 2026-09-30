@@ -38,6 +38,7 @@
   const oracleControls = $("oracleControls");
   const runButton = $("runButton");
   const runState = $("runState");
+  const resultsRunning = $("resultsRunning");
   const resultsEmpty = $("resultsEmpty");
   const resultsLive = $("resultsLive");
 
@@ -448,6 +449,8 @@
   }
 
   function renderResults(result) {
+    resultsRunning.hidden = true;
+    resultsRunning.style.display = "none";
     resultsEmpty.hidden = true;
     resultsEmpty.style.display = "none";
     resultsLive.hidden = false;
@@ -515,17 +518,20 @@
 
       runButton.disabled = true;
       runButton.classList.add("running");
-      resultsEmpty.hidden = false;
-      resultsEmpty.style.display = "grid";
+      resultsRunning.hidden = false;
+      resultsRunning.style.display = "grid";
+      resultsEmpty.hidden = true;
+      resultsEmpty.style.display = "none";
       resultsLive.hidden = true;
       resultsLive.style.display = "none";
-      resultsEmpty.innerHTML = '<div class="result-orb spin">Q</div><h3>QCDS is running.</h3><p>128 perspectives are being rotated, excluded and funneled into eight families and one consensus.</p>';
 
       const result = await runQCDS(logic, oracles, depth, shots);
       runState.textContent = `Complete. ${result.rounds.length} recursive round${result.rounds.length === 1 ? "" : "s"} executed. No target state was supplied.`;
       renderResults(result);
     } catch (err) {
       runState.textContent = "Run stopped: " + err.message;
+      resultsRunning.hidden = true;
+      resultsRunning.style.display = "none";
       resultsEmpty.hidden = false;
       resultsEmpty.style.display = "grid";
       resultsLive.hidden = true;
