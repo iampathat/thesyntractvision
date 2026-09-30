@@ -31,6 +31,15 @@ for (const bits of Object.keys(partial.finalDistribution)) {
   assert(Q.stateMatchesMask(bitsToState(bits), "1111????"));
 }
 
+const fullParent = Q.runCancerQCDS({
+  inputMask: "1111????",
+  hypotheses: [],
+  maxCycles: 1
+});
+assert.strictEqual(Object.keys(fullParent.finalDistribution).length, 16, "1111???? must preserve the full sixteen-state Parent space");
+const fullMass = Object.values(fullParent.finalDistribution).reduce((a, b) => a + b, 0);
+assert(Math.abs(fullMass - 1) < 1e-12, "Parent distribution must normalize to 1");
+
 const complete = Q.runCancerQCDS({
   inputMask: "01101001",
   hypotheses: [],

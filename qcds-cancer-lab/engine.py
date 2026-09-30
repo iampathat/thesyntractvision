@@ -54,7 +54,6 @@ MAX_GROVER_ITERS = 40
 ROTATION_BANKS = 16
 LANES_PER_BANK = 8
 PARALLEL_LANES = ROTATION_BANKS * LANES_PER_BANK
-PARENT_MAX_CANDIDATES = 8
 PARENT_MARK_RATIO = 0.60
 
 
@@ -298,7 +297,7 @@ def _parent_grover(bound: BindResult, input_logic: str) -> tuple[ParentResult, d
         compatible,
         key=bound.canonical_probabilities.__getitem__,
         reverse=True,
-    )[:PARENT_MAX_CANDIDATES]
+    )
     if not ranked:
         raise RuntimeError("no compatible parent candidates")
 

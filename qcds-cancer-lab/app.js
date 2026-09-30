@@ -159,8 +159,10 @@
     resultsLive.hidden = false;
     resultsLive.style.display = "";
 
-    $("finalState").textContent = result.finalState;
-    $("finalP").textContent = formatP(result.finalProbability);
+    const lastParent = result.cycles[result.cycles.length - 1].parent;
+    const unresolvedParent = lastParent.resolved === false;
+    $("finalState").textContent = unresolvedParent ? "UNRESOLVED" : result.finalState;
+    $("finalP").textContent = unresolvedParent ? "—" : formatP(result.finalProbability);
     $("finalLogic").textContent = result.finalLogic;
     $("roundCount").textContent = String(result.cycles.length);
 
@@ -195,11 +197,11 @@
 
     const dist = $("distributionChart");
     dist.innerHTML = "";
-    const topStates = Object.entries(result.finalDistribution).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    const topStates = Object.entries(result.finalDistribution).sort((a, b) => b[1] - a[1]).slice(0, 32);
     const maxP = Math.max(...topStates.map(([, p]) => p), 1e-12);
     topStates.forEach(([state, p], i) => {
       const col = document.createElement("div");
-      col.className = "dist-col" + (i === 0 ? " winner" : "");
+      col.className = "dist-col" + (!unresolvedParent && i === 0 ? " winner" : "");
       col.innerHTML = `
         <div class="dist-value">${(p * 100).toFixed(2)}%</div>
         <div class="dist-bar" style="height:${Math.max(5, (p / maxP) * 100).toFixed(1)}%"></div>

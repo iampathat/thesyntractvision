@@ -20,7 +20,6 @@
   const ROTATION_BANKS = 16;
   const LANES_PER_BANK = 8;
   const PARALLEL_LANES = ROTATION_BANKS * LANES_PER_BANK;
-  const PARENT_MAX_CANDIDATES = 8;
   const PARENT_MARK_RATIO = 0.60;
   const EPSILON = 1e-15;
 
@@ -257,8 +256,7 @@
   function parentGrover(boundDistribution, inputMask) {
     const ranked = Array.from({ length: 256 }, (_, s) => s)
       .filter(s => boundDistribution[s] > 0 && stateMatchesMask(s, inputMask))
-      .sort((a, b) => boundDistribution[b] - boundDistribution[a])
-      .slice(0, PARENT_MAX_CANDIDATES);
+      .sort((a, b) => boundDistribution[b] - boundDistribution[a]);
 
     if (!ranked.length) throw new Error("No compatible Parent-Grover candidates.");
 
@@ -270,11 +268,25 @@
     const grover = runGrover(parentN, marked, MAX_GROVER_ITERS);
 
     const mappedDistribution = {};
-    ranked.forEach((canonical, i) => { mappedDistribution[canonical] = grover.probabilities[i]; });
-    const topCanonical = ranked[grover.topState];
-    const markedCanonical = marked.filter(i => i < ranked.length).map(i => ranked[i]);
+    let mappedMass = 0;
+    ranked.forEach((canonical, i) => {
+      const p = grover.probabilities[i] || 0;
+      mappedDistribution[canonical] = p;
+      mappedMass += p;
+    });
+    if (mappedMass > 0) {
+      ranked.forEach(canonical => { mappedDistribution[canonical] /= mappedMass; });
+    }
 
-    return { ranked, scores, marked, markedCanonical, grover, mappedDistribution, topCanonical };
+    const topCanonical = ranked.reduce((best, state) =>
+      mappedDistribution[state] > mappedDistribution[best] ? state : best, ranked[0]);
+    const markedCanonical = marked.filter(i => i < ranked.length).map(i => ranked[i]);
+    const resolved = markedCanonical.length > 0 && markedCanonical.length < ranked.length;
+
+    return {
+      ranked, scores, marked, markedCanonical, grover, mappedDistribution,
+      topCanonical, resolved, candidateCount: ranked.length
+    };
   }
 
   function logicFromStates(states, fallback) {
@@ -415,7 +427,7 @@
       inputMask,
       cycles,
       finalState: stateToBits(last.parent.topCanonical),
-      finalProbability: last.parent.grover.topProbability,
+      finalProbability: last.parent.mappedDistribution[last.parent.topCanonical] || 0,
       finalLogic: last.derivedLogic,
       finalDistribution,
       parallelLanesPerCycle: PARALLEL_LANES,
@@ -491,7 +503,7 @@
     return {
       inputMask, cycles,
       finalState: stateToBits(last.parent.topCanonical),
-      finalProbability: last.parent.grover.topProbability,
+      finalProbability: last.parent.mappedDistribution[last.parent.topCanonical] || 0,
       finalLogic: last.derivedLogic,
       finalDistribution,
       parallelLanesPerCycle: PARALLEL_LANES,
