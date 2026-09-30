@@ -124,33 +124,51 @@
     };
   }
 
-  function buildView(excludedIndex, bankId) {
+  function rotationOrder(bankId) {
+    // 16 unique balanced rotations: forward cyclic + mirrored cyclic.
+    // Every semantic dimension visits every fixed oracle position exactly twice.
     const n = DIMENSIONS.length;
-    const shift = ((bankId % n) + n) % n;
-    const orderedIndices = Array.from({ length: n }, (_, i) => (i + shift) % n);
+    const phase = ((bankId % (2 * n)) + (2 * n)) % (2 * n);
+    const mirrored = phase >= n;
+    const shift = phase % n;
+    const base = Array.from({ length: n }, (_, i) => mirrored ? (n - 1 - i) : i);
+    return Array.from({ length: n }, (_, position) => base[(position + shift) % n]);
+  }
+
+  function buildView(excludedIndex, bankId) {
+    const orderedIndices = rotationOrder(bankId);
     const activeIndices = orderedIndices.filter(i => i !== excludedIndex);
-    return { excludedIndex, bankId, orderedIndices, activeIndices, stateCount: 1 << activeIndices.length };
+    const semanticToPosition = Array(8).fill(-1);
+    orderedIndices.forEach((semanticIndex, position) => { semanticToPosition[semanticIndex] = position; });
+    return {
+      excludedIndex,
+      excludedPosition: semanticToPosition[excludedIndex],
+      bankId,
+      orderedIndices,
+      activeIndices,
+      semanticToPosition,
+      stateCount: 1 << activeIndices.length
+    };
   }
 
   function decodeLocal(view, localState) {
-    const assignment = new Array(8).fill(null);
+    const semanticAssignment = new Array(8).fill(null);
+    const positionAssignment = new Array(8).fill(null);
     view.activeIndices.forEach((semanticIndex, localBit) => {
-      assignment[semanticIndex] = (localState >> localBit) & 1;
+      const value = (localState >> localBit) & 1;
+      semanticAssignment[semanticIndex] = value;
+      positionAssignment[view.semanticToPosition[semanticIndex]] = value;
     });
-    return assignment;
+    return { semanticAssignment, positionAssignment };
   }
 
-  function hypothesisRequired(mask) {
+  function hypothesisMatchesPositions(mask, positionAssignment) {
     validateMask(mask);
-    const out = [];
-    for (let i = 0; i < 8; i++) if (mask[i] !== "?") out.push(i);
-    return out;
-  }
-
-  function hypothesisMatchesAssignment(mask, assignment) {
-    for (let i = 0; i < 8; i++) {
-      if (mask[i] === "?") continue;
-      if (assignment[i] === null || assignment[i] !== Number(mask[i])) return false;
+    for (let position = 0; position < 8; position++) {
+      const expected = mask[position];
+      const actual = positionAssignment[position];
+      if (expected === "?" || actual === null) continue;
+      if (actual !== Number(expected)) return false;
     }
     return true;
   }
@@ -158,27 +176,34 @@
   function compileCancerOracle(view, inputMask, hypotheses, recursiveStates) {
     validateMask(inputMask);
     const activeSet = new Set(view.activeIndices);
-    const activeHypotheses = hypotheses.filter(h => hypothesisRequired(h.mask).every(i => activeSet.has(i)));
     const marked = [];
 
+    // Every rotated lane receives the SAME oracle bank.
+    // Only the semantic input-to-position mapping changes. True-null exclusion
+    // removes one observation; it never removes an oracle from the bank.
     for (let localState = 0; localState < view.stateCount; localState++) {
-      const assignment = decodeLocal(view, localState);
+      const { semanticAssignment, positionAssignment } = decodeLocal(view, localState);
 
       let hardOk = true;
-      for (let i = 0; i < 8; i++) {
-        if (inputMask[i] === "?" || !activeSet.has(i)) continue;
-        if (assignment[i] !== Number(inputMask[i])) { hardOk = false; break; }
+      for (let semanticIndex = 0; semanticIndex < 8; semanticIndex++) {
+        if (inputMask[semanticIndex] === "?" || !activeSet.has(semanticIndex)) continue;
+        if (semanticAssignment[semanticIndex] !== Number(inputMask[semanticIndex])) {
+          hardOk = false;
+          break;
+        }
       }
       if (!hardOk) continue;
 
-      const hypothesisOk = activeHypotheses.length === 0 ||
-        activeHypotheses.some(h => hypothesisMatchesAssignment(h.mask, assignment));
+      const hypothesisOk = hypotheses.length === 0 ||
+        hypotheses.some(h => hypothesisMatchesPositions(h.mask, positionAssignment));
       if (!hypothesisOk) continue;
 
       if (recursiveStates && recursiveStates.length) {
         let recursiveOk = false;
         for (const canonicalState of recursiveStates) {
-          if (view.activeIndices.every(i => assignment[i] === bitAt(canonicalState, i))) {
+          if (view.activeIndices.every(
+            semanticIndex => semanticAssignment[semanticIndex] === bitAt(canonicalState, semanticIndex)
+          )) {
             recursiveOk = true;
             break;
           }
@@ -201,9 +226,9 @@
     if (probabilities.length !== view.stateCount) throw new Error("lane distribution does not match view state space");
     const out = Array(256).fill(0);
     for (let localState = 0; localState < view.stateCount; localState++) {
-      const active = decodeLocal(view, localState);
+      const { semanticAssignment } = decodeLocal(view, localState);
       for (const missing of [0, 1]) {
-        const assignment = active.slice();
+        const assignment = semanticAssignment.slice();
         assignment[view.excludedIndex] = missing;
         out[canonicalStateFromAssignment(assignment)] += probabilities[localState] * 0.5;
       }
@@ -525,6 +550,9 @@
     ROTATION_BANKS,
     PARALLEL_LANES,
     validateMask,
+    rotationOrder,
+    buildView,
+    compileCancerOracle,
     stateToBits,
     stateMatchesMask,
     groverSuccessProbability,
