@@ -14,6 +14,28 @@ const g = Q.runGrover(256, [173], 40);
 assert.strictEqual(g.iterations, 12);
 assert(g.markedMass > 0.9999);
 
+
+const rotations = Array.from({ length: 16 }, (_, i) => Q.rotationOrder(i).join(","));
+assert.strictEqual(new Set(rotations).size, 16, "all 16 bandwidth rotations must be unique");
+for (let semantic = 0; semantic < 8; semantic++) {
+  const counts = Array(8).fill(0);
+  for (let bank = 0; bank < 16; bank++) {
+    const order = Q.rotationOrder(bank);
+    counts[order.indexOf(semantic)] += 1;
+  }
+  assert.deepStrictEqual(counts, Array(8).fill(2), "each dimension must visit every fixed oracle position twice");
+}
+
+const fixedOracle = [{ name: "position-zero", mask: "1???????", provenance: "rotation-test" }];
+const viewA = Q.buildView(7, 0);
+const viewB = Q.buildView(7, 1);
+assert.notStrictEqual(viewA.orderedIndices[0], viewB.orderedIndices[0], "input semantics must rotate across fixed oracle positions");
+assert.strictEqual(Q.compileCancerOracle(viewA, "????????", fixedOracle, null).length, 64);
+assert.strictEqual(Q.compileCancerOracle(viewB, "????????", fixedOracle, null).length, 64);
+const nullAtOraclePosition = Q.buildView(0, 0);
+assert.strictEqual(Q.compileCancerOracle(nullAtOraclePosition, "????????", fixedOracle, null).length, 128,
+  "same oracle remains present; its constraint on the true-null position is simply unobserved");
+
 const hypotheses = [
   { name: "exact", mask: "11111111", provenance: "test" }
 ];
