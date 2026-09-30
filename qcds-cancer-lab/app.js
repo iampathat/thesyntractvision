@@ -173,7 +173,7 @@
       row.innerHTML = `
         <div class="round-index">R${i + 1}</div>
         <div class="round-path"><code>${r.derivedLogic}</code><span>·</span><code>${stableText}</code></div>
-        <div class="round-meta"><b>${r.laneCount}</b> lanes · local Grover m=${r.groverMin === r.groverMax ? r.groverMin : r.groverMin + "–" + r.groverMax} · Parent Grover m=${r.parent.grover.iterations} · top <code>${CORE.stateToBits(r.parent.topCanonical)}</code> · ${formatP(r.parent.grover.topProbability)}</div>
+        <div class="round-meta"><b>${r.laneCount}</b> lanes · local N=128 · M=${r.markedMin === r.markedMax ? r.markedMin : r.markedMin + "–" + r.markedMax} · Grover m=${r.groverMin === r.groverMax ? r.groverMin : r.groverMin + "–" + r.groverMax} · Parent N=${r.parent.grover.stateCount}, M=${r.parent.grover.markedCount}, m=${r.parent.grover.iterations} · top <code>${CORE.stateToBits(r.parent.topCanonical)}</code> · ${formatP(r.parent.grover.topProbability)}</div>
       `;
       timeline.appendChild(row);
     });
