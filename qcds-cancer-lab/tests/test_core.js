@@ -1,0 +1,40 @@
+const assert = require("assert");
+const Q = require("../qcds-core.js");
+
+function bitsToState(bits) {
+  let s = 0;
+  for (let i = 0; i < bits.length; i++) s |= Number(bits[i]) << i;
+  return s;
+}
+
+assert.strictEqual(Q.peakIterationCount(256, 1, 40), 12, "256/1 Grover peak must be m=12");
+const g = Q.runGrover(256, [173], 40);
+assert.strictEqual(g.iterations, 12);
+assert(g.markedMass > 0.9999);
+
+const hypotheses = [
+  { name: "exact", mask: "11111111", provenance: "test" }
+];
+
+const partial = Q.runCancerQCDS({
+  inputMask: "1111????",
+  hypotheses,
+  maxCycles: 2
+});
+assert.strictEqual(partial.cycles[0].laneCount, 128);
+assert.strictEqual(partial.cycles[0].familyCount, 8);
+assert(partial.finalState.startsWith("1111"), "hard input prefix must survive");
+for (const bits of Object.keys(partial.finalDistribution)) {
+  assert(bits.startsWith("1111"), "final distribution must obey hard input Condition");
+  assert(Q.stateMatchesMask(bitsToState(bits), "1111????"));
+}
+
+const complete = Q.runCancerQCDS({
+  inputMask: "01101001",
+  hypotheses: [],
+  maxCycles: 1
+});
+assert.strictEqual(complete.finalState, "01101001");
+assert.deepStrictEqual(Object.keys(complete.finalDistribution), ["01101001"]);
+
+console.log("QCDS Cancer browser core tests: PASS");
