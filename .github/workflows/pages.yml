@@ -248,7 +248,7 @@ jobs:
           node --check _site/qcds-cancer-lab/qcds-core.js
           node --check _site/qcds-cancer-lab/app.js
           node _site/qcds-cancer-lab/tests/test_core.js
-          PYTHONPATH=qcds_fabric_4_2/src python -m pytest -q qcds-cancer-lab/tests/test_engine.py
+          PYTHONPATH=qcds_fabric_4_2/src python qcds-cancer-lab/tests/test_engine.py
 
       - name: Build isolated Cally.One Pages surface from tribute
         run: |
