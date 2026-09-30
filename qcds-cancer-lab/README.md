@@ -4,9 +4,11 @@
 
 This directory contains a research implementation of the current QCDS cancer architecture. It is separate from the older BRCA2 / mutation scripts so the historical work remains intact.
 
-## Live site
+## Live site — run it in the browser
 
 **QCDS Cancer Lab:** https://iampathat.github.io/thesyntractvision/qcds-cancer-lab/
+
+The public surface is a runnable browser workbench: edit the 0/1/? logic, enable or disable top-down oracle hypotheses, execute the 128 → 8 → 1 funnel, inspect recursive rounds, dimension influence and the final consensus distribution. The Python files remain the reference implementation; visitors do not need to open or run them to use the lab.
 
 
 > **License:** public to view for evaluation; company / organizational use requires a separate agreement. See [LICENSE.md](./LICENSE.md).
