@@ -67,9 +67,9 @@ The local and parent kernels use the canonical bounded QCDS Fabric Grover implem
 
 `qcds_fabric_4_2/src/qcds_fabric_4_2/grover.py`
 
-The iteration count is selected by evaluating the exact ideal Grover success envelope from `m = 0 ... 40` and choosing its best peak for the actual `N` and `M`.
+The iteration count is selected dynamically from the actual `N` and `M`. QCDS walks the Grover success envelope forward and stops when the alignment threshold is reached or at the first local tangent/peak. It does not chase a later periodic recurrence and it does not hard-code `m=12`.
 
-For the canonical validation case `N=256, M=1`, the selected peak is `m=12`, with probability approximately `0.999947`.
+For the canonical validation case `N=256, M=1`, that procedure happens to stop at `m=12`, with probability approximately `0.999947`. Other `N/M` ratios produce different depths—for example `N=128, M=1` stops at the first tangent `m=8`.
 
 The browser core ports the same equations and exposes the actual local Grover range and Parent-Grover depth for every recursive cycle.
 
