@@ -7,7 +7,9 @@ function bitsToState(bits) {
   return s;
 }
 
-assert.strictEqual(Q.peakIterationCount(256, 1, 40), 12, "256/1 Grover peak must be m=12");
+assert.strictEqual(Q.peakIterationCount(256, 1, 40), 12, "256/1 first Grover tangent must be m=12");
+assert.strictEqual(Q.peakIterationCount(128, 1, 40), 8, "128/1 must stop at first tangent m=8, not a later recurrence");
+assert.strictEqual(Q.peakIterationCount(256, 2, 40), 8, "256/2 proves m is dynamic, not fixed at 12");
 const g = Q.runGrover(256, [173], 40);
 assert.strictEqual(g.iterations, 12);
 assert(g.markedMass > 0.9999);
