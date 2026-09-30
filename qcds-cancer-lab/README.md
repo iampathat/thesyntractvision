@@ -34,7 +34,9 @@ Condition (0 / 1 / ?)
         ↓
 top-down cancer oracle set
         ↓
-16 balanced rotation banks × 8 true-null lanes
+16 unique balanced input rotations × 8 true-null lanes
+        ↓
+same fixed oracle bank on every rotated lane
         ↓
 128 independent local QCDS Grover runs
         ↓
@@ -51,11 +53,17 @@ rotate again / recursive return
 multi-signal stability gate
 ```
 
+### Rotation is bandwidth bias-cancellation
+
+The Cancer Lab rotates the **input**, not the oracle bank. The enabled oracle masks stay fixed in positional coordinates on every parallel lane. Sixteen unique rotations are used: eight forward cyclic rotations plus eight mirrored cyclic rotations. Across the full bank every semantic dimension visits every oracle position exactly twice.
+
+That is deliberate bias resistance: position- or dimension-specific effects move as the same information passes through the same oracle system, while structure that survives the complete rotation bank remains available to the Syntract bind. True-null exclusion is a separate test: one semantic dimension is absent from each exclusion family. An oracle is never removed because a dimension was nulled; only the constraint landing on the absent position is unobserved in that lane.
+
 ### 128 → 8 → 1 does not mean majority voting
 
 The first 128 objects are **full QCDS lane distributions**, not 128 scalar votes.
 
-Each of the eight semantic dimensions has a true-null family containing sixteen balanced rotations. The family is bound with the same logarithmic full-distribution operator used by the canonical `RotationalSyntractBind`.
+Each of the eight semantic dimensions has a true-null family containing the same sixteen unique balanced input rotations. The family is bound with the same logarithmic full-distribution operator used by the canonical `RotationalSyntractBind`.
 
 The eight family distributions are then bound into one higher-order Syntract. That bound structure is **not the final answer**: it becomes the input to a fresh executable **Parent Grover**. The Parent-Grover marked structures form the recursive oracle for the next QCDS cycle.
 
