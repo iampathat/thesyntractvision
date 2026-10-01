@@ -4,6 +4,12 @@
 
 **The beginning of artificial life.**
 
+## STATE 0 — Definition of Life
+
+Q* GENESIS begins with a first formal state: **life as a formation of states**.
+
+→ [Read STATE 0](STATE_0.md)
+
 Q* GENESIS is an experimental branch of **The Syntract Vision / QCDS** exploring how a minimal synthetic entity can begin with a world, sensing, internal state, inference, choice, action, consequence and recursive adaptation.
 
 The initial direction is deliberately small and inspectable:
