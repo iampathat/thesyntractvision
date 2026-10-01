@@ -10,6 +10,12 @@ Q* GENESIS begins with a first formal state: **life as a formation of states**.
 
 → [Read STATE 0](STATE_0.md)
 
+## STATE 1 — Minimal Living Formation
+
+From the definition of life to the first operational, falsifiable structure.
+
+→ [Read STATE 1](STATE_1.md)
+
 Q* GENESIS is an experimental branch of **The Syntract Vision / QCDS** exploring how a minimal synthetic entity can begin with a world, sensing, internal state, inference, choice, action, consequence and recursive adaptation.
 
 The initial direction is deliberately small and inspectable:
