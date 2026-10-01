@@ -88,6 +88,10 @@ If it can, we have a candidate for the first Q* GENESIS living formation — not
 
 ---
 
+→ [Continue to STATE 2 — Goal as the Preferred Next State](STATE_2.md)
+
+---
+
 **Theory and creation by Patrik Sundblom**  
 with OpenAI / ChatGPT as research & development support
 
