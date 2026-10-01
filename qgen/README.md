@@ -16,6 +16,12 @@ From the definition of life to the first operational, falsifiable structure.
 
 → [Read STATE 1](STATE_1.md)
 
+## STATE 2 — Goal as Preferred Next State
+
+Direction enters the living cycle: a goal is a preferred next state.
+
+→ [Read STATE 2](STATE_2.md)
+
 Q* GENESIS is an experimental branch of **The Syntract Vision / QCDS** exploring how a minimal synthetic entity can begin with a world, sensing, internal state, inference, choice, action, consequence and recursive adaptation.
 
 The initial direction is deliberately small and inspectable:
