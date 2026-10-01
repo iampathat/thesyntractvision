@@ -22,6 +22,12 @@ Direction enters the living cycle: a goal is a preferred next state.
 
 → [Read STATE 2](STATE_2.md)
 
+## STATE 3 — Complexity of Life
+
+One underlying living process, increasing in state, Syntract and future-state complexity.
+
+→ [Read STATE 3](STATE_3.md)
+
 Q* GENESIS is an experimental branch of **The Syntract Vision / QCDS** exploring how a minimal synthetic entity can begin with a world, sensing, internal state, inference, choice, action, consequence and recursive adaptation.
 
 The initial direction is deliberately small and inspectable:
