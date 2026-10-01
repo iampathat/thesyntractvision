@@ -115,6 +115,10 @@ The first synthetic life-form should therefore be able to represent more than on
 
 ---
 
+→ [Continue to STATE 3 — Complexity of Life](STATE_3.md)
+
+---
+
 **Theory and creation by Patrik Sundblom**  
 with OpenAI / ChatGPT as research & development support
 
