@@ -1,5 +1,10 @@
 # The Syntract Vision
 
+[![QCDS — Quantum & Quantum-Emulation Inference Engine](assets/qcds-quantum-emulation-inference-engine.webp)](assets/qcds-quantum-emulation-inference-engine.webp)
+
+**QCDS — Quantum & Quantum-Emulation Inference Engine for Scalable Intelligence**  
+Parallelism · sequence · oracles · constraints · recursive inference · Syntract
+
 > **From uncertainty toward truth. From truth toward action.**
 
 **The Syntract Vision** is an experimental architecture for inference-driven intelligence built around **QCDS — Quantum Condition-Driven Synthesis**, **Logical Spaces** and **Syntracts**.
