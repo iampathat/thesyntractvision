@@ -44,6 +44,10 @@ That question defines **STATE 0**.
 
 ---
 
+→ [Continue to STATE 1 — The Minimal Living Formation](STATE_1.md)
+
+---
+
 **Theory and creation by Patrik Sundblom**  
 with OpenAI / ChatGPT as research & development support
 
