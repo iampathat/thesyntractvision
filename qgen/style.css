@@ -1,0 +1,62 @@
+:root{
+  color-scheme:dark;
+  --bg:#030815;--panel:#081425;--line:#1d3552;--text:#eef7ff;--muted:#89a6c5;
+  --cyan:#5fe8ff;--blue:#5a7cff;--gold:#ffcb6b;--yes:#68f5b1;--no:#7e91aa;--unknown:#ffcb6b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:
+radial-gradient(circle at 50% -20%,#123a68 0,#071428 28%,var(--bg) 62%);
+font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text);min-height:100%}
+body{padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+.shell{width:min(100%,980px);margin:auto;padding:22px 14px 60px}
+.hero{text-align:center;padding:18px 8px 20px}
+.brand{font-size:clamp(34px,9vw,70px);font-weight:900;letter-spacing:.04em;line-height:1}
+.brand span{color:var(--gold);text-shadow:0 0 20px #ffca6b88}
+.kicker{font-size:11px;font-weight:800;letter-spacing:.18em;color:var(--cyan);text-transform:uppercase}
+.hero p{max-width:680px;margin:14px auto 0;color:var(--muted);line-height:1.55}
+.cameraCard,.logic{background:linear-gradient(180deg,#0b1b31dd,#06101ddd);border:1px solid var(--line);border-radius:22px;padding:12px;box-shadow:0 18px 60px #0008}
+.cameraWrap{position:relative;aspect-ratio:4/3;border-radius:16px;overflow:hidden;background:#000;border:1px solid #244568}
+video{width:100%;height:100%;object-fit:cover;display:block}
+.reticle{position:absolute;inset:12%;border:1px solid #7eeeff55;border-radius:18px;pointer-events:none}
+.reticle:before,.reticle:after{content:"";position:absolute;background:#7eeeff33}
+.reticle:before{left:50%;top:0;bottom:0;width:1px}
+.reticle:after{top:50%;left:0;right:0;height:1px}
+.cameraHint{position:absolute;inset:auto 12px 12px 12px;text-align:center;padding:8px 10px;border-radius:999px;background:#020711cc;color:var(--muted);font-size:12px}
+.controls{display:grid;grid-template-columns:1fr 1.35fr;gap:10px;padding-top:12px}
+button{border:0;border-radius:14px;padding:15px 14px;font:inherit;font-weight:900;letter-spacing:.06em;cursor:pointer}
+button:disabled{opacity:.4;cursor:not-allowed}
+.primary{background:linear-gradient(135deg,var(--cyan),#6b7cff);color:#02101e;box-shadow:0 0 30px #51dfff35}
+.secondary{background:#13253d;color:var(--text);border:1px solid #294766}
+.liveState{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.eyelabel{display:block;color:var(--muted);font-size:10px;font-weight:800;letter-spacing:.14em;margin-bottom:7px}
+.mask{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.bit{min-width:0;border:1px solid #29445f;background:#0a1626;border-radius:8px;padding:7px 3px;text-align:center;font-size:9px;color:var(--muted)}
+.bit b{display:block;font-size:15px;color:var(--unknown);line-height:1.05}
+.bit.yes b{color:var(--yes)}.bit.no b{color:var(--no)}
+.note{margin:12px 2px 2px;color:#7f9bb8;font-size:12px;line-height:1.45}
+.historyHead{display:flex;align-items:end;justify-content:space-between;padding:28px 3px 10px}
+.historyHead h2{margin:3px 0 0;font-size:28px}.count{color:var(--muted);font-size:12px}
+.history{display:flex;flex-direction:column;gap:10px}
+.empty{border:1px dashed #28435f;border-radius:16px;padding:22px;color:var(--muted);text-align:center}
+.stateRow{display:grid;grid-template-columns:110px 1fr;gap:12px;background:#071321;border:1px solid var(--line);border-radius:18px;padding:9px;overflow:hidden}
+.stateImage{width:110px;aspect-ratio:4/3;border-radius:12px;object-fit:cover;background:#000}
+.stateMeta{min-width:0}
+.stateTitle{display:flex;justify-content:space-between;gap:8px;align-items:center;font-weight:900;margin-bottom:7px}
+.stateTitle time{color:var(--muted);font-weight:600;font-size:10px}
+.stateEyes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.miniMask{display:grid;grid-template-columns:repeat(8,1fr);gap:3px}
+.miniBit{height:20px;border-radius:5px;background:#17283b;color:var(--no);display:grid;place-items:center;font-size:10px;font-weight:900}
+.miniBit.yes{background:#12372f;color:var(--yes)}.miniBit.unknown{background:#3b3218;color:var(--unknown)}
+.eyeName{font-size:9px;color:var(--muted);letter-spacing:.1em;margin-bottom:4px}
+.logic{margin-top:24px}
+.logic pre{white-space:pre-wrap;color:var(--cyan);font-size:12px;line-height:1.5}
+.logic p{color:var(--muted);line-height:1.55;font-size:13px}
+@media(max-width:540px){
+  .shell{padding-left:10px;padding-right:10px}
+  .cameraCard{border-radius:18px;padding:9px}
+  .controls{grid-template-columns:1fr 1fr}
+  .stateRow{grid-template-columns:92px 1fr}
+  .stateImage{width:92px}
+  .miniMask{grid-template-columns:repeat(4,1fr)}
+  .stateEyes{gap:5px}
+}
