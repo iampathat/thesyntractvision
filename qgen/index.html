@@ -22,8 +22,9 @@
         <div id="cameraHint" class="cameraHint">Camera is off</div>
       </div>
 
-      <div class="controls">
+      <div class="controls cameraControls">
         <button id="cameraButton" class="secondary">START CAMERA</button>
+        <button id="stopButton" class="secondary" disabled>STOP CAMERA</button>
         <button id="lookButton" class="primary" disabled>LOOK</button>
       </div>
 
@@ -46,7 +47,10 @@
         <div class="kicker">LIVING SEQUENCE</div>
         <h2>Sense States</h2>
       </div>
-      <div id="count" class="count">0 states</div>
+      <div class="historyActions">
+        <div id="count" class="count">0 states</div>
+        <button id="clearButton" class="clearButton">CLEAR</button>
+      </div>
     </section>
 
     <section id="history" class="history">
@@ -56,7 +60,7 @@
     <section class="logic">
       <div class="kicker">CURRENT FORM</div>
       <pre>WORLD → CAMERA → TWO EYES [8 + 8] → QCDS → SYNTRACT → NEXT STATE</pre>
-      <p>The camera is the sensor. The captured frame is the observation. The two 8-channel masks are the current QCDS input boundary. Oracle logic can grow later; this first organism stays deliberately small.</p>
+      <p>The camera is the sensor. The captured frame is the observation. The two 8-channel masks are the current QCDS input boundary. Sense States are stored locally on this device and survive reloads until CLEAR is pressed. Oracle logic can grow later; this first organism stays deliberately small.</p>
     </section>
   </main>
 
