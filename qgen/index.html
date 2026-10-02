@@ -39,7 +39,7 @@
         </div>
       </div>
 
-      <p class="note">Each logical eye receives 8 channels: bright · dark · red · green · blue · contrast · edge · change. The first <em>change</em> channel is unknown until a previous Sense State exists.</p>
+      <p class="note">Each captured frame is divided horizontally into three visual fields: <strong>LEFT</strong> · <strong>BOTH</strong> · <strong>RIGHT</strong>. The left eye receives LEFT + BOTH; the right eye receives BOTH + RIGHT. Each eye keeps its 8-channel mask: bright · dark · red · green · blue · contrast · edge · change.</p>
     </section>
 
     <section class="historyHead">
@@ -59,7 +59,7 @@
 
     <section class="logic">
       <div class="kicker">CURRENT FORM</div>
-      <pre>WORLD → CAMERA → TWO EYES [8 + 8] → QCDS → SYNTRACT → NEXT STATE</pre>
+      <pre>WORLD → CAMERA → LEFT | BOTH | RIGHT → TWO EYES [8 + 8] → QCDS → SYNTRACT → NEXT STATE</pre>
       <p>The camera is the sensor. The captured frame is the observation. The two 8-channel masks are the current QCDS input boundary. Sense States are stored locally on this device and survive reloads until CLEAR is pressed. Oracle logic can grow later; this first organism stays deliberately small.</p>
     </section>
   </main>
