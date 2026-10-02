@@ -8,6 +8,7 @@ on:
       - "qcds_fabric_4_2/**"
       - "qcds-security-lab/**"
       - "qcds-cancer-lab/**"
+      - "qgen/**"
       - "robots/legal/sweden_housing/**"
       - "web/session_core_worker.js"
       - "web/assets/**"
@@ -219,6 +220,22 @@ jobs:
         run: |
           mkdir -p _site/qcds-cancer-lab
           cp -a qcds-cancer-lab/. _site/qcds-cancer-lab/
+
+      - name: Publish Q* GENESIS First Sense
+        run: |
+          mkdir -p _site/qgen
+          cp -a qgen/. _site/qgen/
+
+      - name: Validate Q* GENESIS First Sense
+        run: |
+          test -s _site/qgen/index.html
+          test -s _site/qgen/style.css
+          test -s _site/qgen/app.js
+          test -s _site/qgen/qgenesis.webp
+          grep -F 'Q* GENESIS' _site/qgen/index.html
+          grep -F 'TWO 8-CHANNEL EYES' _site/qgen/index.html
+          grep -F 'getUserMedia' _site/qgen/app.js
+          grep -F 'SENSE STATE' _site/qgen/app.js
 
       - name: Validate QCDS Cancer Lab surface
         run: |
