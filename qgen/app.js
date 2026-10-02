@@ -135,9 +135,19 @@ function stats(data,w,h,prev){
   ];
 }
 
-function analyzeHalf(ctx,x,w,h,prev){
+function analyzeRegion(ctx,x,w,h,prev){
   const img=ctx.getImageData(x,0,w,h);
   return {values:stats(img.data,w,h,prev?.data),data:new Uint8ClampedArray(img.data)};
+}
+
+function eyeRegions(width){
+  const oneThird=Math.floor(width/3);
+  const twoThird=Math.floor((width*2)/3);
+  return {
+    left:{x:0,w:twoThird},
+    overlap:{x:oneThird,w:twoThird-oneThird},
+    right:{x:oneThird,w:width-oneThird}
+  };
 }
 
 function mini(values){
@@ -151,12 +161,19 @@ function stateRow(record){
   row.dataset.objectUrl=url;
   const time=new Date(record.time);
   row.innerHTML=`
-    <img class="stateImage" src="${url}" alt="Sense State ${record.id}">
+    <div class="stateVision">
+      <img class="stateImage" src="${url}" alt="Sense State ${record.id}">
+      <div class="visionZones" aria-hidden="true">
+        <div class="visionZone"><span>LEFT</span></div>
+        <div class="visionZone both"><span>BOTH</span></div>
+        <div class="visionZone"><span>RIGHT</span></div>
+      </div>
+    </div>
     <div class="stateMeta">
       <div class="stateTitle"><span>SENSE STATE ${String(record.id).padStart(3,'0')}</span><time>${time.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'})}</time></div>
       <div class="stateEyes">
-        <div><div class="eyeName">LEFT EYE · 8</div><div class="miniMask">${mini(record.left)}</div></div>
-        <div><div class="eyeName">RIGHT EYE · 8</div><div class="miniMask">${mini(record.right)}</div></div>
+        <div><div class="eyeName">LEFT EYE · LEFT + BOTH · 8</div><div class="miniMask">${mini(record.left)}</div></div>
+        <div><div class="eyeName">RIGHT EYE · BOTH + RIGHT · 8</div><div class="miniMask">${mini(record.right)}</div></div>
       </div>
     </div>`;
   return row;
@@ -201,9 +218,9 @@ async function restorePreviousEyesFromLastState(){
     const ctx=c.getContext('2d',{willReadFrequently:true});
     ctx.drawImage(bitmap,0,0,w,h);
     bitmap.close?.();
-    const half=Math.floor(w/2);
-    const li=ctx.getImageData(0,0,half,h);
-    const ri=ctx.getImageData(half,0,w-half,h);
+    const regions=eyeRegions(w);
+    const li=ctx.getImageData(regions.left.x,0,regions.left.w,h);
+    const ri=ctx.getImageData(regions.right.x,0,regions.right.w,h);
     previousEyes={
       left:{data:new Uint8ClampedArray(li.data)},
       right:{data:new Uint8ClampedArray(ri.data)}
@@ -225,14 +242,22 @@ async function look(){
     canvas.height=Math.round(video.videoHeight*scale);
     const ctx=canvas.getContext('2d',{willReadFrequently:true});
     ctx.drawImage(video,0,0,canvas.width,canvas.height);
-    const half=Math.floor(canvas.width/2);
-    const left=analyzeHalf(ctx,0,half,canvas.height,previousEyes?.left);
-    const right=analyzeHalf(ctx,half,canvas.width-half,canvas.height,previousEyes?.right);
+    const regions=eyeRegions(canvas.width);
+    const left=analyzeRegion(ctx,regions.left.x,regions.left.w,canvas.height,previousEyes?.left);
+    const right=analyzeRegion(ctx,regions.right.x,regions.right.w,canvas.height,previousEyes?.right);
     const image=await canvasBlob();
     if(!image) throw new Error('Could not create image');
 
     const id=(states.at(-1)?.id ?? 0)+1;
-    const record={id,time:new Date().toISOString(),image,left:left.values,right:right.values};
+    const record={
+      id,
+      time:new Date().toISOString(),
+      image,
+      left:left.values,
+      right:right.values,
+      visionLayout:'LEFT | BOTH | RIGHT',
+      overlap:'middle-third-shared'
+    };
     await dbPut(record);
     states.push(record);
     previousEyes={left,right};
