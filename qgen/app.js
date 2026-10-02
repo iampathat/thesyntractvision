@@ -151,7 +151,11 @@ function eyeRegions(width){
 }
 
 function mini(values){
-  return values.map(v=>`<div class="miniBit ${v===1?'yes':v==='?'?'unknown':''}">${v}</div>`).join('');
+  return values.map((v,i)=>`
+    <div class="miniBit ${v===1?'yes':v==='?'?'unknown':''}">
+      <span class="miniValue">${v}</span>
+      <span class="miniLabel">${LABELS[i]}</span>
+    </div>`).join('');
 }
 
 function stateRow(record){
@@ -164,16 +168,24 @@ function stateRow(record){
     <div class="stateVision">
       <img class="stateImage" src="${url}" alt="Sense State ${record.id}">
       <div class="visionZones" aria-hidden="true">
-        <div class="visionZone"><span>LEFT</span></div>
-        <div class="visionZone both"><span>BOTH</span></div>
-        <div class="visionZone"><span>RIGHT</span></div>
+        <div class="visionZone"><span>LEFT FIELD</span></div>
+        <div class="visionZone both"><span>SHARED CENTER</span></div>
+        <div class="visionZone"><span>RIGHT FIELD</span></div>
       </div>
     </div>
     <div class="stateMeta">
       <div class="stateTitle"><span>SENSE STATE ${String(record.id).padStart(3,'0')}</span><time>${time.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'})}</time></div>
       <div class="stateEyes">
-        <div><div class="eyeName">LEFT EYE · LEFT + BOTH · 8</div><div class="miniMask">${mini(record.left)}</div></div>
-        <div><div class="eyeName">RIGHT EYE · BOTH + RIGHT · 8</div><div class="miniMask">${mini(record.right)}</div></div>
+        <div class="eyePanel">
+          <div class="eyeName">LEFT EYE</div>
+          <div class="eyeExplain">sees <strong>LEFT FIELD</strong> + <strong>SHARED CENTER</strong></div>
+          <div class="miniMask">${mini(record.left)}</div>
+        </div>
+        <div class="eyePanel">
+          <div class="eyeName">RIGHT EYE</div>
+          <div class="eyeExplain">sees <strong>SHARED CENTER</strong> + <strong>RIGHT FIELD</strong></div>
+          <div class="miniMask">${mini(record.right)}</div>
+        </div>
       </div>
     </div>`;
   return row;
