@@ -53,11 +53,17 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .stateMeta{min-width:0}
 .stateTitle{display:flex;justify-content:space-between;gap:8px;align-items:center;font-weight:900;margin-bottom:7px}
 .stateTitle time{color:var(--muted);font-weight:600;font-size:10px}
-.stateEyes{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.miniMask{display:grid;grid-template-columns:repeat(8,1fr);gap:3px}
-.miniBit{height:20px;border-radius:5px;background:#17283b;color:var(--no);display:grid;place-items:center;font-size:10px;font-weight:900}
+.stateEyes{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.eyePanel{min-width:0}
+.eyeName{font-size:10px;color:#dceeff;letter-spacing:.12em;font-weight:900;margin-bottom:3px}
+.eyeExplain{font-size:9px;color:var(--muted);line-height:1.3;margin-bottom:7px}
+.eyeExplain strong{color:#bfefff;font-weight:850}
+.miniMask{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.miniBit{min-width:0;min-height:39px;border-radius:7px;background:#17283b;color:var(--no);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4px 2px}
+.miniValue{font-size:12px;font-weight:900;line-height:1}
+.miniLabel{margin-top:4px;font-size:7px;font-weight:750;letter-spacing:.02em;color:#8da4bd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .miniBit.yes{background:#12372f;color:var(--yes)}.miniBit.unknown{background:#3b3218;color:var(--unknown)}
-.eyeName{font-size:9px;color:var(--muted);letter-spacing:.1em;margin-bottom:4px}
+.miniBit.yes .miniLabel{color:#9fdbc8}.miniBit.unknown .miniLabel{color:#e3cf8c}
 .logic{margin-top:24px}
 .logic pre{white-space:pre-wrap;color:var(--cyan);font-size:12px;line-height:1.5}
 .logic p{color:var(--muted);line-height:1.55;font-size:13px}
@@ -69,5 +75,5 @@ button:disabled{opacity:.4;cursor:not-allowed}
   .stateRow{grid-template-columns:1fr}
   .stateVision{width:100%}
   .miniMask{grid-template-columns:repeat(4,1fr)}
-  .stateEyes{gap:5px}
+  .stateEyes{grid-template-columns:1fr;gap:12px}
 }
