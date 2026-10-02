@@ -4,6 +4,13 @@
 
 **The beginning of artificial life.**
 
+## First runnable organism — First Sense
+
+The first mobile build uses the phone camera as Sense. Each press on **LOOK** captures exactly one observation and appends one **Sense State**. The frame is split into two logical eyes, each exposing an 8-channel input mask to the future QCDS core.
+
+**[Open Q* GENESIS First Sense on GitHub Pages](https://iampathat.github.io/thesyntractvision/qgen/)**
+
+
 ## STATE 0 — Definition of Life
 
 Q* GENESIS begins with a first formal state: **life as a formation of states**.
