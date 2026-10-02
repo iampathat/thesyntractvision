@@ -22,7 +22,8 @@ video{width:100%;height:100%;object-fit:cover;display:block}
 .reticle:before{left:50%;top:0;bottom:0;width:1px}
 .reticle:after{top:50%;left:0;right:0;height:1px}
 .cameraHint{position:absolute;inset:auto 12px 12px 12px;text-align:center;padding:8px 10px;border-radius:999px;background:#020711cc;color:var(--muted);font-size:12px}
-.controls{display:grid;grid-template-columns:1fr 1.35fr;gap:10px;padding-top:12px}
+.controls{display:grid;gap:10px;padding-top:12px}
+.cameraControls{grid-template-columns:1fr 1fr 1.35fr}
 button{border:0;border-radius:14px;padding:15px 14px;font:inherit;font-weight:900;letter-spacing:.06em;cursor:pointer}
 button:disabled{opacity:.4;cursor:not-allowed}
 .primary{background:linear-gradient(135deg,var(--cyan),#6b7cff);color:#02101e;box-shadow:0 0 30px #51dfff35}
@@ -36,6 +37,8 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .note{margin:12px 2px 2px;color:#7f9bb8;font-size:12px;line-height:1.45}
 .historyHead{display:flex;align-items:end;justify-content:space-between;padding:28px 3px 10px}
 .historyHead h2{margin:3px 0 0;font-size:28px}.count{color:var(--muted);font-size:12px}
+.historyActions{display:flex;align-items:center;gap:10px}
+.clearButton{padding:8px 10px;border-radius:10px;background:#2a1118;color:#ffb3c1;border:1px solid #653044;font-size:10px;letter-spacing:.08em}
 .history{display:flex;flex-direction:column;gap:10px}
 .empty{border:1px dashed #28435f;border-radius:16px;padding:22px;color:var(--muted);text-align:center}
 .stateRow{display:grid;grid-template-columns:110px 1fr;gap:12px;background:#071321;border:1px solid var(--line);border-radius:18px;padding:9px;overflow:hidden}
@@ -54,7 +57,8 @@ button:disabled{opacity:.4;cursor:not-allowed}
 @media(max-width:540px){
   .shell{padding-left:10px;padding-right:10px}
   .cameraCard{border-radius:18px;padding:9px}
-  .controls{grid-template-columns:1fr 1fr}
+  .cameraControls{grid-template-columns:1fr 1fr}
+  .cameraControls .primary{grid-column:1/-1}
   .stateRow{grid-template-columns:92px 1fr}
   .stateImage{width:92px}
   .miniMask{grid-template-columns:repeat(4,1fr)}
