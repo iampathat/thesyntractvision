@@ -70,6 +70,7 @@ function setCase(data){
   $('aStatus').textContent='Imported/manual metadata — check DOI again to verify';
   $('bStatus').textContent='Imported/manual metadata — check DOI again to verify';
   $('aStatus').className='lookup-status';$('bStatus').className='lookup-status';
+  const priorChip=document.querySelector('[data-oracle="prior"] .status-chip');if(priorChip){priorChip.textContent='USER ASSERTION';priorChip.classList.remove('attested');}
   session.lastRuns=null;session.lastSnapshot=null;session.stale=false;
   $('results').replaceChildren(element('div','empty','Case loaded. Run QCDS to infer from the current evidence.'));
   $('caseSummary').textContent='No current analysis. Run QCDS.';
@@ -141,7 +142,7 @@ function updateChronology(){
   const a=session.lookups.a,b=session.lookups.b;
   if(!a||!b||!a.exactDate||!b.exactDate)return;
   $('v-prior').value=a.exactDate<b.exactDate?'1':'0';
-  $('s-prior').value='https://doi.org/'+a.doi+' | https://doi.org/'+b.doi;
+  $('s-prior').value='https://doi.org/'+a.doi;
   $('c-prior').value='0.95';
   const chip=document.querySelector('[data-oracle="prior"] .status-chip');
   if(chip){chip.textContent='CROSSREF DATE METADATA';chip.classList.add('attested');}
@@ -315,7 +316,7 @@ function bindEvents(){
   for(const id of FIELD_IDS){
     $(id).addEventListener('change',changed);
     if(id==='aDoi'||id==='bDoi'||id==='aDate'||id==='bDate'){
-      $(id).addEventListener('input',()=>{const w=id[0];session.lookups[w]=null;const chip=document.querySelector('[data-oracle="prior"] .status-chip');if(chip){chip.textContent='USER ASSERTION';chip.classList.remove('attested');}});
+      $(id).addEventListener('input',()=>{const w=id[0];session.lookups[w]=null;const chip=document.querySelector('[data-oracle="prior"] .status-chip');if(chip&&chip.classList.contains('attested')){$('v-prior').value='?';$('s-prior').value='';$('c-prior').value='0.75';}if(chip){chip.textContent='USER ASSERTION';chip.classList.remove('attested');}changed();});
     }
   }
   $('loadExample').addEventListener('click',fictionalExample);
