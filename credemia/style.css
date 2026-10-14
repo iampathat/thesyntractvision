@@ -43,3 +43,58 @@
 .credo span{font-size:13px;color:#dce8ee}
 @media(max-width:840px){.dossier-grid{grid-template-columns:1fr}}
 @media(max-width:620px){.case-grid{grid-template-columns:1fr}.case-tile{min-height:220px;padding:20px}.credo{flex-direction:column;align-items:flex-start;gap:5px}.latin span{display:block;margin-top:4px}}
+
+
+/* CREDEMIA 1.1: results first, editor only by explicit request */
+.advanced-shell{border:1px solid #4d6072;border-radius:15px;background:#0b1726;margin:35px 0 0}
+.advanced-toggle{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:23px 25px}
+.advanced-toggle::-webkit-details-marker{display:none}
+.advanced-toggle strong{display:block;font-size:17px;color:#e4f9fb}
+.advanced-toggle small{display:block;font-size:12px;color:var(--muted);margin-top:4px;font-weight:400}
+.advanced-toggle b{font-size:11px;color:var(--cyan);letter-spacing:.06em;white-space:nowrap}
+.advanced-shell[open] .advanced-toggle{border-bottom:1px solid #3b5364}
+.advanced-content{padding:20px}
+.mini-summary{display:block;margin:8px 0 0;color:#e7d5a3;font-size:10px;font-weight:650;letter-spacing:.035em}
+.cases-footnote{font-size:12px;color:#b8cbd8;padding:10px 0 0}
+.digest{margin-top:23px}
+.digest h3{font-size:clamp(20px,2.6vw,28px);line-height:1.24;margin:8px 0 18px}
+.evidence-counters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:17px}
+.evidence-counters>div{padding:15px 17px;background:#0e2431;border:1px solid #3e6570;border-radius:11px}
+.evidence-counters strong{display:block;font-size:31px;line-height:1.05;color:#e2f7fd;font-variant-numeric:tabular-nums}
+.evidence-counters span{display:block;font-size:12px;color:var(--muted);margin-top:6px}
+.evidence-counters .counter-reported{background:#29281f;border-color:#817354}
+.evidence-counters .counter-open{background:#1d2231;border-color:#4d516c}
+.result-bottom-line{margin:19px 0;padding:16px 18px;color:#e9f3fc!important;background:#143147;border-left:4px solid var(--cyan);border-radius:0 9px 9px 0;font-size:15px}
+.result-bottom-line strong{color:var(--cyan)}
+.finding-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.finding{padding:17px 18px;border:1px solid #415c6b;border-radius:12px;background:#102335;min-width:0}
+.finding-open{background:#161f30;border-color:#5a6370}
+.finding-reported{background:#24291e;border-color:#6b714d}
+.finding-head{font-size:10px;font-weight:800;letter-spacing:.12em;color:#90d9e1}
+.finding-open .finding-head{color:#c8ced9}.finding-reported .finding-head{color:var(--gold)}
+.finding h4{font-size:15px;margin:11px 0 7px;line-height:1.27;color:#f0f8fc}
+.finding p{margin:4px 0 12px;font-size:13px;line-height:1.52;color:#c3d3df}
+.finding-flag{display:block;margin:15px 0 7px;color:#e6dbad;font-size:11px}
+.finding-sources{display:flex;flex-direction:column;gap:4px;border-top:1px solid #38506a;padding-top:12px}
+.finding-link{font-size:11px;line-height:1.5;overflow-wrap:anywhere}
+.finding .no-source{font-size:11px;color:#bac6d2}
+.method-comparison{padding-top:20px}
+.method-comparison h4{font-size:17px}
+.compare-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;border:1px solid #3a5266;border-radius:10px}
+.result-table{width:100%;border-collapse:collapse;min-width:560px;font-size:12px;line-height:1.47}
+.result-table tr+tr{border-top:1px solid #314b60}
+.result-table thead{background:#14314c}
+.result-table th,.result-table td{padding:11px 12px;text-align:left;vertical-align:top;overflow-wrap:anywhere}
+.result-table th{color:#f0faff;font-weight:800}
+.result-table td{color:#cfdfeb}
+.result-table .comparison-status{font-size:10px;font-weight:800;color:var(--gold)}
+.evidence-next{margin:20px 0 4px;background:#131e2d;border-left:3px solid var(--gold);padding:17px 19px;border-radius:0 10px 10px 0}
+.evidence-next strong{color:var(--gold);font-size:13px}
+.evidence-next p{font-size:13px;margin:6px 0;color:#d9e7f0}
+.research-details{margin:25px 0 0;padding:0;border:1px solid #3b596b;border-radius:12px}
+.research-details summary{cursor:pointer;padding:15px 18px;font-size:13px;font-weight:800;color:var(--cyan)}
+.research-details[open] summary{border-bottom:1px solid #395365}
+.research-details .dossier-grid{padding:16px}
+.research-details:focus-within{border-color:var(--cyan)}
+@media(max-width:830px){.finding-grid{grid-template-columns:1fr}.advanced-content{padding:12px}.advanced-toggle{padding:16px}.evidence-counters>div{padding:12px 11px}}
+@media(max-width:510px){.evidence-counters{gap:5px}.evidence-counters strong{font-size:25px}.evidence-counters span{font-size:10px}.result-bottom-line{font-size:14px}.advanced-toggle{display:block}.advanced-toggle b{display:block;margin-top:12px}}
