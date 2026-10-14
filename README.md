@@ -23,6 +23,16 @@ You do **not** need to understand the whole architecture before trying it or bui
 
 ---
 
+## CREDEMIA™ — QCDS Scientific Credit Lab
+
+**Scientific priority, authorship and attribution — with evidence rather than prestige.**
+
+[**Open CREDEMIA live →**](https://iampathat.github.io/thesyntractvision/credemia/) · [Case source / methodology](credemia/README.md) · [Separate commercial license](credemia/LICENSE.md)
+
+Compare two research works, check Crossref DOI metadata, record 1 / 0 / ? source-based oracle conditions, run the **canonical QCDS Python core in WebAssembly**, inspect unresolved evidence and export an auditable report. The fictional example is not an allegation about any actual researcher. CREDEMIA **is not free/open-source for reuse**: viewing the official public demo is permitted, but original case/product material requires a separate written license for other use.
+
+---
+
 ## Start in 60 seconds
 
 ### Enter The Living Superintelligence in your browser
