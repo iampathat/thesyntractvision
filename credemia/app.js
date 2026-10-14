@@ -61,19 +61,83 @@ function appendLink(parent,url,label){
   a.href=url;a.target='_blank';a.rel='noopener noreferrer';
   parent.append(a);
 }
+
+function appendEvidenceSources(host, ids, sources){
+  for(const id of ids||[]){
+    const src=(sources||[]).find(item=>item.id===id);
+    if(!src)continue;
+    const holder=element('span','finding-link');
+    appendLink(holder,src.url,'↗ '+src.label);
+    host.append(holder);
+  }
+}
+function renderDigest(data){
+  const d=data.resultDigest||{};
+  const host=element('section','digest');
+  host.append(element('div','kicker','CURRENT RESULTS · SOURCE REVIEW 14 OCTOBER 2026'));
+  host.append(element('h3','',d.headline||'Evidence under review'));
+  const findings=Array.isArray(d.keyFindings)?d.keyFindings:[];
+  const stats=element('div','evidence-counters');
+  for(const tuple of [['documented','Documented records'],['reported','Party statements'],['open','Open questions']]){
+    const box=element('div','counter-'+tuple[0]);
+    box.append(element('strong','',findings.filter(x=>x.status===tuple[0]).length),element('span','',tuple[1]));
+    stats.append(box);
+  }
+  host.append(stats);
+  const bottom=element('p','result-bottom-line');
+  bottom.append(element('strong','','CURRENT FINDING · '),document.createTextNode(d.bottomLine||'This investigation is ongoing.'));
+  host.append(bottom);
+  const grid=element('div','finding-grid');
+  for(let i=0;i<findings.length;i++){
+    const f=findings[i],status=['documented','reported','open'].includes(f.status)?f.status:'open';
+    const card=element('article','finding finding-'+status);
+    const label=status==='documented'?'DOCUMENTED SOURCE RECORD':status==='reported'?'ATTRIBUTED PARTY STATEMENT':'NOT YET ESTABLISHED';
+    card.append(element('div','finding-head',String(i+1).padStart(2,'0')+' / '+label));
+    card.append(element('h4','',f.title),element('p','',f.detail),element('strong','finding-flag',f.verdict||''));
+    const refs=element('div','finding-sources');
+    appendEvidenceSources(refs,f.sourceIds,data.sources);
+    if(!refs.childNodes.length)refs.append(element('span','no-source','No independent source supplied'));
+    card.append(refs);grid.append(card);
+  }
+  host.append(grid);
+  const comparison=element('div','method-comparison');
+  comparison.append(element('h4','','Side-by-side evidence test'));
+  const scroll=element('div','compare-scroll');
+  const table=element('table','result-table');
+  const head=element('thead'),hr=element('tr');
+  for(const title of ['Question','Earlier work / claim','Later work / record','Finding'])hr.append(element('th','',title));
+  head.append(hr);
+  const body=element('tbody');
+  for(const line of d.comparison||[]){
+    const row=element('tr');
+    row.append(element('th','',line.dimension),element('td','',line.earlier),element('td','',line.later));
+    const label={documented:'DOCUMENTED DATES',open:'NOT ESTABLISHED','one-sided-record':'LATER RECORD ONLY','different-descriptions':'DIFFERENT STATED METHODS'}[line.status]||'REVIEW NEEDED';
+    row.append(element('td','comparison-status',label));body.append(row);
+  }
+  table.append(head,body);scroll.append(table);comparison.append(scroll);host.append(comparison);
+  const next=element('div','evidence-next');
+  next.append(element('strong','','NEXT DECISIVE EVIDENCE · '),document.createTextNode(d.questionOfTheDay||'Original technical source'));
+  next.append(element('p','',d.suggestedAction||'Challenge the available source trail.'));
+  if(d.howQcdsRelates)next.append(element('p','', 'QCDS connection: '+d.howQcdsRelates));
+  host.append(next);
+  return host;
+}
 function renderDossier(data){
   const host=$('dossier');host.hidden=false;host.replaceChildren();
   const hero=element('div','dossier-hero');
   hero.append(element('div','kicker','VERITAS VINCET · CASE '+data.number+' · '+data.status.toUpperCase()),
-    element('h3','',data.headline),element('p','tagline',data.subtitle),element('p','dossier-note',data.intro));
-  hero.append(element('h4','','Question under review'),element('p','',data.question));
-  host.append(hero);
+    element('h3','',data.headline),element('p','tagline',data.subtitle));
+  hero.append(element('p','intro',data.intro),element('p','dossier-note',data.question));
+  host.append(hero,renderDigest(data));
+  const details=element('details','research-details');
+  details.append(element('summary','','Show complete timeline, original sources and open questions'));
   const grid=element('div','dossier-grid');
   const chronology=element('div');
-  chronology.append(element('h4','','Dated evidence & unresolved claims'));
+  chronology.append(element('h4','','Full source timeline'));
   const timeline=element('ol','timeline');
   for(const row of data.timeline||[]){
-    const li=element('li'),when=element('time','',row.date);li.append(when,element('strong','',row.title),element('p','',row.text));
+    const li=element('li');
+    li.append(element('time','',row.date),element('strong','',row.title),element('p','',row.text));
     li.append(element('small','source-kind',row.verification));
     const source=(data.sources||[]).find(src=>src.id===row.source);
     if(source){const holder=element('div');appendLink(holder,source.url,'View original source ↗');li.append(holder);}
@@ -81,20 +145,21 @@ function renderDossier(data){
   }
   chronology.append(timeline);
   const side=element('div');
-  side.append(element('h4','','Source register'));
+  side.append(element('h4','','Original source register'));
   const sourceList=element('ul','sources-list');
   for(const src of data.sources||[]){
-    const li=element('li');li.append(element('span','source-kind',src.type));appendLink(li,src.url,src.label+' ↗');sourceList.append(li);
+    const li=element('li');
+    li.append(element('span','source-kind',src.type));
+    appendLink(li,src.url,src.label+' ↗');sourceList.append(li);
   }
-  side.append(sourceList,element('h4','','Questions the evidence must answer'));
-  const questions=element('ol','review-list');
-  for(const question of data.reviewQuestions||[])questions.append(element('li','',question));
-  side.append(questions);
-  grid.append(chronology,side);host.append(grid);
+  side.append(sourceList,element('h4','','Unresolved questions'));
+  const qs=element('ol','review-list');
+  for(const question of data.reviewQuestions||[])qs.append(element('li','',question));
+  side.append(qs);grid.append(chronology,side);details.append(grid);host.append(details);
   const toolbar=element('div','case-toolbar');
-  const go=element('button','primary','Investigate these claims with QCDS →');
-  go.addEventListener('click',()=>{$('sources').scrollIntoView({behavior:'smooth',block:'start'});});
-  const json=element('button','outline','Export source dossier (.json)');
+  const go=element('button','primary','Challenge the findings with QCDS →');
+  go.addEventListener('click',()=>{$('advancedWorkbench').open=true;$('analysis').scrollIntoView({behavior:'smooth',block:'start'});});
+  const json=element('button','outline','Download case evidence (.json)');
   json.addEventListener('click',()=>downloadFile('credemia-'+data.id+'-dossier.json',JSON.stringify(data,null,2),'application/json;charset=utf-8'));
   const share=element('a','','Permanent case link ↗');
   share.href='?case='+encodeURIComponent(data.id)+'#case-library';
@@ -112,7 +177,7 @@ async function openDossier(id, updateUrl=true){
     session.dossier=data;
     renderDossier(data);
     if(updateUrl)history.replaceState(null,'','?case='+encodeURIComponent(id)+'#case-library');
-    host.scrollIntoView({behavior:'smooth',block:'start'});
+    if(updateUrl||location.hash==='#case-library')host.scrollIntoView({behavior:'smooth',block:'start'});
   }catch(error){host.replaceChildren(element('div','empty','Unable to load this dossier: '+String(error.message||error)));}
 }
 function getSnapshot(){
@@ -447,4 +512,4 @@ renderOracles();bindEvents();
 try{coreRun=initCore();}catch(error){$('engineStatus').textContent=String(error.message||error);$('engineStatus').className='error';}
 
 const requestedCase=new URLSearchParams(location.search).get('case');
-if(OFFICIAL_CASE_IDS.has(requestedCase))openDossier(requestedCase,false);
+openDossier(OFFICIAL_CASE_IDS.has(requestedCase)?requestedCase:'navier-stokes',false);
