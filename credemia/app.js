@@ -186,7 +186,7 @@ function qcdsPayload(snapshot,def){
       challenge:'Is this specific research attribution condition supported, contradicted or unknown?',
       learning_target:'Preserve uncertainty and source attribution.',
       explore_prompt:'What independent primary evidence could falsify this condition?',
-      observations:[],starter_rules:[],truth_boundary:{external_truth_claim:false,solution_rule_supplied:false,starting_lab_modifies_reality:false}},
+      observations:[{binding_id:'credemia-context-'+def.id,terms:['research-comparison',def.id,'evaluation'],source_id:'credemia:context',confidence:1.0}],starter_rules:[],truth_boundary:{external_truth_claim:false,solution_rule_supplied:false,starting_lab_modifies_reality:false}},
     probe:{subject:'research-comparison',predicate:def.id,candidate_values:['supported','contradicted']},
     evidence,max_width:12
   };
