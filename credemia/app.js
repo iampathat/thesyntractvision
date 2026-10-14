@@ -67,6 +67,7 @@ function setCase(data){
   }
   // Imported lookup state is never treated as a freshly verified remote response.
   session.lookups={a:null,b:null};
+  updateCitation();
   $('aStatus').textContent='Imported/manual metadata — check DOI again to verify';
   $('bStatus').textContent='Imported/manual metadata — check DOI again to verify';
   $('aStatus').className='lookup-status';$('bStatus').className='lookup-status';
@@ -130,7 +131,8 @@ async function lookup(which){
     if(author)$(which+'Author').value=author.slice(0,220);
     if(date&&date.full)$(which+'Date').value=date.date;
     if(!fieldValue(which+'Url'))$(which+'Url').value='https://doi.org/'+message.DOI;
-    session.lookups[which]={doi:message.DOI,title:title||'',published:date?date.text:null,exactDate:date&&date.full?date.date:null,checkedAt:new Date().toISOString(),provider:'Crossref'};
+    const refs=Array.isArray(message.reference)?message.reference:[];
+    session.lookups[which]={doi:message.DOI,title:title||'',published:date?date.text:null,exactDate:date&&date.full?date.date:null,referenceCount:refs.length,referenceDois:refs.map(ref=>normalizeDOI(String(ref.DOI||ref.doi||'')).toLowerCase()).filter(Boolean),checkedAt:new Date().toISOString(),provider:'Crossref'};
     status.textContent='Crossref metadata: '+(date?date.text+' ('+(date.full?'day known':'partial date')+')':'publication date missing')+'. This is bibliographic metadata, not scientific validation.';
     status.className='lookup-status ok';
     updateChronology();
@@ -138,8 +140,16 @@ async function lookup(which){
   }catch(error){status.textContent='DOI lookup failed: '+String(error.message||error)+'. Manual input remains possible.';status.className='lookup-status err';changed();}
   finally{btn.disabled=false;}
 }
+function updateCitation(){
+  const host=$('citationStatus'),a=session.lookups.a,b=session.lookups.b;
+  if(!a||!b){host.textContent='DOI citation check: both works must be retrieved from Crossref. A missing record is not evidence of omitted attribution.';return;}
+  const matches=Array.isArray(b.referenceDois)&&b.referenceDois.includes(normalizeDOI(a.doi).toLowerCase());
+  if(matches)host.textContent='Crossref metadata for work B lists DOI '+a.doi+' as a reference. This establishes a deposited DOI citation, NOT whether scientific credit is adequate.';
+  else host.textContent='No direct DOI match was found in B’s '+b.referenceCount+' deposited Crossref reference records. Deposits may be incomplete or use other identifiers; this does NOT prove absence of citation or credit.';
+}
 function updateChronology(){
   const a=session.lookups.a,b=session.lookups.b;
+  updateCitation();
   if(!a||!b||!a.exactDate||!b.exactDate)return;
   $('v-prior').value=a.exactDate<b.exactDate?'1':'0';
   $('s-prior').value='https://doi.org/'+a.doi;
@@ -316,7 +326,7 @@ function bindEvents(){
   for(const id of FIELD_IDS){
     $(id).addEventListener('change',changed);
     if(id==='aDoi'||id==='bDoi'||id==='aDate'||id==='bDate'){
-      $(id).addEventListener('input',()=>{const w=id[0];session.lookups[w]=null;const chip=document.querySelector('[data-oracle="prior"] .status-chip');if(chip&&chip.classList.contains('attested')){$('v-prior').value='?';$('s-prior').value='';$('c-prior').value='0.75';}if(chip){chip.textContent='USER ASSERTION';chip.classList.remove('attested');}changed();});
+      $(id).addEventListener('input',()=>{const w=id[0];session.lookups[w]=null;updateCitation();const chip=document.querySelector('[data-oracle="prior"] .status-chip');if(chip&&chip.classList.contains('attested')){$('v-prior').value='?';$('s-prior').value='';$('c-prior').value='0.75';}if(chip){chip.textContent='USER ASSERTION';chip.classList.remove('attested');}changed();});
     }
   }
   $('loadExample').addEventListener('click',fictionalExample);
