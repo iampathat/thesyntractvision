@@ -1,0 +1,148 @@
+{
+  "schema": "credemia-case-v1",
+  "id": "navier-stokes",
+  "number": "001",
+  "status": "Open evidentiary review",
+  "asOf": "2026-10-14",
+  "headline": "Navier–Stokes: proof, precedence and the drawer-claim test",
+  "subtitle": "A dated public theorem versus claims of much older, possibly unpublished ideas: what counts as mathematical priority?",
+  "question": "How can a third party substantiate that a newly announced result was anticipated by an earlier, specific, independently checkable mathematical contribution?",
+  "intro": "The September 2026 Navier–Stokes announcement illustrates the need to distinguish a proved theorem from earlier related research, a rumor or a retrospective claim. This case does not accuse any named person of misconduct.",
+  "fields": {
+    "caseName": "CREDEMIA 001 — Navier–Stokes priority and parallel research",
+    "aDoi": "",
+    "aTitle": "Alpöge–Buckmaster: forced Euler research (separate theorem; original source pending)",
+    "aAuthor": "Levent Alpöge / Tristan Buckmaster",
+    "aDate": "",
+    "aUrl": "https://openai.com/index/navier-stokes-solution/",
+    "bDoi": "",
+    "bTitle": "On the Navier–Stokes Millennium Prize Problem",
+    "bAuthor": "OpenAI (institutional announcement)",
+    "bDate": "2026-09-08",
+    "bUrl": "https://openai.com/index/navier-stokes-solution/",
+    "comparison": "Review whether any earlier, dated and accessible mathematical argument proves the same exact proposition (including Euler versus viscous Navier–Stokes, smooth forcing, domain, boundary conditions, hypotheses and blow-up conclusion). OpenAI reports distinct Euler and Navier–Stokes results. A retrospective 'I had this 10 years ago' claim is an evidentiary lead, not itself a mathematical proof or priority timestamp."
+  },
+  "timeline": [
+    {
+      "date": "2000",
+      "title": "Clay identifies its Millennium Prize formulation",
+      "text": "Official Navier–Stokes existence-and-smoothness problem established; candidate proof must match a stated alternative.",
+      "source": "clay-problem",
+      "verification": "Primary official formulation"
+    },
+    {
+      "date": "2026-09-01",
+      "title": "OpenAI says its related research began",
+      "text": "A party's disclosed start date is its own account and should be contrasted with original dated technical records.",
+      "source": "openai-report",
+      "verification": "Party statement"
+    },
+    {
+      "date": "2026-09-05",
+      "title": "OpenAI reports a Navier–Stokes solution",
+      "text": "Its account says the internal system produced a solution on September 5; formal verification continued.",
+      "source": "openai-report",
+      "verification": "Party statement"
+    },
+    {
+      "date": "2026-09-08",
+      "title": "OpenAI publishes its claim",
+      "text": "A claimed smooth-forcing blow-up construction for the 3D Navier–Stokes system, corresponding to Clay alternatives C/D.",
+      "source": "openai-report",
+      "verification": "Public dated announcement; proof not audited here"
+    },
+    {
+      "date": "2026-09-10",
+      "title": "OpenAI adds a concurrent-work statement",
+      "text": "OpenAI states Alpöge and Buckmaster had priority for a different forced-Euler result; its claim of independent development is the reporting party's account, not an independent finding by CREDEMIA.",
+      "source": "openai-report",
+      "verification": "Party statement"
+    },
+    {
+      "date": "2026-09-11",
+      "title": "Clay acknowledges apparently settled problem",
+      "text": "Clay indicates the result appears to address the Millennium Problem while evaluation and assignment of credit remain deliberately unhurried.",
+      "source": "clay-announcement",
+      "verification": "Official institutional statement"
+    },
+    {
+      "date": "Unknown",
+      "title": "Ten-years-ago notebook or code claim",
+      "text": "No particular 2016 paper, notebook or exact theorem is asserted as fact by CREDEMIA. The claimant must submit an authentic dated artifact before this question can be evaluated.",
+      "source": null,
+      "verification": "Open evidence request"
+    }
+  ],
+  "sources": [
+    {
+      "id": "clay-problem",
+      "label": "Clay Mathematics Institute — official Navier–Stokes problem",
+      "url": "https://www.claymath.org/millennium/Navier-Stokes-Equation/",
+      "type": "Primary institutional"
+    },
+    {
+      "id": "clay-announcement",
+      "label": "Clay Mathematics Institute — September 11, 2026 announcement",
+      "url": "https://www.claymath.org/news/navier-stokes-announcement/",
+      "type": "Primary institutional"
+    },
+    {
+      "id": "clay-rules",
+      "label": "Clay — Millennium Prize eligibility and credit rules",
+      "url": "https://www.claymath.org/millennium-problems/rules/",
+      "type": "Primary institutional"
+    },
+    {
+      "id": "openai-report",
+      "label": "OpenAI — September 8, 2026 proof announcement, revised September 10",
+      "url": "https://openai.com/index/navier-stokes-solution/",
+      "type": "Party statement"
+    }
+  ],
+  "reviewQuestions": [
+    "What exact formal theorem is asserted in each work? Same equations, viscosity, forcing, dimensionality, initial data and conclusion?",
+    "Is the older contribution dated by an independent archive, signed commit, public preprint, publisher receipt or cryptographic timestamp?",
+    "Was the old material accessible to the later authors? Distinguish access from influence.",
+    "Does a shared mathematical theme amount to the same proof or an independent method?",
+    "Are the cited claims and counterclaims traceable to contemporaneous records?",
+    "Have both parties been offered the same source-based opportunity to correct the account?",
+    "Does any proof satisfy all of Clay's mathematical and procedural requirements? No automatic verdict."
+  ],
+  "conditions": {
+    "prior": {
+      "mask": "?",
+      "source": "",
+      "confidence": 0.75
+    },
+    "overlap": {
+      "mask": "?",
+      "source": "",
+      "confidence": 0.75
+    },
+    "access": {
+      "mask": "?",
+      "source": "",
+      "confidence": 0.75
+    },
+    "credit": {
+      "mask": "?",
+      "source": "",
+      "confidence": 0.75
+    },
+    "independent": {
+      "mask": "?",
+      "source": "",
+      "confidence": 0.75
+    },
+    "primary": {
+      "mask": "?",
+      "source": "",
+      "confidence": 0.75
+    },
+    "conflict": {
+      "mask": "?",
+      "source": "",
+      "confidence": 0.75
+    }
+  }
+}
