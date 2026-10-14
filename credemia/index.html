@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#080e19">
+  <meta name="description" content="CREDEMIA: a QCDS Scientific Credit Lab for source-driven research priority and attribution analysis.">
+  <title>CREDEMIA — QCDS Scientific Credit Lab · The Syntract Vision</title>
+  <link rel="stylesheet" href="./style.css">
+  <script defer src="./app.js"></script>
+</head>
+<body>
+  <div class="aurora" aria-hidden="true"></div>
+  <div class="shell">
+    <header class="masthead">
+      <a class="identity" href="../" aria-label="The Syntract Vision home">
+        <span class="qmark" aria-hidden="true">Q<span>✦</span></span>
+        <span><strong>THE SYNTRACT VISION</strong><small>ONE QCDS CORE · MANY LOGICAL WORLDS</small></span>
+      </a>
+      <div class="pill" title="Viewing this demonstration is permitted. Reuse requires a separate license.">PUBLIC DEMO <span>·</span> LICENSED PRODUCT</div>
+    </header>
+    <section class="hero">
+      <div class="overline">THE SYNTRACT VISION / CASE 001 / EVIDENCE & SCIENTIFIC CREDIT</div>
+      <h1>CREDE<span>MIA</span><b>™</b></h1>
+      <h2>Who discovered it? <em>Who received the credit?</em></h2>
+      <p>Scientific priority should follow <strong>the evidence trail</strong>, not the prestige trail. Compare two research works, form explicit conditions, run the canonical QCDS inference engine and inspect what remains unresolved.</p>
+      <div class="hero-actions"><button id="loadExample" class="primary">Try a fictional worked case →</button><button id="clearCase" class="quiet">New blank investigation</button><a href="#workbench">Explore the workbench ↓</a></div>
+      <div class="boundary"><strong>Evidence first.</strong> Similarity does not prove copying. An earlier date does not prove dependence. QCDS displays conditional inference and missing evidence, not misconduct findings.</div>
+    </section>
+    <nav class="steps" aria-label="Case workflow">
+      <a href="#sources"><span>01</span> Two works</a><a href="#conditions"><span>02</span> Conditions & oracles</a><a href="#analysis"><span>03</span> QCDS inference</a><a href="#report"><span>04</span> Evidence report</a>
+    </nav>
+    <main id="workbench">
+      <section id="sources" class="card">
+        <div class="section-heading"><div><div class="kicker">PHASE 1 / CONDITION FORMATION</div><h3>Compare the actual research</h3><p>DOI lookup reads public bibliographic metadata from Crossref. It does not read or verify the scientific content of the papers.</p></div><div class="stage">01 / 04</div></div>
+        <label class="field">Case name<input id="caseName" maxlength="160" placeholder="e.g. Original method versus a later claim"></label>
+        <div class="works">
+          <div class="work"><div class="work-head"><strong>A</strong><span>Earlier / candidate prior work</span></div><label class="field">DOI <input id="aDoi" placeholder="10.xxxx/..." spellcheck="false"></label><button id="lookupA" class="outline">Check DOI metadata</button><div class="lookup-status" id="aStatus" role="status">No DOI checked</div><label class="field">Title<input id="aTitle" maxlength="260" placeholder="Title of work A"></label><label class="field">Authors / creator<input id="aAuthor" maxlength="220" placeholder="Who made the contribution?"></label><label class="field">Publicly documented date<input id="aDate" type="date"></label><label class="field">Primary source URL<input id="aUrl" placeholder="https://..." type="url"></label></div>
+          <div class="work"><div class="work-head"><strong>B</strong><span>Later / compared work</span></div><label class="field">DOI <input id="bDoi" placeholder="10.xxxx/..." spellcheck="false"></label><button id="lookupB" class="outline">Check DOI metadata</button><div class="lookup-status" id="bStatus" role="status">No DOI checked</div><label class="field">Title<input id="bTitle" maxlength="260" placeholder="Title of work B"></label><label class="field">Authors / creator<input id="bAuthor" maxlength="220" placeholder="Who made the contribution?"></label><label class="field">Publicly documented date<input id="bDate" type="date"></label><label class="field">Primary source URL<input id="bUrl" placeholder="https://..." type="url"></label></div>
+        </div>
+        <label class="field">Precise technical claim under comparison<textarea id="comparison" rows="3" maxlength="1500" placeholder="Describe the specific mechanism, algorithm, equations, experimental result or testable contribution. Avoid vague labels."></textarea></label>
+        <p class="hint">Manual dates are user assertions. A successful DOI lookup marks only the bibliographic date as externally retrieved; it does not verify precedence of an unpublished idea.</p>
+      </section>
+      <section id="conditions" class="card">
+        <div class="section-heading"><div><div class="kicker">PHASE 2 / CONDITIONAL EVOLUTION</div><h3>Define the oracles</h3><p>Choose <strong>1 = supported</strong>, <strong>0 = contradicted</strong>, or <strong>? = unknown</strong>. Add the primary evidence behind each condition. Unknown is never silently treated as false.</p></div><div class="stage">02 / 04</div></div>
+        <div class="legend"><span><i class="dot yes"></i>1 · supported</span><span><i class="dot no"></i>0 · contradicted</span><span><i class="dot unknown"></i>? · not established</span></div>
+        <div id="oracleRows" class="oracles"></div>
+        <div class="warning"><strong>Source integrity:</strong> a pasted link is a lead, not independent verification. Statements without a checked source remain declared assertions. Crossref verifies metadata only. Correlated sources must not be counted as independent confirmations.</div>
+      </section>
+      <section id="analysis" class="card">
+        <div class="section-heading"><div><div class="kicker">PHASE 3 / RECURSIVE INFERENCE</div><h3>Run the canonical QCDS core</h3><p>Transport: browser → Web Worker → Pyodide → <code>qcds_fabric.problem.problem_to_syntract</code>. Each condition is an explicit logical probe; the browser does not invent a second QCDS engine.</p></div><div class="stage">03 / 04</div></div>
+        <div class="runbar"><button id="run" class="primary big">RUN QCDS →</button><span id="engineStatus" aria-live="polite">Initializing QCDS core…</span></div>
+        <div class="pipeline"><div><span>①</span> Condition formation</div><div><span>②</span> Explicit oracles</div><div><span>③</span> QCDS recursive inference</div><div><span>④</span> Truth-alignment / unresolved states</div></div>
+        <div id="results" class="results"><div class="empty">Load the example or enter two works, set your evidence conditions, then run QCDS. Results are not simulated ahead of execution.</div></div>
+        <details class="tech"><summary>What this engine does — and does not do</summary><p>The Python QCDS Fabric from this repository runs independently on each explicit claim. It produces stabilized truth distributions, entropy and possible contradiction markers. The evidence synthesis below uses declared, human-auditable rules to identify questions and gaps. It is <strong>not</strong> a trained plagiarism detector, a judgment of intent, a legal opinion or evidence of quantum advantage. An unknown input means there is no supplied oracle assertion.</p></details>
+      </section>
+      <section id="report" class="card">
+        <div class="section-heading"><div><div class="kicker">PHASE 4 / TRUTH-ALIGNMENT VERIFICATION</div><h3>Make the credit trail auditable</h3><p>Retain original sources, contradictory material and unresolved questions. Export the full record without converting hypotheses into accusations.</p></div><div class="stage">04 / 04</div></div>
+        <div id="caseSummary" class="summary">No analysis has been run yet.</div>
+        <h4>Next evidence that could change the assessment</h4>
+        <div id="nextEvidence" class="questions"><p>Run QCDS to generate evidence questions.</p></div>
+        <h4>Export</h4><div class="export-actions"><button id="exportMd" class="outline">Download evidence report (.md)</button><button id="exportJson" class="outline">Export case record (.json)</button><label class="file-control">Import a case (.json)<input id="importJson" type="file" accept="application/json,.json"></label></div>
+        <p class="hint">Nothing is uploaded to this site. DOI checks contact Crossref directly. Processing happens in your browser session; files are saved only when you explicitly export them.</p>
+      </section>
+    </main>
+    <footer><div><strong>CREDEMIA™ · QCDS Scientific Credit Lab</strong><p>Fictional training examples are not claims about real people. Attribution inquiries require human review of original records.</p></div><div class="footer-links"><a href="./README.md">Methodology</a><a href="./LICENSE.md">Commercial license</a><a href="https://www.crossref.org/documentation/retrieve-metadata/rest-api/" target="_blank" rel="noopener">Crossref API</a><a href="https://www.nobelprize.org/statutes-of-the-nobel-foundation/" target="_blank" rel="noopener">Nobel statutes</a></div><div class="credit">Theory and creation by Patrik Sundblom<br>with OpenAI / ChatGPT as research &amp; development support</div></footer>
+  </div>
+</body>
+</html>
