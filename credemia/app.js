@@ -51,10 +51,74 @@ function renderOracles(){
     row.querySelectorAll('select,input').forEach(ctrl=>ctrl.addEventListener('change',changed));
   }
 }
+
+/* Two published evidence dossiers; source data is distinct from QCDS assertions. */
+const OFFICIAL_CASE_IDS = new Set(['navier-stokes','qcds']);
+session.dossier = null;
+function appendLink(parent,url,label){
+  if(!/^https:\/\/[A-Za-z0-9.-]+(?:[/?#]|$)/.test(url||''))return;
+  const a=element('a','',label);
+  a.href=url;a.target='_blank';a.rel='noopener noreferrer';
+  parent.append(a);
+}
+function renderDossier(data){
+  const host=$('dossier');host.hidden=false;host.replaceChildren();
+  const hero=element('div','dossier-hero');
+  hero.append(element('div','kicker','VERITAS VINCET · CASE '+data.number+' · '+data.status.toUpperCase()),
+    element('h3','',data.headline),element('p','tagline',data.subtitle),element('p','dossier-note',data.intro));
+  hero.append(element('h4','','Question under review'),element('p','',data.question));
+  host.append(hero);
+  const grid=element('div','dossier-grid');
+  const chronology=element('div');
+  chronology.append(element('h4','','Dated evidence & unresolved claims'));
+  const timeline=element('ol','timeline');
+  for(const row of data.timeline||[]){
+    const li=element('li'),when=element('time','',row.date);li.append(when,element('strong','',row.title),element('p','',row.text));
+    li.append(element('small','source-kind',row.verification));
+    const source=(data.sources||[]).find(src=>src.id===row.source);
+    if(source){const holder=element('div');appendLink(holder,source.url,'View original source ↗');li.append(holder);}
+    timeline.append(li);
+  }
+  chronology.append(timeline);
+  const side=element('div');
+  side.append(element('h4','','Source register'));
+  const sourceList=element('ul','sources-list');
+  for(const src of data.sources||[]){
+    const li=element('li');li.append(element('span','source-kind',src.type));appendLink(li,src.url,src.label+' ↗');sourceList.append(li);
+  }
+  side.append(sourceList,element('h4','','Questions the evidence must answer'));
+  const questions=element('ol','review-list');
+  for(const question of data.reviewQuestions||[])questions.append(element('li','',question));
+  side.append(questions);
+  grid.append(chronology,side);host.append(grid);
+  const toolbar=element('div','case-toolbar');
+  const go=element('button','primary','Investigate these claims with QCDS →');
+  go.addEventListener('click',()=>{$('sources').scrollIntoView({behavior:'smooth',block:'start'});});
+  const json=element('button','outline','Export source dossier (.json)');
+  json.addEventListener('click',()=>downloadFile('credemia-'+data.id+'-dossier.json',JSON.stringify(data,null,2),'application/json;charset=utf-8'));
+  const share=element('a','','Permanent case link ↗');
+  share.href='?case='+encodeURIComponent(data.id)+'#case-library';
+  toolbar.append(go,json,share);host.append(toolbar);
+}
+async function openDossier(id, updateUrl=true){
+  if(!OFFICIAL_CASE_IDS.has(id))return;
+  const host=$('dossier');host.hidden=false;host.replaceChildren(element('div','empty','Reading the original source dossier…'));
+  try{
+    const response=await fetch('./cases/'+id+'.json',{cache:'no-store'});
+    if(!response.ok)throw new Error('Dossier could not be loaded: HTTP '+response.status);
+    const data=await response.json();
+    if(data.schema!=='credemia-case-v1'||data.id!==id||!Array.isArray(data.sources)||!Array.isArray(data.timeline))throw new Error('Unrecognized official case schema');
+    setCase(data);
+    session.dossier=data;
+    renderDossier(data);
+    if(updateUrl)history.replaceState(null,'','?case='+encodeURIComponent(id)+'#case-library');
+    host.scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(error){host.replaceChildren(element('div','empty','Unable to load this dossier: '+String(error.message||error)));}
+}
 function getSnapshot(){
   const fields={};for(const id of FIELD_IDS) fields[id]=fieldValue(id);
   const conditions={};for(const def of ORACLES) conditions[def.id]={mask:$('v-'+def.id).value,source:fieldValue('s-'+def.id),confidence:Number($('c-'+def.id).value)};
-  return {schema:'credemia-case-v1', created:new Date().toISOString(), fields,conditions,lookups:structuredClone(session.lookups)};
+  return {schema:'credemia-case-v1',caseId:session.dossier?.id||null,created:new Date().toISOString(),fields,conditions,lookups:structuredClone(session.lookups)};
 }
 function setCase(data){
   if(!data||data.schema!=='credemia-case-v1'||typeof data.fields!=='object'||typeof data.conditions!=='object') throw new Error('Not a CREDEMIA v1 case file.');
@@ -319,6 +383,7 @@ function markdownReport(snapshot,runs){
     '## Work B','Title: '+f.bTitle,'Author: '+f.bAuthor,'Public date (claimed/metadata): '+f.bDate,'DOI: '+f.bDoi,'URL: '+f.bUrl,'',
     '## Specific technical comparison',f.comparison||'Not supplied','',
     '## Source metadata audit',JSON.stringify(snapshot.lookups,null,2),'',
+    '## Published source dossier',session.dossier?JSON.stringify({id:session.dossier.id,question:session.dossier.question,timeline:session.dossier.timeline,sources:session.dossier.sources,reviewQuestions:session.dossier.reviewQuestions},null,2):'No official dossier selected', '',
     '## Explicit oracles / QCDS stabilized distributions'
   ];
   for(const def of ORACLES){
@@ -360,10 +425,12 @@ function bindEvents(){
       $(id).addEventListener('input',()=>{const w=id[0];session.lookups[w]=null;updateCitation();const chip=document.querySelector('[data-oracle="prior"] .status-chip');if(chip&&chip.classList.contains('attested')){$('v-prior').value='?';$('s-prior').value='';$('c-prior').value='0.75';}if(chip){chip.textContent='USER ASSERTION';chip.classList.remove('attested');}changed();});
     }
   }
-  $('loadExample').addEventListener('click',fictionalExample);
-  $('clearCase').addEventListener('click',clearCase);
+  $('loadExample').addEventListener('click',()=>{session.dossier=null;$('dossier').hidden=true;history.replaceState(null,'',location.pathname);fictionalExample();});
+  $('clearCase').addEventListener('click',()=>{session.dossier=null;$('dossier').hidden=true;history.replaceState(null,'',location.pathname);clearCase();});
   $('lookupA').addEventListener('click',()=>lookup('a'));
   $('lookupB').addEventListener('click',()=>lookup('b'));
+  $('openNavier').addEventListener('click',()=>openDossier('navier-stokes'));
+  $('openQcds').addEventListener('click',()=>openDossier('qcds'));
   $('run').addEventListener('click',runAnalysis);
   $('exportMd').addEventListener('click',exportReport);
   $('exportJson').addEventListener('click',exportCase);
@@ -371,10 +438,13 @@ function bindEvents(){
     const file=event.target.files&&event.target.files[0];if(!file)return;
     try{
       if(file.size>200000)throw new Error('Case file is too large.');
-      const data=JSON.parse(await file.text());setCase(data);
+      const data=JSON.parse(await file.text());session.dossier=null;$('dossier').hidden=true;setCase(data);
     }catch(e){alert('Could not import case: '+String(e.message||e));}
     finally{event.target.value='';}
   });
 }
 renderOracles();bindEvents();
 try{coreRun=initCore();}catch(error){$('engineStatus').textContent=String(error.message||error);$('engineStatus').className='error';}
+
+const requestedCase=new URLSearchParams(location.search).get('case');
+if(OFFICIAL_CASE_IDS.has(requestedCase))openDossier(requestedCase,false);
