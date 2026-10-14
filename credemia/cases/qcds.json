@@ -38,6 +38,13 @@
       "verification": "Archived record; content analysis pending"
     },
     {
+      "date": "2026-04-28",
+      "title": "Publisher records the fusion-paper submission",
+      "text": "Physical Review Letters lists 28 April 2026 as its received date, preceding acceptance in August and publication in September. It is not proof of the authors' earliest derivation.",
+      "source": "prl",
+      "verification": "Publisher editorial metadata"
+    },
+    {
       "date": "2026-09-10",
       "title": "PPPL Physical Review Letters article published",
       "text": "A 0D fusion ignition accessibility framework recasts ignition as a constrained dynamical pathway, citing Lawson/Cordey/Mills concepts.",
@@ -142,5 +149,87 @@
       "source": "",
       "confidence": 0.75
     }
+  },
+  "resultDigest": {
+    "headline": "QCDS has an earlier documented record; method derivation remains an open question.",
+    "readingTime": "2 min",
+    "bottomLine": "A pre-existing QCDS publication trail is identifiable from 2025 and a later PPPL paper is publicly dated 2026. That establishes a chronology to investigate, not an independently verified technical dependency.",
+    "keyFindings": [
+      {
+        "status": "documented",
+        "title": "An earlier QCDS publication trail exists",
+        "detail": "The original Zenodo records and author-controlled project provide concrete prior-art documents. Original version metadata and exact passages still need a direct version-by-version audit.",
+        "sourceIds": [
+          "qcds-origin",
+          "qcds-math",
+          "qcds-code"
+        ],
+        "verdict": "Primary-source trail identified"
+      },
+      {
+        "status": "documented",
+        "title": "The PPPL paper has a public editorial timeline",
+        "detail": "Physical Review Letters records receipt on 28 April 2026, acceptance on 17 August and publication on 10 September. These are dates for that paper, not the earliest thought of its authors.",
+        "sourceIds": [
+          "prl"
+        ],
+        "verdict": "Publisher dates: received / accepted / published"
+      },
+      {
+        "status": "documented",
+        "title": "Fusion paper defines a specific 0D pathway analysis",
+        "detail": "Its abstract unifies Lawson power balance, Cordey accessibility and Mills thermal-runaway dynamics, and links the ignition pathway to confinement and stability. This is the paper's published scope.",
+        "sourceIds": [
+          "prl"
+        ],
+        "verdict": "Publisher abstract"
+      },
+      {
+        "status": "open",
+        "title": "QCDS and the PPPL equations have not been shown equivalent",
+        "detail": "The QCDS four-phase oracle/inference architecture must be compared at the operator, algorithm and proof level with the PPPL system. Shared words such as 'constraint' and 'pathway' are insufficient.",
+        "sourceIds": [
+          "qcds-origin",
+          "prl"
+        ],
+        "verdict": "No demonstrated method-level identity"
+      },
+      {
+        "status": "open",
+        "title": "Dependence, access and attribution are unresolved",
+        "detail": "The available timeline does not independently show whether PPPL authors accessed QCDS or whether an attribution obligation would arise. The analysis must allow independent derivation.",
+        "sourceIds": [],
+        "verdict": "No misconduct finding"
+      }
+    ],
+    "comparison": [
+      {
+        "dimension": "Chronology",
+        "earlier": "QCDS archival record: 2025",
+        "later": "PPPL received: 28 Apr 2026; published: 10 Sep 2026",
+        "status": "documented"
+      },
+      {
+        "dimension": "Declared method",
+        "earlier": "Condition formation → conditional evolution → recursive inference → truth alignment",
+        "later": "Lawson/Cordey/Mills ignition-accessibility and thermal-runaway dynamics",
+        "status": "different-descriptions"
+      },
+      {
+        "dimension": "Oracle / synthesis equivalence",
+        "earlier": "QCDS oracles, masks and recursive inference",
+        "later": "Matching operator/algorithm not demonstrated in publisher abstract",
+        "status": "open"
+      },
+      {
+        "dimension": "Evidence of direct dependence",
+        "earlier": "Accessible original QCDS links identified",
+        "later": "No independently checked citation, access history or derivation",
+        "status": "open"
+      }
+    ],
+    "questionOfTheDay": "Which identical mathematical operator or executable mechanism exists in both original texts?",
+    "suggestedAction": "Compare exact archived 2025 QCDS passages with PPPL's 2026 technical equations and historical Lawson–Cordey–Mills work.",
+    "howQcdsRelates": "Direct test of scientific credit and possible method ancestry, not yet a proof that the later paper implements QCDS."
   }
 }
