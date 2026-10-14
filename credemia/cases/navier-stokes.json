@@ -94,7 +94,7 @@
     },
     {
       "id": "openai-report",
-      "label": "OpenAI — September 8, 2026 proof announcement, revised September 10",
+      "label": "OpenAI — Navier–Stokes solution announcement (8 Sep; amended 10 Sep 2026)",
       "url": "https://openai.com/index/navier-stokes-solution/",
       "type": "Party statement"
     }
@@ -144,5 +144,85 @@
       "source": "",
       "confidence": 0.75
     }
+  },
+  "resultDigest": {
+    "headline": "The public record is clear; the priority dispute is not automatically resolved.",
+    "readingTime": "2 min",
+    "bottomLine": "A dated public proof claim and an official institutional response can be inspected. Nothing presented here establishes an earlier equivalent ten-year-old proof or academic misconduct.",
+    "keyFindings": [
+      {
+        "status": "documented",
+        "title": "The original problem is precisely defined",
+        "detail": "Clay's Millennium statement supplies the benchmark that any purported solution must satisfy. Merely working on Navier–Stokes is not equivalent to solving that exact statement.",
+        "sourceIds": [
+          "clay-problem"
+        ],
+        "verdict": "Official problem definition"
+      },
+      {
+        "status": "reported",
+        "title": "A mathematical proof was announced on 8 September",
+        "detail": "OpenAI published its Navier–Stokes claim, outlining a smooth-forcing finite-time singularity construction and referring to a Lean formalization. CREDEMIA has not independently checked the proof.",
+        "sourceIds": [
+          "openai-report"
+        ],
+        "verdict": "Dated announcement, proof not independently validated"
+      },
+      {
+        "status": "documented",
+        "title": "Clay called the problem apparently settled, not automatically awarded",
+        "detail": "Clay's 11 September statement welcomed the announcement and explicitly said the process for evaluating the result and assigning credit would be deliberately unhurried.",
+        "sourceIds": [
+          "clay-announcement",
+          "clay-rules"
+        ],
+        "verdict": "Documented institutional response"
+      },
+      {
+        "status": "reported",
+        "title": "Related Euler research is not the same theorem",
+        "detail": "OpenAI describes concurrent Alpöge–Buckmaster work on forced Euler and distinguishes it from its Navier–Stokes and unforced Euler claims. This is OpenAI's account; the original papers must be compared.",
+        "sourceIds": [
+          "openai-report"
+        ],
+        "verdict": "Reported distinction, comparison pending"
+      },
+      {
+        "status": "open",
+        "title": "No substantiated ten-year-old equivalent proof is in this dossier",
+        "detail": "A dateable paper, notebook, code history or submission showing the same theorem has not been supplied here. CREDEMIA must not infer priority from an unverified 'drawer' narrative.",
+        "sourceIds": [],
+        "verdict": "Missing primary proof / chronology"
+      }
+    ],
+    "comparison": [
+      {
+        "dimension": "Public date",
+        "earlier": "Older identical proof: no dated source supplied",
+        "later": "8 Sep 2026: published OpenAI announcement",
+        "status": "one-sided-record"
+      },
+      {
+        "dimension": "Identical theorem",
+        "earlier": "Not demonstrated",
+        "later": "Specific forced Navier–Stokes C/D claim",
+        "status": "open"
+      },
+      {
+        "dimension": "Mathematical review",
+        "earlier": "No earlier proof to check",
+        "later": "Lean formalization linked by OpenAI; independent assessment not performed here",
+        "status": "open"
+      },
+      {
+        "dimension": "Scientific credit",
+        "earlier": "No rival proof entitlement established by these records",
+        "later": "Clay will assess the achievement and assign credit through its process",
+        "status": "open"
+      }
+    ],
+    "questionOfTheDay": "Where is the independently dated, technically equivalent earlier proof?",
+    "suggestedAction": "Read Clay's formal problem conditions first. Compare original technical manuscripts and archive timestamps, not article headlines.",
+    "howQcdsRelates": "Potentially testable as a separate problem-solving benchmark. No evidence has been presented that OpenAI's proof-producing process was derived from QCDS."
   }
 }
