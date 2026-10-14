@@ -8,6 +8,7 @@ on:
       - "qcds_fabric_4_2/**"
       - "qcds-security-lab/**"
       - "qcds-cancer-lab/**"
+      - "credemia/**"
       - "qgen/**"
       - "robots/legal/sweden_housing/**"
       - "web/session_core_worker.js"
@@ -220,6 +221,24 @@ jobs:
         run: |
           mkdir -p _site/qcds-cancer-lab
           cp -a qcds-cancer-lab/. _site/qcds-cancer-lab/
+
+      - name: Publish CREDEMIA scientific credit workbench
+        run: |
+          mkdir -p _site/credemia
+          cp credemia/index.html credemia/style.css credemia/app.js credemia/LICENSE.md credemia/README.md _site/credemia/
+
+      - name: Validate CREDEMIA and its real QCDS contract
+        run: |
+          test -s _site/credemia/index.html
+          test -s _site/credemia/style.css
+          test -s _site/credemia/app.js
+          test -s _site/credemia/LICENSE.md
+          grep -F 'CREDEMIA' _site/credemia/index.html
+          grep -F 'qcds_fabric.problem.problem_to_syntract' _site/credemia/app.js
+          grep -F '../session_core_worker.js' _site/credemia/app.js
+          grep -F 'not released as open-source software' _site/credemia/LICENSE.md
+          node --check _site/credemia/app.js
+          python credemia/tests/test_qcds_contract.py
 
       - name: Publish Q* GENESIS First Sense
         run: |
