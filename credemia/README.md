@@ -1,11 +1,28 @@
 # CREDEMIA™ — QCDS Scientific Credit Lab
 ### An evidence-first Logical World inside The Syntract Vision
 
-**Live (after Pages deployment):** https://iampathat.github.io/thesyntractvision/credemia/  
+**Live (after Pages deployment):** https://iampathat.github.io/thesyntractvision/credemia/
+
+**Motto: VERITAS VINCET — Truth Shall Prevail / Sanningen ska segra.**
+
+**Domain reserved by author:** credemia.org (DNS / Site connection pending).  
 **Repository:** https://github.com/iampathat/thesyntractvision/tree/main/credemia  
 **License:** separate, non-open-source evaluation permission, see [LICENSE.md](LICENSE.md).
 
 CREDEMIA addresses the scientific-credit and research-priority problem: how to distinguish documented precedence, genuine technical overlap, independent derivation, appropriate attribution, possible access and unresolved counterevidence. It does not presume that a later similar paper copied an earlier one.
+
+## First two published investigations
+
+| Dossier | Published source record | Questions |
+| --- | --- | --- |
+| [001 — Navier–Stokes](cases/navier-stokes.json) | Clay's problem definition, OpenAI announcement September 8, 2026, Clay statement September 11, 2026 | Exact theorem match, competing Euler/Navier claims, provenance, historical "drawer" assertions, independent proof checks |
+| [002 — QCDS](cases/qcds.json) | Patrik Sundblom's 2025 [QCDS archive](https://zenodo.org/records/15455541), [mathematics archive](https://zenodo.org/records/15533909), [2026 PPPL PRL paper](https://doi.org/10.1103/mmc9-nzfx) | Which exact mechanisms predate which publications, precise derivation versus generic analogy, independent development and credit |
+
+Both dossiers retain all seven conditions as **?** until independently supported observations are provided. Their source timelines contain verifiable primary records and explicitly labeled statements of involved parties; a press release is not itself a formal verification of a proof. The QCDS dossier's PPPL comparison is a *research question*, not a claim of copying.
+
+[**Open dossier 001**](https://iampathat.github.io/thesyntractvision/credemia/?case=navier-stokes#case-library) · [**Open dossier 002**](https://iampathat.github.io/thesyntractvision/credemia/?case=qcds#case-library)
+
+**ChatGPT Sites fallback:** [static, results-only CREDEMIA edition](sites/index.html). Use it as the standalone public-facing summary without running canonical QCDS. The full workbench must remain on the original QCDS-capable host unless the Python WebAssembly core is also carried across. Detailed migration instructions are in [SITES_HANDOFF.md](SITES_HANDOFF.md).
 
 ## Purpose
 
@@ -38,7 +55,7 @@ The **overall evidence summary is deliberately interpretive, not an eighth QCDS 
 
 ## Evidence provenance and DOI verification
 
-Crossref REST API lookup retrieves publication metadata only. Day precision is required for the automatic A-before-B chronology oracle; a year-only Crossref record cannot be assumed to prove ordering within that year. A manual date is a user assertion. A source link is not proof its content was inspected or authenticated.
+Crossref / DataCite REST API lookups retrieve publication metadata only. Zenodo DOIs usually resolve through DataCite. Day precision is required for the automatic A-before-B chronology oracle; a year-only Crossref record cannot be assumed to prove ordering within that year. A manual date is a user assertion. A source link is not proof its content was inspected or authenticated.
 
 Crossref source: https://www.crossref.org/documentation/retrieve-metadata/rest-api/
 
