@@ -114,26 +114,57 @@ function crossrefDate(message){
 async function lookup(which){
   const doi=normalizeDOI(fieldValue(which+'Doi'));const status=$(which+'Status');const btn=$('lookup'+which.toUpperCase());
   if(!/^10\.\d{4,9}\/\S+$/i.test(doi)){status.textContent='Enter a valid DOI starting with 10.';status.className='lookup-status err';return;}
-  btn.disabled=true;status.textContent='Contacting Crossref…';status.className='lookup-status';
+  btn.disabled=true;status.textContent='Checking Crossref / DataCite DOI registries…';status.className='lookup-status';
   session.lookups[which]=null;
   try{
-    const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),12000);
-    let response;
-    try{response=await fetch('https://api.crossref.org/works/'+encodeURIComponent(doi),{headers:{Accept:'application/json'},signal:controller.signal});}
-    finally{clearTimeout(timeout);}
-    if(!response.ok)throw new Error('Crossref returned HTTP '+response.status);
-    const json=await response.json();const message=json.message;
-    if(!message||!message.DOI)throw new Error('Missing Crossref work metadata');
-    const date=crossrefDate(message);
-    const author=(message.author||[]).slice(0,5).map(p=>[p.given,p.family].filter(Boolean).join(' ')).join(', ');
-    const title=Array.isArray(message.title)?message.title[0]:'';
-    if(title)$(which+'Title').value=title.slice(0,260);
-    if(author)$(which+'Author').value=author.slice(0,220);
-    if(date&&date.full)$(which+'Date').value=date.date;
-    if(!fieldValue(which+'Url'))$(which+'Url').value='https://doi.org/'+message.DOI;
-    const refs=Array.isArray(message.reference)?message.reference:[];
-    session.lookups[which]={doi:message.DOI,title:title||'',published:date?date.text:null,exactDate:date&&date.full?date.date:null,referenceCount:refs.length,referenceDois:refs.map(ref=>normalizeDOI(String(ref.DOI||ref.doi||'')).toLowerCase()).filter(Boolean),checkedAt:new Date().toISOString(),provider:'Crossref'};
-    status.textContent='Crossref metadata: '+(date?date.text+' ('+(date.full?'day known':'partial date')+')':'publication date missing')+'. This is bibliographic metadata, not scientific validation.';
+    const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),14000);
+    let item=null;
+    try{
+      const response=await fetch('https://api.crossref.org/works/'+encodeURIComponent(doi),{headers:{Accept:'application/json'},signal:controller.signal});
+      if(response.ok){
+        const message=(await response.json()).message;
+        if(!message||!message.DOI)throw new Error('Crossref response has no DOI');
+        const date=crossrefDate(message);
+        const refs=Array.isArray(message.reference)?message.reference:[];
+        item={
+          doi:message.DOI,provider:'Crossref',date,
+          title:Array.isArray(message.title)?String(message.title[0]||''):'',
+          author:(message.author||[]).slice(0,5).map(p=>[p.given,p.family].filter(Boolean).join(' ')).join(', '),
+          referenceCount:refs.length,
+          referenceDois:refs.map(ref=>normalizeDOI(String(ref.DOI||ref.doi||'')).toLowerCase()).filter(Boolean)
+        };
+      }else if(response.status!==404)throw new Error('Crossref returned HTTP '+response.status);
+      if(!item){
+        const fallback=await fetch('https://api.datacite.org/dois/'+encodeURIComponent(doi),{headers:{Accept:'application/vnd.api+json'},signal:controller.signal});
+        if(!fallback.ok)throw new Error('DataCite returned HTTP '+fallback.status);
+        const attributes=(await fallback.json()).data?.attributes;
+        if(!attributes||!attributes.doi)throw new Error('DataCite response has no DOI');
+        const dateRows=Array.isArray(attributes.dates)?attributes.dates:[];
+        const rawDate=dateRows.find(d=>['Issued','Available','Created'].includes(String(d.dateType)))?.date||attributes.published||String(attributes.publicationYear||'');
+        const dateText=String(rawDate||'').slice(0,10);
+        const date=/^\d{4}-\d{2}-\d{2}$/.test(dateText)?{text:dateText,full:true,date:dateText}:dateText?{text:dateText,full:false,date:''}:null;
+        const related=Array.isArray(attributes.relatedIdentifiers)?attributes.relatedIdentifiers:[];
+        const refs=related.filter(x=>['References','Cites'].includes(String(x.relationType))&&String(x.relatedIdentifierType||'').toUpperCase()==='DOI');
+        item={
+          doi:attributes.doi,provider:'DataCite',date,
+          title:String((attributes.titles||[])[0]?.title||''),
+          author:(attributes.creators||[]).slice(0,5).map(person=>person.name||[person.givenName,person.familyName].filter(Boolean).join(' ')).join(', '),
+          referenceCount:refs.length,
+          referenceDois:refs.map(x=>normalizeDOI(String(x.relatedIdentifier)).toLowerCase())
+        };
+      }
+    }finally{clearTimeout(timeout);}
+    if(item.title)$(which+'Title').value=item.title.slice(0,260);
+    if(item.author)$(which+'Author').value=item.author.slice(0,220);
+    if(item.date&&item.date.full)$(which+'Date').value=item.date.date;
+    if(!fieldValue(which+'Url'))$(which+'Url').value='https://doi.org/'+item.doi;
+    session.lookups[which]={
+      doi:item.doi,title:item.title,published:item.date?item.date.text:null,
+      exactDate:item.date&&item.date.full?item.date.date:null,
+      referenceCount:item.referenceCount,referenceDois:item.referenceDois,
+      checkedAt:new Date().toISOString(),provider:item.provider
+    };
+    status.textContent=item.provider+' metadata: '+(item.date?item.date.text+' ('+(item.date.full?'day known':'partial date')+')':'publication date missing')+'. This is bibliographic metadata, not scientific validation.';
     status.className='lookup-status ok';
     updateChronology();
     changed();
@@ -142,10 +173,10 @@ async function lookup(which){
 }
 function updateCitation(){
   const host=$('citationStatus'),a=session.lookups.a,b=session.lookups.b;
-  if(!a||!b){host.textContent='DOI citation check: both works must be retrieved from Crossref. A missing record is not evidence of omitted attribution.';return;}
+  if(!a||!b){host.textContent='DOI citation check: retrieve both works from Crossref or DataCite. Missing deposited references are not evidence of omitted attribution.';return;}
   const matches=Array.isArray(b.referenceDois)&&b.referenceDois.includes(normalizeDOI(a.doi).toLowerCase());
-  if(matches)host.textContent='Crossref metadata for work B lists DOI '+a.doi+' as a reference. This establishes a deposited DOI citation, NOT whether scientific credit is adequate.';
-  else host.textContent='No direct DOI match was found in B’s '+b.referenceCount+' deposited Crossref reference records. Deposits may be incomplete or use other identifiers; this does NOT prove absence of citation or credit.';
+  if(matches)host.textContent=b.provider+' metadata for work B lists DOI '+a.doi+' as a reference. This establishes a deposited DOI citation, NOT whether scientific credit is adequate.';
+  else host.textContent='No direct DOI match was found in B’s '+b.referenceCount+' deposited '+b.provider+' reference records. Deposits may be incomplete or use other identifiers; this does NOT prove absence of citation or credit.';
 }
 function updateChronology(){
   const a=session.lookups.a,b=session.lookups.b;
