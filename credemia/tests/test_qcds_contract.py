@@ -28,7 +28,7 @@ def request(dimension: str, decision: str = "?") -> dict:
             "challenge": "Is the explicit condition supported?",
             "learning_target": "Preserve uncertainty",
             "explore_prompt": "Look for falsification evidence",
-            "observations": [],
+            "observations": [{"binding_id": "credemia-context-" + dimension, "terms": ["research-comparison", dimension, "evaluation"], "source_id": "credemia:context", "confidence": 1.0}],
             "starter_rules": [],
             "truth_boundary": {
                 "external_truth_claim": False,
