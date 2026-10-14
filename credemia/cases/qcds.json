@@ -1,0 +1,146 @@
+{
+  "schema": "credemia-case-v1",
+  "id": "qcds",
+  "number": "002",
+  "status": "Open technical comparison",
+  "asOf": "2026-10-14",
+  "headline": "QCDS: the documented origin versus later related methods",
+  "subtitle": "Quantum Condition-Driven Synthesis — investigate originality at the mechanism level, not at the branding level.",
+  "question": "Which concrete QCDS principles were publicly documented before a later publication, and is any later mechanism actually equivalent, independently derived or merely analogous?",
+  "intro": "Patrik Sundblom identifies himself as QCDS's originator, with archived 2025 documents. CREDEMIA records these as dated leads to be checked at the source. The 2026 PPPL fusion paper is included as a comparison candidate, not an allegation of copying.",
+  "fields": {
+    "caseName": "CREDEMIA 002 — QCDS vs later constraint/pathway research",
+    "aDoi": "10.5281/zenodo.15455541",
+    "aTitle": "Inference Is All You Need — Quantum Condition-Driven Synthesis",
+    "aAuthor": "Patrik Sundblom",
+    "aDate": "",
+    "aUrl": "https://zenodo.org/records/15455541",
+    "bDoi": "10.1103/mmc9-nzfx",
+    "bTitle": "Generalized Lawson-Cordey-Mills Accessibility of Fusion Ignition",
+    "bAuthor": "Luis F. Delgado-Aparicio, Masayuki Ono, Jonathan E. Menard",
+    "bDate": "2026-09-10",
+    "bUrl": "https://doi.org/10.1103/mmc9-nzfx",
+    "comparison": "Test whether the 2025 QCDS four-phase, oracle/constraint-based, recursive, substrate-independent inference architecture has a specific technical identity with elements of the 2026 PPPL 0D constrained ignition pathway analysis. Both discuss constrained pathways; that conceptual resemblance does not establish algorithmic identity, access, derivation or infringement. Detailed matching derivations and primary source passages are required."
+  },
+  "timeline": [
+    {
+      "date": "2025",
+      "title": "Patrik Sundblom's QCDS archival record",
+      "text": "'Inference Is All You Need' is identified at Zenodo record 15455541. Exact version publication times and file contents must be verified directly from its metadata and archived files.",
+      "source": "qcds-origin",
+      "verification": "Archived record; metadata check pending"
+    },
+    {
+      "date": "2025",
+      "title": "Mathematics and Logic of QCDS",
+      "text": "Separate mathematics-and-logic record provides another source for exact definitions and formal claims; inspect versions and actual statements.",
+      "source": "qcds-math",
+      "verification": "Archived record; content analysis pending"
+    },
+    {
+      "date": "2026-09-10",
+      "title": "PPPL Physical Review Letters article published",
+      "text": "A 0D fusion ignition accessibility framework recasts ignition as a constrained dynamical pathway, citing Lawson/Cordey/Mills concepts.",
+      "source": "prl",
+      "verification": "Publisher publication metadata and abstract"
+    },
+    {
+      "date": "2026-10-05",
+      "title": "Princeton publishes its press explanation",
+      "text": "PPPL describes a heat-first route followed by density increase; the paper reports a theoretical analysis, not a direct application of QCDS.",
+      "source": "pppl",
+      "verification": "Research institution statement"
+    },
+    {
+      "date": "2026-10-14",
+      "title": "CREDEMIA opens a comparative evidence case",
+      "text": "Unresolved: specific method equivalence, access route, independent derivation, and attribution duties; no misconduct conclusion.",
+      "source": null,
+      "verification": "Research question"
+    }
+  ],
+  "sources": [
+    {
+      "id": "qcds-origin",
+      "label": "Zenodo — Inference Is All You Need (QCDS)",
+      "url": "https://zenodo.org/records/15455541",
+      "type": "Original archived project record"
+    },
+    {
+      "id": "qcds-math",
+      "label": "Zenodo — Mathematics and Logic of QCDS",
+      "url": "https://zenodo.org/records/15533909",
+      "type": "Original archived mathematics record"
+    },
+    {
+      "id": "qcds-code",
+      "label": "QCDS canonical GitHub repository",
+      "url": "https://github.com/iampathat/QCDS",
+      "type": "Versioned code"
+    },
+    {
+      "id": "syntract",
+      "label": "The Syntract Vision",
+      "url": "https://zenodo.org/records/22031525",
+      "type": "Architectural source"
+    },
+    {
+      "id": "prl",
+      "label": "Physical Review Letters — September 10, 2026 study",
+      "url": "https://doi.org/10.1103/mmc9-nzfx",
+      "type": "Later scientific publication"
+    },
+    {
+      "id": "pppl",
+      "label": "PPPL — October 5, 2026 research release",
+      "url": "https://www.pppl.gov/news/2026/novel-path-fusion-ignition-heat-first-then-add-fuel",
+      "type": "Institutional explanation"
+    }
+  ],
+  "reviewQuestions": [
+    "Which original QCDS clauses, equations and oracle operators were publicly present in each exact 2025 Zenodo version?",
+    "What is genuinely novel in the later publication relative to historical Lawson, Cordey and Mills literature?",
+    "Does the later publication implement QCDS's four-phase synthesis, or only a generally similar constrained-pathway idea?",
+    "Are formulas, operators, convergence criteria and algorithmic structure sufficiently specific to establish derivation or overlap?",
+    "What contemporaneous, independent evidence could establish access, citation, communication or lack thereof?",
+    "How do source version histories, reviewer records and preregistered experiments affect the chronology?",
+    "Can two teams independently formulate similar insights with different mathematical machinery? Preserve that alternative until it can be tested."
+  ],
+  "conditions": {
+    "prior": {
+      "mask": "?",
+      "source": "",
+      "confidence": 0.75
+    },
+    "overlap": {
+      "mask": "?",
+      "source": "",
+      "confidence": 0.75
+    },
+    "access": {
+      "mask": "?",
+      "source": "",
+      "confidence": 0.75
+    },
+    "credit": {
+      "mask": "?",
+      "source": "",
+      "confidence": 0.75
+    },
+    "independent": {
+      "mask": "?",
+      "source": "",
+      "confidence": 0.75
+    },
+    "primary": {
+      "mask": "?",
+      "source": "",
+      "confidence": 0.75
+    },
+    "conflict": {
+      "mask": "?",
+      "source": "",
+      "confidence": 0.75
+    }
+  }
+}
