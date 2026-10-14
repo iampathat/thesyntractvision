@@ -25,24 +25,31 @@
       <div class="latin">VERITAS VINCET <span>— TRUTH SHALL PREVAIL</span></div>
       <h2>Who discovered it? <em>Who received the credit?</em></h2>
       <p>Scientific priority should follow <strong>the evidence trail</strong>, not the prestige trail. Dated facts, exact theorems, authenticated sources, falsification and fair attribution. Not the authority of a title, a laboratory or an undated claim discovered in a drawer.</p>
-      <div class="hero-actions"><a href="#case-library" class="primary">Investigate the first cases →</a><button id="loadExample" class="quiet">Fictional QCDS demo</button><button id="clearCase" class="quiet">New investigation</button></div>
+      <div class="hero-actions"><a href="#case-library" class="primary">Read the current findings →</a><button id="loadExample" class="quiet">Fictional QCDS demo</button><button id="clearCase" class="quiet">New investigation</button></div>
       <div class="boundary"><strong>Evidence first.</strong> Similarity does not prove copying. An earlier date does not prove dependence. QCDS displays conditional inference and missing evidence, not misconduct findings.</div>
     </section>
     <section id="case-library" class="case-library" aria-labelledby="caseTitle">
       <div class="section-heading cases-heading"><div><div class="kicker">THE FIRST TWO INVESTIGATIONS · EST. 2026</div><h3 id="caseTitle">Open evidence dossiers</h3><p>Examine dated records, claims, counterclaims and missing evidence before drawing conclusions. Cases remain open until adequately tested.</p></div><span class="stage">CREDEMIA / 001—002</span></div>
       <div class="case-grid">
-        <article class="case-tile"><span class="case-index">DOSSIER 001 · MATHEMATICS</span><h4>NAVIER–STOKES</h4><p>The 2026 proof announcement, earlier research, parallel results and the test for retrospective “we knew this ten years ago” claims.</p><div class="case-meta">CLAY · OPENAI · PRIMARY RECORDS · EXPLICIT OPEN QUESTIONS</div><button id="openNavier" class="outline">Open Navier–Stokes dossier →</button></article>
-        <article class="case-tile"><span class="case-index">DOSSIER 002 · INFERENCE ARCHITECTURES</span><h4>QCDS</h4><p>Trace the 2025 Quantum Condition-Driven Synthesis records, formal mechanisms, provenance and a later 2026 fusion research comparison.</p><div class="case-meta">ZENODO · GITHUB · PHYSICAL REVIEW LETTERS</div><button id="openQcds" class="outline">Open QCDS dossier →</button></article>
+        <article class="case-tile"><span class="case-index">DOSSIER 001 · MATHEMATICS</span><span class="mini-summary">DOCUMENTED: 2026 ANNOUNCEMENT · CLAY RESPONSE</span><h4>NAVIER–STOKES</h4><p>The 2026 proof announcement, earlier research, parallel results and the test for retrospective “we knew this ten years ago” claims.</p><div class="case-meta">CLAY · OPENAI · PRIMARY RECORDS · EXPLICIT OPEN QUESTIONS</div><button id="openNavier" class="outline">Show the findings →</button></article>
+        <article class="case-tile"><span class="case-index">DOSSIER 002 · INFERENCE ARCHITECTURES</span><span class="mini-summary">DOCUMENTED: 2025 QCDS TRAIL · 2026 PPPL PAPER</span><h4>QCDS</h4><p>Trace the 2025 Quantum Condition-Driven Synthesis records, formal mechanisms, provenance and a later 2026 fusion research comparison.</p><div class="case-meta">ZENODO · GITHUB · PHYSICAL REVIEW LETTERS</div><button id="openQcds" class="outline">Show the findings →</button></article>
       </div>
       <div id="dossier" class="dossier" hidden aria-live="polite"></div>
+      <p class="cases-footnote">Reading a result requires no account or form. Blue = traceable source record; amber = involved party's claim; grey = open technical question. These are evidence statuses, not reputational rankings.</p>
     </section>
     <div class="credo"><strong>THE CREDEMIA PRINCIPLE</strong><span>An undated claim is not a timestamp. A timestamp is not a proof. Resemblance is not derivation. Prestige is not evidence.</span></div>
+    <details id="advancedWorkbench" class="advanced-shell">
+      <summary class="advanced-toggle">
+        <span><strong>Advanced investigation · QCDS workbench</strong><small>Want to challenge a finding? Open the detailed oracles, source fields and live QCDS inference.</small></span>
+        <b>OPEN ANALYSIS ↘</b>
+      </summary>
+      <div class="advanced-content">
     <nav class="steps" aria-label="Case workflow">
       <a href="#sources"><span>01</span> Two works</a><a href="#conditions"><span>02</span> Conditions & oracles</a><a href="#analysis"><span>03</span> QCDS inference</a><a href="#report"><span>04</span> Evidence report</a>
     </nav>
     <main id="workbench">
       <section id="sources" class="card">
-        <div class="section-heading"><div><div class="kicker">PHASE 1 / CONDITION FORMATION</div><h3>Compare the actual research</h3><p>DOI lookup reads public bibliographic metadata from Crossref. It does not read or verify the scientific content of the papers.</p></div><div class="stage">01 / 04</div></div>
+        <div class="section-heading"><div><div class="kicker">PHASE 1 / CONDITION FORMATION</div><h3>Evidence editor (optional)</h3><p>Both published cases load their known source records automatically. Only change these fields if you are challenging a finding or adding a new source. DOI lookup uses Crossref and DataCite metadata; it does not verify scientific text.</p></div><div class="stage">01 / 04</div></div>
         <label class="field">Case name<input id="caseName" maxlength="160" placeholder="e.g. Original method versus a later claim"></label>
         <div class="works">
           <div class="work"><div class="work-head"><strong>A</strong><span>Earlier / candidate prior work</span></div><label class="field">DOI <input id="aDoi" placeholder="10.xxxx/..." spellcheck="false"></label><button id="lookupA" class="outline">Check DOI metadata</button><div class="lookup-status" id="aStatus" role="status">No DOI checked</div><label class="field">Title<input id="aTitle" maxlength="260" placeholder="Title of work A"></label><label class="field">Authors / creator<input id="aAuthor" maxlength="220" placeholder="Who made the contribution?"></label><label class="field">Publicly documented date<input id="aDate" type="date"></label><label class="field">Primary source URL<input id="aUrl" placeholder="https://..." type="url"></label></div>
@@ -53,14 +60,14 @@
         <p class="hint">Manual dates are user assertions. A successful DOI lookup marks only the bibliographic date as externally retrieved; it does not verify precedence of an unpublished idea.</p>
       </section>
       <section id="conditions" class="card">
-        <div class="section-heading"><div><div class="kicker">PHASE 2 / CONDITIONAL EVOLUTION</div><h3>Define the oracles</h3><p>Choose <strong>1 = supported</strong>, <strong>0 = contradicted</strong>, or <strong>? = unknown</strong>. Add the primary evidence behind each condition. Unknown is never silently treated as false.</p></div><div class="stage">02 / 04</div></div>
+        <div class="section-heading"><div><div class="kicker">PHASE 2 / CONDITIONAL EVOLUTION</div><h3>Oracle evidence — optional</h3><p>Use <strong>1 = documented</strong>, <strong>0 = contradicted</strong> or <strong>? = unresolved</strong> only if you have a traceable source. Unknown inputs stay open.</p></div><div class="stage">02 / 04</div></div>
         <div class="legend"><span><i class="dot yes"></i>1 · supported</span><span><i class="dot no"></i>0 · contradicted</span><span><i class="dot unknown"></i>? · not established</span></div>
         <div id="oracleRows" class="oracles"></div>
         <div class="warning"><strong>Source integrity:</strong> a pasted link is a lead, not independent verification. Statements without a checked source remain declared assertions. Crossref verifies metadata only. Correlated sources must not be counted as independent confirmations.</div>
       </section>
       <section id="analysis" class="card">
         <div class="section-heading"><div><div class="kicker">PHASE 3 / RECURSIVE INFERENCE</div><h3>Run the canonical QCDS core</h3><p>Transport: browser → Web Worker → Pyodide → <code>qcds_fabric.problem.problem_to_syntract</code>. Each condition is an explicit logical probe; the browser does not invent a second QCDS engine.</p></div><div class="stage">03 / 04</div></div>
-        <div class="runbar"><button id="run" class="primary big">RUN QCDS →</button><span id="engineStatus" aria-live="polite">Initializing QCDS core…</span></div>
+        <div class="runbar"><button id="run" class="primary big">RUN QCDS ON THIS EVIDENCE →</button><span id="engineStatus" aria-live="polite">Initializing QCDS core…</span></div>
         <div class="pipeline"><div><span>①</span> Condition formation</div><div><span>②</span> Explicit oracles</div><div><span>③</span> QCDS recursive inference</div><div><span>④</span> Truth-alignment / unresolved states</div></div>
         <div id="results" class="results"><div class="empty">Load the example or enter two works, set your evidence conditions, then run QCDS. Results are not simulated ahead of execution.</div></div>
         <details class="tech"><summary>What this engine does — and does not do</summary><p>The Python QCDS Fabric from this repository runs independently on each explicit claim. It produces stabilized truth distributions, entropy and possible contradiction markers. The evidence synthesis below uses declared, human-auditable rules to identify questions and gaps. It is <strong>not</strong> a trained plagiarism detector, a judgment of intent, a legal opinion or evidence of quantum advantage. An unknown input means there is no supplied oracle assertion.</p></details>
@@ -74,6 +81,8 @@
         <p class="hint">Nothing is uploaded to this site. DOI checks contact Crossref directly. Processing happens in your browser session; files are saved only when you explicitly export them.</p>
       </section>
     </main>
+    </div>
+    </details>
     <footer><div><strong>CREDEMIA™ · VERITAS VINCET · QCDS Scientific Credit Lab</strong><p>Fictional training examples are not claims about real people. Attribution inquiries require human review of original records.</p></div><div class="footer-links"><a href="./README.md">Methodology</a><a href="./LICENSE.md">Commercial license</a><a href="https://www.crossref.org/documentation/retrieve-metadata/rest-api/" target="_blank" rel="noopener">Crossref API</a><a href="https://support.datacite.org/docs/api" target="_blank" rel="noopener">DataCite API</a><a href="https://www.nobelprize.org/statutes-of-the-nobel-foundation/" target="_blank" rel="noopener">Nobel statutes</a></div><div class="credit">Theory and creation by Patrik Sundblom<br>with OpenAI / ChatGPT as research &amp; development support</div></footer>
   </div>
 </body>
