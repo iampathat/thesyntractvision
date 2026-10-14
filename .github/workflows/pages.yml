@@ -239,6 +239,9 @@ jobs:
           test -s _site/credemia/cases/qcds.json
           test -s _site/credemia/sites/index.html
           grep -F 'CREDEMIA' _site/credemia/index.html
+          grep -F 'advancedWorkbench' _site/credemia/index.html
+          grep -F 'function renderDigest' _site/credemia/app.js
+          grep -F 'CURRENT RESULTS' _site/credemia/app.js
           grep -F 'qcds_fabric.problem.problem_to_syntract' _site/credemia/app.js
           grep -F '../session_core_worker.js' _site/credemia/app.js
           grep -F 'not released as open-source software' _site/credemia/LICENSE.md
@@ -254,6 +257,13 @@ jobs:
               assert len(record['timeline']) >= 4
               assert set(record['conditions']) == {'prior','overlap','access','credit','independent','primary','conflict'}
               assert all(c['mask'] == '?' for c in record['conditions'].values())
+              digest = record['resultDigest']
+              assert len(digest['keyFindings']) >= 4
+              assert len(digest['comparison']) >= 3
+              ids = {src['id'] for src in record['sources']}
+              assert all(finding['status'] in ('documented','reported','open') for finding in digest['keyFindings'])
+              assert all(set(finding.get('sourceIds', [])).issubset(ids) for finding in digest['keyFindings'])
+              assert any(finding['status'] == 'open' for finding in digest['keyFindings'])
           print('CREDEMIA primary-source dossier contracts PASS')
           PYCASES
           python credemia/tests/test_qcds_contract.py
