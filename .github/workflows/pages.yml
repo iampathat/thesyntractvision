@@ -224,8 +224,10 @@ jobs:
 
       - name: Publish CREDEMIA scientific credit workbench
         run: |
-          mkdir -p _site/credemia
+          mkdir -p _site/credemia/cases _site/credemia/sites
           cp credemia/index.html credemia/style.css credemia/app.js credemia/LICENSE.md credemia/README.md _site/credemia/
+          cp credemia/cases/*.json _site/credemia/cases/
+          cp credemia/sites/index.html _site/credemia/sites/
 
       - name: Validate CREDEMIA and its real QCDS contract
         run: |
@@ -233,11 +235,27 @@ jobs:
           test -s _site/credemia/style.css
           test -s _site/credemia/app.js
           test -s _site/credemia/LICENSE.md
+          test -s _site/credemia/cases/navier-stokes.json
+          test -s _site/credemia/cases/qcds.json
+          test -s _site/credemia/sites/index.html
           grep -F 'CREDEMIA' _site/credemia/index.html
           grep -F 'qcds_fabric.problem.problem_to_syntract' _site/credemia/app.js
           grep -F '../session_core_worker.js' _site/credemia/app.js
           grep -F 'not released as open-source software' _site/credemia/LICENSE.md
           node --check _site/credemia/app.js
+          python - <<'PYCASES'
+          import json
+          from pathlib import Path
+          for slug in ('navier-stokes', 'qcds'):
+              path = Path('_site/credemia/cases') / f'{slug}.json'
+              record = json.loads(path.read_text(encoding='utf-8'))
+              assert record['schema'] == 'credemia-case-v1' and record['id'] == slug
+              assert len(record['sources']) >= 3
+              assert len(record['timeline']) >= 4
+              assert set(record['conditions']) == {'prior','overlap','access','credit','independent','primary','conflict'}
+              assert all(c['mask'] == '?' for c in record['conditions'].values())
+          print('CREDEMIA primary-source dossier contracts PASS')
+          PYCASES
           python credemia/tests/test_qcds_contract.py
 
       - name: Publish Q* GENESIS First Sense
