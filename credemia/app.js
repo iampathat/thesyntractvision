@@ -421,6 +421,7 @@ async function runAnalysis(){
   const snapshot=getSnapshot();
   try{
     if(!snapshot.fields.aTitle||!snapshot.fields.bTitle)throw new Error('Enter titles for work A and work B before running QCDS.');
+    if(!coreRun){$('engineStatus').textContent='Starting canonical QCDS Python/WebAssembly core…';coreRun=initCore();}
     await session.ready;
     const runs={};
     for(let n=0;n<ORACLES.length;n++){
@@ -509,7 +510,7 @@ function bindEvents(){
   });
 }
 renderOracles();bindEvents();
-try{coreRun=initCore();}catch(error){$('engineStatus').textContent=String(error.message||error);$('engineStatus').className='error';}
+$('engineStatus').textContent='Ready when you are · QCDS core starts only if you run a technical review.';
 
 const requestedCase=new URLSearchParams(location.search).get('case');
 openDossier(OFFICIAL_CASE_IDS.has(requestedCase)?requestedCase:'navier-stokes',false);
