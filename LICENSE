@@ -32,3 +32,17 @@ for use beyond the limited evaluation permission stated there.
 
 This exception does not alter the MIT grant for software outside that directory
 and does not revoke any rights previously granted for pre-existing QCDS material.
+
+
+---
+
+CREDEMIA LAB EXCEPTION
+
+The MIT License above does not apply to original material located in the
+`credemia/` directory. That directory is separately licensed under
+`credemia/LICENSE.md` and permits official public-demo evaluation only.
+Reuse, deployment and organizational or commercial use require a separate
+written license from Patrik Sundblom.
+
+This exception does not change existing rights granted for pre-existing
+QCDS theory, QCDS core code, third-party software or bibliographic facts.
