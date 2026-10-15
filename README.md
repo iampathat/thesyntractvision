@@ -23,22 +23,6 @@ You do **not** need to understand the whole architecture before trying it or bui
 
 ---
 
-## CREDEMIA™ — VERITAS VINCET
-
-**Truth Shall Prevail · Sanningen ska segra · Scientific priority, authorship and attribution — with evidence rather than prestige.**
-
-**CREDEMIA — The Syntract Vision** is a separately licensed QCDS Scientific Credit Lab. The author controls the domain **credemia.org**; DNS/site connection is pending.
-
-[**CREDEMIA: Open the live research workbench →**](https://iampathat.github.io/thesyntractvision/credemia/) · [**Navier–Stokes — Case 001**](https://iampathat.github.io/thesyntractvision/credemia/?case=navier-stokes#case-library) · [**QCDS — Case 002**](https://iampathat.github.io/thesyntractvision/credemia/?case=qcds#case-library)
-
-[Results-only Sites edition](https://iampathat.github.io/thesyntractvision/credemia/sites/) · [Case methodology](credemia/README.md) · [ChatGPT Sites publishing instructions](credemia/SITES_HANDOFF.md) · [Separate commercial license](credemia/LICENSE.md)
-
-Compare publication histories, check Crossref **or DataCite** DOI metadata, record explicit 1 / 0 / ? source-based oracle conditions, run the **canonical QCDS Python core in WebAssembly**, inspect contradictions and uncertainty, and export an auditable report. The first two public dossiers distinguish original documentary sources, parties' statements and unresolved claims. They are not allegations of misconduct.
-
-**CREDEMIA is not free/open-source for reuse**: viewing the official public demo is permitted; use of its original product material beyond that requires a separate written license.
-
----
-
 ## Start in 60 seconds
 
 ### Enter The Living Superintelligence in your browser
