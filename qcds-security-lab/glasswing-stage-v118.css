@@ -1,0 +1,242 @@
+/* Project Glasswing · dedicated landing and full-screen film (v1.18)
+   Theory and creation by Patrik Sundblom
+   with OpenAI / ChatGPT as research & development support. */
+
+body.gw-entry-active{overflow:hidden}
+#gw-landing[hidden],#gw-film[hidden]{display:none!important}
+.gw-landing,.gw-film{
+  position:fixed;inset:0;z-index:25000;isolation:isolate;
+  color:#e8faff;overflow:auto;
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+}
+.gw-landing{
+  display:grid;place-items:center;padding:clamp(12px,3.1vw,38px);
+  background:radial-gradient(ellipse at 48% 8%,#1a4a6a,#061828 69%,#030c16);
+}
+.gw-landing-shell{
+  width:min(1360px,100%);position:relative;isolation:isolate;
+  overflow:hidden;border-radius:clamp(12px,1.6vw,22px);
+  border:1px solid #65b9e267;
+  background:#061c30;
+  box-shadow:0 28px 90px #0009,0 0 0 1px #3a91bc12;
+}
+.gw-landing-art{position:relative;overflow:hidden;aspect-ratio:2.18/1;background:#03182c}
+.gw-landing-art img{
+  display:block;width:100%;height:100%;object-fit:cover;object-position:50% 48%;
+  filter:brightness(.98) saturate(1.08);
+}
+.gw-landing-art:after{
+  content:"";position:absolute;inset:51% 0 0;pointer-events:none;
+  background:linear-gradient(transparent,#061a2ad5);
+}
+.gw-landing-shine{
+  position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(110deg,transparent 33%,#ccffff0d 47%,transparent 62%);
+  animation:gw-landing-light 9s ease-in-out infinite alternate;
+}
+@keyframes gw-landing-light{from{transform:translateX(-10%)}to{transform:translateX(12%)}}
+.gw-landing-content{
+  display:flex;align-items:center;justify-content:space-between;gap:24px;
+  padding:clamp(20px,2.4vw,34px);
+  border-top:1px solid #367ca14e;
+  background:linear-gradient(105deg,#08243b,#061729);
+}
+.gw-landing-copy{min-width:0;max-width:750px}
+.gw-eyebrow{margin:0 0 8px;color:#a3e7ff;font:750 11px/1.4 ui-monospace,monospace;letter-spacing:.16em}
+.gw-landing-copy h1{
+  margin:0;color:#f7fdff;
+  font-size:clamp(28px,3.9vw,54px);line-height:1.07;letter-spacing:-.04em;
+}
+.gw-landing-copy p:not(.gw-eyebrow){margin:12px 0 0;color:#b8d8e8;line-height:1.55;font-size:clamp(13px,1.05vw,16px)}
+.gw-landing-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:12px;flex-shrink:0}
+.gw-btn{
+  min-height:54px;display:inline-flex;align-items:center;justify-content:center;
+  gap:10px;border:1px solid #73d9f8;border-radius:10px;padding:13px 20px;
+  font:750 15px/1.3 inherit;text-decoration:none;cursor:pointer;
+}
+.gw-btn-primary{background:linear-gradient(130deg,#bbf8ff,#69d5f9);color:#062039;box-shadow:0 4px 24px #4ad4ff33}
+.gw-btn-primary:hover{background:linear-gradient(130deg,#e9ffff,#a1edff)}
+.gw-btn-secondary{background:#14354b;color:#e4fbff}
+.gw-btn-secondary:hover{background:#21546c}
+.gw-btn:focus-visible,.gw-film-skip:focus-visible{outline:3px solid #dcff96;outline-offset:3px}
+.gw-landing-footer{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  padding:12px clamp(20px,2.4vw,34px);
+  background:#051522;border-top:1px solid #2f60754e;
+  color:#8cb6c8;font:550 11px/1.5 ui-sans-serif,system-ui,sans-serif;
+}
+.gw-landing-footer strong{color:#d6f5ff;font-weight:700}
+
+/* Film: ONE complete transparent bird. No clip-path wing quadrants or duplicate bodies. */
+.gw-film{
+  display:grid;place-items:center;background:#020914;
+  overflow:hidden;z-index:25010;
+}
+.gw-film-background{
+  position:absolute;inset:-5%;z-index:0;
+  background:
+    radial-gradient(ellipse at 46% 48%,#1a5f8d9e 0%,#071d3b 50%,#010610 95%),
+    repeating-radial-gradient(ellipse at 50% 53%,transparent 0 80px,#2abaf71c 82px 83px,transparent 85px 130px);
+}
+.gw-film-background:before{
+  content:"";position:absolute;inset:0;opacity:.5;
+  background:linear-gradient(90deg,transparent 49.9%,#95eaff38 50%,transparent 50.1%),
+    linear-gradient(transparent 49.9%,#95eaff28 50%,transparent 50.1%);
+}
+.gw-film-background:after{
+  content:"";position:absolute;left:-20%;right:-20%;bottom:-49vh;height:70vh;
+  border:2px solid #50d6fa44;border-radius:50%;
+  box-shadow:0 0 70px #1bb8ff5c,inset 0 0 45px #0a91d633;
+  transform:perspective(450px) rotateX(59deg);
+}
+.gw-film-halo{position:absolute;z-index:1;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 47%,#6acfff13 0%,transparent 57%);
+}
+.gw-film-flight{
+  position:absolute;z-index:3;left:50%;top:50%;width:min(1120px,109vw);
+  aspect-ratio:880/459;transform:translate(-50%,-50%);
+  transform-origin:center;will-change:transform,opacity;opacity:0;
+}
+.gw-film-bird{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
+  filter:drop-shadow(0 0 22px #9beeff9c) drop-shadow(0 15px 35px #188cd788);
+  transform-origin:center;will-change:transform;
+}
+.gw-film-particles{position:absolute;inset:0;pointer-events:none}
+.gw-film-particles span{position:absolute;display:block;width:7px;height:7px;border-radius:50%;
+  background:#f1ffff;box-shadow:0 0 12px 5px #36d9ffb7;opacity:0}
+.gw-film-particles span:nth-child(1){left:27%;top:37%;--delay:.8s}
+.gw-film-particles span:nth-child(2){left:37%;top:50%;--delay:1.1s;background:#c7ff83}
+.gw-film-particles span:nth-child(3){left:50%;top:57%;--delay:1.6s;background:#b993ff}
+.gw-film-particles span:nth-child(4){left:62%;top:49%;--delay:1.3s;background:#8cfaff}
+.gw-film-particles span:nth-child(5){left:76%;top:35%;--delay:1.9s;background:#caff92}
+.gw-film-arc{
+  position:absolute;z-index:2;width:92vw;max-width:1000px;aspect-ratio:2/1;
+  border:2px solid #46d4ff77;border-left-color:transparent;border-top-color:transparent;
+  border-radius:50%;opacity:0;transform:rotate(-19deg) scale(.8);
+  pointer-events:none;
+}
+.gw-film-logo{
+  position:absolute;z-index:5;left:clamp(18px,3.8vw,58px);
+  top:clamp(24px,5vh,64px);width:clamp(125px,15vw,210px);
+  display:grid;justify-items:center;text-align:center;gap:3px;opacity:0;
+}
+.gw-film-logo img{display:block;width:100%;height:auto;max-height:120px;object-fit:contain;filter:drop-shadow(0 0 16px #5adcff)}
+.gw-film-logo b{font-weight:850;font-size:clamp(22px,2.7vw,37px);letter-spacing:.13em}
+.gw-film-logo small{font:650 clamp(9px,1vw,13px)/1.4 system-ui,sans-serif;letter-spacing:.2em;color:#c2efff}
+.gw-film-title{
+  position:absolute;z-index:4;left:57%;top:49%;
+  text-align:center;width:min(700px,75vw);
+  opacity:0;transform:translate(-50%,-42%);
+}
+.gw-film-title span{font:730 clamp(10px,1.15vw,14px)/1.4 ui-monospace,monospace;letter-spacing:.25em;color:#b9fff1}
+.gw-film-title h2{
+  margin:12px 0 0;font-size:clamp(62px,12vw,162px);line-height:1;
+  font-weight:900;letter-spacing:.04em;
+  background:linear-gradient(130deg,#fff 8%,#a6ebff 36%,#51abed 67%,#efffff 91%);
+  background-clip:text;-webkit-background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 20px #69d4ff87);
+}
+.gw-film-title p{font-size:clamp(23px,4vw,52px);font-weight:350;letter-spacing:.2em;color:#eefcff;margin:5px 0}
+.gw-film-title small{display:block;font:600 clamp(9px,.92vw,12px)/1.5 ui-monospace,monospace;letter-spacing:.13em;color:#a4c9dd}
+.gw-film-skip{
+  position:absolute;z-index:7;right:clamp(12px,3vw,38px);top:clamp(12px,3vw,38px);
+  background:#0c2941eb;border:1px solid #73c1df;border-radius:10px;
+  color:#effaff;padding:11px 18px;min-height:46px;font-weight:750;cursor:pointer;
+}
+.gw-film-credit{position:absolute;z-index:4;bottom:18px;left:12px;right:12px;
+  text-align:center;font-size:10px;line-height:1.5;color:#97bbc9}
+.gw-film-credit span{display:block}
+.gw-film-playing .gw-film-flight{animation:gw-film-flight 5.65s cubic-bezier(.26,.72,.29,1) both}
+.gw-film-playing .gw-film-bird{animation:gw-film-glide 2.3s ease-in-out infinite alternate}
+.gw-film-playing .gw-film-particles span{animation:gw-film-node 1.25s var(--delay) ease-in-out infinite}
+.gw-film-playing .gw-film-arc{animation:gw-film-trail 5.4s ease-out both}
+.gw-film-playing .gw-film-logo{animation:gw-film-emblem .6s 3.85s ease-out both}
+.gw-film-playing .gw-film-title{animation:gw-film-headline 2.3s 3.4s ease-out both}
+@keyframes gw-film-flight{
+  0%{opacity:0;transform:translate(-50%,-35%) scale(.65)}
+  12%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  38%{opacity:1;transform:translate(-50%,-55%) scale(1.08)}
+  55%{opacity:1;transform:translate(-61%,-67%) scale(.72)}
+  76%{opacity:1;transform:translate(calc(-50% - 39vw),calc(-50% - 37vh)) scale(.19)}
+  86%,100%{opacity:0;transform:translate(calc(-50% - 39vw),calc(-50% - 37vh)) scale(.16)}
+}
+@keyframes gw-film-glide{
+  from{transform:rotate(-1.4deg) translateY(2%)}
+  to{transform:rotate(1.4deg) translateY(-2%)}
+}
+@keyframes gw-film-node{
+  0%,18%,85%,100%{opacity:0;transform:scale(.6)}
+  34%,55%{opacity:1;transform:scale(1.8)}
+  67%{opacity:.12}
+}
+@keyframes gw-film-trail{
+  0%,24%{opacity:0;transform:rotate(-19deg) scale(.75)}
+  48%{opacity:.6;transform:rotate(-19deg) scale(1)}
+  78%,100%{opacity:0;transform:rotate(-19deg) scale(1.4)}
+}
+@keyframes gw-film-emblem{
+  from{opacity:0;transform:translateY(10px) scale(.85)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes gw-film-headline{
+  0%{opacity:0;filter:blur(8px);transform:translate(-50%,-40%) scale(.91)}
+  40%,100%{opacity:1;filter:blur(0);transform:translate(-50%,-50%) scale(1)}
+}
+
+/* App Home: workspace, NOT another giant intro poster. */
+.consumer-home .gw-lab-heading{
+  display:flex;align-items:center;justify-content:space-between;gap:18px;
+  flex-wrap:wrap;padding:20px clamp(18px,2.4vw,27px);
+  margin:0 0 18px;border:1px solid #386b88;
+  border-radius:15px;background:linear-gradient(115deg,#112c46,#0c1d30 76%);
+  box-shadow:inset 0 0 30px #44c9ff08;
+}
+.gw-lab-heading-main{display:flex;align-items:center;gap:17px;min-width:0}
+.gw-lab-heading-mark{display:block;width:94px;height:75px;object-fit:contain;
+  filter:drop-shadow(0 0 13px #68daff67)}
+.gw-lab-heading .eyebrow{display:block;color:#b5edff;font:740 10px/1.4 ui-monospace,monospace;letter-spacing:.17em}
+.gw-lab-heading h1{margin:3px 0;font-size:clamp(23px,2.55vw,33px);line-height:1.1;color:#f0fbff}
+.gw-lab-heading p{margin:4px 0 0;font-size:13px;line-height:1.5;color:#aecddd}
+.gw-lab-heading-buttons{display:flex;gap:9px;flex-wrap:wrap}
+.gw-lab-heading-buttons .button{min-height:44px;font-size:12px}
+.gw-lab-heading-buttons .button:not(.primary){background:#173950;border:1px solid #427c95;color:#e4faff}
+.brand.glasswing-brand .glasswing-brand-mark{border:0!important;background:transparent!important;box-shadow:none!important}
+.brand.glasswing-brand .glasswing-brand-mark img{object-fit:contain!important;filter:drop-shadow(0 0 9px #6ce1ff82)}
+@media(max-width:850px){
+  .gw-landing-content{flex-direction:column;align-items:stretch}
+  .gw-landing-actions{justify-content:flex-start}
+  .gw-lab-heading{align-items:flex-start}
+}
+@media(max-width:620px){
+  .gw-landing{padding:10px}
+  .gw-landing-art{aspect-ratio:1/1.05}
+  .gw-landing-art img{object-position:48% 50%}
+  .gw-landing-actions{display:grid;grid-template-columns:1fr;width:100%}
+  .gw-btn{width:100%;min-height:50px}
+  .gw-landing-footer{font-size:10px}
+  .gw-film-flight{width:135vw}
+  .gw-film-logo{left:12px;top:52px;width:100px}
+  .gw-film-title{left:50%;top:66%;width:95vw}
+  .gw-film-title h2{font-size:clamp(53px,13vw,82px)}
+  .gw-film-title p{font-size:clamp(22px,6vw,32px)}
+  .gw-film-title small{font-size:9px}
+  .gw-film-credit{font-size:9px}
+  .gw-lab-heading-mark{width:68px;height:60px}
+  .gw-lab-heading-main{gap:10px}
+  .gw-lab-heading-buttons{width:100%}
+  .gw-lab-heading-buttons .button{flex:1}
+  @keyframes gw-film-flight{
+    0%{opacity:0;transform:translate(-50%,-35%) scale(.6)}
+    15%,40%{opacity:1;transform:translate(-50%,-50%) scale(.9)}
+    59%{opacity:1;transform:translate(-61%,-65%) scale(.63)}
+    78%{opacity:1;transform:translate(calc(-50% - 32vw),calc(-50% - 37vh)) scale(.18)}
+    89%,100%{opacity:0;transform:translate(calc(-50% - 32vw),calc(-50% - 37vh)) scale(.15)}
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .gw-film-flight,.gw-film-bird,.gw-film-particles span,.gw-film-arc,.gw-landing-shine{animation:none!important}
+  .gw-film-flight{opacity:.85!important;transform:translate(-50%,-50%) scale(.85)!important}
+  .gw-film-title{animation:none!important;opacity:1;transform:translate(-50%,-50%)!important}
+  .gw-film-logo{animation:none!important;opacity:1}
+}
