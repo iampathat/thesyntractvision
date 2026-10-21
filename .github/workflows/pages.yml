@@ -450,7 +450,15 @@ jobs:
           grep -F 'glasswing-mark.webp?v=1.16.0' _site/qcds-security-lab/app.js
           grep -F 'glasswing-experience.css?v=1.16.0' _site/qcds-security-lab/index.html
           grep -F 'gw-cinema-left-flap' _site/qcds-security-lab/glasswing-experience.css
-          grep -F 'data-release="1.16.0"' _site/qcds-security-lab/index.html
+          grep -F 'data-release="1.17.0"' _site/qcds-security-lab/index.html
+          test -s _site/qcds-security-lab/enter.html
+          test -s _site/qcds-security-lab/app-direct-v117.js
+          test -s _site/qcds-security-lab/consumer-ui-direct-v117.js
+          test -s _site/qcds-security-lab/intro-direct-v117.js
+          grep -F 'app-direct-v117.js' _site/qcds-security-lab/enter.html
+          grep -F 'gw-home-feature' _site/qcds-security-lab/consumer-ui-direct-v117.js
+          grep -F 'url=./enter.html' _site/qcds-security-lab/open-glasswing-116.html
+          grep -F "req.mode === 'navigate'" _site/qcds-security-lab/sw.js
           python - <<'PYPOSTER'
           from pathlib import Path
           root=Path('_site/qcds-security-lab')
