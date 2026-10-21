@@ -15,7 +15,7 @@ import { createLogicalLab, researchLaunch } from "./logical-lab.js?v=1.14.1";
 import { runGlasswing } from "./glasswing.mjs?v=1.14.1";
 import { downloadSecurityPdf } from "./report-export.js?v=1.1.0";
 import { WORKSPACE_KEY, restoreWorkspace, writeWorkspace, mergeWorkspace, copyAsOwnProject, STARTERS, isCaseId } from "./workspace.mjs?v=1.0.1";
-import { homeView, casesView, newCaseMarkup, consumerNav } from "./consumer-ui.js?v=1.0.4";
+import { homeView, casesView, newCaseMarkup, consumerNav } from "./consumer-ui.js?v=1.0.5";
 import { initAppInstall, refreshAppStatus } from "./app-install.js?v=1.0.0";
 import { saveDeviceFile, initNativeApp } from "./device-files.js?v=1.0.0";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
