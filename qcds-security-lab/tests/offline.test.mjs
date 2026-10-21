@@ -54,5 +54,5 @@ test('manual refresh has a timeout and user-confirmed reset stays inside Securit
   assert.match(refresh,/key\.startsWith\(LAB_PREFIX\)/);
   assert.doesNotMatch(refresh,/\blocalStorage\.clear\(/);
   assert.doesNotMatch(refresh,/\bsessionStorage\.clear\(/);
-  assert.match(home,/href="\.\/refresh-tools\.html"/);
+  assert.match(home,/href="\.\/update-lab\.html"/);
 });
