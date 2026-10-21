@@ -12,6 +12,7 @@ import {
   markdown,
 } from "./engine.mjs?v=1.14.1";
 import { createLogicalLab, researchLaunch } from "./logical-lab.js?v=1.14.1";
+import { runGlasswing } from "./glasswing.mjs?v=1.14.1";
 import { downloadSecurityPdf } from "./report-export.js?v=1.1.0";
 import { WORKSPACE_KEY, restoreWorkspace, writeWorkspace, mergeWorkspace, copyAsOwnProject, STARTERS, isCaseId } from "./workspace.mjs?v=1.0.1";
 import { homeView, casesView, newCaseMarkup, consumerNav } from "./consumer-ui.js?v=1.0.0";
@@ -35,6 +36,7 @@ const ROUTES = [
   ["examples", "Worked examples", "play"],
   ["investigate", "Investigate · 5 questions", "trace"],
   ["perspectives", "Perspectives", "layers"],
+  ["comparison", "Inference comparison", "layers"],
   ["findings", "Results & explanation", "shield"],
   ["report", "Reports & export", "report"],
   ["learn", "In plain English", "book"],
@@ -377,12 +379,12 @@ function shell() {
       <div class="consumer-nav-case"><b>${esc(project().input.name)}</b><small>${project().example?'Practice case · synthetic evidence':'Your system · saved locally'}</small></div>
       <div class="nav-flow">${stepLinks}</div>
       ${analysisLink('report','My report','report')}
-      <details class="consumer-nav-more" ${['system','perspectives','findings','trace','overview'].includes(state.route)?'open':''}><summary>Perspectives & lab</summary>
+      <details class="consumer-nav-more" ${['system','perspectives','findings','trace','overview','comparison'].includes(state.route)?'open':''}><summary>Perspectives & lab</summary>
         ${analysisLink('system','System facts','system')}
         ${analysisLink('findings','Results & explanation','shield')}
         ${analysisLink('perspectives','Security perspectives','layers')}
         <button class="text-button" data-open-logical>Dimensional & quantum lab ↗</button>
-        <a href="./glasswing.html">${icon('layers')}<span>Project Glasswing</span></a>
+        <a href="#comparison" ${state.route==="comparison"?'aria-current="page"':""}>${icon('layers')}<span>Compare inference methods</span></a>
       </details>
       <a href="#examples">${icon('play')}<span>Worked examples</span></a>
       ${analysisLink('learn','In plain English','book')}
@@ -401,7 +403,7 @@ function shell() {
       <div id="stale-slot">${staleNotice()}</div>
       <div id="view">${view()}</div>
       ${workflowContinuation()}
-      <footer class="main-footer"><span>QCDS Security Lab · Patrik Sundblom</span><a href="./glasswing.html">Project Glasswing ${icon("external")}</a><a href="./privacy.html">Privacy</a><a href="#learn">About & license</a></footer>
+      <footer class="main-footer"><span>QCDS Security Lab · Patrik Sundblom</span><a href="./privacy.html">Privacy</a><a href="#learn">About & license</a></footer>
     </main>
     ${investigating ? questionNavigation() : ""}
     ${consumerNav({route:state.route,question:state.question,icon,investigationHref})}
@@ -1514,6 +1516,61 @@ function learnView() {
     `<section class="panel question-card"><h2>The five questions</h2><ol class="plain-question-list">${QUESTION_STEPS.map((q, i) => `<li><a href="${investigationHref(i + 1)}">${q.title}</a></li>`).join("")}</ol><p>Different views can reveal different dependencies. QCDS connects those questions into a path you can challenge, deepen and bind to evidence.</p></section><section class="plain-topic-list">${GUIDE_STEPS.map((step, i) => `<details class="panel"><summary>${step.title}</summary><div><p>${step.explanation}</p><div class="guide-example"><span class="eyebrow">FOR EXAMPLE</span><p>${step.example}</p></div><p><b>Why:</b> ${step.why}</p>${step.architecture ? `<p>${step.architecture}</p>` : ""}</div></details>`).join("")}</section><details class="panel question-card"><summary>Authorship, implementation & license</summary><p>QCDS by Patrik Sundblom. Assistant contributor: ChatGPT (OpenAI).</p><p>This browser lab uses core 1 / 0 / ? system facts as constraints, expands them into a much larger attack-vector fabric across attack mechanisms, route variants and targets, projects surviving vectors into security frameworks, rotates perspectives, walks dimensions, recursively challenges converged route families and binds observations to exact system snapshots. Core C-values are not the attack catalog. It also simulates small ideal and noisy Grover circuits locally. It does not connect to a QPU, run autonomous security scans or independently certify evidence.</p><p>New Security Lab material requires a separate commercial license. Earlier QCDS material retains its original grants.</p><a class="text-link" href="./METHODOLOGY.md">Full methodology →</a><a class="text-link" href="./LICENSE.md">Commercial license →</a></details>`
   );
 }
+
+/* Project Glasswing belongs to this existing investigation, not a separate site.
+   This displays three deliberately different inference depths over the SAME
+   project. These are structural baselines, not measured vendor/LLM benchmarks. */
+function glasswingView() {
+  let result;
+  try {
+    result = runGlasswing(project());
+  } catch (error) {
+    console.error("Inference comparison could not be created", error);
+    return header("QCDS / PROJECT GLASSWING","Compare inference methods",
+      "Compare one declared system across increasing inference depth.") +
+      '<section class="panel"><p>The comparison could not be completed for this case. Your investigation is unchanged.</p><a class="button" href="#system">Review system facts</a></section>';
+  }
+  const fmt = value => Number.isFinite(Number(value)) ? Number(value).toLocaleString("en-US") : "—";
+  const list = (values) => values.length ? values.map(v => '<li>'+esc(v)+'</li>').join("") : '<li>None recorded in this track</li>';
+  const cards = result.tracks.map((track,index) => {
+    const m = track.metrics;
+    const counts = [
+      ["Route families shown",fmt(m.routeFamilies)],
+      ["Vectors visible",fmt(m.generatedVectorsVisible)],
+      ["Rotation comparisons",fmt(m.perspectiveComparisons)],
+      ["Dimension challenges",fmt(m.dimensionComparisons)],
+      ["Recursive branches",fmt(m.recursiveBranches)],
+      ["Evidence-bound findings",fmt(m.evidenceBoundRoutes)],
+    ];
+    return '<article class="glasswing-track panel '+(track.id==="qcds"?"glasswing-qcds":"")+'">'
+      +'<div class="glasswing-track-heading"><span class="eyebrow">0'+(index+1)+' · '+esc(track.eyebrow)+'</span><h2>'+esc(track.name)+'</h2></div>'
+      +'<p>'+esc(track.explanation)+'</p>'
+      +'<dl class="glasswing-metrics">'+counts.map(([name,value])=>'<div><dt>'+esc(name)+'</dt><dd>'+value+'</dd></div>').join("")+'</dl>'
+      +'<details class="glasswing-details"><summary>What this track actually does</summary><ol>'+list(track.trace)+'</ol></details>'
+      +'<details class="glasswing-details"><summary>Example paths ('+fmt(track.routes.length)+')</summary>'
+      +'<ul>'+list(track.routes.slice(0,6).map(route => route.title+' — '+route.status))+'</ul></details>'
+      +'</article>';
+  }).join("");
+  const q = result.tracks[2], mask = q.metrics;
+  return header("PERSPECTIVES & LAB / PROJECT GLASSWING","Compare inference methods",
+    "Same system, same facts. See what changes when reasoning explores further.") +
+    '<section class="panel glasswing-context"><div><span class="eyebrow">CURRENT INVESTIGATION</span><h2>'+esc(result.system.name)+'</h2>'
+    +'<p>'+esc(result.system.attackerGoal || "No attacker goal declared yet.")+'</p></div>'
+    +'<a class="button" href="#system">Review facts and 1 / 0 / ? '+icon("arrow")+'</a></section>'
+    +'<div class="glasswing-note"><b>Important:</b> This is a reproducible structural comparison using three projections of the same QCDS Security Lab engine. It is <b>not</b> a performance test against independent AI models, and more discovered paths are not proof of vulnerability.</div>'
+    +'<section class="glasswing-tracks" aria-label="Comparison of inference depth">'+cards+'</section>'
+    +'<section class="panel glasswing-method"><div class="panel-header"><div><span class="eyebrow">QCDS INFERENTIAL SPACE</span><h2>From conditions to evidence</h2></div><a href="#trace" class="text-link">Inspect the QCDS trace →</a></div>'
+    +'<div class="glasswing-facts"><span><b>'+fmt(mask.knownMaskDimensions)+'</b> Known coordinates</span>'
+    +'<span><b>'+fmt(mask.unknownMaskDimensions)+'</b> Unknown (?) coordinates</span>'
+    +'<span><b>'+esc(mask.maskedLogicalSpace || "—")+'</b> Logical mask space</span>'
+    +'<span><b>'+fmt(mask.generatedVectorsTotal)+'</b> Generated candidate vectors</span>'
+    +'<span><b>'+fmt(mask.generatedVectorsVisible)+'</b> Active + conditional vectors</span></div>'
+    +'<p>Known 1 / 0 conditions stay constrained; only unresolved ? dimensions branch. The wider attack-vector fabric is separate from the compact core condition mask. Perspective rotation, dimensional changes and counter-tests challenge surviving routes. An evidence-bound conclusion still needs observations.</p>'
+    +'<details class="glasswing-details"><summary>Show QCDS clarification questions ('+fmt(q.clarifications.length)+')</summary><ul>'+list(q.clarifications.map(item=>item.question))+'</ul></details>'
+    +'<div class="glasswing-actions"><a class="button primary" href="#perspectives">Explore security perspectives '+icon("arrow")+'</a>'
+    +'<a class="button" href="#findings">Review findings and evidence</a></div></section>';
+}
+
 function view() {
   return (
     {
@@ -1525,6 +1582,7 @@ function view() {
       system: systemView,
       findings: findingsView,
       perspectives: perspectivesView,
+      comparison: glasswingView,
       trace: traceView,
       report: reportView,
       learn: learnView,
