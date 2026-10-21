@@ -33,22 +33,22 @@ test("canonical page offers Enter and Watch, separate from the actual app",()=>{
   assert.match(index,/data-entry="landing"/);
   assert.match(index,/glasswing-approved\.webp\?v=1\.18\.0/);
   assert.match(index,/glasswing-rig-stage-v121\.css/);
-  assert.match(index,/glasswing-mesh-stage-v123\.js/);
+  assert.match(index,/glasswing-mesh-stage-v124\.js/);
   assert.doesNotMatch(index,/id="security-intro"/);
 });
 test("new cache-independent URL renders exactly the same canonical landing",()=>{
   assert.equal(freshLanding,index);
   assert.equal(cleanLanding,index);
   assert.equal(visibleLanding,index);
-  assert.match(cleanLanding,/glasswing-mesh-stage-v123\.js/);
+  assert.match(cleanLanding,/glasswing-mesh-stage-v124\.js/);
   assert.match(freshLanding,/data-enter-lab/);
   assert.match(freshLanding,/data-watch-intro/);
 });
 
 test("approved original eagle is actually vector-traced, not a hand-drawn substitute or bitmap",()=>{
   assert.match(index,/glasswing-original-traced-v122\.svg\?v=1\.24\.0/);
-  assert.match(index,/glasswing-mesh-v123\.js/);
-  assert.match(index,/glasswing-mesh-stage-v123\.js/);
+  assert.match(index,/glasswing-mesh-v124\.js/);
+  assert.match(index,/glasswing-mesh-stage-v124\.js/);
   assert.match(index,/id="gw-film"/);
   assert.doesNotMatch(index,/gw-eagle-wing-left|gw-eagle-wing-right|gw-eagle-body/);
   assert.match(vector,/<svg\b/);
