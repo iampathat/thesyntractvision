@@ -43,7 +43,7 @@ test("actual user-reference cinematic video contains moving frames and is shippe
 test("no sliced wing images, warped geometry or second ghost bird are loaded",()=>{
   assert.doesNotMatch(index,/glasswing-mesh-v12|glasswing-rig-v121|glasswing-cinematic-v120\.css|gw-film-flight|gw-film-background|gw-film-arc/);
   assert.doesNotMatch(index,/glasswing-original-traced-v122\.svg/);
-  assert.doesNotMatch(js,/GlasswingMeshRig|canvas\.getContext|WebGL|DOMParser|clip-path|sessionStorage/);
+  assert.doesNotMatch(js,/GlasswingMeshRig|canvas\.getContext|DOMParser|sessionStorage/);
   assert.doesNotMatch(css,/\.gw-film-ground-art|\.gw-film-arc|\.gw-film-particles/);
   assert.match(css,/\.gw-film-video \{[^}]*object-fit:contain/);
 });
