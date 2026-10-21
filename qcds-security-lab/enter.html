@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta
+      name="description"
+      content="QCDS Security Lab by Patrik Sundblom. Investigate any system through multiple security perspectives, QCDS recursive inference, control challenge and evidence-bound reporting."
+    />
+    <meta name="theme-color" content="#081d32" />
+    <title>QCDS Security Lab · Project Glasswing</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="./assets/app-icon-180.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./style.css?v=1.11.0" />
+    <link rel="stylesheet" href="./logical-lab.css?v=1.13.0" />
+    <link rel="stylesheet" href="./quantum-panel.css?v=1.1.0" />
+    <link rel="stylesheet" href="./intro.css?v=1.14.7" />
+    <link rel="stylesheet" href="./glasswing-inline.css?v=1.14.9" />
+    <link rel="stylesheet" href="./glasswing-cinematic.css?v=1.14.9" />
+    <script src="./intro-direct-v117.js" defer></script>
+    <link rel="stylesheet" href="./report-screen.css?v=1.0.0" />
+    <link rel="stylesheet" href="./consumer.css?v=1.15.0" />
+    <link rel="stylesheet" href="./glasswing-poster.css?v=1.15.0" />
+    <link rel="stylesheet" href="./glasswing-experience.css?v=1.16.0" />
+    <style id="direct-entrance">#security-intro:not([data-open="true"]){display:none!important}</style>
+  </head>
+  <body class="glasswing-visual" data-release="1.17.0">
+    <div id="security-intro" class="security-intro glasswing-cinematic gw-intro-v116" aria-label="Project Glasswing opening sequence">
+      <div class="gw-intro-backdrop" aria-hidden="true"><img src="./glasswing-approved.webp?v=1.16.0" alt=""></div>
+      <div class="gw-intro-scan" aria-hidden="true"></div>
+      <div class="gw-intro-flight" aria-hidden="true">
+        <img class="gw-eagle-wing gw-eagle-wing-left" src="./glasswing-flight.webp?v=1.16.0" alt="">
+        <img class="gw-eagle-wing gw-eagle-wing-right" src="./glasswing-flight.webp?v=1.16.0" alt="">
+        <img class="gw-eagle-body" src="./glasswing-flight.webp?v=1.16.0" alt="">
+        <div class="gw-defense-pulses"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="gw-intro-logo" aria-hidden="true">
+        <img src="./glasswing-mark.webp?v=1.16.0" alt="">
+        <b>QCDS</b><span>Security Lab</span>
+      </div>
+      <div class="gw-intro-title" aria-hidden="true">
+        <span>PROJECT GLASSWING</span>
+        <h1>QCDS</h1>
+        <p>Security Lab</p>
+        <small>CONDITION · EVOLUTION · RECURSIVE INFERENCE · VERIFICATION</small>
+      </div>
+      <button class="q-intro-skip" type="button">Enter Security Lab <span aria-hidden="true">↗</span></button>
+      <p class="gw-intro-author">Theory and creation by Patrik Sundblom <span>with OpenAI / ChatGPT as research &amp; development support</span></p>
+    </div>
+    <a href="#main" class="skip-link">Skip to workspace</a>
+    <div id="app">
+      <main class="loading">
+        <img src="./glasswing-mark.webp?v=1.16.0" alt="QCDS Security Lab eagle" style="width:124px;height:auto;border-radius:10px">
+        <h1>QCDS Security Lab</h1>
+        <p>Opening your workspace…</p>
+      </main>
+    </div>
+    <noscript
+      ><p class="loading">
+        Enable JavaScript to use the local lab. Read the
+        <a href="./METHODOLOGY.md">methodology</a> without JavaScript.
+      </p></noscript
+    >
+    <div id="toast" role="status" aria-live="polite"></div>
+    <dialog id="explanation" aria-labelledby="explanation-title"></dialog>
+    <dialog id="interview" aria-labelledby="interview-title"></dialog>
+    <input
+      type="file"
+      id="import-file"
+      accept="application/json,.json"
+      hidden
+    />
+    <script type="module" src="./app-direct-v117.js"></script>
+  </body>
+</html>

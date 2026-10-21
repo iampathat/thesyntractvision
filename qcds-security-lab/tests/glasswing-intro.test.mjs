@@ -9,6 +9,9 @@ const read = name => readFileSync(new URL("../" + name, import.meta.url),"utf8")
 const image = name => readFileSync(new URL("../" + name, import.meta.url));
 const page=read("index.html"),intro=read("intro.js"),visual=read("glasswing-experience.css");
 const home=read("consumer-ui.js"),app=read("app.js"),gateway=read("open-glasswing-116.html");
+const entry=read("enter.html"),legacyIntro=read("intro.js"),directIntro=read("intro-direct-v117.js");
+const directApp=read("app-direct-v117.js"), directHome=read("consumer-ui-direct-v117.js");
+const serviceWorker=read("sw.js");
 
 test("the approved full-size WebP remains real and all three eagle assets exist",()=>{
   for(const [name,min] of [["glasswing-approved.webp",50000],["glasswing-flight.webp",25000],["glasswing-mark.webp",12000]]){
@@ -44,7 +47,7 @@ test("cinematic intro uses the transparent original eagle, not an entire poster 
   assert.match(visual,/@keyframes gw-cinema-right-flap/);
   assert.match(visual,/@keyframes gw-cinema-swoop/);
   assert.match(visual,/@keyframes gw-defense-spark/);
-  assert.match(intro,/reducedMotion\(\) \? 4200 : 6750/);
+  assert.match(intro,/reducedMotion\(\) \? 2900 : 6750/);
   assert.match(intro,/\[data-replay-intro\]/);
   assert.match(intro,/q-intro-skip/);
 });
@@ -57,18 +60,40 @@ test("real eagle appears in persistent navigation and the visual theme loads las
   assert.match(visual,/body\.glasswing-visual/);
   assert.match(page,/glasswing-experience\.css\?v=1\.16\.0/);
   assert.match(page,/class="glasswing-visual"/);
-  assert.match(page,/data-release="1\.16\.0"/);
+  assert.match(page,/data-release="1\.17\.0"/);
   assert.match(visual,/prefers-reduced-motion:reduce/);
 });
 
-test("new entry point upgrades only app-owned caches and preserves user data",()=>{
-  assert.match(gateway,/glasswing-approved\.webp\?v=1\.16\.0/);
-  assert.match(gateway,/getRegistrations\(\)/);
-  assert.match(gateway,/reg\.scope===root\.href/);
-  assert.match(gateway,/x\.startsWith\('qcds-security-app-'\)/);
-  assert.match(gateway,/glasswing-experience\.css\?v=1\.16\.0/);
+test("the actual app is the first and only entrance, with optional replay",()=>{
+  assert.match(entry, /<div id="app">/);
+  assert.match(entry, /app-direct-v117\.js/);
+  assert.match(entry, /intro-direct-v117\.js/);
+  assert.match(entry, /id="direct-entrance"/);
+  assert.match(entry, /security-intro:not\(\[data-open="true"\]\)\{display:none!important\}/);
+  assert.match(page, /app-direct-v117\.js/);
+  assert.match(page, /intro-direct-v117\.js/);
+  assert.match(legacyIntro,/original\.remove\(\)/);
+  assert.match(legacyIntro,/data-replay-intro/);
+  assert.doesNotMatch(legacyIntro,/start\(current\)/);
+  assert.equal(directIntro,legacyIntro);
+  assert.match(directApp,/consumer-ui-direct-v117\.js/);
+  assert.match(directHome,/class="gw-home-feature"/);
+  assert.match(directHome,/glasswing-approved\.webp\?v=1\.16\.0/);
+});
+
+test("old launch page redirects without touching service workers or saved investigations",()=>{
+  assert.match(gateway,/<meta http-equiv="refresh" content="0;url=\.\/enter\.html">/);
+  assert.match(gateway,/location\.replace\("\.\/enter\.html"/);
+  assert.match(gateway,/Open QCDS Security Lab/);
+  assert.doesNotMatch(gateway,/getRegistrations|unregister\(\)|caches\.delete/);
   assert.doesNotMatch(gateway,/localStorage\.(clear|removeItem)/);
   assert.doesNotMatch(gateway,/indexedDB\.deleteDatabase/);
-  assert.match(page,/Enter Security Lab/);
-  assert.match(page,/Theory and creation by Patrik Sundblom/);
+});
+
+test("new service worker retries live navigation before offline cache fallback",()=>{
+  assert.match(serviceWorker,/const VERSION = '1\.17\.0'/);
+  assert.match(serviceWorker,/req\.mode === 'navigate'/);
+  assert.match(serviceWorker,/fetch\(req, \{cache:'no-store'\}\)/);
+  assert.match(serviceWorker,/cachedDocument \|\| Response\.error\(\)/);
+  assert.match(serviceWorker,/cached \|\| fetch\(req\)/);
 });

@@ -1,6 +1,6 @@
 // QCDS Security Lab — offline-first app cache with user-approved updates.
 // Copyright © 2026 Patrik Sundblom. R&D support: OpenAI / ChatGPT.
-const VERSION = '1.16.0';
+const VERSION = '1.17.0';
 const PREFIX = 'qcds-security-app-';
 const CACHE = PREFIX + VERSION;
 const root = new URL('./', self.location.href);
@@ -36,8 +36,21 @@ self.addEventListener('fetch', event => {
     key.search = '';
     key.hash = '';
     if (key.pathname === root.pathname) key.pathname += 'index.html';
-    // Keep the application version coherent until the user chooses Update app.
-    // Network-first would mix old HTML with new JS/CSS before approval.
+    // Navigations must try the deployed application first. A cache-first HTML
+    // shell trapped users on older splash and refresh pages indefinitely.
+    // Static files remain offline-first, keeping an installed release coherent.
+    const isDocument = req.mode === 'navigate' ||
+      key.pathname === root.pathname + 'index.html' ||
+      key.pathname === root.pathname + 'enter.html' ||
+      key.pathname === root.pathname + 'open-glasswing-116.html';
+    if (isDocument) {
+      try {
+        const fresh = await fetch(req, {cache:'no-store'});
+        if (fresh.ok) return fresh;
+      } catch { /* Offline: fall back to versioned local assets. */ }
+      const cachedDocument = await cache.match(key.href);
+      return cachedDocument || Response.error();
+    }
     const cached = await cache.match(key.href);
     return cached || fetch(req);
   })());

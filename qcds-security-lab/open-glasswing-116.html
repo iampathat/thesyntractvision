@@ -1,85 +1,27 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#061728">
-<meta name="robots" content="noindex">
-<title>QCDS Security Lab · Project Glasswing 1.16</title>
-<style>
-:root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color-scheme:dark}
-*{box-sizing:border-box}
-body{margin:0;min-height:100dvh;display:grid;place-items:center;padding:clamp(12px,3vw,32px);background:radial-gradient(ellipse at top,#143a5c,#041123 73%);color:#effbff}
-main{width:min(1100px,100%);border:1px solid #4a9bc2;border-radius:20px;background:#0b1d30;box-shadow:0 20px 65px #0007;overflow:hidden}
-.hero{position:relative}
-.hero img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
-.hero:after{content:"";position:absolute;inset:45% 0 0;background:linear-gradient(transparent,#07182ad0);pointer-events:none}
-.controls{display:flex;gap:20px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:clamp(18px,3vw,30px)}
-h1{margin:5px 0;font-size:clamp(25px,3vw,36px);letter-spacing:-.035em}
-p{margin:6px 0;max-width:630px;color:#adcfe0;line-height:1.55;font-size:14px}
-.eyebrow{color:#bbf0ff;letter-spacing:.15em;font:700 11px ui-monospace,monospace}
-button{border:1px solid #adf5ff;border-radius:10px;min-height:54px;padding:12px 22px;font-size:15px;font-weight:750;background:linear-gradient(135deg,#b2f7ff,#6fd4fb);color:#061c2d;cursor:pointer}
-button:disabled{opacity:.6;cursor:wait}
-button:focus-visible,a:focus-visible{outline:3px solid #d9ff91;outline-offset:3px}
-#status{min-height:25px;padding:0 26px 20px;color:#b3d8e6;font-size:13px;line-height:1.5}
-#status[data-kind="error"]{color:#ffbdbd}
-.links{display:flex;gap:18px;padding:0 26px 22px;flex-wrap:wrap}
-a{color:#c0f1ff;font-size:13px}
-small{display:block;padding:0 26px 26px;color:#839dad;line-height:1.5}
-@media(max-width:620px){.controls{display:grid}.controls button{width:100%}}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#081d32">
+  <meta name="robots" content="noindex">
+  <meta http-equiv="refresh" content="0;url=./enter.html">
+  <title>Opening QCDS Security Lab</title>
+  <style>
+  :root{font-family:system-ui,-apple-system,sans-serif;color-scheme:dark}
+  body{margin:0;background:#061528;color:#e7faff;min-height:100vh;display:grid;place-items:center;padding:22px}
+  main{width:min(880px,100%);overflow:hidden;background:#091d30;border:1px solid #4288b4;border-radius:17px;text-align:center}
+  img{display:block;width:100%;height:auto}
+  h1{font-size:clamp(25px,4vw,38px);margin:22px}
+  a{display:block;margin:20px auto 30px;width:max-content;max-width:90%;padding:16px 26px;background:#9cecff;border-radius:10px;color:#061a2b;font-weight:800;text-decoration:none}
+  </style>
 </head>
 <body>
-<main>
-  <div class="hero"><img src="./glasswing-approved.webp?v=1.16.0" alt="The approved Project Glasswing artwork: icy-blue crystalline eagle with illuminated QCDS security nodes, circuitry, and Security Lab branding." fetchpriority="high"></div>
-  <div class="controls">
-    <div><span class="eyebrow">PROJECT GLASSWING · VERSION 1.16.0</span>
-      <h1>QCDS Security Lab</h1><p>Open the real integrated Security Lab with the new eagle design. Your saved investigations, evidence and preferences are preserved.</p></div>
-    <button type="button" id="enter">Open latest Security Lab →</button>
-  </div>
-  <div id="status" role="status" aria-live="polite">Ready to open. This only refreshes the app's offline files.</div>
-  <nav class="links"><a href="./">Open the normal homepage</a><a href="./update-lab.html">Advanced refresh and reset</a></nav>
-  <small>Theory and creation by Patrik Sundblom · with OpenAI / ChatGPT as research &amp; development support.</small>
-</main>
-<script>
-(()=>{
-"use strict";
-const button=document.querySelector('#enter'),status=document.querySelector('#status');
-const root=new URL('./',location.href);
-function say(message,kind=''){status.textContent=message;status.dataset.kind=kind}
-async function bounded(promise,ms,name) {
- let timer;
- try{return await Promise.race([Promise.resolve(promise),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(name+' timed out')),ms)})])}
- finally{clearTimeout(timer)}
-}
-button.addEventListener('click',async()=>{
- button.disabled=true;
- try{
-   say('Checking the latest QCDS Security Lab…');
-   if('serviceWorker' in navigator){
-     const regs=await bounded(navigator.serviceWorker.getRegistrations(),5000,'Service worker check');
-     const match=regs.filter(reg=>reg.scope===root.href);
-     for(const reg of match)await bounded(reg.unregister(),5000,'Offline registration removal');
-   }
-   if('caches' in window){
-     const names=await bounded(caches.keys(),5000,'Cache check');
-     for(const name of names.filter(x=>x.startsWith('qcds-security-app-')))
-       await bounded(caches.delete(name),5000,'Old offline cache removal');
-   }
-   say('Verifying the published artwork and UI…');
-   const response=await bounded(fetch('./index.html?release=1.16.0&now='+Date.now(),{cache:'no-store'}),8000,'Loading new Security Lab');
-   if(!response.ok)throw new Error('The latest site is not reachable (HTTP '+response.status+').');
-   const content=await bounded(response.text(),5000,'Reading published version');
-   if(!content.includes('glasswing-experience.css?v=1.16.0'))
-      throw new Error('GitHub Pages has not delivered version 1.16.0 yet. Please retry shortly.');
-   say('Latest version verified. Opening your workspace…');
-   location.replace('./index.html?glasswing=1.16.0&opened='+Date.now());
- }catch(error){
-   say((error.message||'Unable to refresh')+'. Your saved investigations have not been deleted. Try again when online.','error');
-   button.disabled=false;
- }
-});
-})();
-</script>
+  <main>
+    <img src="./glasswing-approved.webp?v=1.17.0" alt="QCDS Security Lab Project Glasswing eagle">
+    <h1>QCDS Security Lab</h1>
+    <a href="./enter.html">Open QCDS Security Lab →</a>
+  </main>
+  <script>location.replace("./enter.html"+location.hash);</script>
 </body>
 </html>
