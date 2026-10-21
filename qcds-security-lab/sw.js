@@ -1,6 +1,6 @@
 // QCDS Security Lab — offline-first app cache with user-approved updates.
 // Copyright © 2026 Patrik Sundblom. R&D support: OpenAI / ChatGPT.
-const VERSION = '1.23.0';
+const VERSION = '1.24.0';
 const PREFIX = 'qcds-security-app-';
 const CACHE = PREFIX + VERSION;
 const root = new URL('./', self.location.href);
