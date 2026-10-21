@@ -30,3 +30,16 @@ test('offline cache serves navigations, versioned workers and PDFs without cross
   assert.equal(intercepted,false);
   handlers.message({data:{type:'ACTIVATE_UPDATE'}});assert.equal(skip,true);
 });
+
+
+test('manual app refresh is accessible without deleting investigation storage',async()=>{
+  const refresh=await readFile(new URL('../refresh.html',import.meta.url),'utf8');
+  const home=await readFile(new URL('../consumer-ui.js',import.meta.url),'utf8');
+  assert.match(refresh,/id="refresh"/);
+  assert.match(refresh,/navigator\.serviceWorker\.getRegistrations\(\)/);
+  assert.match(refresh,/reg\.scope===expected/);
+  assert.match(refresh,/reg=>reg\.unregister\(\)/);
+  assert.doesNotMatch(refresh,/localStorage\.(clear|removeItem)\(/);
+  assert.doesNotMatch(refresh,/indexedDB\.deleteDatabase/);
+  assert.match(home,/href="\.\/refresh\.html"/);
+});
