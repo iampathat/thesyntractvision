@@ -72,6 +72,8 @@
       const dy = rect.top + rect.height / 2 - window.innerHeight / 2;
       film.style?.setProperty?.("--gw-film-target-x", dx + "px");
       film.style?.setProperty?.("--gw-film-target-y", dy + "px");
+      film.style?.setProperty?.("--gw-film-target-x-mid", (dx * .72) + "px");
+      film.style?.setProperty?.("--gw-film-target-y-mid", (dy * .72) + "px");
     }
     // A fresh animation timeline each replay: only the intact eagle moves.
     film.classList.remove("gw-film-playing");
