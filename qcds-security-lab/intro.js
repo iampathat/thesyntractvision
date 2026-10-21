@@ -1,4 +1,4 @@
-// Project Glasswing intro: 6.35 seconds, skip, replay, and a visible reduced-motion still.
+// Project Glasswing intro: 6.75 seconds, skip, replay, and a visible reduced-motion still.
 (() => {
   let current = document.querySelector("#security-intro");
   if (!current) return;
@@ -21,7 +21,7 @@
     current = node;
     current.querySelector(".q-intro-skip")?.addEventListener("click", finish, {once:true});
     document.addEventListener("keydown", onEscape);
-    timer = setTimeout(finish, reducedMotion() ? 3600 : 6350);
+    timer = setTimeout(finish, reducedMotion() ? 4200 : 6750);
   }
   start(current);
 
