@@ -4,7 +4,7 @@
   if (!current) return;
   const template = current.cloneNode(true);
   let timer = null;
-  const reducedMotion = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+  const reducedMotion = () => window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
 
   function finish() {
     if (timer !== null) clearTimeout(timer);
