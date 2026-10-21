@@ -17,140 +17,32 @@
     <link rel="stylesheet" href="./logical-lab.css?v=1.13.0" />
     <link rel="stylesheet" href="./quantum-panel.css?v=1.1.0" />
     <link rel="stylesheet" href="./intro.css?v=1.14.7" />
-    <link rel="stylesheet" href="./glasswing-inline.css?v=1.14.7" />
-    <script src="./intro.js?v=1.14.7" defer></script>
+    <link rel="stylesheet" href="./glasswing-inline.css?v=1.14.9" />
+    <link rel="stylesheet" href="./glasswing-cinematic.css?v=1.14.9" />
+    <script src="./intro.js?v=1.14.9" defer></script>
     <link rel="stylesheet" href="./report-screen.css?v=1.0.0" />
-    <link rel="stylesheet" href="./consumer.css?v=1.14.8" />
+    <link rel="stylesheet" href="./consumer.css?v=1.14.9" />
   </head>
   <body>
-    <div
-      class="security-intro"
-      id="security-intro"
-      aria-label="Q Security Lab introduction"
-    >
-      <div class="q-intro-grid" aria-hidden="true"></div>
-      <div class="q-intro-coordinates" aria-hidden="true">
-        <b>QCDS / SECURITY LAB</b><br />YOUR SECURITY WORKSPACE · PROJECT GLASSWING
+    <div class="security-intro glasswing-cinematic" id="security-intro" aria-label="Project Glasswing QCDS Security Lab introduction">
+      <div class="glasswing-starfield" aria-hidden="true"></div>
+      <div class="glasswing-horizon" aria-hidden="true"></div>
+      <div class="glasswing-orbiting-nodes" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="glasswing-brand-corner" aria-hidden="true">
+        <img src="./glass-eagle.svg?v=1.14.9" alt="" />
+        <b>QCDS</b><span>Security Lab</span>
       </div>
-      <button class="q-intro-skip" type="button">Enter lab ↗</button>
-
-      <div class="q-intro-stage glasswing-stage" aria-hidden="true">
-        <svg class="glasswing-intro-art" viewBox="0 0 960 500" xmlns="http://www.w3.org/2000/svg" role="presentation">
-          <defs>
-            <linearGradient id="gw-eagle-glass" x1="110" y1="90" x2="825" y2="370" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#F5FFFF" stop-opacity=".98"/>
-              <stop offset=".22" stop-color="#B8F3FF" stop-opacity=".91"/>
-              <stop offset=".46" stop-color="#488EBC" stop-opacity=".89"/>
-              <stop offset=".72" stop-color="#D0F6FF" stop-opacity=".92"/>
-              <stop offset="1" stop-color="#F0FFFF" stop-opacity=".96"/>
-            </linearGradient>
-            <linearGradient id="gw-eagle-rim" x1="105" y1="95" x2="855" y2="320" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#F6FFFF"/><stop offset=".46" stop-color="#50DFFF"/><stop offset=".72" stop-color="#FFFFFF"/><stop offset="1" stop-color="#B5F7FF"/>
-            </linearGradient>
-            <radialGradient id="gw-eagle-node"><stop stop-color="#FFFFFF"/><stop offset=".45" stop-color="#B8FCFF"/><stop offset="1" stop-color="#35ADFF"/></radialGradient>
-            <filter id="gw-eagle-bloom" x="-80%" y="-80%" width="260%" height="260%">
-              <feGaussianBlur stdDeviation="6"/>
-            </filter>
-            <filter id="gw-spark-glow" x="-120%" y="-120%" width="340%" height="340%">
-              <feGaussianBlur stdDeviation="3" result="blur"/>
-              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-            <clipPath id="gw-eagle-clip">
-              <path d="M450 232C359 154 230 91 71 66L120 115 45 107 126 164 61 176 155 206 104 227 216 243 165 263 295 273 435 306 471 273Z"/>
-              <path d="M510 232C599 153 732 92 889 66L838 115 913 107 835 164 901 176 806 206 857 227 747 243 797 263 665 273 525 306 489 273Z"/>
-              <path d="M448 275 436 409 467 347 485 421 505 340 554 400 536 268Z"/>
-              <path d="M434 220Q443 190 478 187Q510 190 530 220L544 291Q509 328 480 330Q449 323 419 288Z"/>
-              <path d="M463 203 466 169Q476 141 503 145Q526 148 535 180Q564 180 587 193L553 209 541 235 515 221 497 240Z"/>
-            </clipPath>
-          </defs>
-          <g class="gw-protection" fill="none">
-            <ellipse cx="480" cy="235" rx="435" ry="204" stroke="#C2FFE5" stroke-opacity=".64" stroke-width="2.4" stroke-dasharray="6 13"/>
-            <ellipse cx="480" cy="235" rx="402" ry="185" stroke="#85E8F1" stroke-opacity=".45" stroke-width="2"/>
-            <path d="M83 215Q475-70 876 213M92 265Q480 562 870 257" stroke="#90FFE2" stroke-opacity=".36" stroke-width="2"/>
-          </g>
-          <g class="gw-attacks" stroke="#FFAA77" stroke-width="3" stroke-linecap="round" fill="none">
-            <path d="M0 139 95 185 120 183" stroke-dasharray="9 12"/>
-            <path d="M958 347 859 283 833 277" stroke-dasharray="9 12"/>
-            <path d="m115 174 12 10-14 12M841 268l-14 10 15 11" stroke-width="3.5"/>
-          </g>
-          <g class="gw-eagle">
-            <ellipse cx="480" cy="237" rx="220" ry="100" fill="#88EFFF" opacity=".13" filter="url(#gw-eagle-bloom)"/>
-            <g class="gw-left-wing">
-              <path d="M450 232C359 154 230 91 71 66L120 115 45 107 126 164 61 176 155 206 104 227 216 243 165 263 295 273 435 306 471 273Z"
-                fill="url(#gw-eagle-glass)" stroke="url(#gw-eagle-rim)" stroke-width="4" stroke-linejoin="round"/>
-              <path d="M435 248 85 80 189 169 69 130 222 210 92 182 275 239 169 248 386 282" stroke="#F2FFFF" stroke-opacity=".83" stroke-width="2.1" fill="none"/>
-              <path d="M400 229 304 178 237 181 320 251M363 261 255 209 206 243" stroke="#BDF9FF" stroke-opacity=".92" stroke-width="2.4" fill="none"/>
-              <g class="gw-wing-network">
-                <path d="M110 134 210 173 300 209 424 245M173 229 291 235 424 245M210 173 291 235 300 209" fill="none" stroke="#B9FFFF" stroke-width="3.3" stroke-linecap="round"/>
-                <path class="gw-neon-bolt gw-neon-bolt-left" d="M424 245 344 225 295 197 259 205 207 165 176 158 122 119" fill="none" stroke="#B877FF" stroke-width="5.6" stroke-linecap="round" stroke-linejoin="round" filter="url(#gw-spark-glow)"/>
-                <g class="gw-wing-nodes" fill="#F5FFFF" stroke="#44DCFF" stroke-width="2">
-                  <circle cx="210" cy="173" r="7"/><circle cx="300" cy="209" r="7"/><circle cx="291" cy="235" r="6"/><circle cx="424" cy="245" r="10"/>
-                </g>
-              </g>
-            </g>
-            <g class="gw-right-wing">
-              <path d="M510 232C599 153 732 92 889 66L838 115 913 107 835 164 901 176 806 206 857 227 747 243 797 263 665 273 525 306 489 273Z"
-                fill="url(#gw-eagle-glass)" stroke="url(#gw-eagle-rim)" stroke-width="4" stroke-linejoin="round"/>
-              <path d="M525 247 872 80 773 169 892 130 738 210 866 182 688 239 792 248 574 282" stroke="#F2FFFF" stroke-opacity=".83" stroke-width="2.1" fill="none"/>
-              <path d="M555 230 656 177 721 179 641 252M598 263 706 208 755 240" stroke="#BDF9FF" stroke-opacity=".92" stroke-width="2.4" fill="none"/>
-              <g class="gw-wing-network">
-                <path d="M850 134 748 173 659 209 536 245M788 229 671 235 536 245M748 173 671 235 659 209" fill="none" stroke="#B9FFFF" stroke-width="3.3" stroke-linecap="round"/>
-                <path class="gw-neon-bolt gw-neon-bolt-right" d="M536 245 616 225 669 195 708 207 753 163 785 152 838 115" fill="none" stroke="#45FFD5" stroke-width="5.6" stroke-linecap="round" stroke-linejoin="round" filter="url(#gw-spark-glow)"/>
-                <g class="gw-wing-nodes" fill="#F5FFFF" stroke="#44DCFF" stroke-width="2">
-                  <circle cx="748" cy="173" r="7"/><circle cx="659" cy="209" r="7"/><circle cx="671" cy="235" r="6"/><circle cx="536" cy="245" r="10"/>
-                </g>
-              </g>
-            </g>
-            <path d="M448 275 436 409 467 347 485 421 505 340 554 400 536 268Z"
-              fill="url(#gw-eagle-glass)" stroke="url(#gw-eagle-rim)" stroke-width="3.3" stroke-linejoin="round"/>
-            <path d="M434 220Q443 190 478 187Q510 190 530 220L544 291Q509 328 480 330Q449 323 419 288Z"
-              fill="url(#gw-eagle-glass)" stroke="#F6FFFF" stroke-width="4"/>
-            <path d="M463 203 466 169Q476 141 503 145Q526 148 535 180Q564 180 587 193L553 209 541 235 515 221 497 240Z"
-              fill="url(#gw-eagle-glass)" stroke="#F8FFFF" stroke-width="3.7" stroke-linejoin="round"/>
-            <path d="m555 204-8 19-13 6" stroke="#FFE1AA" stroke-width="3" stroke-linecap="round" fill="none"/>
-            <circle cx="520" cy="172" r="5.5" fill="#F2FF99" stroke="#253C4A" stroke-width="2.5"/>
-            <g class="gw-circuit" clip-path="url(#gw-eagle-clip)" stroke-linecap="round" stroke-linejoin="round">
-              <path class="gw-core-bolt" d="M480 330 449 288 482 258 456 240 485 211 515 249 537 287" stroke="#FFFFFF" stroke-width="7" fill="none" filter="url(#gw-spark-glow)"/>
-              <path d="M89 101 206 167 323 219 450 248 483 236 515 249 637 219 758 167 870 101
-                M148 205 262 237 382 270 481 305 585 270 702 237 812 205
-                M206 167 262 237 323 219 382 270 450 248 483 236 515 249 585 270 637 219 702 237 758 167
-                M483 236 481 305 486 380M382 270 450 248M515 249 585 270"
-                stroke="#C9FF89" stroke-opacity=".97" stroke-width="3" fill="none"/>
-              <path d="M154 147 286 201 421 238 479 214 552 238 681 201 816 147M225 252 343 263 480 288 626 263 748 252"
-                stroke="#C1F9FF" stroke-opacity=".80" stroke-width="2" fill="none"/>
-              <g fill="url(#gw-eagle-node)" stroke="#FAFFDB" stroke-width="1.8">
-                <circle cx="206" cy="167" r="7"/><circle cx="323" cy="219" r="7"/>
-                <circle cx="450" cy="248" r="9"/><circle cx="483" cy="236" r="15"/>
-                <circle cx="515" cy="249" r="9"/><circle cx="637" cy="219" r="7"/>
-                <circle cx="758" cy="167" r="7"/><circle cx="262" cy="237" r="7"/>
-                <circle cx="382" cy="270" r="7"/><circle cx="481" cy="305" r="10"/>
-                <circle cx="585" cy="270" r="7"/><circle cx="702" cy="237" r="7"/>
-                <circle cx="486" cy="380" r="6"/>
-              </g>
-            </g>
-          </g>
-          <g class="gw-defense-halos" fill="none" stroke-width="4">
-            <circle cx="128" cy="184" r="32" stroke="#7EF9FF" class="gw-impact gw-impact-left"/>
-            <circle cx="829" cy="278" r="32" stroke="#B483FF" class="gw-impact gw-impact-right"/>
-            <path class="gw-shield-flash" d="M155 142 189 169 182 195 219 205 201 229M805 238 781 266 799 290 761 310" stroke="#83FFFF" stroke-width="4.5" filter="url(#gw-spark-glow)"/>
-          </g>
-          <g class="gw-deflection" fill="#E9FEFF" stroke="#7DF7FF" stroke-width="2.6">
-            <circle cx="128" cy="184" r="7"/><circle cx="829" cy="278" r="7"/>
-            <path d="M128 157v-13m0 82v-13m-27-29H88m80 0h-13M829 252v-13m0 80v-13m-27-28h-13m80 0h-13" fill="none"/>
-          </g>
-        </svg>
+      <div class="glasswing-flight" aria-hidden="true">
+        <img class="glasswing-flight-eagle" src="./glass-eagle.svg?v=1.14.9" alt="" />
+        <div class="glasswing-flight-afterimage"></div>
       </div>
-      <div class="q-intro-wordmark">
-        <p class="glasswing-kicker">PROJECT GLASSWING</p><h1>Q SECURITY LAB</h1>
-        <p>PROTECT THE SYSTEM · CHALLENGE THE PATH</p>
+      <div class="glasswing-title-reveal" aria-hidden="true">
+        <span class="glasswing-title-kicker">PROJECT GLASSWING</span>
+        <h1>QCDS</h1><p>Security Lab</p>
+        <small>CONDITION · EVOLUTION · INFERENCE · ALIGNMENT</small>
       </div>
-      <div class="q-intro-bottom">
-        <span>CONDITION · EVOLUTION<br />INFERENCE · ALIGNMENT</span>
-        <div>
-          ENTERING THE LOGICAL SPACE
-          <div class="q-intro-progress"><span></span></div>
-        </div>
-      </div>
+      <button class="q-intro-skip" type="button">Enter Security Lab ↗</button>
+      <div class="glasswing-intro-credit">Theory and creation by Patrik Sundblom <span>with OpenAI / ChatGPT as research &amp; development support</span></div>
     </div>
     <a href="#main" class="skip-link">Skip to workspace</a>
     <div id="app">
@@ -175,6 +67,6 @@
       accept="application/json,.json"
       hidden
     />
-    <script type="module" src="./app.js?v=1.14.8"></script>
+    <script type="module" src="./app.js?v=1.14.9"></script>
   </body>
 </html>
