@@ -439,9 +439,9 @@ jobs:
           test -s _site/qcds-security-lab/glasswing.mjs
           test -s _site/qcds-security-lab/glasswing-inline.css
           test -s _site/qcds-security-lab/glass-eagle.svg
-          grep -F 'glass-eagle.svg?v=1.14.8' _site/qcds-security-lab/consumer-ui.js
+          grep -F 'glass-eagle.svg?v=1.14.9' _site/qcds-security-lab/consumer-ui.js
           grep -F 'consumer-eagle-art' _site/qcds-security-lab/consumer.css
-          grep -F 'consumer.css?v=1.14.8' _site/qcds-security-lab/index.html
+          grep -F 'consumer.css?v=1.14.9' _site/qcds-security-lab/index.html
           python - <<'PYBIRD'
           from pathlib import Path
           import xml.etree.ElementTree as ET
@@ -457,7 +457,10 @@ jobs:
           PYBIRD
           test -s _site/qcds-security-lab/GLASSWING.md
           grep -F 'PROJECT GLASSWING' _site/qcds-security-lab/index.html
-          grep -F 'glasswing-intro-art' _site/qcds-security-lab/index.html
+          grep -F 'glasswing-flight-eagle' _site/qcds-security-lab/index.html
+          grep -F 'glasswing-cinematic.css?v=1.14.9' _site/qcds-security-lab/index.html
+          test -s _site/qcds-security-lab/glasswing-cinematic.css
+          grep -F 'glasswing-brand-mark' _site/qcds-security-lab/app.js
           grep -F 'comparison: glasswingView' _site/qcds-security-lab/app.js
           ! grep -F 'glasswing.html' _site/qcds-security-lab/app.js
           node --check _site/qcds-security-lab/glasswing.mjs
