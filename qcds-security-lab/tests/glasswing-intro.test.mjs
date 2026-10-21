@@ -31,7 +31,7 @@ test("QCDS Security Lab intro plays cinematic eagle to upper-left logo and title
 });
 
 test("same angular eagle appears in persistent Home and navigation logo",()=>{
-  assert.match(consumer,/class="consumer-eagle-art"/);
+  assert.match(consumer,/class="glasswing-approved-banner"/);
   assert.match(consumer,/glasswing-approved\.webp\?v=1\.15\.0/);
   assert.match(consumer,/Watch the glass eagle/);
   assert.match(app,/class="glasswing-brand-mark"/);
