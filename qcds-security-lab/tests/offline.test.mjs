@@ -32,14 +32,23 @@ test('offline cache serves navigations, versioned workers and PDFs without cross
 });
 
 
-test('manual app refresh is accessible without deleting investigation storage',async()=>{
-  const refresh=await readFile(new URL('../refresh.html',import.meta.url),'utf8');
+test('manual refresh has a timeout and user-confirmed reset stays inside Security Lab',async()=>{
+  const refresh=await readFile(new URL('../refresh-tools.html',import.meta.url),'utf8');
+  const legacy=await readFile(new URL('../refresh.html',import.meta.url),'utf8');
   const home=await readFile(new URL('../consumer-ui.js',import.meta.url),'utf8');
+  assert.equal(refresh,legacy,'Both update entry points should have identical capabilities');
   assert.match(refresh,/id="refresh"/);
-  assert.match(refresh,/navigator\.serviceWorker\.getRegistrations\(\)/);
-  assert.match(refresh,/reg\.scope===expected/);
-  assert.match(refresh,/reg=>reg\.unregister\(\)/);
-  assert.doesNotMatch(refresh,/localStorage\.(clear|removeItem)\(/);
-  assert.doesNotMatch(refresh,/indexedDB\.deleteDatabase/);
-  assert.match(home,/href="\.\/refresh\.html"/);
+  assert.match(refresh,/id="reset"/);
+  assert.match(refresh,/id="backup"/);
+  assert.match(refresh,/navigator\.serviceWorker\.getRegistration\(scope\)/);
+  assert.match(refresh,/registration\.scope === scope/);
+  assert.match(refresh,/registration\.unregister\(\)/);
+  assert.match(refresh,/window\.confirm\(/,'Full reset requires explicit approval');
+  assert.match(refresh,/Promise\.race\(/,'Refresh must time out rather than spin forever');
+  assert.match(refresh,/cache:'no-store'/,'Fetch current release without browser HTTP cache');
+  assert.match(refresh,/name\.startsWith\(CACHE_PREFIX\)/);
+  assert.match(refresh,/key\.startsWith\(LAB_PREFIX\)/);
+  assert.doesNotMatch(refresh,/\blocalStorage\.clear\(/);
+  assert.doesNotMatch(refresh,/\bsessionStorage\.clear\(/);
+  assert.match(home,/href="\.\/refresh-tools\.html"/);
 });
