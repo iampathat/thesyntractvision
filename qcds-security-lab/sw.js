@@ -5,13 +5,38 @@ const PREFIX = 'qcds-security-app-';
 const CACHE = PREFIX + VERSION;
 const root = new URL('./', self.location.href);
 
+// A missing build-time asset manifest must not prevent a new Lab release
+// from installing. The old worker's cache could otherwise trap its user forever.
+const ESSENTIAL = [
+  'index.html','style.css','consumer.css',
+  'glasswing-theme-v121.css','glasswing-screen-v125.css',
+  'glasswing-screen-v125.js','app-stage-v118.js',
+  'consumer-ui-stage-v118.js','app-install.js',
+  'engine.mjs','logical-lab.js','glasswing.mjs',
+  'report-export.js','workspace.mjs','device-files.js',
+  'glasswing-mark.webp','glasswing-approved.webp'
+];
 self.addEventListener('install', event => event.waitUntil((async () => {
-  const manifest = await fetch(new URL('offline-assets.json', root), {cache:'no-store'});
-  if (!manifest.ok) throw new Error('Offline asset list unavailable');
-  const paths = await manifest.json();
   const cache = await caches.open(CACHE);
-  await cache.addAll(paths.map(path => new Request(new URL(path, root), {cache:'reload'})));
-  // Do not call skipWaiting here. The user must approve updates via Update app.
+  // Core assets are required for meaningful offline use.
+  await cache.addAll(ESSENTIAL.map(path=>
+    new Request(new URL(path,root),{cache:'reload'})
+  ));
+  // Optional extras from the build manifest. Large files or missing optional
+  // files cannot break an otherwise valid update. No user data is ever touched.
+  try {
+    const response = await fetch(new URL('offline-assets.json',root),{cache:'no-store'});
+    if(response.ok){
+      const paths = await response.json();
+      const extra = paths.filter(p=>typeof p==='string'&&!ESSENTIAL.includes(p));
+      await Promise.allSettled(extra.map(async path=>
+        cache.add(new Request(new URL(path,root),{cache:'reload'}))
+      ));
+    }
+  } catch(err) {
+    console.warn('Optional offline manifest not available:',err);
+  }
+  // Installed updates are activated by the app, not forced while editing a case.
 })()));
 
 self.addEventListener('activate', event => event.waitUntil((async () => {
