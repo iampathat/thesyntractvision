@@ -438,42 +438,32 @@ jobs:
           test ! -e _site/qcds-security-lab/glasswing.js
           test -s _site/qcds-security-lab/glasswing.mjs
           test -s _site/qcds-security-lab/glasswing-inline.css
-          test -s _site/qcds-security-lab/glass-eagle.svg
+          # The exact approved eagle artwork must be in the actual Pages build.
           test -s _site/qcds-security-lab/glasswing-approved.webp
-          test -s _site/qcds-security-lab/glasswing-poster.css
-          grep -F 'glasswing-poster-scene' _site/qcds-security-lab/index.html
-          grep -F 'glasswing-approved-banner' _site/qcds-security-lab/consumer-ui.js
-          grep -F 'glasswing-approved.webp?v=1.15.0' _site/qcds-security-lab/app.js
+          test -s _site/qcds-security-lab/glasswing-flight.webp
+          test -s _site/qcds-security-lab/glasswing-mark.webp
+          test -s _site/qcds-security-lab/glasswing-experience.css
+          test -s _site/qcds-security-lab/open-glasswing-116.html
+          grep -F 'glasswing-approved.webp?v=1.16.0' _site/qcds-security-lab/consumer-ui.js
+          grep -F 'gw-home-feature' _site/qcds-security-lab/consumer-ui.js
+          grep -F 'glasswing-flight.webp?v=1.16.0' _site/qcds-security-lab/index.html
+          grep -F 'glasswing-mark.webp?v=1.16.0' _site/qcds-security-lab/app.js
+          grep -F 'glasswing-experience.css?v=1.16.0' _site/qcds-security-lab/index.html
+          grep -F 'gw-cinema-left-flap' _site/qcds-security-lab/glasswing-experience.css
+          grep -F 'data-release="1.16.0"' _site/qcds-security-lab/index.html
           python - <<'PYPOSTER'
           from pathlib import Path
-          p=Path('_site/qcds-security-lab/glasswing-approved.webp')
-          assert p.stat().st_size > 50000, 'Approved cinematic image is missing'
-          assert p.read_bytes()[:4] == b'RIFF', 'Approved artwork must be a real WebP image'
-          assert p.read_bytes()[8:12] == b'WEBP', 'Wrong artwork image format'
-          print('APPROVED ARTWORK PRESENT in GitHub Pages artifact',p.stat().st_size)
+          root=Path('_site/qcds-security-lab')
+          for name,minimum in [('glasswing-approved.webp',50000),('glasswing-flight.webp',25000),('glasswing-mark.webp',12000)]:
+              p=root/name
+              b=p.read_bytes()
+              assert len(b)>minimum, f'Missing {name}'
+              assert b[:4]==b'RIFF' and b[8:12]==b'WEBP', f'{name} is not a real image'
+              print('PUBLISHED ARTWORK VERIFIED',name,len(b))
           PYPOSTER
-          grep -F 'glasswing-approved.webp?v=1.15.0' _site/qcds-security-lab/consumer-ui.js
-          grep -F 'consumer-eagle-art' _site/qcds-security-lab/consumer.css
-          grep -F 'consumer.css?v=1.15.0' _site/qcds-security-lab/index.html
-          python - <<'PYBIRD'
-          from pathlib import Path
-          import xml.etree.ElementTree as ET
-          svg=Path('_site/qcds-security-lab/glass-eagle.svg')
-          root=ET.parse(svg).getroot()
-          ns='{http://www.w3.org/2000/svg}'
-          assert root.tag == ns + 'svg', 'Glass eagle is not an SVG'
-          assert root.attrib.get('viewBox') == '0 0 960 500', 'Glass eagle has unexpected bounds'
-          assert len(root.findall('.//' + ns + 'animateTransform')) >= 2, 'Missing flapping wings'
-          assert len(root.findall('.//' + ns + 'circle')) >= 12, 'Missing internal defense nodes'
-          assert 'gw-neon-bolt-left' in svg.read_text(), 'Missing defensive lightning'
-          print('PROJECT GLASSWING EAGLE VERIFIED in the exact Pages artifact')
-          PYBIRD
           test -s _site/qcds-security-lab/GLASSWING.md
           grep -F 'PROJECT GLASSWING' _site/qcds-security-lab/index.html
-          grep -F 'glasswing-flight-eagle' _site/qcds-security-lab/index.html
-          grep -F 'glasswing-cinematic.css?v=1.14.9' _site/qcds-security-lab/index.html
           test -s _site/qcds-security-lab/glasswing-cinematic.css
-          grep -F 'glasswing-brand-mark' _site/qcds-security-lab/app.js
           grep -F 'comparison: glasswingView' _site/qcds-security-lab/app.js
           ! grep -F 'glasswing.html' _site/qcds-security-lab/app.js
           node --check _site/qcds-security-lab/glasswing.mjs
