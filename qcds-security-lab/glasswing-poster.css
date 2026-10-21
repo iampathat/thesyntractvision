@@ -1,0 +1,148 @@
+/* Project Glasswing cinematic artwork — approved eagle asset, not the old schematic bird.
+   Theory and creation by Patrik Sundblom
+   with OpenAI / ChatGPT as research & development support. */
+
+/* Make the high-fidelity APPROVED artwork the first thing visible in the intro. */
+.security-intro.glasswing-cinematic {
+ background:#020b1b;
+}
+.security-intro .glasswing-poster-scene {
+ position:absolute;inset:0;display:block;
+ width:100%;height:100%;object-fit:cover;object-position:center center;
+ z-index:1;opacity:1;
+ filter:saturate(1.12) contrast(1.05);
+ animation:glasswing-poster-scene 6.25s ease-in-out both;
+}
+.security-intro .glasswing-starfield,
+.security-intro .glasswing-horizon,
+.security-intro .glasswing-orbiting-nodes {z-index:2;pointer-events:none}
+.security-intro .glasswing-flight {z-index:3}
+.security-intro .glasswing-flight-eagle {
+ display:block;
+ width:min(1400px,112vw);max-height:none;
+ border:0;
+ object-fit:contain;
+ aspect-ratio:16 / 9;
+ filter:drop-shadow(0 0 18px #4acbffcc);
+ /* Retain the central bird while removing the text and outer background
+    from its flight overlay; original pixel artwork remains in the full scene. */
+ clip-path:polygon(15% 22%,22% 24%,34% 38%,47% 54%,56% 56%,72% 48%,91% 43%,95% 49%,89% 60%,79% 76%,66% 81%,60% 83%,60% 96%,46% 93%,39% 84%,28% 78%,18% 63%,14% 45%);
+ mask-image:radial-gradient(ellipse 74% 74% at 54% 59%,#000 49%,transparent 100%);
+ animation:glasswing-approved-flight 6.3s cubic-bezier(.25,.65,.25,1) both;
+}
+.security-intro .glasswing-brand-corner{
+ top:clamp(16px,3.5vh,40px);left:clamp(12px,2vw,37px);
+ width:clamp(110px,14vw,200px);
+ z-index:6;
+}
+.security-intro .glasswing-cropped-emblem {
+ width:100%;aspect-ratio:1.57;position:relative;overflow:hidden;
+ border-radius:10px;border:1px solid #4cccfb55;
+ background:#03152c;
+ box-shadow:0 0 21px #2acbff41;
+}
+.security-intro .glasswing-cropped-emblem img {
+ position:absolute;left:0;top:0;
+ width:550%;height:auto;max-width:none;
+}
+.security-intro .glasswing-title-reveal{
+ z-index:5;top:49%;left:62%;width:min(630px,61vw);
+ text-shadow:0 2px 18px #001020;
+}
+.security-intro .glasswing-title-reveal h1 {filter:drop-shadow(0 0 18px #b0e8ff9c)}
+.security-intro .glasswing-intro-credit {z-index:7}
+.security-intro .q-intro-skip{z-index:10}
+@keyframes glasswing-poster-scene {
+ 0%{opacity:0;transform:scale(1.1)}
+ 9%,36%{opacity:1;transform:scale(1)}
+ 53%{opacity:.78;transform:scale(1.04)}
+ 72%,100%{opacity:.2;transform:scale(1.12)}
+}
+@keyframes glasswing-approved-flight {
+ 0%,28%{opacity:0;transform:translate3d(0,7vh,0) scale(.96)}
+ 34%{opacity:.9;transform:translate3d(0,5vh,0) scale(1.04)}
+ 52%{opacity:1;transform:translate3d(-6vw,-9vh,0) scale(.78)}
+ 70%{opacity:.8;transform:translate3d(-28vw,-34vh,0) scale(.24)}
+ 78%,100%{opacity:0;transform:translate3d(-38vw,-41vh,0) scale(.15)}
+}
+
+/* Home: a full-width, unmistakable copy of the approved artwork. */
+.consumer-home .glasswing-approved-banner {
+ display:block;position:relative;width:100%;margin:0 0 22px;
+ overflow:hidden;border-radius:18px;border:1px solid #3c91b8;
+ background:#00172c;
+ box-shadow:0 0 0 1px #82b8db15,0 14px 35px #00111f72;
+}
+.glasswing-approved-banner > img {
+ display:block;width:100%;height:auto;aspect-ratio:16 / 9;
+ object-fit:cover;object-position:center;
+ opacity:1;visibility:visible;
+}
+.glasswing-banner-replay {
+ position:absolute;right:16px;bottom:14px;z-index:2;
+ border:1px solid #89e9ff;background:#041a2be8;
+ color:#edfdff;border-radius:9px;padding:12px 19px;
+ min-height:46px;font-weight:800;font-size:13px;
+ cursor:pointer;box-shadow:0 0 18px #40c5ff55;
+}
+.glasswing-banner-replay:hover {background:#105278}
+.glasswing-banner-replay:focus-visible,
+.glasswing-approved-card button:focus-visible {outline:3px solid #cbff86;outline-offset:3px}
+.consumer-home .consumer-hero {
+ grid-template-columns:minmax(0,1fr) minmax(240px,360px);
+}
+.glasswing-approved-card {
+ min-height:235px;padding:16px;
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ border:1px solid #366582;border-radius:16px;
+ background:radial-gradient(ellipse at center,#134663,#03182d 70%);
+ color:#f1ffff;gap:8px;
+}
+.glasswing-poster-logo {
+ width:min(290px,100%);height:150px;position:relative;
+ overflow:hidden;border-radius:8px;
+}
+.glasswing-poster-logo img {
+ display:block;position:absolute;left:0;top:0;
+ max-width:none;width:1300px;height:auto;
+}
+.glasswing-approved-card-name {font-weight:800;letter-spacing:.18em;font-size:12px}
+.glasswing-approved-card-label {font-size:9px;letter-spacing:.11em;color:#b4dce9;text-align:center}
+.glasswing-approved-card .button {margin-top:8px;font-size:12px}
+
+/* Persistent nav logo cropped out of the SAME approved image. */
+.brand.glasswing-brand .glasswing-brand-mark {
+ width:73px;height:57px;flex:0 0 73px;
+ display:block;position:relative;overflow:hidden;
+ border:1px solid #408caf77;border-radius:8px;
+ background:#031221;
+}
+.brand.glasswing-brand .glasswing-brand-mark img {
+ display:block;position:absolute;left:0;top:0;max-width:none;
+ width:385px;height:auto;filter:drop-shadow(0 0 4px #65d8ff66);
+}
+.brand.glasswing-brand .glasswing-brand-label {font-size:21px}
+.brand.glasswing-brand .brand-sub {font-size:9px}
+@media(max-width:760px) {
+ .security-intro .glasswing-poster-scene {
+   object-fit:cover;object-position:50% center;
+ }
+ .security-intro .glasswing-title-reveal {
+   top:55%;left:53%;width:94vw;
+ }
+ .security-intro .glasswing-title-reveal h1 {font-size:clamp(45px,13vw,78px)}
+ .security-intro .glasswing-brand-corner {width:112px}
+ .consumer-home .glasswing-approved-banner {border-radius:12px}
+ .consumer-home .glasswing-approved-banner > img{min-height:190px}
+ .glasswing-banner-replay {position:relative;right:auto;bottom:auto;display:block;width:100%;border-radius:0 0 12px 12px}
+ .consumer-home .consumer-hero {display:flex;flex-direction:column;align-items:stretch}
+ .glasswing-approved-card{min-height:200px}
+ .brand.glasswing-brand .glasswing-brand-mark{width:62px;height:52px;flex-basis:62px}
+ .brand.glasswing-brand .glasswing-brand-mark img {width:332px}
+}
+@media(prefers-reduced-motion:reduce) {
+ .security-intro .glasswing-poster-scene,.security-intro .glasswing-flight-eagle {
+   animation:none!important;opacity:1;transform:none;
+ }
+ .security-intro .glasswing-flight-eagle{display:none}
+}
