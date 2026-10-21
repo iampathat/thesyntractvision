@@ -249,7 +249,7 @@ body.gw-entry-active{overflow:hidden}
 .gw-landing-art img { width:100%;height:auto;max-height:min(65svh,770px);object-fit:contain;object-position:center top; }
 .gw-film { overflow:hidden; }
 .gw-film-flight.gw-vector-flight {
-  width:min(1010px,90vw,calc(61svh * 880 / 459));max-width:none;
+  width:min(1010px,90vw,117svh);max-width:none;
   top:45%;aspect-ratio:880/459;
   filter:drop-shadow(0 0 17px #65e3ff86);
 }
@@ -313,7 +313,7 @@ body.gw-entry-active{overflow:hidden}
  .gw-landing-art img {width:100%;height:auto;max-height:43svh;object-fit:contain;object-position:center top}
  .gw-landing-content{padding:16px;gap:12px}
  .gw-landing-footer{padding:9px 16px}
- .gw-film-flight.gw-vector-flight{width:min(96vw,calc(39svh * 880 / 459));top:40%}
+ .gw-film-flight.gw-vector-flight{width:min(96vw,75svh);top:40%}
  .gw-film-title{top:69%;left:50%;width:94vw}
  .gw-film-title h2{font-size:clamp(46px,12vw,76px)}
  .gw-film-title p{font-size:clamp(20px,6vw,30px)}
