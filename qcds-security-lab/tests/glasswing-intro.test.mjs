@@ -22,18 +22,26 @@ test("visible eagle is part of the main lab intro, not an external page", () => 
 });
 
 test("glass eagle has high-contrast fill and renders before animation finishes", () => {
-  assert.match(html, /stop-opacity="\.90"/);
+  assert.match(html, /stop-opacity="\.98"/);
   assert.match(html, /stroke-width="4"/);
   assert.match(css, /security-intro \.glasswing-intro-art/);
   assert.match(css, /opacity:\s*1/);
   assert.match(css, /gw-stage-visible \.5s/);
   assert.match(css, /@media \(max-width:650px\)/);
+  assert.match(html, /gw-neon-bolt-left/);
+  assert.match(html, /gw-neon-bolt-right/);
+  assert.match(html, /gw-core-bolt/);
+  assert.match(html, /gw-defense-halos/);
+  assert.match(css, /gw-eagle-left-wing 1\.2s/);
+  assert.match(css, /gw-bolt-flow 2\.2s/);
+  assert.match(css, /gw-defense-hit 2\.2s/);
+  assert.match(read("consumer-ui.js"), /Watch the glass eagle/);
 });
 
 test("reduced-motion users get a still eagle rather than an instant skip", () => {
   assert.match(css, /prefers-reduced-motion:reduce/);
   assert.match(css, /gw-intro-out \.25s 2\.9s forwards !important/);
-  assert.match(js, /reducedMotion\(\) \? 3200 : 3730/);
+  assert.match(js, /reducedMotion\(\) \? 3400 : 5450/);
   assert.match(js, /\[data-replay-intro\]/);
   assert.match(js, /q-intro-skip/);
 });
