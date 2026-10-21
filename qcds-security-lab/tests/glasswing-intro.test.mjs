@@ -18,6 +18,7 @@ test("QCDS Security Lab intro plays cinematic eagle to upper-left logo and title
   assert.match(html,/id="security-intro"/);
   assert.match(html,/glasswing-cinematic/);
   assert.match(html,/class="glasswing-flight-eagle"/);
+  assert.match(html,/class="glasswing-poster-scene"/);
   assert.match(html,/class="glasswing-brand-corner"/);
   assert.match(html,/class="glasswing-title-reveal"/);
   assert.match(html,/<h1>QCDS<\/h1><p>Security Lab<\/p>/);
@@ -31,10 +32,10 @@ test("QCDS Security Lab intro plays cinematic eagle to upper-left logo and title
 
 test("same angular eagle appears in persistent Home and navigation logo",()=>{
   assert.match(consumer,/class="consumer-eagle-art"/);
-  assert.match(consumer,/glass-eagle\.svg\?v=1\.14\.9/);
+  assert.match(consumer,/glasswing-approved\.webp\?v=1\.15\.0/);
   assert.match(consumer,/Watch the glass eagle/);
   assert.match(app,/class="glasswing-brand-mark"/);
-  assert.match(app,/glass-eagle\.svg\?v=1\.14\.9/);
+  assert.match(app,/glasswing-approved\.webp\?v=1\.15\.0/);
   assert.match(theme,/\.brand\.glasswing-brand/);
   assert.match(theme,/\.glasswing-brand-mark/);
   assert.doesNotMatch(consumer,/class="consumer-orbit"/);
