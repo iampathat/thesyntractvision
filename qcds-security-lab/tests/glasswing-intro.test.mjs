@@ -44,16 +44,16 @@ test("new cache-independent URL renders exactly the same canonical landing",()=>
 });
 
 test("approved original eagle is actually vector-traced, not a hand-drawn substitute or bitmap",()=>{
-  assert.match(index,/glasswing-original-traced-v122\\.svg\\?v=1\\.22\\.0/);
-  assert.match(index,/glasswing-mesh-v122\\.js/);
-  assert.match(index,/glasswing-mesh-stage-v122\\.js/);
+  assert.match(index,/glasswing-original-traced-v122\.svg\?v=1\.22\.0/);
+  assert.match(index,/glasswing-mesh-v122\.js/);
+  assert.match(index,/glasswing-mesh-stage-v122\.js/);
   assert.match(index,/id="gw-film"/);
   assert.doesNotMatch(index,/gw-eagle-wing-left|gw-eagle-wing-right|gw-eagle-body/);
-  assert.match(vector,/<svg\\b/);
+  assert.match(vector,/<svg\b/);
   assert.match(vector,/viewBox="0 0 960 502"/);
-  assert.doesNotMatch(vector,/<image\\b|<foreignObject\\b|<script\\b/);
-  assert.ok((vector.match(/<path d="M\\d+ \\d+ \\d+ \\d+ \\d+ \\d+Z" fill="#[a-f0-9]{6}"/g)||[]).length >= 20000);
-  assert.match(gpu,/gl\\.TRIANGLES/);
+  assert.doesNotMatch(vector,/<image\b|<foreignObject\b|<script\b/);
+  assert.ok((vector.match(/<path d="M\d+ \d+ \d+ \d+ \d+ \d+Z" fill="#[a-f0-9]{6}"/g)||[]).length >= 20000);
+  assert.match(gpu,/gl\.TRIANGLES/);
   assert.match(gpu,/a_pos/);
   assert.match(gpu,/wingAngle/);
   assert.match(gpu,/head/);
