@@ -438,6 +438,23 @@ jobs:
           test ! -e _site/qcds-security-lab/glasswing.js
           test -s _site/qcds-security-lab/glasswing.mjs
           test -s _site/qcds-security-lab/glasswing-inline.css
+          test -s _site/qcds-security-lab/glass-eagle.svg
+          grep -F 'glass-eagle.svg?v=1.14.8' _site/qcds-security-lab/consumer-ui.js
+          grep -F 'consumer-eagle-art' _site/qcds-security-lab/consumer.css
+          grep -F 'consumer.css?v=1.14.8' _site/qcds-security-lab/index.html
+          python - <<'PYBIRD'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          svg=Path('_site/qcds-security-lab/glass-eagle.svg')
+          root=ET.parse(svg).getroot()
+          ns='{http://www.w3.org/2000/svg}'
+          assert root.tag == ns + 'svg', 'Glass eagle is not an SVG'
+          assert root.attrib.get('viewBox') == '0 0 960 500', 'Glass eagle has unexpected bounds'
+          assert len(root.findall('.//' + ns + 'animateTransform')) >= 2, 'Missing flapping wings'
+          assert len(root.findall('.//' + ns + 'circle')) >= 12, 'Missing internal defense nodes'
+          assert 'gw-neon-bolt-left' in svg.read_text(), 'Missing defensive lightning'
+          print('PROJECT GLASSWING EAGLE VERIFIED in the exact Pages artifact')
+          PYBIRD
           test -s _site/qcds-security-lab/GLASSWING.md
           grep -F 'PROJECT GLASSWING' _site/qcds-security-lab/index.html
           grep -F 'glasswing-intro-art' _site/qcds-security-lab/index.html
