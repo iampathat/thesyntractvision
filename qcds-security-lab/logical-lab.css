@@ -1,3 +1,4 @@
+/* GLASSWING v1.21 — cyan/blue visual palette aligned across app surfaces. */
 /* QCDS dimensional workbench — Patrik Sundblom. */
 html:has(#logical-lab[open]) {
   overflow: hidden;
@@ -10,19 +11,19 @@ html:has(#logical-lab[open]) {
   margin: 24px 0;
   background:
     radial-gradient(ellipse at 5% 50%, #183d3d 0, transparent 55%), #121d22;
-  border: 1px solid #38645c;
+  border: 1px solid #1d5f7c;
   border-radius: 16px;
 }
 .logic-launch-mark {
   font: bold 58px/1 system-ui;
-  color: #c5ff5c;
+  color: #70e0ff;
   flex-shrink: 0;
-  text-shadow: 0 0 32px #b8ff3930;
+  text-shadow: 0 0 32px #6adaf230;
 }
 .logic-launch-mark span {
   font-size: 20px;
   vertical-align: top;
-  color: #88f2ea;
+  color: #5eefff;
 }
 .logic-launch h2 {
   margin: 8px 0;
@@ -79,7 +80,7 @@ html:has(#logical-lab[open]) {
   min-height: 0;
 }
 #logical-lab .logic-input-summary {
-  color: #baf269;
+  color: #6dd9ff;
   font-weight: 600;
   padding: 0 0 12px;
 }
@@ -100,7 +101,7 @@ html:has(#logical-lab[open]) {
 }
 .logic-brand {
   font: bold 43px/1 system-ui;
-  color: #c2ff45;
+  color: #6edcf8;
 }
 .logic-brand span {
   font-size: 15px;
@@ -177,7 +178,7 @@ html:has(#logical-lab[open]) {
 }
 .logic-path {
   padding: 12px 16px;
-  border-left: 2px solid #77d8d3;
+  border-left: 2px solid #56d8ff;
   background: #14232a;
   overflow-wrap: anywhere;
 }
@@ -225,7 +226,7 @@ html:has(#logical-lab[open]) {
   padding-bottom: 13px;
 }
 .logic-legend b {
-  color: #c8ff60;
+  color: #72e1ff;
 }
 .logic-dimensions {
   display: flex;
@@ -244,7 +245,7 @@ html:has(#logical-lab[open]) {
 #logical-lab .logic-dimensions select {
   margin: 0;
   padding: 8px;
-  color: #bfff60;
+  color: #6ee1ff;
   font:
     600 13px ui-monospace,
     monospace;
@@ -312,8 +313,8 @@ html:has(#logical-lab[open]) {
   max-width: 100%;
 }
 .logic-state.active {
-  color: #bfff5c;
-  background: #283b20;
+  color: #6ee0ff;
+  background: #14343e;
 }
 .logic-state.conditional {
   color: #fbd087;
@@ -335,7 +336,7 @@ html:has(#logical-lab[open]) {
 }
 .logic-flow-map rect {
   fill: #162b31;
-  stroke: #3f6967;
+  stroke: #216486;
 }
 .logic-flow-map text {
   fill: #93b1ba;
@@ -344,7 +345,7 @@ html:has(#logical-lab[open]) {
     monospace;
 }
 .logic-flow-map text.map-value {
-  fill: #caff7e;
+  fill: #73e6ff;
   font-size: 21px;
 }
 .logic-metrics {
@@ -356,7 +357,7 @@ html:has(#logical-lab[open]) {
   font:
     26px/1.2 ui-monospace,
     monospace;
-  color: #c4ff64;
+  color: #70e2ff;
   display: block;
   overflow-wrap: anywhere;
 }
@@ -405,7 +406,7 @@ html:has(#logical-lab[open]) {
   margin: 15px 0;
 }
 .logic-probability > b {
-  color: #bcff53;
+  color: #6ddffe;
   font:
     31px ui-monospace,
     monospace;
@@ -474,13 +475,13 @@ html:has(#logical-lab[open]) {
   font-size: 11px;
 }
 .logic-next {
-  border-color: #486349;
-  background: linear-gradient(120deg, #162a24, #111c24 80%);
+  border-color: #245a72;
+  background: linear-gradient(120deg, #0c2733, #111c24 80%);
 }
 .logic-question {
   padding: 16px;
   background: #182d2d;
-  border: 1px solid #345452;
+  border: 1px solid #1b506b;
   border-radius: 9px;
   margin: 12px 0;
 }
@@ -500,7 +501,7 @@ html:has(#logical-lab[open]) {
   padding-left: 20px;
 }
 .logic-recursion li {
-  border-left: 1px solid #659859;
+  border-left: 1px solid #3287a3;
   padding: 0 0 20px 18px;
 }
 .logic-recursion li > span {
@@ -508,7 +509,7 @@ html:has(#logical-lab[open]) {
   font:
     10px ui-monospace,
     monospace;
-  color: #bded7f;
+  color: #6ed9ff;
 }
 .logic-recursion li > b {
   display: block;
@@ -542,7 +543,7 @@ html:has(#logical-lab[open]) {
   margin-bottom: 9px;
 }
 .logic-frameworks span {
-  color: #b9d78c;
+  color: #6ecbfd;
   font-size: 12px;
 }
 .logic-frameworks small {
@@ -563,7 +564,7 @@ html:has(#logical-lab[open]) {
   color: #8299a7;
 }
 .logic-observation {
-  border-left: 2px solid #7ba88a;
+  border-left: 2px solid #3e9cc9;
   padding: 12px 16px;
   margin: 16px 0;
   background: #172a2b;
@@ -573,7 +574,7 @@ html:has(#logical-lab[open]) {
 }
 .logic-running {
   padding: 50px;
-  color: #b8ff39;
+  color: #6adaf2;
   text-align: center;
 }
 @media (max-width: 1000px) {
