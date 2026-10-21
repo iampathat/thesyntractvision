@@ -11,7 +11,7 @@ const index = read("index.html"), entry = read("enter.html");
 const freshLanding = read("glasswing-start.html");
 const cleanLanding = read("glasswing-v120.html");
 const stage = read("glasswing-mesh-stage-v123.js"), stageCss=read("glasswing-rig-stage-v121.css");
-const vector=read("glasswing-original-traced-v123.svg"), gpu=read("glasswing-mesh-v123.js"), theme=read("glasswing-theme-v121.css");
+const vector=read("glasswing-original-traced-v122.svg"), gpu=read("glasswing-mesh-v123.js"), theme=read("glasswing-theme-v121.css");
 const consumer=read("consumer-ui-stage-v118.js"), app=read("app-stage-v118.js");
 const gateway=read("open-glasswing-116.html"), worker=read("sw.js");
 
