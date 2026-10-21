@@ -22,7 +22,7 @@ function store(items) {
   };
 }
 
-function ui({approved=false,registrationHangs=false}={}) {
+function ui({approved=false,registrationHangs=false,fastTimers=false}={}) {
   const eventHandlers={};
   const buttons={};
   let unregisterCount=0;
@@ -59,7 +59,8 @@ function ui({approved=false,registrationHangs=false}={}) {
   vm.runInNewContext(script,{
     window:windowObj,document:dom,navigator:{serviceWorker},caches:cache,
     localStorage:local,sessionStorage:session,location,
-    URL,Promise,Date,AbortController,setTimeout,clearTimeout,
+    URL,Promise,Date,AbortController,
+    setTimeout:(callback,delay)=>setTimeout(callback,fastTimers?1:delay),clearTimeout,
     fetch:async()=>({ok:true,status:200})
   },{timeout:2000});
   return {
@@ -111,13 +112,11 @@ test('confirmed full reset deletes only Security Lab state and cache',async()=>{
   assert.equal(x.navigations.length,1);
 });
 
-test('stuck service worker lookup times out and returns control',async()=>{
-  const x=ui({registrationHangs:true});
-  // Only override setTimeout in a separate VM run if this test becomes timing-sensitive.
-  // Bounded lookup contract verified statically; test button feedback while a request is active.
-  const operation=x.press('refresh');
-  assert.match(x.status.textContent,/offline registration/i);
-  assert.equal(x.button.refresh.disabled,true);
-  // Do not wait five seconds here; avoid leaving live rejected promises.
-  void operation.catch(()=>{});
+test('stuck service worker lookup times out and shows a retryable error',async()=>{
+  const x=ui({registrationHangs:true,fastTimers:true});
+  await x.press('refresh');
+  assert.match(x.status.textContent,/timed out/i);
+  assert.equal(x.button.refresh.disabled,false);
+  assert.equal(x.local.has('qcds-security-lab:workspace:v1'),true);
+  assert.equal(x.navigations.length,0);
 });
