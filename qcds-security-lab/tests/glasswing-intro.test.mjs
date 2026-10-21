@@ -40,7 +40,7 @@ test("glass eagle has high-contrast fill and renders before animation finishes",
 
 test("reduced-motion users get a still eagle rather than an instant skip", () => {
   assert.match(css, /prefers-reduced-motion:reduce/);
-  assert.match(css, /gw-intro-out \.25s 2\.9s forwards !important/);
+  assert.match(css, /gw-intro-out \.25s 3\.15s forwards!important/);
   assert.match(js, /reducedMotion\(\) \? 3400 : 5450/);
   assert.match(js, /\[data-replay-intro\]/);
   assert.match(js, /q-intro-skip/);
