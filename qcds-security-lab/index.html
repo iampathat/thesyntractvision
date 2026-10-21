@@ -16,9 +16,9 @@
     <link rel="stylesheet" href="./style.css?v=1.11.0" />
     <link rel="stylesheet" href="./logical-lab.css?v=1.13.0" />
     <link rel="stylesheet" href="./quantum-panel.css?v=1.1.0" />
-    <link rel="stylesheet" href="./intro.css?v=1.14.2" />
-    <link rel="stylesheet" href="./glasswing-inline.css?v=1.14.2" />
-    <script src="./intro.js?v=1.14.2" defer></script>
+    <link rel="stylesheet" href="./intro.css?v=1.14.3" />
+    <link rel="stylesheet" href="./glasswing-inline.css?v=1.14.3" />
+    <script src="./intro.js?v=1.14.3" defer></script>
     <link rel="stylesheet" href="./report-screen.css?v=1.0.0" />
     <link rel="stylesheet" href="./consumer.css?v=1.0.1" />
   </head>
@@ -35,69 +35,80 @@
       <button class="q-intro-skip" type="button">Enter lab ↗</button>
 
       <div class="q-intro-stage glasswing-stage" aria-hidden="true">
-        <svg class="glasswing-intro-art" viewBox="0 0 780 440" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg class="glasswing-intro-art" viewBox="0 0 960 500" xmlns="http://www.w3.org/2000/svg" role="presentation">
           <defs>
-            <linearGradient id="gw-glass" x1="72" y1="75" x2="610" y2="325" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#E4FFFF" stop-opacity=".76"/>
-              <stop offset=".32" stop-color="#8CE8EB" stop-opacity=".22"/>
-              <stop offset=".62" stop-color="#B8E8FF" stop-opacity=".47"/>
-              <stop offset="1" stop-color="#5ADACB" stop-opacity=".17"/>
+            <linearGradient id="gw-eagle-glass" x1="110" y1="90" x2="825" y2="370" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#E5FBFF" stop-opacity=".90"/>
+              <stop offset=".25" stop-color="#9DDDDD" stop-opacity=".72"/>
+              <stop offset=".55" stop-color="#66ADB7" stop-opacity=".72"/>
+              <stop offset=".8" stop-color="#A2D7E6" stop-opacity=".80"/>
+              <stop offset="1" stop-color="#D9F8FF" stop-opacity=".82"/>
             </linearGradient>
-            <linearGradient id="gw-edge" x1="68" y1="80" x2="670" y2="330" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#A3F7F1"/><stop offset=".55" stop-color="#ECFFFF"/><stop offset="1" stop-color="#75DFEA"/>
+            <linearGradient id="gw-eagle-rim" x1="105" y1="95" x2="855" y2="320" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#DAFDFF"/><stop offset=".46" stop-color="#93FFF4"/><stop offset=".72" stop-color="#DAFDFF"/><stop offset="1" stop-color="#FFF0B3"/>
             </linearGradient>
-            <radialGradient id="gw-core"><stop stop-color="#D6FF84"/><stop offset="1" stop-color="#67FFD7" stop-opacity=".2"/></radialGradient>
-            <clipPath id="gw-raven-clip">
-              <path d="M354 206C283 148 176 110 35 71L119 145 32 139 119 192 60 206 190 246 331 260Z"/>
-              <path d="M393 205C458 141 565 105 735 69L646 145 738 137 647 188 713 205 565 247 409 263Z"/>
-              <path d="M339 185Q358 165 390 184L414 242 387 287 348 277 325 242Z"/>
-              <path d="M355 179 377 151 402 156 415 175 458 188 417 200 403 218 372 218Z"/>
-              <path d="M344 266 369 373 389 289 424 337 404 255Z"/>
+            <radialGradient id="gw-eagle-node"><stop stop-color="#F8FFC9"/><stop offset=".55" stop-color="#C9FF72"/><stop offset="1" stop-color="#78EEC7"/></radialGradient>
+            <clipPath id="gw-eagle-clip">
+              <path d="M450 232C359 154 230 91 71 66L120 115 45 107 126 164 61 176 155 206 104 227 216 243 165 263 295 273 435 306 471 273Z"/>
+              <path d="M510 232C599 153 732 92 889 66L838 115 913 107 835 164 901 176 806 206 857 227 747 243 797 263 665 273 525 306 489 273Z"/>
+              <path d="M448 275 436 409 467 347 485 421 505 340 554 400 536 268Z"/>
+              <path d="M434 220Q443 190 478 187Q510 190 530 220L544 291Q509 328 480 330Q449 323 419 288Z"/>
+              <path d="M463 203 466 169Q476 141 503 145Q526 148 535 180Q564 180 587 193L553 209 541 235 515 221 497 240Z"/>
             </clipPath>
           </defs>
-          <g class="gw-protection">
-            <ellipse cx="385" cy="213" rx="324" ry="163" stroke="#83F2E4" stroke-opacity=".26" stroke-width="1.6" stroke-dasharray="3 9"/>
-            <ellipse cx="385" cy="213" rx="348" ry="177" stroke="#B7FF89" stroke-opacity=".22" stroke-width="1" stroke-dasharray="18 18"/>
-            <path d="M80 222Q382-96 686 215" stroke="#79EAD9" stroke-opacity=".26"/>
-            <path d="M82 240Q389 520 698 210" stroke="#6FF9CE" stroke-opacity=".18"/>
+          <g class="gw-protection" fill="none">
+            <ellipse cx="480" cy="235" rx="435" ry="204" stroke="#C2FFE5" stroke-opacity=".64" stroke-width="2.4" stroke-dasharray="6 13"/>
+            <ellipse cx="480" cy="235" rx="402" ry="185" stroke="#85E8F1" stroke-opacity=".45" stroke-width="2"/>
+            <path d="M83 215Q475-70 876 213M92 265Q480 562 870 257" stroke="#90FFE2" stroke-opacity=".36" stroke-width="2"/>
           </g>
-          <g class="gw-attacks" stroke="#FFB68D" stroke-linecap="round">
-            <path d="M4 142 90 178 121 179" stroke-width="1.7" stroke-dasharray="7 12"/>
-            <path d="M770 283 684 259 652 263" stroke-width="1.7" stroke-dasharray="7 12"/>
-            <path d="m124 168 10 11-11 11" stroke-width="2.5"/>
-            <path d="m645 255-11 11 11 11" stroke-width="2.5"/>
+          <g class="gw-attacks" stroke="#FFAA77" stroke-width="3" stroke-linecap="round" fill="none">
+            <path d="M0 139 95 185 120 183" stroke-dasharray="9 12"/>
+            <path d="M958 347 859 283 833 277" stroke-dasharray="9 12"/>
+            <path d="m115 174 12 10-14 12M841 268l-14 10 15 11" stroke-width="3.5"/>
           </g>
-          <g class="gw-raven">
+          <g class="gw-eagle">
             <g class="gw-left-wing">
-              <path d="M354 206C283 148 176 110 35 71L119 145 32 139 119 192 60 206 190 246 331 260Z" fill="url(#gw-glass)" stroke="url(#gw-edge)" stroke-width="2.4" stroke-linejoin="round"/>
-              <path d="M354 209 89 102 184 184 58 157 220 221 105 209 331 259" stroke="#D8FFFF" stroke-opacity=".55" stroke-width="1.2"/>
-              <path d="M294 188 199 150 173 198 262 228 239 178 128 175" stroke="#81F4D4" stroke-opacity=".66"/>
+              <path d="M450 232C359 154 230 91 71 66L120 115 45 107 126 164 61 176 155 206 104 227 216 243 165 263 295 273 435 306 471 273Z"
+                fill="url(#gw-eagle-glass)" stroke="url(#gw-eagle-rim)" stroke-width="4" stroke-linejoin="round"/>
+              <path d="M435 248 85 80 189 169 69 130 222 210 92 182 275 239 169 248 386 282" stroke="#F2FFFF" stroke-opacity=".83" stroke-width="2.1" fill="none"/>
+              <path d="M400 229 304 178 237 181 320 251M363 261 255 209 206 243" stroke="#93FFDC" stroke-opacity=".83" stroke-width="2" fill="none"/>
             </g>
             <g class="gw-right-wing">
-              <path d="M393 205C458 141 565 105 735 69L646 145 738 137 647 188 713 205 565 247 409 263Z" fill="url(#gw-glass)" stroke="url(#gw-edge)" stroke-width="2.4" stroke-linejoin="round"/>
-              <path d="M392 210 676 95 593 180 722 153 543 225 660 210 414 262" stroke="#D8FFFF" stroke-opacity=".58" stroke-width="1.2"/>
-              <path d="M448 184 547 151 580 199 499 228 535 177 653 171" stroke="#81F4D4" stroke-opacity=".66"/>
+              <path d="M510 232C599 153 732 92 889 66L838 115 913 107 835 164 901 176 806 206 857 227 747 243 797 263 665 273 525 306 489 273Z"
+                fill="url(#gw-eagle-glass)" stroke="url(#gw-eagle-rim)" stroke-width="4" stroke-linejoin="round"/>
+              <path d="M525 247 872 80 773 169 892 130 738 210 866 182 688 239 792 248 574 282" stroke="#F2FFFF" stroke-opacity=".83" stroke-width="2.1" fill="none"/>
+              <path d="M555 230 656 177 721 179 641 252M598 263 706 208 755 240" stroke="#93FFDC" stroke-opacity=".83" stroke-width="2" fill="none"/>
             </g>
-            <path d="M344 266 369 373 389 289 424 337 404 255Z" fill="url(#gw-glass)" stroke="#A7F8F0" stroke-width="2"/>
-            <path d="M339 185Q358 165 390 184L414 242 387 287 348 277 325 242Z" fill="url(#gw-glass)" stroke="#E8FFFF" stroke-width="2.5"/>
-            <path d="M355 179 377 151 402 156 415 175 458 188 417 200 403 218 372 218Z" fill="url(#gw-glass)" stroke="#E8FFFF" stroke-width="2.2"/>
-            <circle cx="401" cy="177" r="3.4" fill="#D3FF70"/>
-            <g clip-path="url(#gw-raven-clip)" class="gw-circuit">
-              <path d="M96 111 177 169 256 205 356 215 384 201 484 206 589 168 681 103 M118 189 227 204 322 239 370 261 409 237 543 206 667 182 M177 169 227 204 256 205 322 239 356 215 370 261 384 201 409 237 484 206 543 206 589 168 M370 261 372 332" stroke="#B2FF94" stroke-opacity=".88" stroke-width="1.65"/>
-              <path d="M127 154 219 181 298 218 372 195 463 220 546 179 656 145 M155 218 261 239 369 273 490 243 622 215" stroke="#96F6FF" stroke-opacity=".55" stroke-width="1.1"/>
-              <g fill="url(#gw-core)" stroke="#D7FFE4" stroke-width="1.2">
-                <circle cx="177" cy="169" r="5"/><circle cx="256" cy="205" r="4.5"/>
-                <circle cx="356" cy="215" r="7"/><circle cx="384" cy="201" r="10"/>
-                <circle cx="484" cy="206" r="5"/><circle cx="589" cy="168" r="4.7"/>
-                <circle cx="227" cy="204" r="4.5"/><circle cx="322" cy="239" r="5"/>
-                <circle cx="370" cy="261" r="6"/><circle cx="409" cy="237" r="4.5"/>
-                <circle cx="543" cy="206" r="4.7"/><circle cx="372" cy="332" r="3.3"/>
+            <path d="M448 275 436 409 467 347 485 421 505 340 554 400 536 268Z"
+              fill="url(#gw-eagle-glass)" stroke="url(#gw-eagle-rim)" stroke-width="3.3" stroke-linejoin="round"/>
+            <path d="M434 220Q443 190 478 187Q510 190 530 220L544 291Q509 328 480 330Q449 323 419 288Z"
+              fill="url(#gw-eagle-glass)" stroke="#F6FFFF" stroke-width="4"/>
+            <path d="M463 203 466 169Q476 141 503 145Q526 148 535 180Q564 180 587 193L553 209 541 235 515 221 497 240Z"
+              fill="url(#gw-eagle-glass)" stroke="#F8FFFF" stroke-width="3.7" stroke-linejoin="round"/>
+            <path d="m555 204-8 19-13 6" stroke="#FFE1AA" stroke-width="3" stroke-linecap="round" fill="none"/>
+            <circle cx="520" cy="172" r="5.5" fill="#F2FF99" stroke="#253C4A" stroke-width="2.5"/>
+            <g class="gw-circuit" clip-path="url(#gw-eagle-clip)" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M89 101 206 167 323 219 450 248 483 236 515 249 637 219 758 167 870 101
+                M148 205 262 237 382 270 481 305 585 270 702 237 812 205
+                M206 167 262 237 323 219 382 270 450 248 483 236 515 249 585 270 637 219 702 237 758 167
+                M483 236 481 305 486 380M382 270 450 248M515 249 585 270"
+                stroke="#C9FF89" stroke-opacity=".97" stroke-width="3" fill="none"/>
+              <path d="M154 147 286 201 421 238 479 214 552 238 681 201 816 147M225 252 343 263 480 288 626 263 748 252"
+                stroke="#C1F9FF" stroke-opacity=".80" stroke-width="2" fill="none"/>
+              <g fill="url(#gw-eagle-node)" stroke="#FAFFDB" stroke-width="1.8">
+                <circle cx="206" cy="167" r="7"/><circle cx="323" cy="219" r="7"/>
+                <circle cx="450" cy="248" r="9"/><circle cx="483" cy="236" r="15"/>
+                <circle cx="515" cy="249" r="9"/><circle cx="637" cy="219" r="7"/>
+                <circle cx="758" cy="167" r="7"/><circle cx="262" cy="237" r="7"/>
+                <circle cx="382" cy="270" r="7"/><circle cx="481" cy="305" r="10"/>
+                <circle cx="585" cy="270" r="7"/><circle cx="702" cy="237" r="7"/>
+                <circle cx="486" cy="380" r="6"/>
               </g>
             </g>
           </g>
-          <g class="gw-deflection" fill="#D2FF81">
-            <circle cx="135" cy="179" r="3"/><circle cx="634" cy="266" r="3"/>
-            <path d="m135 158v-10m0 62v-10m-20-21h-10m60 0h-10 M634 244v-10m0 64v-10m-22-22h-9m61 0h-9" stroke="#AAFF80" stroke-opacity=".7"/>
+          <g class="gw-deflection" fill="#FFF6AC" stroke="#D6FF99" stroke-width="2.6">
+            <circle cx="128" cy="184" r="7"/><circle cx="829" cy="278" r="7"/>
+            <path d="M128 157v-13m0 82v-13m-27-29H88m80 0h-13M829 252v-13m0 80v-13m-27-28h-13m80 0h-13" fill="none"/>
           </g>
         </svg>
       </div>
@@ -136,6 +147,6 @@
       accept="application/json,.json"
       hidden
     />
-    <script type="module" src="./app.js?v=1.14.2"></script>
+    <script type="module" src="./app.js?v=1.14.3"></script>
   </body>
 </html>
