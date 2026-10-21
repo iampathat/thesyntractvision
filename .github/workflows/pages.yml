@@ -439,9 +439,22 @@ jobs:
           test -s _site/qcds-security-lab/glasswing.mjs
           test -s _site/qcds-security-lab/glasswing-inline.css
           test -s _site/qcds-security-lab/glass-eagle.svg
-          grep -F 'glass-eagle.svg?v=1.14.9' _site/qcds-security-lab/consumer-ui.js
+          test -s _site/qcds-security-lab/glasswing-approved.webp
+          test -s _site/qcds-security-lab/glasswing-poster.css
+          grep -F 'glasswing-poster-scene' _site/qcds-security-lab/index.html
+          grep -F 'glasswing-approved-banner' _site/qcds-security-lab/consumer-ui.js
+          grep -F 'glasswing-approved.webp?v=1.15.0' _site/qcds-security-lab/app.js
+          python - <<'PYPOSTER'
+          from pathlib import Path
+          p=Path('_site/qcds-security-lab/glasswing-approved.webp')
+          assert p.stat().st_size > 50000, 'Approved cinematic image is missing'
+          assert p.read_bytes()[:4] == b'RIFF', 'Approved artwork must be a real WebP image'
+          assert p.read_bytes()[8:12] == b'WEBP', 'Wrong artwork image format'
+          print('APPROVED ARTWORK PRESENT in GitHub Pages artifact',p.stat().st_size)
+          PYPOSTER
+          grep -F 'glasswing-approved.webp?v=1.15.0' _site/qcds-security-lab/consumer-ui.js
           grep -F 'consumer-eagle-art' _site/qcds-security-lab/consumer.css
-          grep -F 'consumer.css?v=1.14.9' _site/qcds-security-lab/index.html
+          grep -F 'consumer.css?v=1.15.0' _site/qcds-security-lab/index.html
           python - <<'PYBIRD'
           from pathlib import Path
           import xml.etree.ElementTree as ET
