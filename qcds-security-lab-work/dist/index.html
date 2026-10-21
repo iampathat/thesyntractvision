@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#060e1b">
+  <meta name="description" content="QCDS Security Lab Work — undersök system, pröva skydd och följ beläggen. Project Glasswing av Patrik Sundblom.">
+  <title>QCDS Security Lab Work · Project Glasswing</title>
+  <link rel="icon" href="./mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./style.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <a href="#content" class="skip-link">Till arbetsytan</a>
+  <section id="intro" class="intro" aria-label="Project Glasswing introduktion">
+    <header class="intro-header"><a href="#" class="brand" aria-label="QCDS Security Lab Work"><img src="./mark.svg" alt="" width="48" height="40"><span>QCDS<span class="brand-sub">SECURITY LAB <b>WORK</b></span></span></a><span class="edition">PROJECT GLASSWING <i></i> WORK / 01</span><button class="text-btn" data-action="enter">Öppna labbet <span>↗</span></button></header>
+    <div class="intro-main">
+      <div class="intro-copy"><div class="eyebrow"><span class="signal-dot"></span> CONDITION-DRIVEN SECURITY</div><h1>Se sambanden.<br>Utmana skydden.<br><em>Följ sanningen.</em></h1><p>Ett rum för att förstå vad som kan gå fel.<br>Från villkor och möjliga vägar till prövbara belägg.</p><div class="intro-actions"><button class="primary large" data-action="enter">Öppna Security Lab <span>→</span></button><button class="replay" data-action="replay" aria-label="Spela flygsekvensen igen"><span>↻</span> Spela igen</button></div><div class="intro-subline">BYGGT PÅ QCDS <span>/</span> SKAPAT AV PATRIK SUNDBLOM</div></div>
+      <div class="flight-scene" id="flight-scene"><div class="scene-coordinate c1">GW—01<br><span>CONDITIONS → COHERENCE</span></div><div id="eagle-stage" class="eagle-stage" role="img" aria-label="En kristallörn flaxar med ledade vingar över ett nätverk. Ljuspulser rör sig längs vingarnas noder medan skyddsfältet fångar inkommande signaler."></div><div class="scene-coordinate c2"><span class="signal-dot"></span> GLASSWING <span>/ ACTIVE</span></div><button class="motion-btn" data-action="motion" aria-pressed="false" aria-label="Pausa animation">Ⅱ</button></div>
+    </div>
+    <footer class="intro-footer"><div class="intro-phases"><span><b>01</b> Villkor</span><span><b>02</b> Orakel</span><span><b>03</b> Inferens</span><span><b>04</b> Verifiering</span></div><p>Theory and creation by Patrik Sundblom<br><span>with OpenAI / ChatGPT as research & development support</span></p></footer>
+  </section>
+  <div id="workspace" class="workspace" hidden>
+    <aside class="sidebar"><a href="#intro" class="brand" data-action="intro"><img src="./mark.svg" alt="" width="44" height="36"><span>QCDS<span class="brand-sub">SECURITY LAB <b>WORK</b></span></span></a><div class="sidebar-label">ARBETSPLATS</div><nav id="nav" aria-label="Huvudnavigation"></nav><div class="sidebar-bottom"><div class="engine-indicator"><span class="signal-dot"></span> QCDS ENGINE <span id="engine-version"></span></div><p>Villkor först.<br>Belägg avgör.</p><button class="text-btn" data-action="intro">Project Glasswing <span>↗</span></button><small>© 2026 Patrik Sundblom</small></div></aside>
+    <div class="main-shell"><header class="work-header"><a href="#intro" data-action="intro" class="mobile-brand"><img src="./mark.svg" width="27" height="25" alt="">QCDS <b>WORK</b></a><div class="breadcrumbs">Security Lab <span>/</span> <strong id="breadcrumb">Överblick</strong></div><div class="header-actions"><span id="save-status" class="save-status">Sparat på enheten</span><button class="icon-btn" data-action="import" title="Importera projekt" aria-label="Importera projekt">↓</button><button class="secondary" data-action="export">Exportera JSON</button><button class="secondary" data-action="report">Rapport / PDF <span>↗</span></button></div></header>
+    <div class="case-bar"><div class="case-picker"><span class="case-icon">◈</span><label for="case-select">UNDERSÖKNING</label><select id="case-select" aria-label="Välj undersökning"></select></div><button class="text-btn" data-action="new">＋ Ny undersökning</button></div>
+    <main id="content" tabindex="-1"></main>
+    <footer class="work-footer"><span>QCDS Security Lab Work · v1.0.0</span><span>Patrik Sundblom · R&D support: OpenAI / ChatGPT</span></footer></div>
+  </div>
+  <dialog id="modal"></dialog><input type="file" id="import-file" accept=".json,application/json" hidden><div id="toast" role="status" aria-live="polite"></div><div id="print-report"></div>
+  <noscript><p class="noscript">Aktivera JavaScript för att använda labbet och se den animerade vektorörnen.</p></noscript>
+</body></html>

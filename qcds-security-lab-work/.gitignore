@@ -1,0 +1,6 @@
+node_modules/
+reference/
+dist/qa-mobile.html
+*.tar.gz
+*.zip
+.DS_Store
