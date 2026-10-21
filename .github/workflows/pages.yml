@@ -463,7 +463,7 @@ jobs:
           grep -F 'gw-lab-heading' _site/qcds-security-lab/consumer-ui-stage-v118.js
           ! grep -F 'gw-home-poster' _site/qcds-security-lab/consumer-ui-stage-v118.js
           grep -F 'url=./?welcome=1' _site/qcds-security-lab/open-glasswing-116.html
-          grep -F 'const VERSION = '\''1.18.0'\''' _site/qcds-security-lab/sw.js
+          grep -F "const VERSION = '1.18.0'" _site/qcds-security-lab/sw.js
           node --check _site/qcds-security-lab/glasswing-stage-v118.js
           node --check _site/qcds-security-lab/app-stage-v118.js
           node --check _site/qcds-security-lab/consumer-ui-stage-v118.js
