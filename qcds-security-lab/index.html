@@ -16,8 +16,9 @@
     <link rel="stylesheet" href="./style.css?v=1.11.0" />
     <link rel="stylesheet" href="./logical-lab.css?v=1.13.0" />
     <link rel="stylesheet" href="./quantum-panel.css?v=1.1.0" />
-    <link rel="stylesheet" href="./intro.css?v=1.13.0" />
-    <script src="./intro.js?v=1.13.0" defer></script>
+    <link rel="stylesheet" href="./intro.css?v=1.14.2" />
+    <link rel="stylesheet" href="./glasswing-inline.css?v=1.14.2" />
+    <script src="./intro.js?v=1.14.2" defer></script>
     <link rel="stylesheet" href="./report-screen.css?v=1.0.0" />
     <link rel="stylesheet" href="./consumer.css?v=1.0.1" />
   </head>
@@ -29,49 +30,80 @@
     >
       <div class="q-intro-grid" aria-hidden="true"></div>
       <div class="q-intro-coordinates" aria-hidden="true">
-        <b>QCDS / SECURITY LAB</b><br />YOUR SECURITY WORKSPACE · v1.14
+        <b>QCDS / SECURITY LAB</b><br />YOUR SECURITY WORKSPACE · PROJECT GLASSWING
       </div>
       <button class="q-intro-skip" type="button">Enter lab ↗</button>
-      <div class="q-intro-stage" aria-hidden="true">
-        <div class="q-intro-orbit a"></div>
-        <div class="q-intro-orbit b"></div>
-        <div class="q-intro-orbit c"></div>
-        <svg class="q-intro-svg" viewBox="0 0 300 300" fill="none">
+
+      <div class="q-intro-stage glasswing-stage" aria-hidden="true">
+        <svg class="glasswing-intro-art" viewBox="0 0 780 440" fill="none" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <linearGradient
-              id="q-intro-metal"
-              x1="60"
-              y1="60"
-              x2="240"
-              y2="240"
-              gradientUnits="userSpaceOnUse"
-            >
-              <stop stop-color="#d9ff89" />
-              <stop offset=".45" stop-color="#baff38" />
-              <stop offset="1" stop-color="#46dfe9" />
+            <linearGradient id="gw-glass" x1="72" y1="75" x2="610" y2="325" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#E4FFFF" stop-opacity=".76"/>
+              <stop offset=".32" stop-color="#8CE8EB" stop-opacity=".22"/>
+              <stop offset=".62" stop-color="#B8E8FF" stop-opacity=".47"/>
+              <stop offset="1" stop-color="#5ADACB" stop-opacity=".17"/>
             </linearGradient>
+            <linearGradient id="gw-edge" x1="68" y1="80" x2="670" y2="330" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#A3F7F1"/><stop offset=".55" stop-color="#ECFFFF"/><stop offset="1" stop-color="#75DFEA"/>
+            </linearGradient>
+            <radialGradient id="gw-core"><stop stop-color="#D6FF84"/><stop offset="1" stop-color="#67FFD7" stop-opacity=".2"/></radialGradient>
+            <clipPath id="gw-raven-clip">
+              <path d="M354 206C283 148 176 110 35 71L119 145 32 139 119 192 60 206 190 246 331 260Z"/>
+              <path d="M393 205C458 141 565 105 735 69L646 145 738 137 647 188 713 205 565 247 409 263Z"/>
+              <path d="M339 185Q358 165 390 184L414 242 387 287 348 277 325 242Z"/>
+              <path d="M355 179 377 151 402 156 415 175 458 188 417 200 403 218 372 218Z"/>
+              <path d="M344 266 369 373 389 289 424 337 404 255Z"/>
+            </clipPath>
           </defs>
-          <g class="q-intro-cube">
-            <path
-              d="M150 12 270 81V219L150 288 30 219V81Z M150 12V150L270 219 M30 81 150 150 270 81 M150 150V288 M30 219 150 81 270 219 M30 81 150 219 270 81"
-            />
-            <circle cx="150" cy="150" r="132" stroke-dasharray="2 15" />
-            <path d="M0 150H36M264 150H300M150 0V28M150 272V300" />
+          <g class="gw-protection">
+            <ellipse cx="385" cy="213" rx="324" ry="163" stroke="#83F2E4" stroke-opacity=".26" stroke-width="1.6" stroke-dasharray="3 9"/>
+            <ellipse cx="385" cy="213" rx="348" ry="177" stroke="#B7FF89" stroke-opacity=".22" stroke-width="1" stroke-dasharray="18 18"/>
+            <path d="M80 222Q382-96 686 215" stroke="#79EAD9" stroke-opacity=".26"/>
+            <path d="M82 240Q389 520 698 210" stroke="#6FF9CE" stroke-opacity=".18"/>
           </g>
-          <path
-            class="q-intro-q"
-            d="M210 150C210 105 190 78 150 78C110 78 90 105 90 150C90 195 110 222 150 222C190 222 210 195 210 150Z M165 184 219 236"
-            stroke-linecap="square"
-          />
-          <path
-            class="q-intro-star"
-            d="m224 49 5 15 16 5-16 5-5 16-5-16-16-5 16-5Z"
-          />
+          <g class="gw-attacks" stroke="#FFB68D" stroke-linecap="round">
+            <path d="M4 142 90 178 121 179" stroke-width="1.7" stroke-dasharray="7 12"/>
+            <path d="M770 283 684 259 652 263" stroke-width="1.7" stroke-dasharray="7 12"/>
+            <path d="m124 168 10 11-11 11" stroke-width="2.5"/>
+            <path d="m645 255-11 11 11 11" stroke-width="2.5"/>
+          </g>
+          <g class="gw-raven">
+            <g class="gw-left-wing">
+              <path d="M354 206C283 148 176 110 35 71L119 145 32 139 119 192 60 206 190 246 331 260Z" fill="url(#gw-glass)" stroke="url(#gw-edge)" stroke-width="2.4" stroke-linejoin="round"/>
+              <path d="M354 209 89 102 184 184 58 157 220 221 105 209 331 259" stroke="#D8FFFF" stroke-opacity=".55" stroke-width="1.2"/>
+              <path d="M294 188 199 150 173 198 262 228 239 178 128 175" stroke="#81F4D4" stroke-opacity=".66"/>
+            </g>
+            <g class="gw-right-wing">
+              <path d="M393 205C458 141 565 105 735 69L646 145 738 137 647 188 713 205 565 247 409 263Z" fill="url(#gw-glass)" stroke="url(#gw-edge)" stroke-width="2.4" stroke-linejoin="round"/>
+              <path d="M392 210 676 95 593 180 722 153 543 225 660 210 414 262" stroke="#D8FFFF" stroke-opacity=".58" stroke-width="1.2"/>
+              <path d="M448 184 547 151 580 199 499 228 535 177 653 171" stroke="#81F4D4" stroke-opacity=".66"/>
+            </g>
+            <path d="M344 266 369 373 389 289 424 337 404 255Z" fill="url(#gw-glass)" stroke="#A7F8F0" stroke-width="2"/>
+            <path d="M339 185Q358 165 390 184L414 242 387 287 348 277 325 242Z" fill="url(#gw-glass)" stroke="#E8FFFF" stroke-width="2.5"/>
+            <path d="M355 179 377 151 402 156 415 175 458 188 417 200 403 218 372 218Z" fill="url(#gw-glass)" stroke="#E8FFFF" stroke-width="2.2"/>
+            <circle cx="401" cy="177" r="3.4" fill="#D3FF70"/>
+            <g clip-path="url(#gw-raven-clip)" class="gw-circuit">
+              <path d="M96 111 177 169 256 205 356 215 384 201 484 206 589 168 681 103 M118 189 227 204 322 239 370 261 409 237 543 206 667 182 M177 169 227 204 256 205 322 239 356 215 370 261 384 201 409 237 484 206 543 206 589 168 M370 261 372 332" stroke="#B2FF94" stroke-opacity=".88" stroke-width="1.65"/>
+              <path d="M127 154 219 181 298 218 372 195 463 220 546 179 656 145 M155 218 261 239 369 273 490 243 622 215" stroke="#96F6FF" stroke-opacity=".55" stroke-width="1.1"/>
+              <g fill="url(#gw-core)" stroke="#D7FFE4" stroke-width="1.2">
+                <circle cx="177" cy="169" r="5"/><circle cx="256" cy="205" r="4.5"/>
+                <circle cx="356" cy="215" r="7"/><circle cx="384" cy="201" r="10"/>
+                <circle cx="484" cy="206" r="5"/><circle cx="589" cy="168" r="4.7"/>
+                <circle cx="227" cy="204" r="4.5"/><circle cx="322" cy="239" r="5"/>
+                <circle cx="370" cy="261" r="6"/><circle cx="409" cy="237" r="4.5"/>
+                <circle cx="543" cy="206" r="4.7"/><circle cx="372" cy="332" r="3.3"/>
+              </g>
+            </g>
+          </g>
+          <g class="gw-deflection" fill="#D2FF81">
+            <circle cx="135" cy="179" r="3"/><circle cx="634" cy="266" r="3"/>
+            <path d="m135 158v-10m0 62v-10m-20-21h-10m60 0h-10 M634 244v-10m0 64v-10m-22-22h-9m61 0h-9" stroke="#AAFF80" stroke-opacity=".7"/>
+          </g>
         </svg>
       </div>
       <div class="q-intro-wordmark">
-        <h1>Q SECURITY LAB</h1>
-        <p>SECURITY, IN EVERY DIMENSION.</p>
+        <p class="glasswing-kicker">PROJECT GLASSWING</p><h1>Q SECURITY LAB</h1>
+        <p>PROTECT THE SYSTEM · CHALLENGE THE PATH</p>
       </div>
       <div class="q-intro-bottom">
         <span>CONDITION · EVOLUTION<br />INFERENCE · ALIGNMENT</span>
@@ -104,6 +136,6 @@
       accept="application/json,.json"
       hidden
     />
-    <script type="module" src="./app.js?v=1.14.1"></script>
+    <script type="module" src="./app.js?v=1.14.2"></script>
   </body>
 </html>
