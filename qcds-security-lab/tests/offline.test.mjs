@@ -39,6 +39,10 @@ test('manual refresh has a timeout and user-confirmed reset stays inside Securit
   assert.equal(refresh,legacy,'Both update entry points should have identical capabilities');
   assert.match(refresh,/id="refresh"/);
   assert.match(refresh,/id="reset"/);
+  assert.match(refresh,/id="openLab"/);
+  assert.match(refresh,/class="launch-lab hidden"/);
+  assert.match(refresh,/class="return-lab"/);
+  assert.match(refresh,/ui\.open\.classList\.remove\('hidden'\)/);
   assert.match(refresh,/id="backup"/);
   assert.match(refresh,/navigator\.serviceWorker\.getRegistration\(scope\)/);
   assert.match(refresh,/registration\.scope === scope/);
