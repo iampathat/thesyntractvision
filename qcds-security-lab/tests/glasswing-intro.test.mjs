@@ -1,218 +1,108 @@
-// Project Glasswing v1.18 — one landing, one optional single-bird film, one working lab.
-// Theory and creation by Patrik Sundblom, with OpenAI / ChatGPT as R&D support.
+// Project Glasswing v1.25 — cinematic wingbeats and a single real landing.
+// Theory and creation by Patrik Sundblom — OpenAI / ChatGPT R&D support.
 import test from "node:test";
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 import vm from "node:vm";
+const read=n=>readFileSync(new URL("../"+n,import.meta.url),"utf8");
+const index=read("index.html"),entry=read("enter.html");
+const landing=read("glasswing-v125.html"),oldWelcome=read("glasswing-start.html");
+const js=read("glasswing-screen-v125.js"),css=read("glasswing-screen-v125.css");
+const consumer=read("consumer-ui-stage-v118.js"),app=read("app-stage-v118.js");
+const build=read("scripts/build-web.mjs"),worker=read("sw.js");
+const video=readFileSync(new URL("../glasswing-flight-v125.mp4",import.meta.url));
 
-const read = name => readFileSync(new URL("../"+name,import.meta.url),"utf8");
-const blob = name => readFileSync(new URL("../"+name,import.meta.url));
-const index = read("index.html"), entry = read("enter.html");
-const freshLanding = read("glasswing-start.html");
-const cleanLanding = read("glasswing-v120.html");
-const visibleLanding = read("glasswing-v124.html"), visibleCss = read("glasswing-visible-v124.css");
-const stage = read("glasswing-mesh-stage-v124.js"), stageCss=read("glasswing-rig-stage-v121.css");
-const vector=read("glasswing-original-traced-v122.svg"), gpu=read("glasswing-mesh-v124.js"), theme=read("glasswing-theme-v121.css");
-const consumer=read("consumer-ui-stage-v118.js"), app=read("app-stage-v118.js");
-const gateway=read("open-glasswing-116.html"), worker=read("sw.js");
-
-test("approved artwork and unbroken one-piece eagle are real WebP assets",()=>{
-  for(const [name,minimum] of [["glasswing-approved.webp",50000],["glasswing-flight.webp",25000],["glasswing-mark.webp",12000]]){
-    const file=blob(name);
-    assert.ok(file.length>minimum,name+" is unexpectedly small");
-    assert.equal(file.subarray(0,4).toString(),"RIFF");
-    assert.equal(file.subarray(8,12).toString(),"WEBP");
+test("every existing entry and fresh URL serves the identical complete landing",()=>{
+  for(const p of ["enter.html","glasswing-start.html","glasswing-v120.html","glasswing-v123.html","glasswing-v124.html","glasswing-v125.html"]) {
+    assert.equal(read(p),index,p);
   }
-});
-test("canonical page offers Enter and Watch, separate from the actual app",()=>{
   assert.match(index,/id="gw-landing"/);
+  assert.match(index,/id="gw-film"/);
   assert.match(index,/data-enter-lab/);
   assert.match(index,/data-watch-intro/);
-  assert.match(index,/id="gw-film"/);
-  assert.match(index,/<div id="app">/);
-  assert.match(index,/data-entry="landing"/);
-  assert.match(index,/glasswing-approved\.webp\?v=1\.18\.0/);
-  assert.match(index,/glasswing-rig-stage-v121\.css/);
-  assert.match(index,/glasswing-mesh-stage-v124\.js/);
-  assert.doesNotMatch(index,/id="security-intro"/);
-});
-test("new cache-independent URL renders exactly the same canonical landing",()=>{
-  assert.equal(freshLanding,index);
-  assert.equal(cleanLanding,index);
-  assert.equal(visibleLanding,index);
-  assert.match(cleanLanding,/glasswing-mesh-stage-v124\.js/);
-  assert.match(freshLanding,/data-enter-lab/);
-  assert.match(freshLanding,/data-watch-intro/);
-});
-
-test("approved original eagle is actually vector-traced, not a hand-drawn substitute or bitmap",()=>{
-  assert.match(index,/glasswing-original-traced-v122\.svg\?v=1\.24\.0/);
-  assert.match(index,/glasswing-mesh-v124\.js/);
-  assert.match(index,/glasswing-mesh-stage-v124\.js/);
-  assert.match(index,/id="gw-film"/);
-  assert.doesNotMatch(index,/gw-eagle-wing-left|gw-eagle-wing-right|gw-eagle-body/);
-  assert.match(vector,/<svg\b/);
-  assert.match(vector,/viewBox="0 0 960 502"/);
-  assert.doesNotMatch(vector,/<image\b|<foreignObject\b|<script\b/);
-  assert.ok((vector.match(/<path d="M\d+ \d+ \d+ \d+ \d+ \d+Z" fill="#[a-f0-9]{6}"/g)||[]).length >= 20000);
-  assert.match(gpu,/gl\.TRIANGLES/);
-  assert.match(gpu,/a_pos/);
-  assert.match(gpu,/44\.0\*lPhase\*left/);
-  assert.match(gpu,/43\.0\*rPhase\*right/);
-  assert.match(gpu,/smoothstep\(325\.0,415\.0,source\.y\)/);
-  assert.doesNotMatch(gpu,/vec2 turn\(|wingAngle|mix\(p,turn/);
-  assert.match(gpu,/head/);
-  assert.match(gpu,/Independent small talon curls/);
-  assert.match(gpu,/shared boundary identically/);
-  assert.match(gpu,/getContext\('webgl'/);
-  assert.match(stage,/GlasswingMeshRig/);
-  assert.doesNotMatch(stage,/DOMParser|gw-vector-inline|gw-eagle-playing/);
-  assert.match(stageCss,/gw-rig-camera-flight/);
-  assert.match(stageCss,/prefers-reduced-motion:reduce/);
-});
-test("crystal-blue design tokens and panels replace the previous green accent system",()=>{
-  assert.match(theme,/--acid:#8de7ff/);
-  assert.match(theme,/--app-accent:#85dfff/);
-  assert.match(theme,/\.quantum-card/);
-  assert.match(theme,/\.logic-launch/);
-  assert.match(theme,/\.sidebar/);
-  for(const file of ["style.css","consumer.css","logical-lab.css","quantum-panel.css"]){
-    const css=read(file);
-    assert.doesNotMatch(css,/#b8ff39|#b8ff55|#c5ff5c|#bcff69|#c4ff70/i,file);
-  }
-  assert.match(index,/data-release="1\.24\.0"/);
-});
-test("working Home contains real investigations and only a compact brand header",()=>{
-  assert.match(consumer,/class="gw-lab-heading"/);
-  assert.match(consumer,/data-action="new"/);
-  assert.match(consumer,/Continue investigation/);
-  assert.match(consumer,/data-watch-intro/);
-  assert.match(consumer,/data-open-landing/);
-  assert.match(consumer,/Current position: step/);
-  assert.doesNotMatch(consumer,/gw-home-poster|gw-home-feature|glasswing-approved-banner/);
-  assert.match(app,/consumer-ui-stage-v118\.js/);
-  assert.match(app,/glasswing-brand-mark/);
-});
-test("previous enter.html bookmarks also open the single real Glasswing landing",()=>{
-  assert.equal(entry,index);
-  assert.match(entry,/data-entry="landing"/);
-  assert.match(entry,/id="gw-landing"/);
-  assert.match(entry,/id="gw-film"/);
-  assert.match(entry,/data-enter-lab/);
-  assert.match(entry,/app-stage-v118\.js/);
-  assert.match(gateway,/url=\.\/\?welcome=1/);
-  assert.doesNotMatch(gateway,/unregister|caches\.delete|getRegistrations/);
-  assert.match(worker,/const VERSION = '1\.24\.0'/);
-  assert.match(worker,/req\.mode === 'navigate'/);
-});
-test("session entry and film are independent of saved case storage",()=>{
-  assert.match(stage,/sessionStorage\.setItem\("qcds-security-lab:entered-session"/);
-  assert.doesNotMatch(stage,/localStorage\.(clear|removeItem)/);
-  assert.doesNotMatch(stage,/indexedDB\.deleteDatabase/);
-  assert.match(stage,/const showLanding = !!landing && isLandingPage/);
-  assert.doesNotMatch(stage,/sessionEntered\(\)/);
-  assert.match(stage,/data-replay-intro/);
-  assert.match(stage,/data-film-skip/);
-  assert.match(stage,/location\.assign\("\.\/\?welcome=1"\)/);
-});
-
-// Execute the actual stage script against a tiny browser model. This catches
-// regressions that string-only static checks would miss.
-function makeRuntime({landingPresent=true,direct=false,sessionEntered=false}={}){
-  const listeners={};
-  const classes=()=>{const values=new Set();return{
-    add:x=>values.add(x),remove:x=>values.delete(x),
-    toggle:(x,on)=>on?values.add(x):values.delete(x),
-    contains:x=>values.has(x)
-  }};
-  const focused={value:null}, button=(kind)=>({focus:()=>{focused.value=kind;}});
-  const landing=landingPresent?{hidden:false,querySelector:()=>button("enter")}:null;
-  const film={hidden:true,classList:classes(),dataset:{},offsetWidth:100,querySelector:()=>button("skip")};
-  const app={inert:false,removeAttribute:()=>{},querySelector:()=>button("workspace")};
-  const body={dataset:{entry:direct?"direct":"landing"},classList:classes()};
-  const stored=new Map(sessionEntered?[["qcds-security-lab:entered-session","1"]]:[]);
-  const timers=new Map();let nextTimer=1,locAssigned=null;
-  const sandbox={
-    document:{body,getElementById:k=>({"gw-landing":landing,"gw-film":film,"app":app})[k]||null,
-      addEventListener:(k,fn)=>{listeners[k]=fn;}},
-    window:{matchMedia:()=>({matches:false})},
-    sessionStorage:{getItem:k=>stored.get(k)||null,setItem:(k,v)=>stored.set(k,v)},
-    location:{hash:"",search:"",assign:u=>{locAssigned=u;}},
-    URLSearchParams,setTimeout:(fn,ms)=>{const id=nextTimer++;timers.set(id,{fn,ms});return id;},
-    clearTimeout:id=>timers.delete(id)
-  };
-  vm.runInNewContext(stage,sandbox,{timeout:3000});
-  const click=kind=>{
-    const selector=kind==="enter"?"[data-enter-lab]":
-      kind==="watch"?"[data-watch-intro],[data-replay-intro]":
-      kind==="skip"?"[data-film-skip]":"[data-open-landing]";
-    const clicked=button(kind);
-    listeners.click({target:{closest:s=>s===selector?clicked:null},preventDefault:()=>{}});
-  };
-  return {landing,film,app,body,stored,timers,focused,click,get assigned(){return locAssigned;}};
-}
-test("Enter opens workspace immediately; intro is optional and returns to app",()=>{
-  const v=makeRuntime();
-  assert.equal(v.landing.hidden,false);
-  assert.equal(v.app.inert,true);
-  assert.equal(v.film.hidden,true);
-  v.click("enter");
-  assert.equal(v.landing.hidden,true);
-  assert.equal(v.app.inert,false);
-  assert.equal(v.stored.get("qcds-security-lab:entered-session"),"1");
-  v.click("watch");
-  assert.equal(v.film.hidden,false);
-  assert.equal(v.film.classList.contains("gw-film-playing"),true);
-  v.click("skip");
-  assert.equal(v.film.hidden,true);
-  assert.equal(v.app.inert,false);
-});
-test("Watch intro from landing returns to landing, not a second gate",()=>{
-  const v=makeRuntime();
-  v.click("watch");
-  assert.equal(v.landing.hidden,true);
-  assert.equal(v.film.hidden,false);
-  v.click("skip");
-  assert.equal(v.landing.hidden,false);
-  assert.equal(v.app.inert,true);
-  v.click("enter");
-  assert.equal(v.app.inert,false);
-});
-test("repeat visits and direct-entry pages do not auto-show the landing",()=>{
-  const returning=makeRuntime({sessionEntered:true});
-  assert.equal(returning.landing.hidden,false);
-  assert.equal(returning.app.inert,true);
-  const direct=makeRuntime({landingPresent:false,direct:true});
-  assert.equal(direct.app.inert,false);
-  direct.click("watch");
-  assert.equal(direct.film.hidden,false);
-  direct.click("skip");
-  assert.equal(direct.app.inert,false);
-});
-
-test("wing tips move smoothly without separating the original eagle from its shoulders",()=>{
-  const shader=gpu.slice(gpu.indexOf("const VS ="),gpu.indexOf("const FS ="));
-  assert.match(shader,/leftTip = 1\.0 - smoothstep\(84\.0,492\.0,source\.x\)/);
-  assert.match(shader,/rightTip = smoothstep\(584\.0,933\.0,source\.x\)/);
-  assert.match(shader,/float left = wingMask \* leftTip \* u_motion/);
-  assert.match(shader,/float right = wingMask \* rightTip \* u_motion/);
-  assert.match(shader,/pos\.y -= 44\.0\*lPhase\*left \+ 43\.0\*rPhase\*right/);
-  assert.match(shader,/headWeight=exp\(-dot\(hd,hd\)\*2\.55\)/);
-  assert.doesNotMatch(shader,/turn\(|mix\(p,turn/);
-  assert.doesNotMatch(index,/gw-film-ground-art|gw-vector-wing|gw-eagle-wing-left/);
-});
-
-test("canonical landing always displays even after an earlier entry; image is eager and CSS fail-visible",()=>{
-  assert.match(index,/data-entry="landing"/);
   assert.match(index,/class="gw-landing-art"/);
-  assert.match(index,/data-enter-lab/);
-  assert.match(index,/data-watch-intro/);
-  assert.match(index,/glasswing-visible-v124\.css/);
-  assert.match(index,/loading="eager" decoding="async" src="\.\/glasswing-original-traced-v122.svg/);
-  assert.match(visibleCss,/#gw-landing:not\(\[hidden\]\)/);
-  assert.match(visibleCss,/#gw-film:not\(\[hidden\]\)/);
-  assert.match(gpu,/render\(0,0\);/);
-  assert.match(gpu,/if\(gl\.getError\(\)!==gl\.NO_ERROR\)/);
-  assert.match(gpu,/canvas\.replaceWith\(image\)/);
-  assert.ok(gpu.indexOf("render(0,0);") < gpu.indexOf("image.replaceWith(canvas);"));
+  assert.match(index,/data-entry="landing"/);
+  assert.match(index,/data-release="1\.25\.0"/);
+});
+test("landing preserves ALL of the originally approved eagle instead of cropping it",()=>{
+  assert.match(index,/glasswing-approved\.webp\?v=1\.25\.0/);
+  assert.match(css,/\.gw-landing-art img \{[^}]*object-fit:contain/);
+  assert.match(css,/aspect-ratio:1672\/941/);
+  assert.match(css,/@media\(max-width:720px\)/);
+  assert.match(css,/\.gw-landing-actions\{width:100%;display:grid;grid-template-columns:1fr/);
+});
+test("actual user-reference cinematic video contains moving frames and is shipped",()=>{
+  assert.match(index,/id="gw-film-video"/);
+  assert.match(index,/glasswing-flight-v125\.mp4/);
+  assert.ok(video.length>1_000_000);
+  assert.equal(video.subarray(4,8).toString(),"ftyp");
+  assert.ok(video.includes(Buffer.from("moov")));
+  assert.match(build,/'\.mp4'/);
+  assert.match(worker,/const VERSION = '1\.25\.0'/);
+});
+test("no sliced wing images, warped geometry or second ghost bird are loaded",()=>{
+  assert.doesNotMatch(index,/glasswing-mesh-v12|glasswing-rig-v121|glasswing-cinematic-v120\.css|gw-film-flight|gw-film-background|gw-film-arc/);
+  assert.doesNotMatch(index,/glasswing-original-traced-v122\.svg/);
+  assert.doesNotMatch(js,/GlasswingMeshRig|canvas\.getContext|WebGL|DOMParser|clip-path|sessionStorage/);
+  assert.doesNotMatch(css,/\.gw-film-ground-art|\.gw-film-arc|\.gw-film-particles/);
+  assert.match(css,/\.gw-film-video \{[^}]*object-fit:contain/);
+});
+test("full-size intro is a separate fixed fullscreen overlay, never embedded in the workspace",()=>{
+  assert.match(css,/#gw-landing,#gw-film\{position:fixed;inset:0/);
+  assert.match(index,/<div id="app">/);
+  assert.match(consumer,/class="gw-lab-heading"/);
+  assert.doesNotMatch(consumer,/gw-home-poster|gw-home-feature/);
+  assert.match(app,/glasswing-brand-mark/);
+  assert.match(index,/data-film-skip/);
+  assert.match(index,/playsinline/);
+  assert.match(index,/glasswing-screen-v125\.js/);
+  assert.match(index,/glasswing-screen-v125\.css/);
+});
+test("service-worker refresh preserves stored investigations",()=>{
+  assert.doesNotMatch(js,/localStorage\.(removeItem|clear)|indexedDB\.deleteDatabase|caches\.delete|unregister\(\)/);
+  assert.match(js,/if\(landing\)landing\.hidden=false/);
+  assert.match(js,/setBlocked\(!!landing\)/);
+  assert.match(js,/video\.addEventListener\('ended',conclude\)/);
+});
+
+function simulate(){
+  const handlers={},vh={},calls={play:0,pause:0},values=new Set();
+  const app={inert:false,querySelector:()=>({focus(){}})};
+  const landing={hidden:true,querySelector:()=>({focus(){}})};
+  const film={hidden:true,classList:{add:x=>values.add(x),remove:x=>values.delete(x),contains:x=>values.has(x)},querySelector:()=>({focus(){}})};
+  const video={currentTime:0,muted:false,addEventListener:(k,fn)=>vh[k]=fn,
+    play:()=>{calls.play++;return Promise.resolve();},pause:()=>{calls.pause++;}};
+  const body={classList:{toggle:(k,v)=>values.has(k)?(v?null:values.delete(k)):(v?values.add(k):null)}};
+  const doc={body,getElementById:id=>({"gw-landing":landing,"gw-film":film,"gw-film-video":video,"app":app})[id]||null,
+    addEventListener:(kind,fn)=>{handlers[kind]=fn}};
+  let lastTimer=null; const box={document:doc,location:{assign(){}},console,
+    setTimeout:(fn)=>{lastTimer=fn;return 1},clearTimeout:()=>{}};
+  vm.runInNewContext(js,box,{timeout:2000});
+  const click=selector=>handlers.click({target:{closest:q=>q===selector?{}:null},preventDefault(){}});
+  return{landing,film,video,app,calls,click,vh,runTimer:()=>lastTimer?.(),values};
+}
+test("entry is visible on first/repeat visits; Watch intro starts true video and Skip returns",()=>{
+  const v=simulate();
+  assert.equal(v.landing.hidden,false);
+  assert.equal(v.app.inert,true);
+  assert.equal(v.film.hidden,true);
+  v.click('[data-watch-intro],[data-replay-intro]');
+  assert.equal(v.calls.play,1);
+  assert.equal(v.film.hidden,false);
+  assert.equal(v.landing.hidden,true);
+  v.click('[data-film-skip]');
+  assert.equal(v.landing.hidden,false);
+  assert.equal(v.film.hidden,true);
+  v.click('[data-enter-lab]');
+  assert.equal(v.app.inert,false);
+  assert.equal(v.landing.hidden,true);
+});
+test("movie ending shows transition then returns to landing, without another intro gate",()=>{
+  const v=simulate();
+  v.click('[data-watch-intro],[data-replay-intro]');
+  v.vh.ended();
+  assert.equal(v.values.has("gw-film-ending"),true);
+  v.runTimer();
+  assert.equal(v.film.hidden,true);
+  assert.equal(v.landing.hidden,false);
 });
