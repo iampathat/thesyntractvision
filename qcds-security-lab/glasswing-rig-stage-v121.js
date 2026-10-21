@@ -87,7 +87,7 @@
     // The SVG eagle has independently animated anatomical groups, not a
     // flat image wobble. Replay also resets the wing, head and tail cycle.
     const activeRig = film.querySelector(".gw-vector-inline .gw-eagle-playing");
-    if (activeRig) {
+    if (activeRig?.classList) {
       activeRig.classList.remove("gw-eagle-playing");
       void activeRig.getBoundingClientRect();
       activeRig.classList.add("gw-eagle-playing");
