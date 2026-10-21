@@ -45,3 +45,28 @@ test("reduced-motion users get a still eagle rather than an instant skip", () =>
   assert.match(js, /\[data-replay-intro\]/);
   assert.match(js, /q-intro-skip/);
 });
+
+
+test("glass eagle is permanently visible on Home — not just the timed intro", () => {
+  const home=read("consumer-ui.js");
+  const style=read("consumer.css");
+  const bird=read("glass-eagle.svg");
+  const page=read("index.html");
+  assert.match(home, /class="consumer-eagle"/);
+  assert.match(home, /class="consumer-eagle-art"/);
+  assert.match(home, /src="\.\/glass-eagle\.svg\?v=1\.14\.8"/);
+  assert.doesNotMatch(home, /class="consumer-orbit"/);
+  assert.match(style, /\.consumer-eagle-art\s*\{/);
+  assert.match(style, /\.consumer-home \.consumer-hero/);
+  assert.match(style, /flex-direction:column-reverse/);
+  assert.match(page, /consumer\.css\?v=1\.14\.8/);
+  assert.match(bird, /<svg[^>]+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
+  assert.match(bird, /<animateTransform/g);
+  assert.match(bird, /values="-9 448 240;10 448 240;-9 448 240"/);
+  assert.match(bird, /values="9 512 240;-10 512 240;9 512 240"/);
+  assert.match(bird, /gw-neon-bolt-left/);
+  assert.match(bird, /gw-neon-bolt-right/);
+  assert.match(bird, /gw-wing-nodes/);
+  assert.match(bird, /@keyframes gw-lightning/);
+  assert.match(bird, /prefers-reduced-motion/);
+});
