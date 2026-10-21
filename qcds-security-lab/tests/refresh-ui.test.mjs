@@ -30,9 +30,11 @@ function ui({approved=false,registrationHangs=false,fastTimers=false}={}) {
   const cacheNames=new Set(['qcds-security-app-previous','other-app-cache']);
   const deleted=[];
   const navigations=[];
-  for(const name of ['refresh','reset','backup','status']){
+  for(const name of ['refresh','reset','backup','status','openLab','launchHint']){
     buttons[name]={
       id:name,disabled:false,textContent:'',dataset:{},
+      href:'',classList:{isHidden:true,remove(name){if(name==='hidden')this.isHidden=false;}},
+      focus(){this.focused=true;},
       addEventListener:(event,handler)=>{eventHandlers[name+':'+event]=handler;}
     };
   }
@@ -82,8 +84,9 @@ test('normal refresh reloads app but preserves all browser investigations and ot
   assert.equal(x.local.has('other-product:case'),true);
   assert.deepEqual(x.deleted,['qcds-security-app-previous']);
   assert.equal(x.unregisterCount,1);
-  assert.equal(x.navigations.length,1);
-  assert.match(x.navigations[0],/\.\/index\.html\?updated=/);
+  assert.equal(x.navigations.length,0,'Refresh must not navigate without the user clicking Open');
+  assert.equal(x.button.openLab.classList.isHidden,false);
+  assert.match(x.button.openLab.href,/\.\/index\.html\?updated=/);
 });
 
 test('canceling full reset removes nothing and does not navigate',async()=>{
@@ -109,7 +112,9 @@ test('confirmed full reset deletes only Security Lab state and cache',async()=>{
   assert.equal(x.session.has('other-product:session'),true);
   assert.deepEqual(x.deleted,['qcds-security-app-previous']);
   assert.equal(x.unregisterCount,1);
-  assert.equal(x.navigations.length,1);
+  assert.equal(x.navigations.length,0);
+  assert.equal(x.button.openLab.classList.isHidden,false);
+  assert.match(x.button.openLab.href,/\.\/index\.html\?updated=/);
 });
 
 test('stuck service worker lookup times out and shows a retryable error',async()=>{
