@@ -477,7 +477,7 @@ jobs:
           raw=path.read_text()
           root=ET.fromstring(raw)
           assert root.attrib.get('viewBox')=='0 0 960 502'
-          facets=len(re.findall(r'<path d="M\\d+ \\d+ \\d+ \\d+ \\d+ \\d+Z" fill="#[0-9a-f]{6}"',raw))
+          facets=len(re.findall(r'<path d="M\d+ \d+ \d+ \d+ \d+ \d+Z" fill="#[0-9a-f]{6}"',raw))
           assert facets>=20000,facets
           assert '<image' not in raw
           print('ORIGINAL ARTWORK VECTOR FACETS VERIFIED',facets)
