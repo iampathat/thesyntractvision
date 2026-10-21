@@ -1,76 +1,75 @@
-/* Project Glasswing: dedicated fullscreen landing and REAL eagle motion cinema.
-   Theory and creation by Patrik Sundblom, OpenAI / ChatGPT as R&D support.
-   No mesh distortion, clipped sprites, or blocking service-worker operations. */
+/* Project Glasswing v1.26 — ONE cinematic intro, then the Security Lab.
+   Theory and creation by Patrik Sundblom.
+   with OpenAI / ChatGPT as research & development support.
+   The cinematic retains the existing video artwork; no second landing screen. */
 (()=>{
- 'use strict';
- const landing=document.getElementById('gw-landing');
- const film=document.getElementById('gw-film');
- const video=document.getElementById('gw-film-video');
- const app=document.getElementById('app');
- let fromLanding=false,returnFocus=null,endTimer=0;
- const setBlocked=blocked=>{
-   document.body.classList.toggle('gw-entry-active',blocked);
-   if(app)app.inert=blocked;
- };
- const showLanding=()=>{
-   if(film){film.hidden=true;film.classList.remove('gw-film-ending');}
-   if(landing) landing.hidden=false;
-   setBlocked(!!landing);
- };
- const enter=()=>{
-   if(video){video.pause();video.currentTime=0;}
-   if(film)film.hidden=true;
-   if(landing)landing.hidden=true;
-   clearTimeout(endTimer);
-   setBlocked(false);
-   document.getElementById('app')?.querySelector('a[href="#home"],button[data-action="new"]')?.focus?.({preventScroll:true});
- };
- const finish=()=>{
-   if(!film||film.hidden)return;
-   if(video)video.pause();
-   clearTimeout(endTimer);
-   film.hidden=true;
-   film.classList.remove('gw-film-ending');
-   if(fromLanding && landing){showLanding();landing.querySelector('[data-enter-lab]')?.focus?.({preventScroll:true});}
-   else {setBlocked(false);returnFocus?.focus?.({preventScroll:true});}
-   returnFocus=null;
- };
- const conclude=()=>{
-   if(!film||film.hidden)return;
-   film.classList.add('gw-film-ending');
-   clearTimeout(endTimer);
-   endTimer=setTimeout(finish,1000);
- };
- const play=fromButton=>{
-   if(!film||!video)return;
-   fromLanding=!!landing&&!landing.hidden;
-   returnFocus=fromButton||null;
-   if(landing)landing.hidden=true;
-   film.classList.remove('gw-film-ending');
-   film.hidden=false;
-   setBlocked(true);
-   video.currentTime=0;
-   video.muted=false;
-   video.play().catch(err=>{
-      console.warn('Glasswing cinematic could not start:',err);
-      // Nothing auto-disappears if playback is blocked: clear Skip remains usable.
-      const note=film.querySelector('[data-film-status]');
-      if(note){note.textContent='Playback unavailable. Select Skip intro to continue.';note.hidden=false;}
-   });
-   film.querySelector('[data-film-skip]')?.focus?.({preventScroll:true});
- };
- if(video){video.addEventListener('ended',conclude);video.addEventListener('error',()=>{
+  'use strict';
+  const film=document.getElementById('gw-film');
+  const video=document.getElementById('gw-film-video');
+  const app=document.getElementById('app');
+  let finishTimer=0,returnFocus=null;
+  const status=(message)=>{
     const note=film?.querySelector('[data-film-status]');
-    if(note){note.textContent='The film could not load. Select Skip intro to continue.';note.hidden=false;}
- });}
- if(landing)landing.hidden=false; // ALWAYS visible, no sessionStorage surprises.
- if(film)film.hidden=true;
- setBlocked(!!landing);
- document.addEventListener('click',e=>{
-   const go=e.target.closest('[data-enter-lab]');if(go){e.preventDefault();enter();return;}
-   const watch=e.target.closest('[data-watch-intro],[data-replay-intro]');if(watch){e.preventDefault();play(watch);return;}
-   const skip=e.target.closest('[data-film-skip]');if(skip){e.preventDefault();finish();return;}
-   const home=e.target.closest('[data-open-landing]');if(home){e.preventDefault();if(landing)showLanding();else location.assign('./?welcome=1');}
- });
- document.addEventListener('keydown',e=>{if(e.key==='Escape'&&film&&!film.hidden)finish();});
+    if(note){note.textContent=message;note.hidden=!message;}
+  };
+  const block=(yes)=>{
+    document.body.classList.toggle('gw-entry-active',yes);
+    if(app)app.inert=yes;
+  };
+  const enter=()=>{
+    clearTimeout(finishTimer);
+    if(video){video.pause();try{video.currentTime=0;}catch{}}
+    if(film){film.hidden=true;film.classList.remove('gw-film-ending');}
+    block(false);
+    if(returnFocus?.isConnected)returnFocus.focus({preventScroll:true});
+    // App content is created asynchronously; no forced focus before it exists.
+    returnFocus=null;
+  };
+  const finish=()=>{
+    if(!film||film.hidden)return;
+    clearTimeout(finishTimer);
+    film.classList.add('gw-film-ending');
+    finishTimer=setTimeout(enter,430);
+  };
+  const play=(fromButton=null)=>{
+    if(!film||!video){enter();return;}
+    returnFocus=fromButton;
+    clearTimeout(finishTimer);
+    film.hidden=false;
+    film.classList.remove('gw-film-ending');
+    block(true);
+    status('');
+    video.muted=true; // Required for reliable mobile autoplay.
+    video.playsInline=true;
+    try{video.currentTime=0;}catch{}
+    const started=video.play();
+    if(started?.catch)started.catch(err=>{
+      console.warn('Project Glasswing intro playback unavailable',err);
+      status('Video could not start. Choose Enter Security Lab to continue.');
+    });
+  };
+  if(video){
+    video.addEventListener('ended',finish);
+    video.addEventListener('error',()=>{
+      status('Intro video is unavailable. Choose Enter Security Lab to continue.');
+    });
+  }
+  document.addEventListener('click',event=>{
+    const target=event.target;
+    const enterButton=target.closest('[data-film-skip],[data-enter-lab]');
+    if(enterButton){event.preventDefault();enter();return;}
+    const replay=target.closest('[data-watch-intro],[data-replay-intro]');
+    if(replay){event.preventDefault();play(replay);return;}
+  });
+  document.addEventListener('keydown',event=>{
+    if(event.key==='Escape'&&film&&!film.hidden)enter();
+  });
+  const params=new URLSearchParams(location.search);
+  if(params.has('skip_intro')||params.has('settings')){
+    if(film)film.hidden=true;
+    block(false);
+  }else{
+    // There is no secondary landing screen and no session-storage intro gate.
+    play();
+  }
 })();
