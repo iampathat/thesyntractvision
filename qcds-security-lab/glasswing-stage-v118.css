@@ -240,3 +240,100 @@ body.gw-entry-active{overflow:hidden}
   .gw-film-title{animation:none!important;opacity:1;transform:translate(-50%,-50%)!important}
   .gw-film-logo{animation:none!important;opacity:1}
 }
+
+
+/* GLASSWING VECTOR MOTION V119 — the approved eagle is a surface, not a rocking sprite.
+   Wing geometry, wing circuits, node flow and ground defense are independent SVG layers. */
+.gw-landing { overflow-x:hidden; overflow-y:auto; place-items:center; }
+.gw-landing-art { aspect-ratio:auto; min-height:0; display:block; background:#031426; }
+.gw-landing-art img { width:100%;height:auto;max-height:min(65svh,770px);object-fit:contain;object-position:center top; }
+.gw-film { overflow:hidden; }
+.gw-film-flight.gw-vector-flight {
+  width:min(1010px,90vw,calc(61svh * 880 / 459));max-width:none;
+  top:45%;aspect-ratio:880/459;
+  filter:drop-shadow(0 0 17px #65e3ff86);
+}
+.gw-vector-eagle {width:100%;height:100%;display:block;overflow:visible}
+.gw-vector-wing {transform-box:view-box;will-change:transform}
+.gw-vector-wing-left {transform-origin:430px 230px}
+.gw-vector-wing-right {transform-origin:450px 230px}
+.gw-film-playing .gw-vector-wing-left {animation:gw-v-wing-l .74s ease-in-out infinite alternate}
+.gw-film-playing .gw-vector-wing-right {animation:gw-v-wing-r .74s ease-in-out infinite alternate}
+.gw-vector-current {fill:none;stroke:#abffff;stroke-width:2.6;stroke-dasharray:17 80;stroke-linecap:round;filter:drop-shadow(0 0 7px #28d9ff)}
+.gw-vector-current-delay {stroke:#bdffb1}
+.gw-film-playing .gw-vector-current {animation:gw-v-current 1.3s linear infinite}
+.gw-film-playing .gw-vector-current-delay {animation-delay:.4s}
+.gw-vector-nodes circle {fill:#acfdff;stroke:#efffff;stroke-width:.6}
+.gw-film-playing .gw-vector-nodes circle {animation:gw-v-node-pulse .6s ease-in-out infinite alternate}
+.gw-vector-nodes circle:nth-child(2n) {animation-delay:.24s}
+.gw-vector-travelers circle {filter:drop-shadow(0 0 7px #bfffff)}
+.gw-vector-heart-core {opacity:.9}
+.gw-film-playing .gw-vector-heart-core {animation:gw-v-heart .65s ease-in-out infinite alternate}
+@keyframes gw-v-wing-l {from{transform:rotate(4deg)}to{transform:rotate(-6deg)}}
+@keyframes gw-v-wing-r {from{transform:rotate(-4deg)}to{transform:rotate(6deg)}}
+@keyframes gw-v-current {from{stroke-dashoffset:110}to{stroke-dashoffset:-110}}
+@keyframes gw-v-node-pulse {from{opacity:.35}to{opacity:1;filter:drop-shadow(0 0 9px #caffff)}}
+@keyframes gw-v-heart {from{opacity:.35;transform:scale(.94);transform-origin:440px 274px}to{opacity:1;transform:scale(1.15);transform-origin:440px 274px}}
+.gw-film-playing .gw-vector-flight {animation:gw-v-flight 5.65s cubic-bezier(.22,.65,.25,1) both}
+@keyframes gw-v-flight {
+  0%{opacity:0;transform:translate(-50%,-32%) scale(.66)}
+  12%{opacity:1;transform:translate(-50%,-47%) scale(.93)}
+  28%,43%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  58%{opacity:1;transform:translate(-53%,-55%) scale(.8)}
+  76%{opacity:1;transform:translate(calc(-50% - 35vw),calc(-50% - 32vh)) scale(.17)}
+  86%,100%{opacity:0;transform:translate(calc(-50% - 35vw),calc(-50% - 32vh)) scale(.15)}
+}
+.gw-film-ground-art {
+ position:absolute;bottom:0;left:0;right:0;height:47%;z-index:1;pointer-events:none;
+ background-image:linear-gradient(to bottom,#011020 0%,#03243a3d 24%,#082b4277 64%,#04192add 100%),url("./glasswing-approved.webp");
+ background-size:cover;background-position:center bottom;
+ mask-image:linear-gradient(to bottom,transparent,#000 32%,#000 100%);
+ opacity:.76;filter:saturate(1.1) contrast(1.12);
+}
+.gw-film-defense {
+ position:absolute;inset:0;z-index:2;width:100%;height:100%;pointer-events:none;
+ filter:drop-shadow(0 0 8px #16bfff65);
+}
+.gw-film-attack-beams {opacity:0}
+.gw-film-attack-beams path {fill:none;stroke-linecap:round;stroke-dasharray:20 18;animation:gw-v-current .95s linear infinite}
+.gw-film-playing .gw-film-attack-beams {animation:gw-v-beams 3.4s .3s both}
+@keyframes gw-v-beams {0%,10%,88%,100%{opacity:0}25%,73%{opacity:.95}}
+.gw-film-ground-grid {fill:none;stroke:#3bdbff;stroke-width:1;opacity:.3}
+.gw-film-ground-targets {fill:none;stroke:#a0feff;stroke-width:2;opacity:0}
+.gw-film-playing .gw-film-ground-targets {animation:gw-v-targets 3s .6s both}
+@keyframes gw-v-targets {0%,13%,100%{opacity:0}35%,81%{opacity:.95}}
+.gw-film-ground-targets circle:nth-child(2){stroke-dasharray:12 16}
+.gw-film-protection {fill:none;stroke:#8cfaff;stroke-width:5;stroke-dasharray:24 18;opacity:0}
+.gw-film-playing .gw-film-protection{animation:gw-v-shield 3.1s 1.4s ease-out both}
+@keyframes gw-v-shield {0%{opacity:0;stroke-dashoffset:520}35%,66%{opacity:.85;stroke-dashoffset:0}100%{opacity:0;stroke-dashoffset:-180}}
+@media(max-width:700px){
+ .gw-landing {padding:max(8px,env(safe-area-inset-top)) 8px max(8px,env(safe-area-inset-bottom));}
+ .gw-landing-shell{width:100%;margin:auto}
+ .gw-landing-art{aspect-ratio:auto;min-height:0}
+ .gw-landing-art img {width:100%;height:auto;max-height:43svh;object-fit:contain;object-position:center top}
+ .gw-landing-content{padding:16px;gap:12px}
+ .gw-landing-footer{padding:9px 16px}
+ .gw-film-flight.gw-vector-flight{width:min(96vw,calc(39svh * 880 / 459));top:40%}
+ .gw-film-title{top:69%;left:50%;width:94vw}
+ .gw-film-title h2{font-size:clamp(46px,12vw,76px)}
+ .gw-film-title p{font-size:clamp(20px,6vw,30px)}
+ .gw-film-logo{left:12px;top:calc(52px + env(safe-area-inset-top));width:min(80px,22vw)}
+ .gw-film-credit{bottom:calc(10px + env(safe-area-inset-bottom));font-size:9px}
+ .gw-film-ground-art{height:46%;opacity:.58}
+ @keyframes gw-v-flight {
+  0%{opacity:0;transform:translate(-50%,-35%) scale(.65)}
+  15%{opacity:1;transform:translate(-50%,-48%) scale(.92)}
+  29%,42%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  58%{opacity:1;transform:translate(-54%,-52%) scale(.78)}
+  78%{opacity:1;transform:translate(calc(-50% - 33vw),calc(-50% - 34vh)) scale(.18)}
+  88%,100%{opacity:0;transform:translate(calc(-50% - 33vw),calc(-50% - 34vh)) scale(.15)}
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ .gw-vector-wing,.gw-vector-current,.gw-vector-heart-core,.gw-vector-nodes circle,
+ .gw-film-defense *,.gw-film-flight.gw-vector-flight {animation:none!important}
+ .gw-vector-travelers{display:none}
+ .gw-film-attack-beams,.gw-film-ground-targets{opacity:.4}
+ .gw-film-protection{opacity:.45}
+ .gw-film-flight.gw-vector-flight {opacity:1!important;transform:translate(-50%,-50%) scale(.9)!important}
+}
