@@ -15,13 +15,7 @@ It also deliberately does **not** equate more candidates with more truth. Candid
 
 ## Open it
 
-Serve the repository and open:
-
-```text
-/qcds-security-lab/glasswing.html
-```
-
-The page can load the active Security Lab case from browser localStorage or use one of the worked systems.
+Serve the repository and open `/qcds-security-lab/`, then choose **Perspectives & lab → Compare inference methods**. There is no standalone Glasswing page. This integrated view runs on the already selected Security Lab investigation, including worked systems and user cases.
 
 ## What the experiment exposes
 
