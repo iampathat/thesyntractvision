@@ -1,4 +1,4 @@
-// Project Glasswing v1.25.2 — cinematic wingbeats and a single real landing.
+// Project Glasswing v1.25.3 — cinematic wingbeats and a single real landing.
 // Theory and creation by Patrik Sundblom — OpenAI / ChatGPT R&D support.
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -22,7 +22,7 @@ test("every existing entry and fresh URL serves the identical complete landing",
   assert.match(index,/data-watch-intro/);
   assert.match(index,/class="gw-landing-art"/);
   assert.match(index,/data-entry="landing"/);
-  assert.match(index,/data-release="1\.25\.2"/);
+  assert.match(index,/data-release="1\.25\.3"/);
 });
 test("landing preserves ALL of the originally approved eagle instead of cropping it",()=>{
   assert.match(index,/glasswing-approved\.webp\?v=1\.25\.0/);
@@ -38,7 +38,7 @@ test("actual user-reference cinematic video contains moving frames and is shippe
   assert.equal(video.subarray(4,8).toString(),"ftyp");
   assert.ok(video.includes(Buffer.from("moov")));
   assert.match(build,/'\.mp4'/);
-  assert.match(worker,/const VERSION = '1\.25\.2'/);
+  assert.match(worker,/const VERSION = '1\.25\.3'/);
 });
 test("no sliced wing images, warped geometry or second ghost bird are loaded",()=>{
   assert.doesNotMatch(index,/glasswing-mesh-v12|glasswing-rig-v121|glasswing-cinematic-v120\.css|gw-film-flight|gw-film-background|gw-film-arc/);
@@ -113,7 +113,7 @@ test("Home artwork is always bounded and mobile layout never relies on image int
   assert.match(css,/\.consumer-home \.gw-lab-heading-buttons\s*\{[^}]*display:flex/);
   assert.match(css,/@media\(max-width:700px\)/);
   assert.match(css,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
-  assert.match(index,/glasswing-screen-v125\.css\?v=1\.25\.2/);
+  assert.match(index,/glasswing-screen-v125\.css\?v=1\.25\.3/);
   assert.match(consumer,/class="gw-lab-heading-mark"/);
 });
 
@@ -125,7 +125,7 @@ test("Home image stays 76px when an offline CSS cache is missing or stale",()=>{
   assert.match(index,/width:76px!important;height:76px!important/);
   assert.match(index,/\.gw-home-feature,[\s\S]*?display:none!important/);
   assert.match(index,/@media \(max-width:520px\)/);
-  assert.match(index,/href="\.\/glasswing-screen-v125\.css\?v=1\.25\.2"/);
+  assert.match(index,/href="\.\/glasswing-screen-v125\.css\?v=1\.25\.3"/);
 });
 test("offline worker refreshes styles/scripts online and retains offline fallback",()=>{
   assert.match(worker,/req\.destination === 'style'/);
@@ -133,4 +133,30 @@ test("offline worker refreshes styles/scripts online and retains offline fallbac
   assert.match(worker,/await fetch\(req, \{cache:'no-store'\}\)/);
   assert.match(worker,/await cache\.put\(key\.href, fresh\.clone\(\)\)/);
   assert.match(worker,/const saved = await cache\.match\(key\.href\)/);
+});
+
+
+test("Refresh app appears on landing only, with intact recovery route",()=>{
+  assert.match(index,/<a class="gw-refresh-link" href="\.\/update-lab\.html"/);
+  assert.match(css,/\.gw-landing-footer \.gw-refresh-link/);
+  assert.doesNotMatch(consumer,/href="\.\/update-lab\.html">Refresh app/);
+  assert.match(consumer,/data-app-install/);
+  assert.match(index,/data-release="1\.25\.3"/);
+  assert.match(worker,/const VERSION = '1\.25\.3'/);
+});
+
+test("Mobile investigation pages have only one fixed bottom nav and no obscured text",()=>{
+  assert.match(css,/body\.glasswing-visual \.question-position\s*\{\s*position:static/);
+  assert.match(css,/body\.glasswing-visual \.question-navigation\s*\{\s*position:static/);
+  assert.match(css,/body\.glasswing-visual \.consumer-bottom-nav\s*\{/);
+  assert.match(css,/background:#071a2b/);
+  assert.match(css,/backdrop-filter:none/);
+  assert.match(css,/body\.glasswing-visual\.investigation-mode \.app-body>main\s*\{/);
+  assert.match(css,/margin:16px auto calc\(87px/);
+  assert.match(css,/grid-template-columns:minmax\(0,auto\) minmax\(0,1fr\)/);
+});
+
+test("Home cannot mount the deprecated oversized eagle artwork",()=>{
+  assert.match(css,/\.consumer-home img\[src\*="glasswing-approved\.webp"\]/);
+  assert.match(consumer,/width="76" height="76"/);
 });
