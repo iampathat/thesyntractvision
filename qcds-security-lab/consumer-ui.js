@@ -9,26 +9,19 @@ export function homeView({project,caseId,question,model,cases,archived,icon}) {
   const unknown=Object.values(project.input.flags).filter(v=>v===null).length;
   const liveRecords=model.findings.reduce((n,f)=>n+f.records.length,0);
   return `<div class="consumer-home">
-    <section class="gw-home-feature" aria-label="Project Glasswing · QCDS Security Lab">
-      <div class="gw-home-art">
-        <img class="gw-home-poster" src="./glasswing-approved.webp?v=1.16.0" alt="Project Glasswing — a powerful icy-blue crystalline eagle with lit internal security nodes, soaring above a neon circuit horizon; QCDS Security Lab." fetchpriority="high" decoding="async">
-        <div class="gw-home-energy" aria-hidden="true"><i></i><i></i><i></i></div>
-        <button class="gw-home-replay" type="button" data-replay-intro>${icon('play')} Replay eagle intro</button>
-      </div>
-      <div class="gw-home-controls">
-        <div class="gw-home-copy">
-          <span class="eyebrow">PROJECT GLASSWING · SECURITY IN EVERY DIMENSION</span>
-          <h1>QCDS Security Lab</h1>
-          <p>Explore attack paths, challenge assumptions and verify the evidence — one coherent investigation.</p>
-        </div>
-        <div class="gw-home-buttons">
-          <button class="button primary" type="button" data-action="new">${icon('plus')} Start investigation</button>
-          <a class="button" href="#examples">Explore worked examples ${icon('arrow')}</a>
+    <section class="gw-lab-heading" aria-label="QCDS Security Lab workspace">
+      <div class="gw-lab-heading-main">
+        <img class="gw-lab-heading-mark" src="./glasswing-mark.webp?v=1.18.0" alt="Project Glasswing crystal eagle">
+        <div>
+          <span class="eyebrow">QCDS · PROJECT GLASSWING</span>
+          <h1>Security Lab</h1>
+          <p>Your investigations, evidence, and QCDS inference in one place.</p>
         </div>
       </div>
-      <div class="gw-home-fabric" aria-label="QCDS inference stages">
-        <span><b>01</b> Conditions</span><i></i><span><b>02</b> Evolution</span><i></i>
-        <span><b>03</b> Inference</span><i></i><span><b>04</b> Truth-alignment</span>
+      <div class="gw-lab-heading-buttons">
+        <button type="button" class="button primary" data-action="new">${icon("plus")} New investigation</button>
+        <button type="button" class="button" data-watch-intro>${icon("play")} Watch intro</button>
+        <button type="button" class="button" data-open-landing>Landing</button>
       </div>
     </section>
     <div class="consumer-trust"><span>${icon('shield')} Saved on your device</span><span>${icon('check')} No account required</span><button data-app-install class="text-button">Install app ↗</button><a class="text-link" href="./update-lab.html">Refresh app ↗</a><span data-offline-status></span></div>
