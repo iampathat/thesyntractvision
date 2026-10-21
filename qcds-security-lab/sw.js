@@ -1,6 +1,6 @@
 // QCDS Security Lab — offline-first app cache with user-approved updates.
 // Copyright © 2026 Patrik Sundblom. R&D support: OpenAI / ChatGPT.
-const VERSION = '1.25.1';
+const VERSION = '1.25.2';
 const PREFIX = 'qcds-security-app-';
 const CACHE = PREFIX + VERSION;
 const root = new URL('./', self.location.href);
@@ -43,13 +43,19 @@ self.addEventListener('fetch', event => {
       key.pathname === root.pathname + 'index.html' ||
       key.pathname === root.pathname + 'enter.html' ||
       key.pathname === root.pathname + 'open-glasswing-116.html';
-    if (isDocument) {
+    // A fresh page must never be combined with old JavaScript or CSS.
+    // Offline cache remains the fallback when the device has no connection.
+    const isCode = req.destination === 'style' || req.destination === 'script';
+    if (isDocument || isCode) {
       try {
         const fresh = await fetch(req, {cache:'no-store'});
-        if (fresh.ok) return fresh;
-      } catch { /* Offline: fall back to versioned local assets. */ }
-      const cachedDocument = await cache.match(key.href);
-      return cachedDocument || Response.error();
+        if (fresh.ok) {
+          if (isCode) await cache.put(key.href, fresh.clone());
+          return fresh;
+        }
+      } catch { /* Offline: use the last compatible cached asset. */ }
+      const saved = await cache.match(key.href);
+      return saved || Response.error();
     }
     const cached = await cache.match(key.href);
     return cached || fetch(req);
