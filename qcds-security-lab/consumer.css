@@ -148,3 +148,97 @@
 
 .consumer-interview-help { margin:18px 0 12px; padding:12px 14px; background:#1b2a24; }
 .consumer-interview-help > summary { font-size:13px; cursor:pointer; color:#bfd7b5; }
+
+
+/* Project Glasswing: the eagle is a permanent, visible Home hero, not a
+   disappearing intro-only effect. The SVG contains its own wing animation. */
+.consumer-home .consumer-hero {
+  grid-template-columns:minmax(0,1fr) minmax(300px,470px);
+  column-gap:clamp(18px,2.8vw,40px);
+}
+.consumer-eagle {
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  min-height:305px;
+  padding:9px 12px 19px;
+  background:radial-gradient(ellipse at center 38%,#164453 0%,#0b2735 40%,#101e28 82%);
+  border:1px solid #508da2;
+  border-radius:21px;
+  overflow:hidden;
+  isolation:isolate;
+  box-shadow:inset 0 0 32px #48deff22,0 8px 24px #0002;
+}
+.consumer-eagle-aura {
+  position:absolute;
+  inset:5% 2% 26%;
+  z-index:-1;
+  background:radial-gradient(ellipse,rgba(159,245,255,.27),rgba(73,180,232,.09) 55%,transparent 72%);
+  filter:blur(14px);
+  pointer-events:none;
+}
+.consumer-eagle-art {
+  display:block;
+  position:relative;
+  width:min(100%,470px);
+  min-height:160px;
+  height:auto;
+  margin:0 auto -2px;
+  flex-shrink:0;
+  object-fit:contain;
+  opacity:1;
+  visibility:visible;
+  filter:drop-shadow(0 0 13px rgba(163,249,255,.52));
+}
+.consumer-eagle-label {
+  display:grid;
+  gap:6px;
+  text-align:center;
+  color:#e5fcff;
+  margin-top:-2px;
+}
+.consumer-eagle-label b {
+  font:750 14px/1.25 ui-monospace,monospace;
+  letter-spacing:.19em;
+}
+.consumer-eagle-label small {
+  font:600 9px/1.5 ui-monospace,monospace;
+  letter-spacing:.12em;
+  color:#b6ddec;
+}
+.consumer-eagle-replay {
+  appearance:none;
+  margin-top:13px;
+  padding:10px 17px;
+  min-height:40px;
+  border:1px solid #78dce7;
+  border-radius:9px;
+  font:650 13px/1.3 system-ui,sans-serif;
+  cursor:pointer;
+  color:#e0fdff;
+  background:#1c4c59;
+}
+.consumer-eagle-replay:hover {background:#2d6875}
+.consumer-eagle-replay:focus-visible {outline:3px solid #beff88;outline-offset:3px}
+@media (max-width:1024px) {
+  .consumer-home .consumer-hero {grid-template-columns:minmax(0,1fr) minmax(250px,330px)}
+  .consumer-eagle {min-height:250px;padding:8px 9px 14px}
+  .consumer-eagle-art {min-height:130px}
+}
+@media (max-width:600px) {
+  .consumer-home .consumer-hero {
+    display:flex;
+    flex-direction:column-reverse;
+    align-items:stretch;
+    gap:20px;
+  }
+  .consumer-eagle {min-height:0;padding:5px 10px 15px;margin-bottom:2px;border-radius:15px}
+  .consumer-eagle-art {width:100%;max-width:460px;min-height:0}
+  .consumer-eagle-label b {font-size:13px}
+  .consumer-eagle-label small {font-size:8px}
+  .consumer-eagle-replay {min-height:44px}
+}
+@media print {.consumer-eagle {break-inside:avoid}}
