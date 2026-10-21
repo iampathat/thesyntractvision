@@ -57,9 +57,10 @@ show retained candidates divided by all candidates in that sector; they are
 not security scores. Framework totals can overlap and are labelled as such.
 Worked cases label their evidence as synthetic throughout the report.
 
-The same renderer supports focused perspective reports and **Project
-Glasswing 1.2.0** exports of its last completed run. Glasswing is available in
-the normal navigation and footer, without a floating link over mobile actions.
+The same renderer supports focused perspective reports. **Project Glasswing** is
+now an integrated inference-depth comparison in **Perspectives & lab → Compare
+inference methods**, using the currently selected investigation. It no longer
+opens a separate page or introduces a second set of forms.
 The local, pinned jsPDF dependency is loaded only when exporting a report.
 
 For release QA, render the browser's PDF in Node with:
@@ -77,9 +78,11 @@ control predicates. Observations bind to the exact resulting scope; STRIDE
 and OWASP project the same changed vector states. The full run and compressed
 distributions export as JSON, with a plain-language Markdown report.
 
-The 3.5-second Q Security Lab introduction is built with CSS 3D and SVG.
-It has an immediate entry button, reduced-motion behavior and an independent
-timeout, so it cannot hold the workspace behind an unfinished animation.
+The 3.5-second Q Security Lab introduction uses a flying **glass raven** for
+Project Glasswing. The raven contains a luminous network of QCDS nodes and
+connections, surrounded by a defensive boundary that deflects incoming attack
+traces. The animation uses CSS and inline SVG, with an immediate enter button,
+reduced-motion support and an independent timeout so it cannot block the lab.
 
 See [DIMENSION_ENGINE.md](./DIMENSION_ENGINE.md) for execution semantics,
 the difference between `?` and true absence, and the classical reference's
@@ -276,7 +279,7 @@ Detailed documents:
 - **Recursive agent** — route → control → bypass → counter-test.
 - **QCDS** — the full condition mask, Attack Vector Fabric, perspective rotation, dimension walking, recursive inference and evidence-bound verification.
 
-Open `/qcds-security-lab/glasswing.html` or use the **Project Glasswing** launcher inside the Lab.
+Open **Perspectives & lab → Compare inference methods** inside the existing Security Lab, or use the **Explore the QCDS engine** section on Home. All three tracks operate on the active investigation without copying data into a second workspace.
 
 Glasswing is a structural comparison harness, not a vendor-model benchmark. It deliberately separates discovery coverage from verification: more candidate routes or vectors do not by themselves mean more true vulnerabilities.
 
