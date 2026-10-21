@@ -444,13 +444,16 @@ jobs:
           test -s _site/qcds-security-lab/glasswing-mark.webp
           test -s _site/qcds-security-lab/glasswing-rig-stage-v121.css
           test -s _site/qcds-security-lab/glasswing-theme-v121.css
-          test -s _site/qcds-security-lab/glasswing-mesh-stage-v123.js
-          test -s _site/qcds-security-lab/glasswing-mesh-v123.js
+          test -s _site/qcds-security-lab/glasswing-mesh-stage-v124.js
+          test -s _site/qcds-security-lab/glasswing-mesh-v124.js
           test -s _site/qcds-security-lab/glasswing-original-traced-v122.svg
           test -s _site/qcds-security-lab/app-stage-v118.js
           test -s _site/qcds-security-lab/consumer-ui-stage-v118.js
           test -s _site/qcds-security-lab/enter.html
+          test -s _site/qcds-security-lab/glasswing-v124.html
+          test -s _site/qcds-security-lab/glasswing-visible-v124.css
           test -s _site/qcds-security-lab/glasswing-start.html
+          cmp _site/qcds-security-lab/index.html _site/qcds-security-lab/glasswing-v124.html
           cmp _site/qcds-security-lab/index.html _site/qcds-security-lab/glasswing-start.html
           test -s _site/qcds-security-lab/glasswing-v120.html
           cmp _site/qcds-security-lab/index.html _site/qcds-security-lab/glasswing-v120.html
@@ -462,16 +465,21 @@ jobs:
           grep -F 'data-watch-intro' _site/qcds-security-lab/index.html
           grep -F 'id="gw-film"' _site/qcds-security-lab/index.html
           grep -F 'gw-film-bird' _site/qcds-security-lab/index.html
-          grep -F 'glasswing-original-traced-v122.svg?v=1.23.0' _site/qcds-security-lab/index.html
-          grep -F 'glasswing-mesh-v123.js' _site/qcds-security-lab/index.html
+          grep -F 'glasswing-original-traced-v122.svg?v=1.24.0' _site/qcds-security-lab/index.html
+          grep -F 'glasswing-mesh-v124.js' _site/qcds-security-lab/index.html
+          grep -F 'glasswing-visible-v124.css' _site/qcds-security-lab/index.html
+          grep -F 'loading="eager"' _site/qcds-security-lab/index.html
+          grep -F 'const showLanding = !!landing && isLandingPage' _site/qcds-security-lab/glasswing-mesh-stage-v124.js
+          grep -F 'render(0,0)' _site/qcds-security-lab/glasswing-mesh-v124.js
+          grep -F 'canvas.replaceWith(image)' _site/qcds-security-lab/glasswing-mesh-v124.js
           grep -F 'glasswing-theme-v121.css' _site/qcds-security-lab/index.html
           grep -F 'gw-film-rig' _site/qcds-security-lab/index.html
-          grep -F 'gl.drawArrays(gl.TRIANGLES' _site/qcds-security-lab/glasswing-mesh-v123.js
-          grep -F '44.0*lPhase*left' _site/qcds-security-lab/glasswing-mesh-v123.js
-          grep -F '43.0*rPhase*right' _site/qcds-security-lab/glasswing-mesh-v123.js
-          grep -F 'smoothstep(325.0,415.0,source.y)' _site/qcds-security-lab/glasswing-mesh-v123.js
-          ! grep -F 'vec2 turn(' _site/qcds-security-lab/glasswing-mesh-v123.js
-          grep -F 'Independent small talon curls' _site/qcds-security-lab/glasswing-mesh-v123.js
+          grep -F 'gl.drawArrays(gl.TRIANGLES' _site/qcds-security-lab/glasswing-mesh-v124.js
+          grep -F '44.0*lPhase*left' _site/qcds-security-lab/glasswing-mesh-v124.js
+          grep -F '43.0*rPhase*right' _site/qcds-security-lab/glasswing-mesh-v124.js
+          grep -F 'smoothstep(325.0,415.0,source.y)' _site/qcds-security-lab/glasswing-mesh-v124.js
+          ! grep -F 'vec2 turn(' _site/qcds-security-lab/glasswing-mesh-v124.js
+          grep -F 'Independent small talon curls' _site/qcds-security-lab/glasswing-mesh-v124.js
           ! grep -F '<image' _site/qcds-security-lab/glasswing-original-traced-v122.svg
           python - <<'PYRIG'
           import re, xml.etree.ElementTree as ET
@@ -485,14 +493,14 @@ jobs:
           assert '<image' not in raw
           print('ORIGINAL ARTWORK VECTOR FACETS VERIFIED',facets)
           PYRIG
-          grep -F 'glasswing-mesh-stage-v123.js' _site/qcds-security-lab/index.html
-          grep -F 'glasswing-mesh-v123.js' _site/qcds-security-lab/index.html
+          grep -F 'glasswing-mesh-stage-v124.js' _site/qcds-security-lab/index.html
+          grep -F 'glasswing-mesh-v124.js' _site/qcds-security-lab/index.html
           grep -F 'glasswing-rig-stage-v121.css' _site/qcds-security-lab/enter.html
-          ! grep -F 'gw-film-ground-art' _site/qcds-security-lab/glasswing-mesh-stage-v123.js
+          ! grep -F 'gw-film-ground-art' _site/qcds-security-lab/glasswing-mesh-stage-v124.js
           ! grep -F 'gw-eagle-wing-left' _site/qcds-security-lab/index.html
           ! grep -F 'gw-film-arc' _site/qcds-security-lab/index.html
           grep -F 'gw-rig-camera-flight' _site/qcds-security-lab/glasswing-rig-stage-v121.css
-          grep -F 'data-release="1.23.0"' _site/qcds-security-lab/index.html
+          grep -F 'data-release="1.24.0"' _site/qcds-security-lab/index.html
           ! grep -F 'gw-eagle-wing-left' _site/qcds-security-lab/index.html
           ! grep -F 'gw-eagle-wing-right' _site/qcds-security-lab/index.html
           grep -F 'app-stage-v118.js' _site/qcds-security-lab/index.html
@@ -501,9 +509,9 @@ jobs:
           grep -F 'gw-lab-heading' _site/qcds-security-lab/consumer-ui-stage-v118.js
           ! grep -F 'gw-home-poster' _site/qcds-security-lab/consumer-ui-stage-v118.js
           grep -F 'url=./?welcome=1' _site/qcds-security-lab/open-glasswing-116.html
-          grep -F "const VERSION = '1.23.0'" _site/qcds-security-lab/sw.js
-          node --check _site/qcds-security-lab/glasswing-mesh-stage-v123.js
-          node --check _site/qcds-security-lab/glasswing-mesh-v123.js
+          grep -F "const VERSION = '1.24.0'" _site/qcds-security-lab/sw.js
+          node --check _site/qcds-security-lab/glasswing-mesh-stage-v124.js
+          node --check _site/qcds-security-lab/glasswing-mesh-v124.js
           node --check _site/qcds-security-lab/app-stage-v118.js
           node --check _site/qcds-security-lab/consumer-ui-stage-v118.js
           python - <<'PYPOSTER'
