@@ -19,32 +19,34 @@
     <link rel="stylesheet" href="./intro.css?v=1.14.7" />
     <link rel="stylesheet" href="./glasswing-inline.css?v=1.14.9" />
     <link rel="stylesheet" href="./glasswing-cinematic.css?v=1.14.9" />
-    <script src="./intro.js?v=1.14.9" defer></script>
+    <script src="./intro.js?v=1.16.0" defer></script>
     <link rel="stylesheet" href="./report-screen.css?v=1.0.0" />
     <link rel="stylesheet" href="./consumer.css?v=1.15.0" />
     <link rel="stylesheet" href="./glasswing-poster.css?v=1.15.0" />
+    <link rel="stylesheet" href="./glasswing-experience.css?v=1.16.0" />
   </head>
-  <body>
-    <div class="security-intro glasswing-cinematic" id="security-intro" aria-label="Project Glasswing QCDS Security Lab introduction">
-      <div class="glasswing-starfield" aria-hidden="true"></div>
-      <img class="glasswing-poster-scene" src="./glasswing-approved.webp?v=1.15.0" alt="" aria-hidden="true" fetchpriority="high" />
-      <div class="glasswing-horizon" aria-hidden="true"></div>
-      <div class="glasswing-orbiting-nodes" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-      <div class="glasswing-brand-corner" aria-hidden="true">
-        <div class="glasswing-cropped-emblem"><img src="./glasswing-approved.webp?v=1.15.0" alt="" /></div>
+  <body class="glasswing-visual">
+    <div id="security-intro" class="security-intro glasswing-cinematic gw-intro-v116" aria-label="Project Glasswing opening sequence">
+      <div class="gw-intro-backdrop" aria-hidden="true"><img src="./glasswing-approved.webp?v=1.16.0" alt=""></div>
+      <div class="gw-intro-scan" aria-hidden="true"></div>
+      <div class="gw-intro-flight" aria-hidden="true">
+        <img class="gw-eagle-wing gw-eagle-wing-left" src="./glasswing-flight.webp?v=1.16.0" alt="">
+        <img class="gw-eagle-wing gw-eagle-wing-right" src="./glasswing-flight.webp?v=1.16.0" alt="">
+        <img class="gw-eagle-body" src="./glasswing-flight.webp?v=1.16.0" alt="">
+        <div class="gw-defense-pulses"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="gw-intro-logo" aria-hidden="true">
+        <img src="./glasswing-mark.webp?v=1.16.0" alt="">
         <b>QCDS</b><span>Security Lab</span>
       </div>
-      <div class="glasswing-flight" aria-hidden="true">
-        <img class="glasswing-flight-eagle" src="./glasswing-approved.webp?v=1.15.0" alt="" />
-        <div class="glasswing-flight-afterimage"></div>
+      <div class="gw-intro-title" aria-hidden="true">
+        <span>PROJECT GLASSWING</span>
+        <h1>QCDS</h1>
+        <p>Security Lab</p>
+        <small>CONDITION · EVOLUTION · RECURSIVE INFERENCE · VERIFICATION</small>
       </div>
-      <div class="glasswing-title-reveal" aria-hidden="true">
-        <span class="glasswing-title-kicker">PROJECT GLASSWING</span>
-        <h1>QCDS</h1><p>Security Lab</p>
-        <small>CONDITION · EVOLUTION · INFERENCE · ALIGNMENT</small>
-      </div>
-      <button class="q-intro-skip" type="button">Enter Security Lab ↗</button>
-      <div class="glasswing-intro-credit">Theory and creation by Patrik Sundblom <span>with OpenAI / ChatGPT as research &amp; development support</span></div>
+      <button class="q-intro-skip" type="button">Enter Security Lab <span aria-hidden="true">↗</span></button>
+      <p class="gw-intro-author">Theory and creation by Patrik Sundblom <span>with OpenAI / ChatGPT as research &amp; development support</span></p>
     </div>
     <a href="#main" class="skip-link">Skip to workspace</a>
     <div id="app">
@@ -69,6 +71,6 @@
       accept="application/json,.json"
       hidden
     />
-    <script type="module" src="./app.js?v=1.15.0"></script>
+    <script type="module" src="./app.js?v=1.16.0"></script>
   </body>
 </html>
