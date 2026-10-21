@@ -20,10 +20,70 @@
     <link rel="stylesheet" href="./consumer.css?v=1.15.0" />
     <link rel="stylesheet" href="./glasswing-experience.css?v=1.16.0" />
     <link rel="stylesheet" href="./glasswing-theme-v121.css" />
-    <link rel="stylesheet" href="./glasswing-screen-v125.css?v=1.25.1" />
+    <link rel="stylesheet" href="./glasswing-screen-v125.css?v=1.25.2" />
     <script src="./glasswing-screen-v125.js" defer></script>
+  
+    <!-- Layout safety net stays inside HTML: an older offline stylesheet must
+         never turn the small Home mark into an oversized natural-size image. -->
+    <style id="gw-home-layout-safety">
+      #app .consumer-home {max-width:100%;min-width:0;width:100%}
+      #app .consumer-home .gw-lab-heading {
+        box-sizing:border-box;display:flex;align-items:center;flex-wrap:wrap;
+        gap:16px;min-width:0;width:100%;max-width:100%;
+        padding:clamp(14px,2.5vw,24px);
+      }
+      #app .consumer-home .gw-lab-heading-main {
+        box-sizing:border-box;display:flex;align-items:center;flex:1 1 280px;
+        gap:12px;min-width:0;max-width:100%;
+      }
+      #app .consumer-home .gw-lab-heading-main>div {min-width:0;overflow-wrap:anywhere}
+      #app .consumer-home img.gw-lab-heading-mark {
+        display:block!important;width:76px!important;height:76px!important;
+        max-width:76px!important;max-height:76px!important;
+        flex:0 0 76px!important;object-fit:contain!important;
+      }
+      #app .consumer-home .gw-lab-heading-buttons {
+        display:flex;align-items:center;flex-wrap:wrap;gap:9px;
+        min-width:0;max-width:100%;
+      }
+      #app .consumer-home .gw-lab-heading-buttons>.button {
+        min-width:0;max-width:100%;min-height:46px;
+        white-space:normal;overflow-wrap:anywhere;
+      }
+      #app .consumer-home .gw-home-feature,
+      #app .consumer-home .gw-home-poster,
+      #app .consumer-home .glasswing-approved-banner {display:none!important}
+      /* An old CSS cache must not put the landing photograph in the Home flow. */
+      #gw-landing:not([hidden]) {
+        position:fixed;inset:0;z-index:25000;overflow-x:hidden;overflow-y:auto;
+        background:#061629;
+      }
+      #gw-landing .gw-landing-shell {box-sizing:border-box;max-width:100%}
+      #gw-landing .gw-landing-art img {display:block;max-width:100%;height:auto}
+      @media (max-width:820px) {
+        #app .consumer-home .gw-lab-heading {display:block;padding:15px}
+        #app .consumer-home .gw-lab-heading-main {width:100%;align-items:flex-start}
+        #app .consumer-home .gw-lab-heading-buttons {margin-top:14px}
+      }
+      @media (max-width:520px) {
+        #app .consumer-home .gw-lab-heading-buttons {
+          display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px
+        }
+        #app .consumer-home .gw-lab-heading-buttons>.button {width:100%}
+        #app .consumer-home .gw-lab-heading-buttons>.button:first-child {grid-column:1/-1}
+      }
+      @media (max-width:350px) {
+        #app .consumer-home .gw-lab-heading-buttons {grid-template-columns:1fr}
+        #app .consumer-home .gw-lab-heading-buttons>.button:first-child {grid-column:auto}
+        #app .consumer-home img.gw-lab-heading-mark {
+          width:60px!important;height:60px!important;
+          max-width:60px!important;max-height:60px!important;
+          flex-basis:60px!important
+        }
+      }
+    </style>
   </head>
-  <body class="glasswing-visual gw-entry-active" data-release="1.25.1" data-entry="landing">
+  <body class="glasswing-visual gw-entry-active" data-release="1.25.2" data-entry="landing">
     <section id="gw-landing" class="gw-landing" aria-label="Project Glasswing — welcome to QCDS Security Lab">
       <div class="gw-landing-shell">
         <div class="gw-landing-art">
