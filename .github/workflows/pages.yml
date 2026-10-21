@@ -442,8 +442,8 @@ jobs:
           test -s _site/qcds-security-lab/glasswing-approved.webp
           test -s _site/qcds-security-lab/glasswing-flight.webp
           test -s _site/qcds-security-lab/glasswing-mark.webp
-          test -s _site/qcds-security-lab/glasswing-stage-v118.css
-          test -s _site/qcds-security-lab/glasswing-stage-v118.js
+          test -s _site/qcds-security-lab/glasswing-cinematic-v120.css
+          test -s _site/qcds-security-lab/glasswing-cinematic-v120.js
           test -s _site/qcds-security-lab/app-stage-v118.js
           test -s _site/qcds-security-lab/consumer-ui-stage-v118.js
           test -s _site/qcds-security-lab/enter.html
@@ -457,6 +457,13 @@ jobs:
           grep -F 'data-watch-intro' _site/qcds-security-lab/index.html
           grep -F 'id="gw-film"' _site/qcds-security-lab/index.html
           grep -F 'gw-film-bird' _site/qcds-security-lab/index.html
+          grep -F 'glasswing-cinematic-v120.js' _site/qcds-security-lab/index.html
+          grep -F 'glasswing-cinematic-v120.css' _site/qcds-security-lab/enter.html
+          ! grep -F 'gw-vector-eagle' _site/qcds-security-lab/glasswing-cinematic-v120.js
+          ! grep -F 'gw-film-ground-art' _site/qcds-security-lab/glasswing-cinematic-v120.js
+          ! grep -F 'gw-film-arc' _site/qcds-security-lab/index.html
+          grep -F 'gw-film-clean-flight' _site/qcds-security-lab/glasswing-cinematic-v120.css
+          grep -F 'data-release="1.20.0"' _site/qcds-security-lab/index.html
           ! grep -F 'gw-eagle-wing-left' _site/qcds-security-lab/index.html
           ! grep -F 'gw-eagle-wing-right' _site/qcds-security-lab/index.html
           grep -F 'app-stage-v118.js' _site/qcds-security-lab/index.html
@@ -465,8 +472,8 @@ jobs:
           grep -F 'gw-lab-heading' _site/qcds-security-lab/consumer-ui-stage-v118.js
           ! grep -F 'gw-home-poster' _site/qcds-security-lab/consumer-ui-stage-v118.js
           grep -F 'url=./?welcome=1' _site/qcds-security-lab/open-glasswing-116.html
-          grep -F "const VERSION = '1.18.0'" _site/qcds-security-lab/sw.js
-          node --check _site/qcds-security-lab/glasswing-stage-v118.js
+          grep -F "const VERSION = '1.20.0'" _site/qcds-security-lab/sw.js
+          node --check _site/qcds-security-lab/glasswing-cinematic-v120.js
           node --check _site/qcds-security-lab/app-stage-v118.js
           node --check _site/qcds-security-lab/consumer-ui-stage-v118.js
           python - <<'PYPOSTER'
