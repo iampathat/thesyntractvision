@@ -78,11 +78,11 @@ control predicates. Observations bind to the exact resulting scope; STRIDE
 and OWASP project the same changed vector states. The full run and compressed
 distributions export as JSON, with a plain-language Markdown report.
 
-The 3.5-second Q Security Lab introduction uses a flying **glass raven** for
-Project Glasswing. The raven contains a luminous network of QCDS nodes and
+The 3.5-second Q Security Lab introduction uses a flying **glass golden eagle** for
+Project Glasswing. The eagle contains a luminous network of QCDS nodes and
 connections, surrounded by a defensive boundary that deflects incoming attack
-traces. The animation uses CSS and inline SVG, with an immediate enter button,
-reduced-motion support and an independent timeout so it cannot block the lab.
+traces. The high-contrast animation uses CSS and inline SVG, with a replay button under **Explore the QCDS engine** on Home, an immediate enter button,
+reduced-motion support and an independent timeout so it cannot block the lab. Reduced-motion users see a visible still image rather than an almost instant dismissal.
 
 See [DIMENSION_ENGINE.md](./DIMENSION_ENGINE.md) for execution semantics,
 the difference between `?` and true absence, and the classical reference's
