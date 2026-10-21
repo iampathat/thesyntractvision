@@ -1,0 +1,332 @@
+/* Project Glasswing v1.16.0 — cohesive QCDS Security Lab visual identity.
+   Theory and creation by Patrik Sundblom
+   with OpenAI / ChatGPT as research & development support. */
+
+/* One crystalline / deep-ocean language across the actual lab, not a poster bolted on. */
+body.glasswing-visual {
+  --acid:#9eeeff;
+  --app-accent:#a8efff;
+  --app-surface:#101f31;
+  --sidebar:#081625;
+  --line:#304b5c;
+  background:#0b1522;
+  color:#e6f5fb;
+}
+body.glasswing-visual .sidebar {
+  background:linear-gradient(180deg,#0d2139,#081523 53%,#07121d);
+  border-right:1px solid #3e72884f;
+}
+body.glasswing-visual .topbar {
+  background:#0d1928eb;
+  border-bottom:1px solid #397a9659;
+  backdrop-filter:blur(16px);
+}
+body.glasswing-visual .sidebar nav a[aria-current] {
+  background:linear-gradient(100deg,#123855,#152b3d);
+  border-color:#50aee3a0;
+  color:#c1f7ff;
+}
+body.glasswing-visual .sidebar nav a[aria-current] .nav-copy em {color:#94c5e1}
+body.glasswing-visual .button.primary,
+body.glasswing-visual button.button.primary {
+  color:#061a2a;
+  background:linear-gradient(125deg,#c4fbff,#6addff);
+  border-color:#a1f7ff;
+  box-shadow:0 3px 19px #32b8f72a;
+}
+body.glasswing-visual .button.primary:hover {
+  background:linear-gradient(125deg,#e9ffff,#9aefff);
+}
+body.glasswing-visual .consumer-resume {
+  background:linear-gradient(135deg,#14324c,#11212f 75%);
+  border-color:#326c8b;
+}
+body.glasswing-visual .consumer-overview>a,
+body.glasswing-visual .consumer-shortcuts>a,
+body.glasswing-visual .consumer-case,
+body.glasswing-visual .panel {
+  border-color:#314f60;
+}
+body.glasswing-visual .consumer-overview>a {background:linear-gradient(140deg,#14283a,#111d2b)}
+body.glasswing-visual .consumer-shortcuts>a {background:#111e2d}
+body.glasswing-visual .consumer-overview b {color:#a6efff}
+body.glasswing-visual .consumer-step-track>span.current {border-color:#6ed9f7}
+body.glasswing-visual .consumer-step-track>span.current b {background:#9eeeff;color:#071725}
+body.glasswing-visual .consumer-home .eyebrow {color:#99daee}
+
+/* Permanent hero: the approved artwork is the site identity, not an afterthought. */
+.consumer-home .gw-home-feature {
+  isolation:isolate;
+  position:relative;
+  margin:0 0 18px;
+  overflow:hidden;
+  border:1px solid #4a96bc;
+  border-radius:19px;
+  background:radial-gradient(ellipse at 45% 30%,#163c60,#051325 74%);
+  box-shadow:0 18px 60px #0006,inset 0 0 0 1px #b9f8ff17;
+}
+.gw-home-art {position:relative;isolation:isolate;overflow:hidden}
+.gw-home-poster {
+  display:block;width:100%;height:auto;aspect-ratio:16/9;
+  object-fit:cover;opacity:1;visibility:visible;
+}
+.gw-home-art:after {
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,transparent 70%,#071e32 100%);
+}
+.gw-home-energy {position:absolute;inset:0;pointer-events:none;z-index:1}
+.gw-home-energy i {
+  display:block;position:absolute;width:6px;height:6px;
+  border-radius:50%;background:#e2ffff;
+  box-shadow:0 0 0 4px #5ae9ff3c,0 0 21px 10px #30dfff8a;
+  animation:gw-home-diode 1.9s ease-in-out infinite alternate;
+}
+.gw-home-energy i:nth-child(1){top:46%;left:31%}
+.gw-home-energy i:nth-child(2){top:61%;left:66%;animation-delay:.75s;background:#c5ff87}
+.gw-home-energy i:nth-child(3){top:72%;left:41%;animation-delay:1.25s;background:#be9eff}
+@keyframes gw-home-diode {0%,40%{opacity:.3;transform:scale(.6)}100%{opacity:1;transform:scale(1.7)}}
+.gw-home-replay {
+  position:absolute;bottom:19px;right:20px;z-index:3;
+  display:inline-flex;align-items:center;gap:10px;min-height:46px;
+  border:1px solid #9adff9;border-radius:11px;
+  padding:10px 18px;color:#e8faff;
+  background:#071e31ec;font-weight:720;font-size:13px;cursor:pointer;
+  backdrop-filter:blur(12px);
+  box-shadow:0 0 25px #2ec9f739;
+}
+.gw-home-replay:hover{background:#19435f}
+.gw-home-replay:focus-visible{outline:3px solid #e5fc92;outline-offset:3px}
+.gw-home-controls {
+  display:flex;align-items:center;justify-content:space-between;
+  gap:18px;padding:23px clamp(17px,3vw,30px);
+  background:linear-gradient(115deg,#0c253c,#0c1c2b);
+}
+.gw-home-copy {min-width:0;flex:1}
+.gw-home-copy .eyebrow {
+  display:block;font:700 10px/1.5 ui-monospace,monospace;
+  letter-spacing:.13em;color:#b3e9fa;
+}
+.gw-home-copy h1 {
+  margin:6px 0 8px;
+  font-size:clamp(25px,2.6vw,39px);
+  letter-spacing:-.035em;line-height:1.1;color:#f2fcff;
+}
+.gw-home-copy p {margin:0;max-width:520px;line-height:1.55;font-size:13px;color:#b7cfdd}
+.gw-home-buttons {display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:10px}
+.gw-home-buttons .button {min-height:47px;font-size:13px;white-space:normal;text-align:center}
+.gw-home-buttons>.button:not(.primary){border-color:#457c95;background:#17344a;color:#d8f8ff}
+.gw-home-fabric {
+  display:flex;align-items:center;justify-content:center;
+  gap:12px;flex-wrap:wrap;padding:12px 16px;
+  border-top:1px solid #3e78913d;
+  background:#081d30;color:#a2c0ce;
+  font:550 10px/1.5 ui-monospace,monospace;letter-spacing:.03em;
+}
+.gw-home-fabric span{display:inline-flex;gap:7px;align-items:center;white-space:nowrap}
+.gw-home-fabric b{color:#b4f5ff}
+.gw-home-fabric i{display:block;width:20px;height:1px;background:#4cd8f5a8}
+
+/* The same miniature glass eagle in the app's real navigation, not a heraldic logo. */
+.brand.glasswing-brand {gap:10px;padding-bottom:26px}
+.brand.glasswing-brand .glasswing-brand-mark {
+  width:80px;height:50px;flex:0 0 80px;
+  display:block;overflow:hidden;border-radius:8px;
+  border:1px solid #377ca550;
+  box-shadow:0 0 18px #36c3ff27;
+}
+.brand.glasswing-brand .glasswing-brand-mark img {
+  width:100%;height:100%;object-fit:cover;object-position:center;
+  position:static;max-width:100%;
+  filter:drop-shadow(0 0 6px #61c8fd55);
+}
+.brand.glasswing-brand .glasswing-brand-label {font-weight:760;letter-spacing:.08em;color:#effaff;font-size:21px}
+.brand.glasswing-brand .brand-sub {color:#9bcde5;font-size:9px;letter-spacing:.13em}
+
+/* CINEMATIC: original art + transparent cutout + wing articulation + one matching final logo. */
+.security-intro.glasswing-cinematic.gw-intro-v116 {
+  position:fixed;inset:0;z-index:10000;
+  display:block;overflow:hidden;isolation:isolate;
+  background:radial-gradient(circle at 48% 46%,#144974 0%,#071e39 49%,#020917 100%);
+  color:#edfaff;
+}
+.gw-intro-v116:before {
+  content:"";position:absolute;inset:0;z-index:0;
+  background:repeating-radial-gradient(circle at 50% 54%,transparent 0 92px,#72deff14 93px 94px,transparent 95px 140px);
+}
+.gw-intro-backdrop {position:absolute;inset:0;z-index:1;overflow:hidden}
+.gw-intro-backdrop img {
+  display:block;width:100%;height:100%;object-fit:cover;object-position:center;
+  opacity:.23;filter:blur(2.5px) saturate(1.13);
+  animation:gw-cinema-image 6.65s ease-in-out both;
+}
+.gw-intro-scan {
+  position:absolute;inset:0;z-index:2;pointer-events:none;
+  opacity:.65;
+  background:linear-gradient(180deg,transparent 48%,#5ddaff13 50%,transparent 52%),
+             radial-gradient(ellipse at 50% 60%,#38b8ff20,transparent 73%);
+  animation:gw-cinema-scan 3.2s ease-in-out infinite alternate;
+}
+.gw-intro-flight {
+  position:absolute;z-index:4;left:50%;top:51%;
+  width:min(1160px,106vw);aspect-ratio:880/459;
+  transform-origin:50% 50%;
+  animation:gw-cinema-swoop 6.65s cubic-bezier(.3,.72,.3,1) both;
+  will-change:transform,opacity;
+  filter:drop-shadow(0 0 14px #56dcff9c) drop-shadow(0 16px 25px #047bb36b);
+}
+.gw-intro-flight img {
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:contain;pointer-events:none;
+}
+.gw-eagle-wing-left {
+  clip-path:polygon(0 0,57% 0,57% 51%,48% 79%,0 85%);
+  transform-origin:51% 54%;
+  animation:gw-cinema-left-flap 1.04s ease-in-out infinite alternate;
+}
+.gw-eagle-wing-right {
+  clip-path:polygon(46% 0,100% 0,100% 88%,58% 81%,51% 55%);
+  transform-origin:54% 54%;
+  animation:gw-cinema-right-flap 1.04s ease-in-out infinite alternate;
+}
+.gw-eagle-body {
+  clip-path:polygon(41% 33%,64% 33%,70% 100%,31% 100%);
+  filter:drop-shadow(0 0 6px #e6ffff);
+}
+.gw-defense-pulses {position:absolute;inset:0;pointer-events:none}
+.gw-defense-pulses i {
+  position:absolute;width:9px;height:9px;
+  border-radius:50%;
+  background:#e7ffff;
+  box-shadow:0 0 3px 3px #86eeff,0 0 22px 11px #12bcffe0;
+  opacity:0;animation:gw-defense-spark 1.48s ease-in-out infinite;
+}
+.gw-defense-pulses i:nth-child(1){left:21%;top:36%;animation-delay:.2s;background:#85faff}
+.gw-defense-pulses i:nth-child(2){left:34%;top:46%;animation-delay:.45s;background:#bfff8d}
+.gw-defense-pulses i:nth-child(3){left:45%;top:56%;animation-delay:.78s;background:#d5aaff}
+.gw-defense-pulses i:nth-child(4){left:57%;top:57%;animation-delay:1.05s;background:#fff}
+.gw-defense-pulses i:nth-child(5){left:70%;top:43%;animation-delay:1.21s;background:#adff85}
+.gw-defense-pulses i:nth-child(6){left:82%;top:30%;animation-delay:.58s;background:#79e8ff}
+.gw-intro-logo {
+  position:absolute;top:clamp(20px,4vh,46px);left:clamp(15px,3vw,50px);
+  width:clamp(132px,15vw,210px);
+  z-index:6;opacity:0;transform:translateY(10px) scale(.92);
+  display:flex;flex-direction:column;align-items:center;text-align:center;
+  animation:gw-cinema-mark 1s 3.72s ease-out both;
+}
+.gw-intro-logo img {
+  width:100%;height:auto;aspect-ratio:540/258;
+  display:block;object-fit:cover;border-radius:8px;
+  box-shadow:0 0 21px #31d6ff4b;
+}
+.gw-intro-logo b {
+  font:850 clamp(24px,3vw,37px)/1.16 ui-sans-serif,system-ui,sans-serif;
+  margin-top:5px;letter-spacing:.09em;
+  text-shadow:0 0 12px #4fdfff;
+}
+.gw-intro-logo span {font:650 clamp(10px,1.2vw,13px)/1.4 ui-sans-serif,system-ui,sans-serif;letter-spacing:.18em;color:#b7ecff}
+.gw-intro-title {
+  position:absolute;z-index:5;
+  top:50%;left:61%;width:min(640px,66vw);
+  text-align:center;opacity:0;
+  transform:translate(-50%,-45%);
+  animation:gw-cinema-heading 2.3s 3.5s ease-out both;
+}
+.gw-intro-title>span {font:720 12px/1.4 ui-monospace,monospace;letter-spacing:.3em;color:#c6ffed}
+.gw-intro-title h1 {
+  margin:8px 0 0;
+  font:900 clamp(50px,10vw,140px)/1.05 ui-sans-serif,system-ui,sans-serif;
+  letter-spacing:.06em;
+  background:linear-gradient(135deg,#fff 9%,#a7ecff 38%,#4bb7ff 65%,#ecfbff 96%);
+  background-clip:text;-webkit-background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 17px #5bc3ff82);
+}
+.gw-intro-title p {font:320 clamp(24px,4.6vw,56px)/1.25 ui-sans-serif,system-ui,sans-serif;letter-spacing:.19em;color:#e5faff;margin:5px 0 18px}
+.gw-intro-title small {display:block;font:600 clamp(9px,.9vw,12px)/1.6 ui-monospace,monospace;letter-spacing:.12em;color:#a6cddd}
+.gw-intro-v116 .q-intro-skip {
+  display:block;position:absolute;right:18px;top:16px;z-index:9;
+  min-height:46px;padding:11px 17px;
+  border:1px solid #5baac8;border-radius:10px;
+  background:#061b32e8;color:#edfaff;cursor:pointer;
+  font-size:13px;font-weight:700;
+}
+.gw-intro-v116 .q-intro-skip:hover {background:#145178}
+.gw-intro-v116 .q-intro-skip:focus-visible {outline:3px solid #cbff92;outline-offset:3px}
+.gw-intro-author {
+  position:absolute;bottom:17px;left:15px;right:15px;z-index:8;
+  margin:0;text-align:center;color:#a2c6d4;
+  font:500 10px/1.6 ui-sans-serif,system-ui,sans-serif;
+}
+.gw-intro-author span{display:block}
+@keyframes gw-cinema-image {
+  0%{opacity:.07;transform:scale(1.11)}
+  17%,47%{opacity:.23;transform:scale(1.03)}
+  67%,100%{opacity:.12;transform:scale(1.13)}
+}
+@keyframes gw-cinema-scan{from{opacity:.22}to{opacity:.8}}
+@keyframes gw-cinema-swoop {
+  0%{opacity:0;transform:translate(-50%,-50%) translateY(16vh) scale(.68)}
+  11%{opacity:1;transform:translate(-50%,-50%) translateY(5vh) scale(1)}
+  27%{opacity:1;transform:translate(-50%,-50%) translateY(-1vh) scale(1.06)}
+  42%{opacity:1;transform:translate(-50%,-50%) translate(-4vw,-7vh) scale(.85)}
+  66%{opacity:1;transform:translate(-50%,-50%) translate(calc(-50vw + 133px),calc(-50vh + 115px)) scale(.20)}
+  77%,100%{opacity:0;transform:translate(-50%,-50%) translate(calc(-50vw + 133px),calc(-50vh + 115px)) scale(.16)}
+}
+@keyframes gw-cinema-left-flap {
+  0%{transform:rotate(-9deg) scaleY(.83)}
+  100%{transform:rotate(7deg) scaleY(1.11)}
+}
+@keyframes gw-cinema-right-flap {
+  0%{transform:rotate(8deg) scaleY(.83)}
+  100%{transform:rotate(-7deg) scaleY(1.11)}
+}
+@keyframes gw-defense-spark {
+  0%,15%,85%,100%{opacity:0;transform:scale(.6)}
+  28%,51%{opacity:1;transform:scale(1.4)}
+  66%{opacity:.24;transform:scale(.8)}
+}
+@keyframes gw-cinema-mark {
+  0%{opacity:0;transform:translateY(10px) scale(.89)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
+}
+@keyframes gw-cinema-heading {
+  0%{opacity:0;transform:translate(-50%,-38%) scale(.93);filter:blur(8px)}
+  34%,100%{opacity:1;transform:translate(-50%,-50%) scale(1);filter:blur(0)}
+}
+@media(max-width:1024px){
+  .gw-home-controls{flex-direction:column;align-items:stretch}
+  .gw-home-buttons{justify-content:flex-start}
+  .gw-intro-title{left:55%;top:57%;width:min(86vw,680px)}
+}
+@media(max-width:700px){
+  .gw-home-controls{padding:20px}
+  .gw-home-poster{aspect-ratio:16/9;min-height:200px}
+  .gw-home-replay{bottom:11px;right:10px;min-height:43px;padding:9px 13px;font-size:12px}
+  .gw-home-buttons{flex-direction:column;align-items:stretch}
+  .gw-home-buttons .button{width:100%;justify-content:center}
+  .gw-home-fabric{gap:8px;font-size:9px;justify-content:center}
+  .gw-home-fabric i{width:11px}
+  .gw-intro-flight{width:133vw;max-width:none;top:47%}
+  .gw-intro-title{top:62%;left:50%;width:95vw}
+  .gw-intro-title h1{font-size:clamp(46px,13vw,80px)}
+  .gw-intro-title p{font-size:clamp(20px,6vw,32px)}
+  .gw-intro-title small{font-size:8px;letter-spacing:.06em}
+  .gw-intro-logo{top:40px;left:12px;width:112px}
+  .gw-intro-logo b{font-size:23px}
+  .gw-intro-logo span{font-size:9px}
+  .gw-intro-author{font-size:9px}
+  @keyframes gw-cinema-swoop {
+    0%{opacity:0;transform:translate(-50%,-50%) translateY(9vh) scale(.63)}
+    15%,30%{opacity:1;transform:translate(-50%,-50%) translateY(0) scale(.86)}
+    43%{opacity:1;transform:translate(-50%,-50%) translate(-12vw,-12vh) scale(.63)}
+    67%{opacity:1;transform:translate(-50%,-50%) translate(calc(-50vw + 76px),calc(-50vh + 105px)) scale(.16)}
+    80%,100%{opacity:0;transform:translate(-50%,-50%) translate(calc(-50vw + 76px),calc(-50vh + 105px)) scale(.13)}
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .gw-intro-flight,.gw-intro-flight img,.gw-intro-v116 .gw-intro-backdrop img,
+  .gw-intro-scan,.gw-defense-pulses i,.gw-home-energy i {animation:none!important}
+  .gw-intro-flight{opacity:.78!important;transform:translate(-50%,-50%) scale(.85)!important}
+  .gw-intro-logo,.gw-intro-title{animation:none!important;opacity:1!important;filter:none!important}
+  .gw-intro-title{transform:translate(-50%,-50%)}
+  .gw-defense-pulses i{opacity:.6}
+}
