@@ -73,8 +73,9 @@
 
   // Only the landing route greets new visitors. Deep links and repeat opens
   // go directly to the genuine app; no other entrance or cache gate is added.
+  const forceLanding = new URLSearchParams(location.search).has("welcome");
   const showLanding = !!landing && isLandingPage &&
-      !sessionEntered() && (!location.hash || location.hash === "#home");
+      (forceLanding || (!sessionEntered() && (!location.hash || location.hash === "#home")));
   if (landing) landing.hidden = !showLanding;
   if (film) film.hidden = true;
   setEntryMode(showLanding);
@@ -87,12 +88,16 @@
     const skip = event.target.closest("[data-film-skip]");
     if (skip) { event.preventDefault(); finishFilm(); return; }
     const openLanding = event.target.closest("[data-open-landing]");
-    if (openLanding && landing) {
+    if (openLanding) {
       event.preventDefault();
-      if (film) film.hidden = true;
-      landing.hidden = false;
-      setEntryMode(true);
-      landing.querySelector("[data-enter-lab]")?.focus?.({preventScroll:true});
+      if (!landing) {
+        location.assign("./?welcome=1");
+      } else {
+        if (film) film.hidden = true;
+        landing.hidden = false;
+        setEntryMode(true);
+        landing.querySelector("[data-enter-lab]")?.focus?.({preventScroll:true});
+      }
     }
   });
   document.addEventListener("keydown", event => {
