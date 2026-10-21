@@ -8,6 +8,7 @@ import vm from "node:vm";
 const read = name => readFileSync(new URL("../"+name,import.meta.url),"utf8");
 const blob = name => readFileSync(new URL("../"+name,import.meta.url));
 const index = read("index.html"), entry = read("enter.html");
+const freshLanding = read("glasswing-start.html");
 const stage = read("glasswing-stage-v118.js"), stageCss=read("glasswing-stage-v118.css");
 const consumer=read("consumer-ui-stage-v118.js"), app=read("app-stage-v118.js");
 const gateway=read("open-glasswing-116.html"), worker=read("sw.js");
@@ -32,6 +33,12 @@ test("canonical page offers Enter and Watch, separate from the actual app",()=>{
   assert.match(index,/glasswing-stage-v118\.js/);
   assert.doesNotMatch(index,/id="security-intro"/);
 });
+test("new cache-independent URL renders exactly the same canonical landing",()=>{
+  assert.equal(freshLanding,index);
+  assert.match(freshLanding,/data-enter-lab/);
+  assert.match(freshLanding,/data-watch-intro/);
+});
+
 test("film uses exactly one bird image with no severed feather or body sprites",()=>{
   const birds=index.match(/class="gw-film-bird"/g)||[];
   assert.equal(birds.length,1);
