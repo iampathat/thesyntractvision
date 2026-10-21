@@ -52,6 +52,17 @@ test("film uses exactly one bird image with no severed feather or body sprites",
   assert.match(stageCss,/@keyframes gw-film-node/);
   assert.match(stageCss,/prefers-reduced-motion:reduce/);
 });
+test("vector film retains approved artwork with articulated SVG wings and ground protection",()=>{
+  assert.match(stage,/gw-vector-eagle/);
+  assert.match(stage,/gw-vector-wing-left/);
+  assert.match(stage,/gw-vector-wing-right/);
+  assert.match(stage,/animateMotion/);
+  assert.match(stage,/gw-film-protection/);
+  assert.match(stageCss,/GLASSWING VECTOR MOTION V119/);
+  assert.match(stageCss,/object-fit:contain/);
+  assert.match(index,/glasswing-stage-v118\\.js\\?v=1\\.19\\.0/);
+  assert.match(entry,/glasswing-stage-v118\\.css\\?v=1\\.19\\.0/);
+});
 test("working Home contains real investigations and only a compact brand header",()=>{
   assert.match(consumer,/class="gw-lab-heading"/);
   assert.match(consumer,/data-action="new"/);
