@@ -390,7 +390,7 @@ function shell() {
       ${analysisLink('learn','In plain English','book')}
     </nav>
     <button class="new-case" data-action="new">${icon("plus")} New investigation</button>
-    <div class="sidebar-bottom"><div class="local-note">${icon("shield")}<span>Saved on this device.<br>No account needed.</span></div><a href="#learn" class="author">By Patrik Sundblom <span>↗</span></a><div class="version">SECURITY LAB <span>v${VERSION}</span></div></div>
+    <div class="sidebar-bottom"><button type="button" class="gw-settings-trigger" data-app-settings aria-haspopup="dialog">${icon("system")} Settings & updates</button><div class="local-note">${icon("shield")}<span>Saved on this device.<br>No account needed.</span></div><a href="#learn" class="author">By Patrik Sundblom <span>↗</span></a><div class="version">SECURITY LAB <span>v${VERSION}</span></div></div>
   </aside>
   ${state.mobile ? '<button class="menu-backdrop" data-action="close-menu" aria-label="Close navigation backdrop"></button>' : ""}
   <div class="app-body" ${state.mobile ? "inert" : ""}>
