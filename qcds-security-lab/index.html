@@ -18,106 +18,59 @@
     <link rel="stylesheet" href="./quantum-panel.css?v=1.1.0" />
     <link rel="stylesheet" href="./report-screen.css?v=1.0.0" />
     <link rel="stylesheet" href="./consumer.css?v=1.15.0" />
-    <link rel="stylesheet" href="./glasswing-experience.css?v=1.16.0" />
     <link rel="stylesheet" href="./glasswing-theme-v121.css" />
-    <link rel="stylesheet" href="./glasswing-screen-v125.css?v=1.25.3" />
-    <script src="./glasswing-screen-v125.js" defer></script>
+    <link rel="stylesheet" href="./glasswing-screen-v125.css?v=1.26.0" />
+    <script src="./glasswing-screen-v125.js?v=1.26.0" defer></script>
   
     <!-- Layout safety net stays inside HTML: an older offline stylesheet must
          never turn the small Home mark into an oversized natural-size image. -->
-    <style id="gw-home-layout-safety">
-      #app .consumer-home {max-width:100%;min-width:0;width:100%}
-      #app .consumer-home .gw-lab-heading {
-        box-sizing:border-box;display:flex;align-items:center;flex-wrap:wrap;
-        gap:16px;min-width:0;width:100%;max-width:100%;
-        padding:clamp(14px,2.5vw,24px);
+    <style id="gw-critical-layout-v126">
+      /* Critical structural fallback if an installed offline stylesheet is stale. */
+      html,body,#app {max-width:100%;min-width:0}
+      img,video {max-width:100%}
+      #gw-film {position:fixed;inset:0;z-index:25010;background:#020e1b}
+      #gw-film[hidden]{display:none!important}
+      #app .consumer-home .gw-lab-heading-mark {
+        display:block!important;width:64px!important;height:64px!important;
+        max-width:64px!important;max-height:64px!important;
+        flex:0 0 64px!important;object-fit:contain!important
       }
-      #app .consumer-home .gw-lab-heading-main {
-        box-sizing:border-box;display:flex;align-items:center;flex:1 1 280px;
-        gap:12px;min-width:0;max-width:100%;
-      }
-      #app .consumer-home .gw-lab-heading-main>div {min-width:0;overflow-wrap:anywhere}
-      #app .consumer-home img.gw-lab-heading-mark {
-        display:block!important;width:76px!important;height:76px!important;
-        max-width:76px!important;max-height:76px!important;
-        flex:0 0 76px!important;object-fit:contain!important;
-      }
-      #app .consumer-home .gw-lab-heading-buttons {
-        display:flex;align-items:center;flex-wrap:wrap;gap:9px;
-        min-width:0;max-width:100%;
-      }
-      #app .consumer-home .gw-lab-heading-buttons>.button {
-        min-width:0;max-width:100%;min-height:46px;
-        white-space:normal;overflow-wrap:anywhere;
-      }
-      #app .consumer-home .gw-home-feature,
-      #app .consumer-home .gw-home-poster,
-      #app .consumer-home .glasswing-approved-banner {display:none!important}
-      /* An old CSS cache must not put the landing photograph in the Home flow. */
-      #gw-landing:not([hidden]) {
-        position:fixed;inset:0;z-index:25000;overflow-x:hidden;overflow-y:auto;
-        background:#061629;
-      }
-      #gw-landing .gw-landing-shell {box-sizing:border-box;max-width:100%}
-      #gw-landing .gw-landing-art img {display:block;max-width:100%;height:auto}
-      @media (max-width:820px) {
-        #app .consumer-home .gw-lab-heading {display:block;padding:15px}
-        #app .consumer-home .gw-lab-heading-main {width:100%;align-items:flex-start}
-        #app .consumer-home .gw-lab-heading-buttons {margin-top:14px}
-      }
-      @media (max-width:520px) {
-        #app .consumer-home .gw-lab-heading-buttons {
-          display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px
+      #app .consumer-home .gw-lab-heading,
+      #app .consumer-home .gw-lab-heading-main {min-width:0;max-width:100%}
+      @media(max-width:1024px){
+        #app .question-position,#app .question-navigation {
+          position:static!important;inset:auto!important;z-index:auto!important
         }
-        #app .consumer-home .gw-lab-heading-buttons>.button {width:100%}
-        #app .consumer-home .gw-lab-heading-buttons>.button:first-child {grid-column:1/-1}
-      }
-      @media (max-width:350px) {
-        #app .consumer-home .gw-lab-heading-buttons {grid-template-columns:1fr}
-        #app .consumer-home .gw-lab-heading-buttons>.button:first-child {grid-column:auto}
-        #app .consumer-home img.gw-lab-heading-mark {
-          width:60px!important;height:60px!important;
-          max-width:60px!important;max-height:60px!important;
-          flex-basis:60px!important
+        #app .consumer-bottom-nav {
+          position:fixed!important;bottom:0;left:0;right:0;
+          z-index:90!important;background:#061e32!important;
+          backdrop-filter:none!important
+        }
+        #app .app-body>main {
+          padding-bottom:calc(115px + env(safe-area-inset-bottom,0px))!important
+        }
+        #app .consumer-bottom-nav a[aria-current] {
+          background:#143b58!important;color:#bff7ff!important
         }
       }
     </style>
   </head>
-  <body class="glasswing-visual gw-entry-active" data-release="1.25.3" data-entry="landing">
-    <section id="gw-landing" class="gw-landing" aria-label="Project Glasswing — welcome to QCDS Security Lab">
-      <div class="gw-landing-shell">
-        <div class="gw-landing-art">
-          <img src="./glasswing-approved.webp?v=1.25.0" alt="Project Glasswing — the approved luminous blue crystalline eagle with its network of protective nodes, above the horizon. QCDS Security Lab." fetchpriority="high" decoding="async">
-        </div>
-        <div class="gw-landing-content">
-          <div class="gw-landing-copy">
-            <p class="gw-eyebrow">PROJECT GLASSWING · THE SYNTRACT VISION</p>
-            <h1>QCDS Security Lab</h1>
-            <p>Follow the conditions. Explore attack paths. Verify the evidence.</p>
-          </div>
-          <div class="gw-landing-actions">
-            <button type="button" class="gw-btn gw-btn-primary" data-enter-lab>Enter Security Lab <span aria-hidden="true">→</span></button>
-            <button type="button" class="gw-btn gw-btn-secondary" data-watch-intro>Watch intro <span aria-hidden="true">▶</span></button>
-          </div>
-        </div>
-        <div class="gw-landing-footer">
-          <span><strong>QCDS</strong> · Condition-driven security inference</span>
-          <span>Theory and creation by Patrik Sundblom · with OpenAI / ChatGPT as research &amp; development support</span>
-          <a class="gw-refresh-link" href="./update-lab.html" aria-label="Refresh Security Lab app without deleting saved investigations">↻ Refresh app</a>
-        </div>
+  <body class="glasswing-visual gw-entry-active" data-release="1.26.0" data-entry="intro">
+    <section id="gw-film" class="gw-film" aria-label="Project Glasswing — QCDS Security Lab intro">
+      <video id="gw-film-video" class="gw-film-video"
+             preload="metadata" playsinline muted autoplay
+             poster="./glasswing-approved.webp?v=1.25.0"
+             src="./glasswing-flight-v125.mp4"
+             aria-label="Project Glasswing crystalline eagle in flight"></video>
+      <div class="gw-intro-caption">
+        <span>PROJECT GLASSWING · THE SYNTRACT VISION</span>
+        <strong>QCDS Security Lab</strong>
       </div>
-    </section>
-    <section id="gw-film" class="gw-film" aria-label="Project Glasswing eagle cinematic" hidden>
-      <video id="gw-film-video" class="gw-film-video" preload="metadata" playsinline
-             poster="./glasswing-approved.webp?v=1.25.0" src="./glasswing-flight-v125.mp4"
-             aria-label="Animated crystalline eagle with genuinely moving wings and head"></video>
-      <div class="gw-film-emblem" aria-hidden="true">
-        <img src="./glasswing-mark.webp?v=1.18.0" alt="">
-        <b>QCDS</b><small>Security Lab</small>
-      </div>
-      <button type="button" class="gw-film-skip" data-film-skip>Skip intro <span aria-hidden="true">↗</span></button>
+      <button type="button" class="gw-film-skip" data-film-skip>Enter Security Lab <span aria-hidden="true">→</span></button>
       <p class="gw-film-status" data-film-status role="status" hidden></p>
-      <div class="gw-film-credit">Theory and creation by Patrik Sundblom <span>with OpenAI / ChatGPT as research &amp; development support</span></div>
+      <div class="gw-film-credit">Theory and creation by Patrik Sundblom
+        <span>with OpenAI / ChatGPT as research &amp; development support</span>
+      </div>
     </section>
     <a href="#main" class="skip-link">Skip to workspace</a>
     <div id="app">
@@ -142,6 +95,6 @@
       accept="application/json,.json"
       hidden
     />
-    <script type="module" src="./app-stage-v118.js"></script>
+    <script type="module" src="./app-stage-v118.js?v=1.26.0"></script>
   </body>
 </html>
