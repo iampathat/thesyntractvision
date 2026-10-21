@@ -10,8 +10,8 @@ const blob = name => readFileSync(new URL("../"+name,import.meta.url));
 const index = read("index.html"), entry = read("enter.html");
 const freshLanding = read("glasswing-start.html");
 const cleanLanding = read("glasswing-v120.html");
-const stage = read("glasswing-mesh-stage-v122.js"), stageCss=read("glasswing-rig-stage-v121.css");
-const vector=read("glasswing-original-traced-v122.svg"), gpu=read("glasswing-mesh-v122.js"), theme=read("glasswing-theme-v121.css");
+const stage = read("glasswing-mesh-stage-v123.js"), stageCss=read("glasswing-rig-stage-v121.css");
+const vector=read("glasswing-original-traced-v122.svg"), gpu=read("glasswing-mesh-v123.js"), theme=read("glasswing-theme-v121.css");
 const consumer=read("consumer-ui-stage-v118.js"), app=read("app-stage-v118.js");
 const gateway=read("open-glasswing-116.html"), worker=read("sw.js");
 
@@ -44,7 +44,7 @@ test("new cache-independent URL renders exactly the same canonical landing",()=>
 });
 
 test("approved original eagle is actually vector-traced, not a hand-drawn substitute or bitmap",()=>{
-  assert.match(index,/glasswing-original-traced-v122\.svg\?v=1\.22\.0/);
+  assert.match(index,/glasswing-original-traced-v122\.svg\?v=1\.23\.0/);
   assert.match(index,/glasswing-mesh-v122\.js/);
   assert.match(index,/glasswing-mesh-stage-v122\.js/);
   assert.match(index,/id="gw-film"/);
@@ -55,9 +55,12 @@ test("approved original eagle is actually vector-traced, not a hand-drawn substi
   assert.ok((vector.match(/<path d="M\d+ \d+ \d+ \d+ \d+ \d+Z" fill="#[a-f0-9]{6}"/g)||[]).length >= 20000);
   assert.match(gpu,/gl\.TRIANGLES/);
   assert.match(gpu,/a_pos/);
-  assert.match(gpu,/wingAngle/);
+  assert.match(gpu,/44\.0\*lPhase\*left/);
+  assert.match(gpu,/43\.0\*rPhase\*right/);
+  assert.match(gpu,/smoothstep\(325\.0,415\.0,source\.y\)/);
+  assert.doesNotMatch(gpu,/vec2 turn\(|wingAngle|mix\(p,turn/);
   assert.match(gpu,/head/);
-  assert.match(gpu,/Talons curl separately/);
+  assert.match(gpu,/Independent small talon curls/);
   assert.match(gpu,/shared boundary identically/);
   assert.match(gpu,/WebGL/);
   assert.match(stage,/GlasswingMeshRig/);
@@ -75,7 +78,7 @@ test("crystal-blue design tokens and panels replace the previous green accent sy
     const css=read(file);
     assert.doesNotMatch(css,/#b8ff39|#b8ff55|#c5ff5c|#bcff69|#c4ff70/i,file);
   }
-  assert.match(index,/data-release="1\.22\.0"/);
+  assert.match(index,/data-release="1\.23\.0"/);
 });
 test("working Home contains real investigations and only a compact brand header",()=>{
   assert.match(consumer,/class="gw-lab-heading"/);
@@ -96,7 +99,7 @@ test("direct-entry route is the full app with optional film, not another splash"
   assert.match(index,/app-stage-v118\.js/);
   assert.match(gateway,/url=\.\/\?welcome=1/);
   assert.doesNotMatch(gateway,/unregister|caches\.delete|getRegistrations/);
-  assert.match(worker,/const VERSION = '1\.22\.0'/);
+  assert.match(worker,/const VERSION = '1\.23\.0'/);
   assert.match(worker,/req\.mode === 'navigate'/);
 });
 test("session entry and film are independent of saved case storage",()=>{
@@ -181,4 +184,16 @@ test("repeat visits and direct-entry pages do not auto-show the landing",()=>{
   assert.equal(direct.film.hidden,false);
   direct.click("skip");
   assert.equal(direct.app.inert,false);
+});
+
+test("wing tips move smoothly without separating the original eagle from its shoulders",()=>{
+  const shader=gpu.slice(gpu.indexOf("const VS ="),gpu.indexOf("const FS ="));
+  assert.match(shader,/leftTip = 1\.0 - smoothstep\(84\.0,492\.0,source\.x\)/);
+  assert.match(shader,/rightTip = smoothstep\(584\.0,933\.0,source\.x\)/);
+  assert.match(shader,/float left = wingMask \* leftTip \* u_motion/);
+  assert.match(shader,/float right = wingMask \* rightTip \* u_motion/);
+  assert.match(shader,/pos\.y -= 44\.0\*lPhase\*left \+ 43\.0\*rPhase\*right/);
+  assert.match(shader,/headWeight=exp\(-dot\(hd,hd\)\*2\.55\)/);
+  assert.doesNotMatch(shader,/turn\(|mix\(p,turn/);
+  assert.doesNotMatch(index,/gw-film-ground-art|gw-vector-wing|gw-eagle-wing-left/);
 });
