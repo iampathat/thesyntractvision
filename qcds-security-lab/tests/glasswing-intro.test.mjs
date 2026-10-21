@@ -9,7 +9,7 @@ const read = name => readFileSync(new URL("../"+name,import.meta.url),"utf8");
 const blob = name => readFileSync(new URL("../"+name,import.meta.url));
 const index = read("index.html"), entry = read("enter.html");
 const freshLanding = read("glasswing-start.html");
-const stage = read("glasswing-stage-v118.js"), stageCss=read("glasswing-stage-v118.css");
+const stage = read("glasswing-cinematic-v120.js"), stageCss=read("glasswing-cinematic-v120.css");
 const consumer=read("consumer-ui-stage-v118.js"), app=read("app-stage-v118.js");
 const gateway=read("open-glasswing-116.html"), worker=read("sw.js");
 
@@ -29,8 +29,8 @@ test("canonical page offers Enter and Watch, separate from the actual app",()=>{
   assert.match(index,/<div id="app">/);
   assert.match(index,/data-entry="landing"/);
   assert.match(index,/glasswing-approved\.webp\?v=1\.18\.0/);
-  assert.match(index,/glasswing-stage-v118\.css/);
-  assert.match(index,/glasswing-stage-v118\.js/);
+  assert.match(index,/glasswing-cinematic-v120\.css/);
+  assert.match(index,/glasswing-cinematic-v120\.js/);
   assert.doesNotMatch(index,/id="security-intro"/);
 });
 test("new cache-independent URL renders exactly the same canonical landing",()=>{
@@ -52,16 +52,17 @@ test("film uses exactly one bird image with no severed feather or body sprites",
   assert.match(stageCss,/@keyframes gw-film-node/);
   assert.match(stageCss,/prefers-reduced-motion:reduce/);
 });
-test("vector film retains approved artwork with articulated SVG wings and ground protection",()=>{
-  assert.match(stage,/gw-vector-eagle/);
-  assert.match(stage,/gw-vector-wing-left/);
-  assert.match(stage,/gw-vector-wing-right/);
-  assert.match(stage,/animateMotion/);
-  assert.match(stage,/gw-film-protection/);
-  assert.match(stageCss,/GLASSWING VECTOR MOTION V119/);
-  assert.match(stageCss,/object-fit:contain/);
-  assert.match(index,/glasswing-stage-v118\.js\?v=1\.19\.0/);
-  assert.match(entry,/glasswing-stage-v118\.css\?v=1\.19\.0/);
+test("clean film never creates a duplicate eagle, clipped wing pieces, or debug HUD",()=>{
+  assert.doesNotMatch(stage,/gw-vector-eagle|gw-vector-wing-left|gw-vector-wing-right|gw-film-ground-art|insertAdjacentHTML|animateMotion|innerHTML/);
+  assert.doesNotMatch(stageCss,/GLASSWING VECTOR MOTION V119|url\(["']?\.\/glasswing-approved\.webp/);
+  assert.doesNotMatch(index,/gw-film-arc|gw-film-particles|gw-film-defense|gw-film-ground-art/);
+  assert.match(stageCss,/\.gw-film-background:after\{content:none;display:none\}/);
+  assert.match(stageCss,/@keyframes gw-film-clean-flight/);
+  assert.match(stageCss,/@keyframes gw-film-clean-logo/);
+  assert.match(stageCss,/mask-image:radial-gradient/);
+  assert.match(stage,/--gw-film-target-x/);
+  assert.match(index,/glasswing-cinematic-v120\.js/);
+  assert.match(entry,/glasswing-cinematic-v120\.css/);
 });
 test("working Home contains real investigations and only a compact brand header",()=>{
   assert.match(consumer,/class="gw-lab-heading"/);
@@ -82,7 +83,7 @@ test("direct-entry route is the full app with optional film, not another splash"
   assert.match(index,/app-stage-v118\.js/);
   assert.match(gateway,/url=\.\/\?welcome=1/);
   assert.doesNotMatch(gateway,/unregister|caches\.delete|getRegistrations/);
-  assert.match(worker,/const VERSION = '1\.19\.0'/);
+  assert.match(worker,/const VERSION = '1\.20\.0'/);
   assert.match(worker,/req\.mode === 'navigate'/);
 });
 test("session entry and film are independent of saved case storage",()=>{
