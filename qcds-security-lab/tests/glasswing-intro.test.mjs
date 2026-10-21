@@ -62,7 +62,7 @@ test("approved original eagle is actually vector-traced, not a hand-drawn substi
   assert.match(gpu,/head/);
   assert.match(gpu,/Independent small talon curls/);
   assert.match(gpu,/shared boundary identically/);
-  assert.match(gpu,/WebGL/);
+  assert.match(gpu,/getContext\('webgl'/);
   assert.match(stage,/GlasswingMeshRig/);
   assert.doesNotMatch(stage,/DOMParser|gw-vector-inline|gw-eagle-playing/);
   assert.match(stageCss,/gw-rig-camera-flight/);
