@@ -442,8 +442,10 @@ jobs:
           test -s _site/qcds-security-lab/glasswing-approved.webp
           test -s _site/qcds-security-lab/glasswing-flight.webp
           test -s _site/qcds-security-lab/glasswing-mark.webp
-          test -s _site/qcds-security-lab/glasswing-cinematic-v120.css
-          test -s _site/qcds-security-lab/glasswing-cinematic-v120.js
+          test -s _site/qcds-security-lab/glasswing-rig-stage-v121.css
+          test -s _site/qcds-security-lab/glasswing-theme-v121.css
+          test -s _site/qcds-security-lab/glasswing-rig-stage-v121.js
+          test -s _site/qcds-security-lab/glasswing-rig-v121.svg
           test -s _site/qcds-security-lab/app-stage-v118.js
           test -s _site/qcds-security-lab/consumer-ui-stage-v118.js
           test -s _site/qcds-security-lab/enter.html
@@ -459,13 +461,32 @@ jobs:
           grep -F 'data-watch-intro' _site/qcds-security-lab/index.html
           grep -F 'id="gw-film"' _site/qcds-security-lab/index.html
           grep -F 'gw-film-bird' _site/qcds-security-lab/index.html
-          grep -F 'glasswing-cinematic-v120.js' _site/qcds-security-lab/index.html
-          grep -F 'glasswing-cinematic-v120.css' _site/qcds-security-lab/enter.html
-          ! grep -F 'gw-vector-eagle' _site/qcds-security-lab/glasswing-cinematic-v120.js
-          ! grep -F 'gw-film-ground-art' _site/qcds-security-lab/glasswing-cinematic-v120.js
+          grep -F 'glasswing-rig-v121.svg?v=1.21.0' _site/qcds-security-lab/index.html
+          grep -F 'glasswing-theme-v121.css' _site/qcds-security-lab/index.html
+          grep -F 'gw-film-rig' _site/qcds-security-lab/index.html
+          grep -F 'gw-head' _site/qcds-security-lab/glasswing-rig-v121.svg
+          grep -F '@keyframes wingL' _site/qcds-security-lab/glasswing-rig-v121.svg
+          grep -F '@keyframes headLook' _site/qcds-security-lab/glasswing-rig-v121.svg
+          ! grep -F '<image' _site/qcds-security-lab/glasswing-rig-v121.svg
+          python - <<'PYRIG'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+          root=ET.parse('_site/qcds-security-lab/glasswing-rig-v121.svg').getroot()
+          ns={'svg':'http://www.w3.org/2000/svg'}
+          assert root.tag.endswith('svg')
+          assert root.attrib.get('viewBox')=='0 0 1200 650'
+          assert len(root.findall('.//svg:path',ns))>=75
+          assert len(root.findall('.//svg:circle',ns))>=21
+          print('ARTICULATED SVG EAGLE VERIFIED',len(root.findall('.//svg:path',ns)))
+          PYRIG
+
+          grep -F 'glasswing-rig-stage-v121.js' _site/qcds-security-lab/index.html
+          grep -F 'glasswing-rig-stage-v121.css' _site/qcds-security-lab/enter.html
+          ! grep -F 'gw-film-ground-art' _site/qcds-security-lab/glasswing-rig-stage-v121.js
+          ! grep -F 'gw-eagle-wing-left' _site/qcds-security-lab/index.html
           ! grep -F 'gw-film-arc' _site/qcds-security-lab/index.html
-          grep -F 'gw-film-clean-flight' _site/qcds-security-lab/glasswing-cinematic-v120.css
-          grep -F 'data-release="1.20.0"' _site/qcds-security-lab/index.html
+          grep -F 'gw-rig-camera-flight' _site/qcds-security-lab/glasswing-rig-stage-v121.css
+          grep -F 'data-release="1.21.0"' _site/qcds-security-lab/index.html
           ! grep -F 'gw-eagle-wing-left' _site/qcds-security-lab/index.html
           ! grep -F 'gw-eagle-wing-right' _site/qcds-security-lab/index.html
           grep -F 'app-stage-v118.js' _site/qcds-security-lab/index.html
@@ -474,8 +495,8 @@ jobs:
           grep -F 'gw-lab-heading' _site/qcds-security-lab/consumer-ui-stage-v118.js
           ! grep -F 'gw-home-poster' _site/qcds-security-lab/consumer-ui-stage-v118.js
           grep -F 'url=./?welcome=1' _site/qcds-security-lab/open-glasswing-116.html
-          grep -F "const VERSION = '1.20.0'" _site/qcds-security-lab/sw.js
-          node --check _site/qcds-security-lab/glasswing-cinematic-v120.js
+          grep -F "const VERSION = '1.21.0'" _site/qcds-security-lab/sw.js
+          node --check _site/qcds-security-lab/glasswing-rig-stage-v121.js
           node --check _site/qcds-security-lab/app-stage-v118.js
           node --check _site/qcds-security-lab/consumer-ui-stage-v118.js
           python - <<'PYPOSTER'

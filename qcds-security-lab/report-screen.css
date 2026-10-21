@@ -1,3 +1,4 @@
+/* Unified cyan-blue Glasswing palette v1.21. */
 .report-studio {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
@@ -18,7 +19,7 @@
 .report-cover-preview .report-stamp {
   font: 700 11px/1.6 monospace;
   letter-spacing: 0.12em;
-  color: #bceb52;
+  color: #6dd0ef;
 }
 .report-cover-preview h2 {
   font-size: clamp(27px, 3.4vw, 43px);
@@ -54,7 +55,7 @@
 .report-cover-stats b {
   font-size: 26px;
   display: block;
-  color: #bceb52;
+  color: #6dd0ef;
 }
 .report-cover-stats small {
   display: block;
@@ -100,7 +101,7 @@
 }
 .report-contents strong {
   font: 12px monospace;
-  color: #bceb52;
+  color: #6dd0ef;
 }
 .report-contents small {
   display: block;

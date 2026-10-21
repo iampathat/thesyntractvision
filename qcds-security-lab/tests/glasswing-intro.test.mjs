@@ -10,7 +10,8 @@ const blob = name => readFileSync(new URL("../"+name,import.meta.url));
 const index = read("index.html"), entry = read("enter.html");
 const freshLanding = read("glasswing-start.html");
 const cleanLanding = read("glasswing-v120.html");
-const stage = read("glasswing-cinematic-v120.js"), stageCss=read("glasswing-cinematic-v120.css");
+const stage = read("glasswing-rig-stage-v121.js"), stageCss=read("glasswing-rig-stage-v121.css");
+const vector=read("glasswing-rig-v121.svg"), theme=read("glasswing-theme-v121.css");
 const consumer=read("consumer-ui-stage-v118.js"), app=read("app-stage-v118.js");
 const gateway=read("open-glasswing-116.html"), worker=read("sw.js");
 
@@ -30,42 +31,56 @@ test("canonical page offers Enter and Watch, separate from the actual app",()=>{
   assert.match(index,/<div id="app">/);
   assert.match(index,/data-entry="landing"/);
   assert.match(index,/glasswing-approved\.webp\?v=1\.18\.0/);
-  assert.match(index,/glasswing-cinematic-v120\.css/);
-  assert.match(index,/glasswing-cinematic-v120\.js/);
+  assert.match(index,/glasswing-rig-stage-v121\.css/);
+  assert.match(index,/glasswing-rig-stage-v121\.js/);
   assert.doesNotMatch(index,/id="security-intro"/);
 });
 test("new cache-independent URL renders exactly the same canonical landing",()=>{
   assert.equal(freshLanding,index);
   assert.equal(cleanLanding,index);
-  assert.match(cleanLanding,/glasswing-cinematic-v120\.js/);
+  assert.match(cleanLanding,/glasswing-rig-stage-v121\.js/);
   assert.match(freshLanding,/data-enter-lab/);
   assert.match(freshLanding,/data-watch-intro/);
 });
 
-test("film uses exactly one bird image with no severed feather or body sprites",()=>{
-  const birds=index.match(/class="gw-film-bird"/g)||[];
-  assert.equal(birds.length,1);
-  assert.match(index,/class="gw-film-flight"/);
-  assert.match(index,/glasswing-flight\.webp\?v=1\.18\.0/);
-  assert.match(index,/glasswing-mark\.webp\?v=1\.18\.0/);
+test("the intro has ONE true SVG eagle with animated wings, head, tail and talons",()=>{
+  assert.match(index,/class="gw-film-bird gw-film-rig"/);
+  assert.match(index,/glasswing-rig-v121\.svg\?v=1\.21\.0/);
+  assert.match(index,/glasswing-rig-stage-v121\.js/);
+  assert.match(index,/glasswing-rig-stage-v121\.css/);
+  assert.match(index,/glasswing-theme-v121\.css/);
+  assert.doesNotMatch(index,/class="gw-film-bird" src="\.\/glasswing-flight\.webp/);
   assert.doesNotMatch(index,/gw-eagle-wing-left|gw-eagle-wing-right|gw-eagle-body/);
-  assert.doesNotMatch(stageCss,/clip-path:polygon/);
-  assert.match(stageCss,/@keyframes gw-film-flight/);
-  assert.match(stageCss,/@keyframes gw-film-glide/);
-  assert.match(stageCss,/@keyframes gw-film-node/);
+  assert.match(vector,/<svg\b[^>]+viewBox="0 0 1200 650"/);
+  assert.doesNotMatch(vector,/<image\b|<foreignObject\b|<script\b/);
+  for (const limb of ["gw-wing-left","gw-wing-right","gw-head","gw-tail","gw-talon-left","gw-talon-right","gw-chest"]) {
+    assert.match(vector,new RegExp('class="[^"]*'+limb));
+  }
+  for (const motion of ["wingL","wingR","headLook","tailShift","chestBreathe","talonGrip","energy","eyeFocus"]) {
+    assert.match(vector,new RegExp("@keyframes "+motion));
+  }
+  assert.ok((vector.match(/class="gw-feather"/g)||[]).length>=20);
+  assert.ok((vector.match(/class="gw-node"/g)||[]).length>=18);
+  assert.match(stage,/new window\.DOMParser\(\)/);
+  assert.match(stage,/vector\.setAttribute\("class","gw-film-bird gw-film-rig gw-vector-inline"\)/);
+  assert.match(stage,/rigImage\.replaceWith\(vector\)/);
+  assert.doesNotMatch(stage,/insertAdjacentHTML|innerHTML|gw-film-ground-art/);
+  assert.match(stageCss,/gw-rig-camera-flight/);
+  assert.match(stageCss,/mask-image:none!important/);
+  assert.match(stageCss,/\.gw-film-playing \.gw-film-rig\{animation:none!important\}/);
   assert.match(stageCss,/prefers-reduced-motion:reduce/);
 });
-test("clean film never creates a duplicate eagle, clipped wing pieces, or debug HUD",()=>{
-  assert.doesNotMatch(stage,/gw-vector-eagle|gw-vector-wing-left|gw-vector-wing-right|gw-film-ground-art|insertAdjacentHTML|animateMotion|innerHTML/);
-  assert.doesNotMatch(stageCss,/GLASSWING VECTOR MOTION V119|url\(["']?\.\/glasswing-approved\.webp/);
-  assert.doesNotMatch(index,/gw-film-arc|gw-film-particles|gw-film-defense|gw-film-ground-art/);
-  assert.match(stageCss,/\.gw-film-background:after\{content:none;display:none\}/);
-  assert.match(stageCss,/@keyframes gw-film-clean-flight/);
-  assert.match(stageCss,/@keyframes gw-film-clean-logo/);
-  assert.match(stageCss,/mask-image:radial-gradient/);
-  assert.match(stage,/--gw-film-target-x/);
-  assert.match(index,/glasswing-cinematic-v120\.js/);
-  assert.match(entry,/glasswing-cinematic-v120\.css/);
+test("crystal-blue design tokens and panels replace the previous green accent system",()=>{
+  assert.match(theme,/--acid:#8de7ff/);
+  assert.match(theme,/--app-accent:#85dfff/);
+  assert.match(theme,/\.quantum-card/);
+  assert.match(theme,/\.logic-launch/);
+  assert.match(theme,/\.sidebar/);
+  for(const file of ["style.css","consumer.css","logical-lab.css","quantum-panel.css"]){
+    const css=read(file);
+    assert.doesNotMatch(css,/#b8ff39|#b8ff55|#c5ff5c|#bcff69|#c4ff70/i,file);
+  }
+  assert.match(index,/data-release="1\.21\.0"/);
 });
 test("working Home contains real investigations and only a compact brand header",()=>{
   assert.match(consumer,/class="gw-lab-heading"/);
@@ -86,7 +101,7 @@ test("direct-entry route is the full app with optional film, not another splash"
   assert.match(index,/app-stage-v118\.js/);
   assert.match(gateway,/url=\.\/\?welcome=1/);
   assert.doesNotMatch(gateway,/unregister|caches\.delete|getRegistrations/);
-  assert.match(worker,/const VERSION = '1\.20\.0'/);
+  assert.match(worker,/const VERSION = '1\.21\.0'/);
   assert.match(worker,/req\.mode === 'navigate'/);
 });
 test("session entry and film are independent of saved case storage",()=>{

@@ -1,3 +1,4 @@
+/* GLASSWING v1.21 — cyan/blue visual palette aligned across app surfaces. */
 /* QCDS Security Lab — Patrik Sundblom. Commercial license: LICENSE.md. */
 :root {
   color-scheme: dark;
@@ -8,7 +9,7 @@
   --line: #2b333a;
   --muted: #a0adb8;
   --text: #f2f5f7;
-  --acid: #b8ff39;
+  --acid: #6adaf2;
   --cyan: #81d9e6;
   --orange: #ffb675;
   --red: #ff9caa;
@@ -141,7 +142,7 @@ svg {
   outline: none;
 }
 ::selection {
-  background: #73993e;
+  background: #378396;
   color: white;
 }
 [hidden] {
@@ -232,7 +233,7 @@ svg {
 .sidebar nav a[aria-current] {
   color: var(--acid);
   background: #202a19;
-  border-color: #344628;
+  border-color: #1a3e4b;
 }
 .sidebar nav a[aria-current] .icon {
   stroke-width: 1.9;
@@ -246,7 +247,7 @@ svg {
   color: #d3dce2;
 }
 .sidebar nav a[aria-current] small {
-  background: #3b5024;
+  background: #1d4550;
   color: var(--acid);
 }
 .nav-divider {
@@ -285,7 +286,7 @@ svg {
 }
 .local-note .icon {
   margin-top: 5px;
-  color: #90a384;
+  color: #4897c2;
 }
 .author {
   display: flex;
@@ -366,10 +367,10 @@ svg {
 .button.primary {
   background: var(--acid);
   border-color: var(--acid);
-  color: #162009;
+  color: #0a1b1d;
 }
 .button.primary:hover:not(:disabled) {
-  background: #c7ff69;
+  background: #72e3ff;
 }
 .button.small {
   font-size: 13px;
@@ -386,7 +387,7 @@ svg {
 .ai-button {
   border-color: #42544b;
   background: #18251d;
-  color: #d5e6cd;
+  color: #7ae1ff;
 }
 .icon-button {
   display: inline-grid;
@@ -406,7 +407,7 @@ svg {
   display: none;
 }
 .text-link {
-  color: #c1d7b0;
+  color: #72d1ff;
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -608,7 +609,7 @@ main {
 .system-map {
   position: relative;
   padding: 16px 22px 22px;
-  background-image: radial-gradient(#475b5738 1px, transparent 1px);
+  background-image: radial-gradient(#24577338 1px, transparent 1px);
   background-size: 15px 15px;
 }
 .map-bands {
@@ -622,10 +623,10 @@ main {
 }
 .map-bands span {
   padding: 6px 0;
-  border-bottom: 1px dashed #40554b;
+  border-bottom: 1px dashed #205068;
 }
 .map-bands span:nth-child(2) {
-  color: #9fb69b;
+  color: #64b6ec;
 }
 .map-nodes {
   display: grid;
@@ -660,10 +661,10 @@ main {
   height: 22px;
 }
 .model-node .node-icon {
-  background: #26391a;
-  border-color: #8bb543;
+  background: #133139;
+  border-color: #5aa6c0;
   color: var(--acid);
-  box-shadow: 0 0 24px #91d83213;
+  box-shadow: 0 0 24px #5bbdd113;
 }
 .map-node b {
   font-size: 11px;
@@ -681,7 +682,7 @@ main {
   top: 11px;
   left: calc(50% + 25px);
   width: calc(100% - 36px);
-  color: #889b87;
+  color: #4491bd;
   font-size: 22px;
   text-align: center;
 }
@@ -708,7 +709,7 @@ main {
 .line-sample {
   width: 15px;
   height: 1px;
-  background: #8ea778;
+  background: #4698bf;
 }
 .map-tag {
   margin-left: auto;
@@ -717,7 +718,7 @@ main {
   border: 1px solid #3b4c3e;
   padding: 3px 7px;
   border-radius: 4px;
-  color: #bed3b5;
+  color: #71cfff;
 }
 .map-foot {
   border-top: 1px solid var(--line);
@@ -732,11 +733,11 @@ main {
 .map-foot .icon {
   width: 14px;
   height: 14px;
-  color: #94b58a;
+  color: #5fb2e3;
 }
 .map-foot a {
   margin-left: auto;
-  color: #c2d5b9;
+  color: #73d1ff;
 }
 .next-panel {
   padding: 23px 24px;
@@ -752,7 +753,7 @@ main {
 .next-panel p {
   font-size: 13px;
   margin-top: 13px;
-  color: #b0bfab;
+  color: #6bbffb;
 }
 .next-finding {
   display: flex;
@@ -764,8 +765,8 @@ main {
   margin-top: auto;
 }
 .next-finding .mono {
-  background: #35422b;
-  color: #d2ecb5;
+  background: #1a3b49;
+  color: #78e2ff;
   padding: 2px 5px;
   border-radius: 4px;
   font-size: 11px;
@@ -846,7 +847,7 @@ main {
 }
 .phase-mini span {
   font: 11px var(--mono);
-  color: #a5c48f;
+  color: #66bef0;
 }
 .phase-mini b {
   font-size: 11px;
@@ -922,9 +923,9 @@ main {
   left: calc(50% + 121px);
   transform: translate(-50%, 15px);
   z-index: 100;
-  background: #dceccc;
-  color: #183017;
-  border: 1px solid #b2cc96;
+  background: #7ce6ff;
+  color: #0c2a31;
+  border: 1px solid #6bc5fa;
   border-radius: 9px;
   padding: 13px 20px;
   font-size: 14px;
@@ -1016,7 +1017,7 @@ input[type="checkbox"] {
 }
 .group-label > span {
   font: 12px var(--mono);
-  color: #93a783;
+  color: #499ac5;
 }
 .group-label > h3 {
   font-size: 16px;
@@ -1060,8 +1061,8 @@ input[type="checkbox"] {
   background-color: #192127;
 }
 .condition-select.yes {
-  color: #c2edb0;
-  border-color: #455c3c;
+  color: #72e2ff;
+  border-color: #225366;
 }
 .condition-select.unknown {
   color: #f3d3a7;
@@ -1122,7 +1123,7 @@ input[type="checkbox"] {
   background: #222d32;
 }
 .finding-select.selected {
-  border-color: #819953;
+  border-color: #3f86a1;
   background: #202d20;
   box-shadow: inset 3px 0 0 var(--acid);
 }
@@ -1151,7 +1152,7 @@ input[type="checkbox"] {
 
 .result-why {
   margin: 0 22px 22px;
-  border: 1px solid #46593a;
+  border: 1px solid #235063;
   border-radius: 9px;
   overflow: hidden;
   background: #131c15;
@@ -1162,7 +1163,7 @@ input[type="checkbox"] {
   gap: 22px;
   align-items: flex-start;
   padding: 20px 22px;
-  border-bottom: 1px solid #33432d;
+  border-bottom: 1px solid #193c4b;
   background: linear-gradient(135deg, rgba(184,255,57,.045), transparent 65%), #172117;
 }
 .result-why-head > div:first-child {
@@ -1234,7 +1235,7 @@ input[type="checkbox"] {
   width: 27px;
   height: 27px;
   border-radius: 6px;
-  background: #26361e;
+  background: #133039;
   color: var(--acid);
   font: 11px var(--mono);
 }
@@ -1314,7 +1315,7 @@ input[type="checkbox"] {
   margin-bottom: 18px;
 }
 .finding-tags > .mono {
-  color: #c8d8bc;
+  color: #75d4ff;
 }
 .detail-head h2 {
   font-size: 26px;
@@ -1368,7 +1369,7 @@ input[type="checkbox"] {
 }
 .condition-chips .mono {
   font-size: 10px;
-  color: #9fb795;
+  color: #64b6e9;
   margin-right: 3px;
 }
 .challenge-steps {
@@ -1403,22 +1404,22 @@ input[type="checkbox"] {
 }
 .challenge-steps small {
   display: block;
-  color: #aec29b;
+  color: #69bef5;
   margin-top: 12px;
   font-size: 12px;
 }
 .test-step {
   background: #213023;
-  border: 1px solid #40583a;
+  border: 1px solid #204f62;
   padding: 18px;
   border-radius: 8px;
 }
 .test-step .step-icon {
-  border-color: #a0bc72;
+  border-color: #63b3dc;
   color: var(--acid);
 }
 .test-step p {
-  color: #c5d4be;
+  color: #73d2ff;
 }
 .section-title {
   display: flex;
@@ -1493,7 +1494,7 @@ input[type="checkbox"] {
 .empty > .icon {
   width: 35px;
   height: 35px;
-  color: #8eaa7b;
+  color: #469bc3;
   margin-bottom: 15px;
 }
 .empty p {
@@ -1517,7 +1518,7 @@ input[type="checkbox"] {
 .trace-phase > span {
   font: 12px var(--mono);
   color: var(--acid);
-  background: #2a3621;
+  background: #15303b;
   border-radius: 5px;
   padding: 6px 7px;
 }
@@ -1547,7 +1548,7 @@ input[type="checkbox"] {
 }
 .oracle-symbol {
   display: block;
-  color: #9db488;
+  color: #63b1e1;
   margin-bottom: 14px;
 }
 .oracle-grid h3 {
@@ -1607,7 +1608,7 @@ input[type="checkbox"] {
 }
 .rotation-table td.mono {
   font-size: 11px;
-  color: #b6cabb;
+  color: #6ecaff;
 }
 .rotation-table td:last-child {
   white-space: nowrap;
@@ -1626,11 +1627,11 @@ input[type="checkbox"] {
 .coverage > span {
   display: block;
   height: 100%;
-  background: #a7d87a;
+  background: #66c9f5;
 }
 .rotation-table td small {
   font-size: 10px;
-  color: #b4c7a4;
+  color: #6cc4fc;
 }
 .dimension-grid {
   display: grid;
@@ -1664,7 +1665,7 @@ input[type="checkbox"] {
 }
 .dimension-grid strong {
   margin-left: auto;
-  color: #aec7a5;
+  color: #6ac4fd;
   font: 15px var(--mono);
 }
 .chain-grid {
@@ -1688,9 +1689,9 @@ input[type="checkbox"] {
 }
 .chain-ids button {
   font: 11px var(--mono);
-  background: #2f4026;
-  color: #d6e7c8;
-  border: 1px solid #4e6640;
+  background: #173945;
+  color: #7ae1ff;
+  border: 1px solid #265b70;
   border-radius: 5px;
   padding: 5px 8px;
 }
@@ -1791,7 +1792,7 @@ input[type="checkbox"] {
 }
 .report-row .mono {
   font-size: 10px;
-  color: #abbfac;
+  color: #69bffb;
   padding-top: 3px;
 }
 .report-row > b {
@@ -1838,7 +1839,7 @@ input[type="checkbox"] {
   gap: 55px;
   padding: 35px;
   background: #1c251d;
-  border-color: #3d513b;
+  border-color: #1e4a5d;
 }
 .learn-start h2 {
   font-size: 27px;
@@ -1847,7 +1848,7 @@ input[type="checkbox"] {
 .learn-start p {
   font-size: 15px;
   margin: 16px 0 23px;
-  color: #b5c6b0;
+  color: #6dc5ff;
 }
 .five-questions {
   display: flex;
@@ -1864,7 +1865,7 @@ input[type="checkbox"] {
 .five-questions span {
   font: 11px var(--mono);
   padding-top: 5px;
-  color: #a7d187;
+  color: #66c6f6;
 }
 .learn-phases {
   display: grid;
@@ -1880,7 +1881,7 @@ input[type="checkbox"] {
 }
 .learn-phases article > span {
   font: 24px var(--mono);
-  color: #8eb866;
+  color: #5bafd3;
   display: block;
   margin-bottom: 25px;
 }
@@ -1893,7 +1894,7 @@ input[type="checkbox"] {
 }
 .learn-phases small {
   font-size: 12px;
-  color: #b8cfab;
+  color: #6ecbff;
 }
 .glossary > div:not(.panel-header) {
   display: grid;
@@ -1930,7 +1931,7 @@ input[type="checkbox"] {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  color: #c4ddb5;
+  color: #73d7ff;
   font-size: 14px;
 }
 .reference-links .icon {
@@ -2015,11 +2016,11 @@ dialog::backdrop {
 }
 .mini-msg.user {
   margin-left: auto;
-  background: #273b25;
-  border-color: #4a623f;
+  background: #133540;
+  border-color: #25586c;
 }
 .mini-msg.user small {
-  color: #c9e7b3;
+  color: #75ddff;
 }
 #mini-form {
   margin-top: 15px;
@@ -2558,7 +2559,7 @@ dialog::backdrop {
     width: 1px;
     height: 22px;
     font-size: 0;
-    border-left: 1px solid #657d59;
+    border-left: 1px solid #32728e;
     background: none;
   }
   .edge:before {
@@ -3030,7 +3031,7 @@ dialog::backdrop {
     break-inside: avoid;
   }
   .report-brand {
-    color: #233e17;
+    color: #11353c;
   }
   .report-brand span,
   .report-signoff {
@@ -3150,7 +3151,7 @@ dialog::backdrop {
   gap: 24px;
   padding: 24px;
   background: linear-gradient(110deg, #1e2a1e, var(--panel));
-  border-color: #40512b;
+  border-color: #1f4755;
 }
 .start-guide h2 {
   margin: 7px 0;
@@ -3203,7 +3204,7 @@ dialog::backdrop {
 }
 .guide-phases button[aria-current] {
   border-color: var(--acid);
-  background: #202d19;
+  background: #102830;
   color: var(--text);
 }
 .guide-phases button > span {
@@ -3259,8 +3260,8 @@ dialog::backdrop {
 }
 .walkthrough nav button[aria-current] {
   color: var(--acid);
-  background: #25301b;
-  border-color: #40512b;
+  background: #122a33;
+  border-color: #1f4755;
 }
 .walkthrough nav button:hover {
   background: #253028;
@@ -3334,7 +3335,7 @@ dialog::backdrop {
   border-top: 2px solid var(--cyan);
 }
 .guide-flow.loop > div:last-child {
-  border-color: #667b39;
+  border-color: #316a7d;
 }
 .guide-flow.loop > div:last-child .icon {
   color: var(--acid);
@@ -3367,7 +3368,7 @@ dialog::backdrop {
   margin: 0;
 }
 .guide-stage > .guide-why {
-  border-left: 2px solid #596643;
+  border-left: 2px solid #2c5c71;
   padding-left: 14px;
   font-size: 12px;
 }
@@ -3483,14 +3484,14 @@ dialog::backdrop {
 }
 .perspective-matches button {
   background: #273328;
-  border: 1px solid #415136;
+  border: 1px solid #20495a;
   color: var(--acid);
   padding: 5px 9px;
   border-radius: 5px;
   font: 11px var(--mono);
 }
 .perspective-matches button:hover {
-  background: #3b4d2b;
+  background: #1d4452;
 }
 .comparison-readout {
   display: grid;
@@ -3769,7 +3770,7 @@ dialog::backdrop {
 .result-explainer {
   margin-bottom: 20px;
   overflow: hidden;
-  border-color: #43583a;
+  border-color: #214f62;
 }
 .result-explainer-head {
   display: flex;
@@ -3840,7 +3841,7 @@ dialog::backdrop {
 }
 .result-explainer-levels > a.active > span {
   border-color: var(--acid);
-  background: #2b3a20;
+  background: #15333d;
   color: var(--acid);
 }
 .result-explainer-levels > a.active b {
@@ -3881,7 +3882,7 @@ dialog::backdrop {
   gap: 18px;
   padding: 16px;
   margin: 0 0 24px;
-  border: 1px solid #43533b;
+  border: 1px solid #214b5f;
   border-radius: 10px;
   background: #1b251a;
 }
@@ -3927,8 +3928,8 @@ dialog::backdrop {
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  border: 1px solid #485f29;
-  background: #26361c;
+  border: 1px solid #23515f;
+  background: #132f38;
   color: var(--acid);
   border-radius: 8px;
   padding: 10px;
@@ -3992,7 +3993,7 @@ dialog::backdrop {
 .question-position nav button[aria-current] > span {
   border-color: var(--acid);
   background: var(--acid);
-  color: #14200c;
+  color: #0a1b1f;
 }
 .question-position nav button[aria-current] small {
   color: var(--acid);
@@ -4120,7 +4121,7 @@ dialog::backdrop {
 .describe-start {
   margin-bottom: 22px;
   padding: 18px;
-  border: 1px solid #58723e;
+  border: 1px solid #2b6478;
   border-radius: 8px;
   background: #182218;
 }
@@ -4264,7 +4265,7 @@ dialog::backdrop {
   font-size: 13px;
 }
 .dimension-station {
-  border-color: #49612f;
+  border-color: #235463;
   overflow: hidden;
 }
 .dimension-station > summary {
@@ -4306,8 +4307,8 @@ dialog::backdrop {
 }
 .station-context {
   padding: 12px 14px;
-  background: #22311d;
-  color: #c0d6a5;
+  background: #112b35;
+  color: #71cfff;
   font-size: 13px;
   line-height: 1.7;
   border-radius: 7px;
@@ -4383,7 +4384,7 @@ dialog::backdrop {
 .fact-comparison .fact-result {
   color: var(--text);
   padding: 14px;
-  border: 1px solid #40512b;
+  border: 1px solid #1f4755;
   border-radius: 7px;
   background: #1d271a;
 }
@@ -4435,7 +4436,7 @@ dialog::backdrop {
   width: min(660px, calc(100vw - 24px));
   max-height: calc(100dvh - 32px);
   padding: 0;
-  border: 1px solid #52683a;
+  border: 1px solid #285c6e;
   border-radius: 14px;
   background: var(--panel);
   color: var(--text);
@@ -4484,7 +4485,7 @@ dialog::backdrop {
 .system-explanation-lead {
   margin-top: 18px;
   padding: 17px 18px;
-  border: 1px solid #495b36;
+  border: 1px solid #245162;
   border-radius: 8px;
   background: #182118;
   color: #d5ded2 !important;
@@ -4514,7 +4515,7 @@ dialog::backdrop {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #2b3a20;
+  background: #15333d;
   color: var(--acid);
   font: 11px var(--mono);
 }
@@ -4579,7 +4580,7 @@ dialog::backdrop {
   font-style: normal;
 }
 .system-pipeline-row .qcds-loop-node {
-  border-color: #5c713d;
+  border-color: #2d6377;
   background: #1c2818;
 }
 .system-pipeline-row .qcds-loop-node b {
@@ -4612,7 +4613,7 @@ dialog::backdrop {
 .system-explanation-qcds {
   margin: 20px 0;
   padding: 17px 18px;
-  border: 1px solid #46593a;
+  border: 1px solid #235063;
   border-radius: 8px;
   background: #172018;
 }
@@ -4729,7 +4730,7 @@ dialog::backdrop {
   line-height: 1.35;
 }
 .sidebar nav a[aria-current] .nav-copy em {
-  color: #96b96c;
+  color: #5fb1d7;
 }
 .nav-tools {
   margin-top: 18px;
@@ -4793,7 +4794,7 @@ dialog::backdrop {
   gap: 28px;
   padding: 24px 26px;
   margin-bottom: 20px;
-  border-color: #526f38;
+  border-color: #286173;
   background: linear-gradient(135deg, rgba(184,255,57,.045), transparent 60%), #151d1a;
 }
 .examples-primer > div {
@@ -4846,7 +4847,7 @@ dialog::backdrop {
   gap: 20px;
   align-items: start;
   padding: 18px 28px;
-  border-block: 1px solid #405035;
+  border-block: 1px solid #204859;
   background: #1b2619;
 }
 .example-problem span {
@@ -4973,7 +4974,7 @@ dialog::backdrop {
   justify-content: space-between;
   gap: 20px;
   padding: 19px 28px 22px;
-  border-top: 1px solid #435235;
+  border-top: 1px solid #214a5b;
   background: #162016;
 }
 .example-journey-cta b {
@@ -4983,7 +4984,7 @@ dialog::backdrop {
 .example-journey-cta small {
   display: block;
   margin-top: 4px;
-  color: #9eab92;
+  color: #64ade0;
   font-size: 11px;
 }
 .example-journey-cta .button {
@@ -5005,7 +5006,7 @@ dialog::backdrop {
   display: block;
   padding: 18px 20px;
   margin-bottom: 18px;
-  border-color: #526c37;
+  border-color: #285e70;
   background: #172116;
 }
 .example-coach b {
@@ -5022,7 +5023,7 @@ dialog::backdrop {
 .example-coach small {
   display: block;
   margin-top: 8px;
-  color: #98ae7d;
+  color: #60abd7;
   font-size: 11px;
 }
 .examples-after {
@@ -5125,7 +5126,7 @@ dialog::backdrop {
 /* Guided trace: keep the QCDS machinery understandable before showing the full tables. */
 .trace-guide {
   overflow: hidden;
-  border-color: #4b6335;
+  border-color: #255768;
   background:
     linear-gradient(180deg, rgba(184, 255, 57, 0.035), transparent 34%),
     var(--panel);
@@ -5189,7 +5190,7 @@ dialog::backdrop {
 }
 .trace-finding-chip.selected {
   border-color: var(--acid);
-  background: #2a3a1e;
+  background: #15333c;
   color: var(--acid);
 }
 .trace-live-path {
@@ -5393,7 +5394,7 @@ dialog::backdrop {
   gap: 28px;
   padding: 24px 26px;
   margin-bottom: 20px;
-  border-color: #465c34;
+  border-color: #225162;
 }
 .perspective-intro h2 {
   margin: 6px 0 8px;
@@ -5447,12 +5448,12 @@ dialog::backdrop {
   font-size: 11px;
 }
 .perspective-choice:hover {
-  border-color: #60713f;
+  border-color: #2f6378;
   background: #1b2523;
 }
 .perspective-choice.selected {
   border-color: var(--acid);
-  background: #213019;
+  background: #102a32;
   box-shadow: inset 0 0 0 1px rgba(184, 255, 57, 0.16);
 }
 .perspective-choice.selected > span,
@@ -6036,13 +6037,13 @@ dialog::backdrop {
 .condition-basis {
   display: block;
   margin-top: 5px;
-  color: #9dae83;
+  color: #62acda;
   font-size: 9px;
   line-height: 1.45;
   font-style: normal;
 }
 .qcds-asks {
-  border-color: #53663f;
+  border-color: #295b6f;
   background: #151f16;
 }
 .qcds-asks > h2 {
@@ -6094,7 +6095,7 @@ dialog::backdrop {
   font: 10px var(--mono);
 }
 .clarification-actions button:hover {
-  border-color: #829764;
+  border-color: #4088a8;
   color: var(--acid);
 }
 .search-space-strip {
@@ -6181,7 +6182,7 @@ dialog::backdrop {
   line-height: 1.5;
 }
 .recursive-branch-grid li b {
-  color: #91a36f;
+  color: #4793b7;
   text-transform: uppercase;
 }
 .recursive-branch-grid li span {
@@ -6193,7 +6194,7 @@ dialog::backdrop {
   border-top: 1px solid #344047;
 }
 .recursive-questions > small {
-  color: #8e9b75;
+  color: #468eb4;
   font: 9px var(--mono);
 }
 .recursive-questions p {
@@ -6250,7 +6251,7 @@ dialog::backdrop {
 .nav-example-loaded {
   margin: 4px 5px 8px;
   padding: 13px 14px;
-  border: 1px solid #4f6935;
+  border: 1px solid #265b6c;
   border-radius: 9px;
   background:
     linear-gradient(135deg, rgba(184,255,57,.06), transparent 72%),
@@ -6272,7 +6273,7 @@ dialog::backdrop {
 .nav-example-loaded > small {
   display: block;
   margin-top: 3px;
-  color: #8fa181;
+  color: #4795bf;
   font-size: 9px;
   line-height: 1.35;
 }
@@ -6283,12 +6284,12 @@ dialog::backdrop {
   padding: 0 !important;
   border: 0 !important;
   background: transparent !important;
-  color: #aaca86 !important;
+  color: #68c1f0 !important;
   font-size: 9px !important;
 }
 .nav-example-picker {
   margin: 0 2px 7px;
-  border-color: #40502f !important;
+  border-color: #1f4756 !important;
 }
 .nav-flow {
   position: relative;
@@ -6304,7 +6305,7 @@ dialog::backdrop {
   top: 23px;
   bottom: 23px;
   width: 1px;
-  background: #39452f;
+  background: #1c3e4e;
 }
 .sidebar nav a.nav-flow-step {
   position: relative;
@@ -6348,7 +6349,7 @@ dialog::backdrop {
 .casebar.worked-example {
   min-height: 66px;
   padding: 11px 13px;
-  border: 1px solid #445d35;
+  border: 1px solid #215263;
   border-radius: 9px;
   background: #151f16;
 }
@@ -6377,19 +6378,19 @@ dialog::backdrop {
 }
 .casebar-change {
   white-space: nowrap;
-  color: #a9c987;
+  color: #67c0f0;
   font-size: 10px;
 }
 .walkthrough-example {
   display: inline-block;
   margin-top: 5px;
-  color: #93b773;
+  color: #5eb0d9;
   font: 8px var(--mono);
   letter-spacing: .09em;
 }
 .example-lab-map {
   padding: 25px 27px;
-  border-color: #526d3a;
+  border-color: #285f72;
   background:
     linear-gradient(135deg, rgba(184,255,57,.05), transparent 56%),
     #151d19;
@@ -6423,7 +6424,7 @@ dialog::backdrop {
   height: 23px;
   margin-bottom: 8px;
   border-radius: 50%;
-  background: #27351e;
+  background: #132f38;
   color: var(--acid);
   font: 9px var(--mono);
 }
@@ -6442,7 +6443,7 @@ dialog::backdrop {
 }
 .example-lab-flow > i {
   align-self: center;
-  color: #67765d;
+  color: #336d8b;
   font-style: normal;
 }
 .example-lab-note {
@@ -6453,15 +6454,15 @@ dialog::backdrop {
   font-size: 11px;
 }
 .example-journey.currently-loaded {
-  border-color: #58773b;
-  box-shadow: inset 3px 0 0 #92cd3d;
+  border-color: #2b677a;
+  box-shadow: inset 3px 0 0 #5cb7ce;
 }
 .example-loaded-badge {
   flex-shrink: 0;
   padding: 6px 8px;
-  border: 1px solid #5a763e;
+  border: 1px solid #2c677b;
   border-radius: 6px;
-  background: #203019;
+  background: #102a32;
   color: var(--acid);
   font: 8px var(--mono);
   letter-spacing: .08em;
@@ -6523,11 +6524,11 @@ dialog::backdrop {
   gap: 20px;
   align-items: center;
   padding: 18px 20px;
-  border-color: #455a37;
+  border-color: #225062;
   background: #151e17;
 }
 .workflow-next > span {
-  color: #7f9471;
+  color: #3f88ad;
   font: 8px var(--mono);
   letter-spacing: .1em;
 }
@@ -6603,7 +6604,7 @@ dialog::backdrop {
   gap: 24px;
   align-items: stretch;
   padding: 22px 24px;
-  border-color: #526d3a;
+  border-color: #285f72;
   background:
     linear-gradient(135deg, rgba(184,255,57,.05), transparent 62%),
     #151d19;
