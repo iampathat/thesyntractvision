@@ -33,7 +33,13 @@
     .status[data-state="error"]{border-color:#bf7776;color:#ffd5c9}
     .status[data-state="success"]{border-color:#77b8a0;color:#d8fff0}
     a{color:#9feaf0}
-    footer{padding-top:13px;font-size:13px}
+    .launch-actions{margin-top:24px;display:grid;gap:12px}
+    .launch-lab{width:100%;display:flex;align-items:center;justify-content:center;min-height:62px;padding:17px 20px;border-radius:11px;text-decoration:none;font-size:17px;font-weight:800;line-height:1.3;background:#c9ff80;color:#10231c;border:1px solid #d6ff9f;box-shadow:0 8px 26px #8bff6322;transition:background .18s ease}
+    .launch-lab:hover{background:#e1ffb5;color:#10231c}
+    .return-lab{width:100%;display:flex;align-items:center;justify-content:center;min-height:54px;border:1px solid #5f8c91;border-radius:11px;text-decoration:none;font-size:15px;font-weight:700;color:#c5f6f6;background:#23373c;padding:12px 16px}
+    .return-lab:hover{background:#315157}
+    .launch-lab:focus-visible,.return-lab:focus-visible{outline:3px solid #c5ff80;outline-offset:4px}
+    .launch-hint{font-size:13px;color:#a4c1c4;margin:0}
     .hidden{display:none!important}
   </style>
 </head>
@@ -56,7 +62,11 @@
       <p class="fine">You will be asked to confirm before anything is deleted. If your work matters, download the backup first.</p>
     </section>
     <div class="status" id="status" role="status" aria-live="polite">Ready. Choose an option above.</div>
-    <footer><a href="./index.html">← Back to Security Lab</a></footer>
+    <nav class="launch-actions" aria-label="Open QCDS Security Lab">
+      <a id="openLab" class="launch-lab hidden" href="./index.html">Open QCDS Security Lab →</a>
+      <a class="return-lab" href="./index.html">Back to QCDS Security Lab →</a>
+      <p id="launchHint" class="launch-hint hidden">Your update is complete. Open the lab when you are ready.</p>
+    </nav>
   </main>
   <script>
     (() => {
@@ -69,7 +79,9 @@
         refresh: document.getElementById('refresh'),
         reset: document.getElementById('reset'),
         backup: document.getElementById('backup'),
-        status: document.getElementById('status')
+        status: document.getElementById('status'),
+        open: document.getElementById('openLab'),
+        hint: document.getElementById('launchHint')
       };
       const setStatus = (message, state = '') => {
         ui.status.textContent = message;
@@ -145,10 +157,11 @@
         }
       };
       const openLab = () => {
-        setStatus('Done. Opening the latest Security Lab…', 'success');
-        const target = './index.html?updated=' + Date.now();
-        // Navigation is a browser action; it does not delete any stored data.
-        location.replace(target);
+        setStatus('Complete. The latest Security Lab is ready. Select the large button below to enter.', 'success');
+        ui.open.href = './index.html?updated=' + Date.now();
+        ui.open.classList.remove('hidden');
+        ui.hint.classList.remove('hidden');
+        ui.open.focus();
       };
       ui.refresh.addEventListener('click', async () => {
         setBusy(true);
