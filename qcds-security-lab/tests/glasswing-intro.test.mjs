@@ -11,7 +11,7 @@ const index = read("index.html"), entry = read("enter.html");
 const freshLanding = read("glasswing-start.html");
 const cleanLanding = read("glasswing-v120.html");
 const stage = read("glasswing-mesh-stage-v123.js"), stageCss=read("glasswing-rig-stage-v121.css");
-const vector=read("glasswing-original-traced-v122.svg"), gpu=read("glasswing-mesh-v123.js"), theme=read("glasswing-theme-v121.css");
+const vector=read("glasswing-original-traced-v123.svg"), gpu=read("glasswing-mesh-v123.js"), theme=read("glasswing-theme-v121.css");
 const consumer=read("consumer-ui-stage-v118.js"), app=read("app-stage-v118.js");
 const gateway=read("open-glasswing-116.html"), worker=read("sw.js");
 
@@ -32,21 +32,21 @@ test("canonical page offers Enter and Watch, separate from the actual app",()=>{
   assert.match(index,/data-entry="landing"/);
   assert.match(index,/glasswing-approved\.webp\?v=1\.18\.0/);
   assert.match(index,/glasswing-rig-stage-v121\.css/);
-  assert.match(index,/glasswing-mesh-stage-v122\.js/);
+  assert.match(index,/glasswing-mesh-stage-v123\.js/);
   assert.doesNotMatch(index,/id="security-intro"/);
 });
 test("new cache-independent URL renders exactly the same canonical landing",()=>{
   assert.equal(freshLanding,index);
   assert.equal(cleanLanding,index);
-  assert.match(cleanLanding,/glasswing-mesh-stage-v122\.js/);
+  assert.match(cleanLanding,/glasswing-mesh-stage-v123\.js/);
   assert.match(freshLanding,/data-enter-lab/);
   assert.match(freshLanding,/data-watch-intro/);
 });
 
 test("approved original eagle is actually vector-traced, not a hand-drawn substitute or bitmap",()=>{
   assert.match(index,/glasswing-original-traced-v122\.svg\?v=1\.23\.0/);
-  assert.match(index,/glasswing-mesh-v122\.js/);
-  assert.match(index,/glasswing-mesh-stage-v122\.js/);
+  assert.match(index,/glasswing-mesh-v123\.js/);
+  assert.match(index,/glasswing-mesh-stage-v123\.js/);
   assert.match(index,/id="gw-film"/);
   assert.doesNotMatch(index,/gw-eagle-wing-left|gw-eagle-wing-right|gw-eagle-body/);
   assert.match(vector,/<svg\b/);
