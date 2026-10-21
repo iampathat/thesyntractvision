@@ -1,3 +1,4 @@
+/* Unified cyan-blue Glasswing palette v1.21. */
 /* Project Glasswing v1.16.0 — cohesive QCDS Security Lab visual identity.
    Theory and creation by Patrik Sundblom
    with OpenAI / ChatGPT as research & development support. */
@@ -82,7 +83,7 @@ body.glasswing-visual .consumer-home .eyebrow {color:#99daee}
   animation:gw-home-diode 1.9s ease-in-out infinite alternate;
 }
 .gw-home-energy i:nth-child(1){top:46%;left:31%}
-.gw-home-energy i:nth-child(2){top:61%;left:66%;animation-delay:.75s;background:#c5ff87}
+.gw-home-energy i:nth-child(2){top:61%;left:66%;animation-delay:.75s;background:#72e7ff}
 .gw-home-energy i:nth-child(3){top:72%;left:41%;animation-delay:1.25s;background:#be9eff}
 @keyframes gw-home-diode {0%,40%{opacity:.3;transform:scale(.6)}100%{opacity:1;transform:scale(1.7)}}
 .gw-home-replay {
@@ -95,7 +96,7 @@ body.glasswing-visual .consumer-home .eyebrow {color:#99daee}
   box-shadow:0 0 25px #2ec9f739;
 }
 .gw-home-replay:hover{background:#19435f}
-.gw-home-replay:focus-visible{outline:3px solid #e5fc92;outline-offset:3px}
+.gw-home-replay:focus-visible{outline:3px solid #7ee7ff;outline-offset:3px}
 .gw-home-controls {
   display:flex;align-items:center;justify-content:space-between;
   gap:18px;padding:23px clamp(17px,3vw,30px);
@@ -201,10 +202,10 @@ body.glasswing-visual .consumer-home .eyebrow {color:#99daee}
   opacity:0;animation:gw-defense-spark 1.48s ease-in-out infinite;
 }
 .gw-defense-pulses i:nth-child(1){left:21%;top:36%;animation-delay:.2s;background:#85faff}
-.gw-defense-pulses i:nth-child(2){left:34%;top:46%;animation-delay:.45s;background:#bfff8d}
+.gw-defense-pulses i:nth-child(2){left:34%;top:46%;animation-delay:.45s;background:#70e8ff}
 .gw-defense-pulses i:nth-child(3){left:45%;top:56%;animation-delay:.78s;background:#d5aaff}
 .gw-defense-pulses i:nth-child(4){left:57%;top:57%;animation-delay:1.05s;background:#fff}
-.gw-defense-pulses i:nth-child(5){left:70%;top:43%;animation-delay:1.21s;background:#adff85}
+.gw-defense-pulses i:nth-child(5){left:70%;top:43%;animation-delay:1.21s;background:#69e7ff}
 .gw-defense-pulses i:nth-child(6){left:82%;top:30%;animation-delay:.58s;background:#79e8ff}
 .gw-intro-logo {
   position:absolute;top:clamp(20px,4vh,46px);left:clamp(15px,3vw,50px);
@@ -231,7 +232,7 @@ body.glasswing-visual .consumer-home .eyebrow {color:#99daee}
   transform:translate(-50%,-45%);
   animation:gw-cinema-heading 2.3s 3.5s ease-out both;
 }
-.gw-intro-title>span {font:720 12px/1.4 ui-monospace,monospace;letter-spacing:.3em;color:#c6ffed}
+.gw-intro-title>span {font:720 12px/1.4 ui-monospace,monospace;letter-spacing:.3em;color:#76f9ff}
 .gw-intro-title h1 {
   margin:8px 0 0;
   font:900 clamp(50px,10vw,140px)/1.05 ui-sans-serif,system-ui,sans-serif;
@@ -250,7 +251,7 @@ body.glasswing-visual .consumer-home .eyebrow {color:#99daee}
   font-size:13px;font-weight:700;
 }
 .gw-intro-v116 .q-intro-skip:hover {background:#145178}
-.gw-intro-v116 .q-intro-skip:focus-visible {outline:3px solid #cbff92;outline-offset:3px}
+.gw-intro-v116 .q-intro-skip:focus-visible {outline:3px solid #74e9ff;outline-offset:3px}
 .gw-intro-author {
   position:absolute;bottom:17px;left:15px;right:15px;z-index:8;
   margin:0;text-align:center;color:#a2c6d4;
