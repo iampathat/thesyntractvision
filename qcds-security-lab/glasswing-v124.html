@@ -16,22 +16,18 @@
     <link rel="stylesheet" href="./style.css?v=1.11.0" />
     <link rel="stylesheet" href="./logical-lab.css?v=1.13.0" />
     <link rel="stylesheet" href="./quantum-panel.css?v=1.1.0" />
-    <script src="./glasswing-mesh-v124.js" defer></script>
-    <script src="./glasswing-mesh-stage-v124.js" defer></script>
     <link rel="stylesheet" href="./report-screen.css?v=1.0.0" />
     <link rel="stylesheet" href="./consumer.css?v=1.15.0" />
     <link rel="stylesheet" href="./glasswing-experience.css?v=1.16.0" />
-    <link rel="stylesheet" href="./glasswing-cinematic-v120.css" />
-    <link rel="stylesheet" href="./glasswing-rig-stage-v121.css?v=1.22.0" />
     <link rel="stylesheet" href="./glasswing-theme-v121.css" />
-    <link rel="stylesheet" href="./glasswing-visible-v124.css" />
+    <link rel="stylesheet" href="./glasswing-screen-v125.css" />
+    <script src="./glasswing-screen-v125.js" defer></script>
   </head>
-  <body class="glasswing-visual gw-entry-active" data-release="1.24.0" data-entry="landing">
-    <section id="gw-landing" class="gw-landing" aria-label="QCDS Security Lab landing">
+  <body class="glasswing-visual gw-entry-active" data-release="1.25.0" data-entry="landing">
+    <section id="gw-landing" class="gw-landing" aria-label="Project Glasswing — welcome to QCDS Security Lab">
       <div class="gw-landing-shell">
         <div class="gw-landing-art">
-          <img src="./glasswing-approved.webp?v=1.18.0" alt="Project Glasswing: a fierce icy-blue crystalline eagle with luminous security nodes and QCDS Security Lab branding." fetchpriority="high">
-          <div class="gw-landing-shine" aria-hidden="true"></div>
+          <img src="./glasswing-approved.webp?v=1.25.0" alt="Project Glasswing — the approved luminous blue crystalline eagle with its network of protective nodes, above the horizon. QCDS Security Lab." fetchpriority="high" decoding="async">
         </div>
         <div class="gw-landing-content">
           <div class="gw-landing-copy">
@@ -40,30 +36,26 @@
             <p>Follow the conditions. Explore attack paths. Verify the evidence.</p>
           </div>
           <div class="gw-landing-actions">
-            <button class="gw-btn gw-btn-primary" type="button" data-enter-lab>Enter Security Lab <span aria-hidden="true">→</span></button>
-            <button class="gw-btn gw-btn-secondary" type="button" data-watch-intro>Watch intro <span aria-hidden="true">▶</span></button>
+            <button type="button" class="gw-btn gw-btn-primary" data-enter-lab>Enter Security Lab <span aria-hidden="true">→</span></button>
+            <button type="button" class="gw-btn gw-btn-secondary" data-watch-intro>Watch intro <span aria-hidden="true">▶</span></button>
           </div>
         </div>
-        <div class="gw-landing-footer"><span><strong>QCDS</strong> · Condition-driven security inference</span><span>Theory and creation by Patrik Sundblom · with OpenAI / ChatGPT as research &amp; development support</span></div>
+        <div class="gw-landing-footer">
+          <span><strong>QCDS</strong> · Condition-driven security inference</span>
+          <span>Theory and creation by Patrik Sundblom · with OpenAI / ChatGPT as research &amp; development support</span>
+        </div>
       </div>
     </section>
-    <section id="gw-film" class="gw-film" aria-label="Project Glasswing cinematic introduction" hidden>
-      <div class="gw-film-background" aria-hidden="true"></div>
-      <div class="gw-film-halo" aria-hidden="true"></div>
-      <div class="gw-film-flight" aria-hidden="true">
-        <img class="gw-film-bird gw-film-rig" loading="eager" decoding="async" src="./glasswing-original-traced-v122.svg?v=1.24.0" alt="The original crystalline Glasswing eagle precisely traced into vector facets.">
-      </div>
-      <div class="gw-film-logo" aria-hidden="true">
+    <section id="gw-film" class="gw-film" aria-label="Project Glasswing eagle cinematic" hidden>
+      <video id="gw-film-video" class="gw-film-video" preload="metadata" playsinline
+             poster="./glasswing-approved.webp?v=1.25.0" src="./glasswing-flight-v125.mp4"
+             aria-label="Animated crystalline eagle with genuinely moving wings and head"></video>
+      <div class="gw-film-emblem" aria-hidden="true">
         <img src="./glasswing-mark.webp?v=1.18.0" alt="">
         <b>QCDS</b><small>Security Lab</small>
       </div>
-      <div class="gw-film-title" aria-hidden="true">
-        <span>PROJECT GLASSWING</span>
-        <h2>QCDS</h2>
-        <p>Security Lab</p>
-        <small>CONDITIONS · EVOLUTION · INFERENCE · VERIFICATION</small>
-      </div>
-      <button class="gw-film-skip" type="button" data-film-skip>Skip intro <span aria-hidden="true">↗</span></button>
+      <button type="button" class="gw-film-skip" data-film-skip>Skip intro <span aria-hidden="true">↗</span></button>
+      <p class="gw-film-status" data-film-status role="status" hidden></p>
       <div class="gw-film-credit">Theory and creation by Patrik Sundblom <span>with OpenAI / ChatGPT as research &amp; development support</span></div>
     </section>
     <a href="#main" class="skip-link">Skip to workspace</a>

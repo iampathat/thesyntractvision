@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta
+      name="description"
+      content="QCDS Security Lab by Patrik Sundblom. Investigate any system through multiple security perspectives, QCDS recursive inference, control challenge and evidence-bound reporting."
+    />
+    <meta name="theme-color" content="#081d32" />
+    <title>QCDS Security Lab · Project Glasswing</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="./assets/app-icon-180.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./style.css?v=1.11.0" />
+    <link rel="stylesheet" href="./logical-lab.css?v=1.13.0" />
+    <link rel="stylesheet" href="./quantum-panel.css?v=1.1.0" />
+    <link rel="stylesheet" href="./report-screen.css?v=1.0.0" />
+    <link rel="stylesheet" href="./consumer.css?v=1.15.0" />
+    <link rel="stylesheet" href="./glasswing-experience.css?v=1.16.0" />
+    <link rel="stylesheet" href="./glasswing-theme-v121.css" />
+    <link rel="stylesheet" href="./glasswing-screen-v125.css" />
+    <script src="./glasswing-screen-v125.js" defer></script>
+  </head>
+  <body class="glasswing-visual gw-entry-active" data-release="1.25.0" data-entry="landing">
+    <section id="gw-landing" class="gw-landing" aria-label="Project Glasswing — welcome to QCDS Security Lab">
+      <div class="gw-landing-shell">
+        <div class="gw-landing-art">
+          <img src="./glasswing-approved.webp?v=1.25.0" alt="Project Glasswing — the approved luminous blue crystalline eagle with its network of protective nodes, above the horizon. QCDS Security Lab." fetchpriority="high" decoding="async">
+        </div>
+        <div class="gw-landing-content">
+          <div class="gw-landing-copy">
+            <p class="gw-eyebrow">PROJECT GLASSWING · THE SYNTRACT VISION</p>
+            <h1>QCDS Security Lab</h1>
+            <p>Follow the conditions. Explore attack paths. Verify the evidence.</p>
+          </div>
+          <div class="gw-landing-actions">
+            <button type="button" class="gw-btn gw-btn-primary" data-enter-lab>Enter Security Lab <span aria-hidden="true">→</span></button>
+            <button type="button" class="gw-btn gw-btn-secondary" data-watch-intro>Watch intro <span aria-hidden="true">▶</span></button>
+          </div>
+        </div>
+        <div class="gw-landing-footer">
+          <span><strong>QCDS</strong> · Condition-driven security inference</span>
+          <span>Theory and creation by Patrik Sundblom · with OpenAI / ChatGPT as research &amp; development support</span>
+        </div>
+      </div>
+    </section>
+    <section id="gw-film" class="gw-film" aria-label="Project Glasswing eagle cinematic" hidden>
+      <video id="gw-film-video" class="gw-film-video" preload="metadata" playsinline
+             poster="./glasswing-approved.webp?v=1.25.0" src="./glasswing-flight-v125.mp4"
+             aria-label="Animated crystalline eagle with genuinely moving wings and head"></video>
+      <div class="gw-film-emblem" aria-hidden="true">
+        <img src="./glasswing-mark.webp?v=1.18.0" alt="">
+        <b>QCDS</b><small>Security Lab</small>
+      </div>
+      <button type="button" class="gw-film-skip" data-film-skip>Skip intro <span aria-hidden="true">↗</span></button>
+      <p class="gw-film-status" data-film-status role="status" hidden></p>
+      <div class="gw-film-credit">Theory and creation by Patrik Sundblom <span>with OpenAI / ChatGPT as research &amp; development support</span></div>
+    </section>
+    <a href="#main" class="skip-link">Skip to workspace</a>
+    <div id="app">
+      <main class="loading">
+        <img src="./glasswing-mark.webp?v=1.16.0" alt="QCDS Security Lab eagle" style="width:124px;height:auto;border-radius:10px">
+        <h1>QCDS Security Lab</h1>
+        <p>Opening your workspace…</p>
+      </main>
+    </div>
+    <noscript
+      ><p class="loading">
+        Enable JavaScript to use the local lab. Read the
+        <a href="./METHODOLOGY.md">methodology</a> without JavaScript.
+      </p></noscript
+    >
+    <div id="toast" role="status" aria-live="polite"></div>
+    <dialog id="explanation" aria-labelledby="explanation-title"></dialog>
+    <dialog id="interview" aria-labelledby="interview-title"></dialog>
+    <input
+      type="file"
+      id="import-file"
+      accept="application/json,.json"
+      hidden
+    />
+    <script type="module" src="./app-stage-v118.js"></script>
+  </body>
+</html>
