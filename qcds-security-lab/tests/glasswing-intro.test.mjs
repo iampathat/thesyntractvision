@@ -1,4 +1,4 @@
-// Project Glasswing v1.25 — cinematic wingbeats and a single real landing.
+// Project Glasswing v1.25.1 — cinematic wingbeats and a single real landing.
 // Theory and creation by Patrik Sundblom — OpenAI / ChatGPT R&D support.
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -22,7 +22,7 @@ test("every existing entry and fresh URL serves the identical complete landing",
   assert.match(index,/data-watch-intro/);
   assert.match(index,/class="gw-landing-art"/);
   assert.match(index,/data-entry="landing"/);
-  assert.match(index,/data-release="1\.25\.0"/);
+  assert.match(index,/data-release="1\.25\.1"/);
 });
 test("landing preserves ALL of the originally approved eagle instead of cropping it",()=>{
   assert.match(index,/glasswing-approved\.webp\?v=1\.25\.0/);
@@ -38,7 +38,7 @@ test("actual user-reference cinematic video contains moving frames and is shippe
   assert.equal(video.subarray(4,8).toString(),"ftyp");
   assert.ok(video.includes(Buffer.from("moov")));
   assert.match(build,/'\.mp4'/);
-  assert.match(worker,/const VERSION = '1\.25\.0'/);
+  assert.match(worker,/const VERSION = '1\.25\.1'/);
 });
 test("no sliced wing images, warped geometry or second ghost bird are loaded",()=>{
   assert.doesNotMatch(index,/glasswing-mesh-v12|glasswing-rig-v121|glasswing-cinematic-v120\.css|gw-film-flight|gw-film-background|gw-film-arc/);
@@ -105,4 +105,14 @@ test("movie ending shows transition then returns to landing, without another int
   v.runTimer();
   assert.equal(v.film.hidden,true);
   assert.equal(v.landing.hidden,false);
+});
+
+test("Home artwork is always bounded and mobile layout never relies on image intrinsic size",()=>{
+  assert.match(css,/\.consumer-home \.gw-lab-heading-mark\s*\{[^}]*width:clamp\(/);
+  assert.match(css,/\.consumer-home \.gw-lab-heading-main\s*\{[^}]*display:flex/);
+  assert.match(css,/\.consumer-home \.gw-lab-heading-buttons\s*\{[^}]*display:flex/);
+  assert.match(css,/@media\(max-width:700px\)/);
+  assert.match(css,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(index,/glasswing-screen-v125\.css\?v=1\.25\.1/);
+  assert.match(consumer,/class="gw-lab-heading-mark"/);
 });
