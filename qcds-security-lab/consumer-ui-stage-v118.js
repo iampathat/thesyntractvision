@@ -11,7 +11,7 @@ export function homeView({project,caseId,question,model,cases,archived,icon}) {
   return `<div class="consumer-home">
     <section class="gw-lab-heading" aria-label="QCDS Security Lab workspace">
       <div class="gw-lab-heading-main">
-        <img class="gw-lab-heading-mark" src="./glasswing-mark.webp?v=1.18.0" alt="Project Glasswing crystal eagle">
+        <img class="gw-lab-heading-mark" src="./glasswing-mark.webp?v=1.18.0" width="76" height="76" style="display:block;width:76px;height:76px;max-width:76px;max-height:76px;flex:0 0 76px;object-fit:contain" alt="Project Glasswing crystal eagle">
         <div>
           <span class="eyebrow">QCDS · PROJECT GLASSWING</span>
           <h1>Security Lab</h1>
