@@ -449,6 +449,8 @@ jobs:
           test -s _site/qcds-security-lab/enter.html
           test -s _site/qcds-security-lab/glasswing-start.html
           cmp _site/qcds-security-lab/index.html _site/qcds-security-lab/glasswing-start.html
+          test -s _site/qcds-security-lab/glasswing-v120.html
+          cmp _site/qcds-security-lab/index.html _site/qcds-security-lab/glasswing-v120.html
           test -s _site/qcds-security-lab/open-glasswing-116.html
           grep -F 'data-entry="landing"' _site/qcds-security-lab/index.html
           grep -F 'data-entry="direct"' _site/qcds-security-lab/enter.html
