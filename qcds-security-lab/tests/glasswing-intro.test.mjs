@@ -60,8 +60,8 @@ test("vector film retains approved artwork with articulated SVG wings and ground
   assert.match(stage,/gw-film-protection/);
   assert.match(stageCss,/GLASSWING VECTOR MOTION V119/);
   assert.match(stageCss,/object-fit:contain/);
-  assert.match(index,/glasswing-stage-v118\\.js\\?v=1\\.19\\.0/);
-  assert.match(entry,/glasswing-stage-v118\\.css\\?v=1\\.19\\.0/);
+  assert.match(index,/glasswing-stage-v118\.js\?v=1\.19\.0/);
+  assert.match(entry,/glasswing-stage-v118\.css\?v=1\.19\.0/);
 });
 test("working Home contains real investigations and only a compact brand header",()=>{
   assert.match(consumer,/class="gw-lab-heading"/);
@@ -82,7 +82,7 @@ test("direct-entry route is the full app with optional film, not another splash"
   assert.match(index,/app-stage-v118\.js/);
   assert.match(gateway,/url=\.\/\?welcome=1/);
   assert.doesNotMatch(gateway,/unregister|caches\.delete|getRegistrations/);
-  assert.match(worker,/const VERSION = '1\.18\.0'/);
+  assert.match(worker,/const VERSION = '1\.19\.0'/);
   assert.match(worker,/req\.mode === 'navigate'/);
 });
 test("session entry and film are independent of saved case storage",()=>{
