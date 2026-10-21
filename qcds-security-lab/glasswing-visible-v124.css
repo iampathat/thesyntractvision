@@ -1,0 +1,32 @@
+/* Project Glasswing 1.24 — fail-visible cinematic entrance.
+   The landing stays a separate fullscreen layer on every canonical visit. */
+#gw-landing:not([hidden]) {
+  display:grid!important;
+  visibility:visible!important;
+  opacity:1!important;
+  position:fixed!important;
+  inset:0!important;
+  z-index:25000!important;
+}
+#gw-film:not([hidden]) {
+  display:grid!important;
+  visibility:visible!important;
+  position:fixed!important;
+  inset:0!important;
+  z-index:25010!important;
+  background:#041225;
+}
+#gw-landing[hidden],#gw-film[hidden] {display:none!important}
+#gw-landing .gw-landing-art img {
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+#gw-film .gw-film-flight {z-index:3}
+#gw-film .gw-film-bird {display:block;visibility:visible}
+@media (prefers-reduced-motion: reduce) {
+ #gw-landing .gw-landing-shine {animation:none!important}
+}
