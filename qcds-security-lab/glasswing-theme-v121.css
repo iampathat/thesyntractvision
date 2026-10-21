@@ -1,0 +1,68 @@
+/* QCDS Security Lab — unified Project Glasswing visual system v1.21.
+   © 2026 Patrik Sundblom. R&D support: OpenAI / ChatGPT.
+   One icy-blue interface palette. Attack/warning colors remain semantic. */
+:root,
+body.glasswing-visual{
+ color-scheme:dark;
+ --bg:#071321;--sidebar:#061524;--panel:#102237;--panel-soft:#0d1c2e;
+ --line:#31536b;--muted:#adc8d9;--text:#eefaff;
+ --acid:#8de7ff;--cyan:#72ddff;--app-accent:#85dfff;--app-surface:#10263b;
+ --gw-frost:#bff5ff;--gw-blue:#56c8ff;--gw-deep:#091a2e;
+ --gw-border:#386783;--gw-muted:#a6c7da;
+}
+body.glasswing-visual{background:#071321;color:var(--text)}
+body.glasswing-visual .sidebar{background:linear-gradient(165deg,#0c2540,#061625 75%)}
+body.glasswing-visual .topbar{background:#0a1c30f5}
+body.glasswing-visual .panel,
+body.glasswing-visual .consumer-case,
+body.glasswing-visual .consumer-resume,
+body.glasswing-visual .consumer-overview>a,
+body.glasswing-visual .consumer-shortcuts>a,
+body.glasswing-visual .consumer-trust,
+body.glasswing-visual .logic-launch,
+body.glasswing-visual .quantum-card {
+ border-color:#365d78;
+ background-color:#102235;
+}
+body.glasswing-visual .button.primary,
+body.glasswing-visual button.button.primary,
+body.glasswing-visual .new-case {
+ background:linear-gradient(135deg,#b8f5ff,#63c9f6);
+ color:#092035;border-color:#90e9ff;
+}
+body.glasswing-visual .button.primary:hover:not(:disabled){
+ background:linear-gradient(135deg,#e7ffff,#a1ecff);
+}
+body.glasswing-visual .badge:not(.warning):not(.error),
+body.glasswing-visual .consumer-tag{border-color:#467491;background:#12334a;color:#c4eaff}
+body.glasswing-visual .text-link,
+body.glasswing-visual .text-button,
+body.glasswing-visual .logic-brand,
+body.glasswing-visual .logic-launch-mark,
+body.glasswing-visual .quantum-bar.reference b,
+body.glasswing-visual .consumer-overview b{color:#9ceaff}
+body.glasswing-visual .logic-header,
+body.glasswing-visual #logical-lab{background:#0b1d31;border-color:#3b627b}
+body.glasswing-visual .logic-header{background:linear-gradient(120deg,#133653,#0c2339)}
+body.glasswing-visual .logic-state.active{background:#173b58;color:#a4edff}
+body.glasswing-visual .quantum-bar.reference .quantum-track>span{background:#7fd9ff}
+body.glasswing-visual .quantum-panel>summary,
+body.glasswing-visual #logical-lab .quantum-panel>summary{color:#bbf2ff}
+body.glasswing-visual .consumer-case-icon{background:#163d59;color:#a4edff}
+body.glasswing-visual .consumer-step-track>span.visited{border-color:#5eaccf}
+body.glasswing-visual .consumer-step-track>span.current{border-color:#9ceaff}
+body.glasswing-visual .consumer-step-track>span.current b{background:#8de7ff;color:#072035}
+body.glasswing-visual a:focus-visible,body.glasswing-visual button:focus-visible{outline-color:#90e7ff}
+body.glasswing-visual .brand.glasswing-brand .glasswing-brand-mark{
+ border:0;background:none;box-shadow:none;
+}
+body.glasswing-visual .gw-lab-heading{
+ border-color:#3e6e89;background:linear-gradient(112deg,#112c45,#0b1c30);
+}
+body.glasswing-visual .gw-lab-heading-mark{filter:drop-shadow(0 0 9px #52c7ff5e)}
+/* Reserved only for the landing artwork and fullscreen film. */
+body.glasswing-visual .consumer-home .gw-home-feature,
+body.glasswing-visual .consumer-home .gw-home-poster,
+body.glasswing-visual .consumer-home .glasswing-approved-banner{
+ display:none!important;
+}
