@@ -242,3 +242,24 @@
   .consumer-eagle-replay {min-height:44px}
 }
 @media print {.consumer-eagle {break-inside:avoid}}
+
+
+/* Project Glasswing: small brand mark is the same bird as the full intro, never a heraldic icon. */
+.brand.glasswing-brand {
+  display:flex;align-items:center;gap:10px;
+  min-height:68px;
+  text-decoration:none;
+}
+.glasswing-brand-mark {
+  display:block;flex-shrink:0;width:72px;height:52px;
+  object-fit:contain;object-position:center;
+  filter:drop-shadow(0 0 8px #4bd4ff88);
+}
+.glasswing-brand-label {display:block;font-weight:800;letter-spacing:.085em;font-size:24px;line-height:1.1}
+.glasswing-brand .brand-sub {display:block;margin-top:4px;font-weight:600;letter-spacing:.13em;font-size:10px;color:#b9eaff}
+@media(max-width:700px) {
+ .brand.glasswing-brand{min-height:62px;gap:8px}
+ .glasswing-brand-mark{width:60px;height:48px}
+ .glasswing-brand-label{font-size:21px}
+ .glasswing-brand .brand-sub{font-size:9px}
+}
