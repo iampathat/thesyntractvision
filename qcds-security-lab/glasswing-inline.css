@@ -1,0 +1,119 @@
+/* Project Glasswing — integrated Security Lab surface.
+   Creation and theory: Patrik Sundblom; R&D support: OpenAI / ChatGPT. */
+
+/* 3.5-second glass raven intro. No external assets or JavaScript dependency. */
+.glasswing-stage {
+  width: min(820px, 96vw);
+  height: min(480px, 61vh);
+  margin-top: -38px;
+  perspective: 1050px;
+}
+.glasswing-intro-art {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  overflow: visible;
+  filter: drop-shadow(0 10px 23px rgba(94,227,228,.16));
+}
+.gw-raven { animation: gw-flight 3.25s ease-in-out both; transform-origin: 385px 225px; }
+.gw-left-wing { animation: gw-left-flap 1.04s ease-in-out 0s 3 alternate; transform-origin: 354px 215px; }
+.gw-right-wing { animation: gw-right-flap 1.04s ease-in-out 0s 3 alternate; transform-origin: 393px 215px; }
+.gw-circuit { animation: gw-syntract 1.15s ease-in-out infinite alternate; }
+.gw-circuit circle { filter: drop-shadow(0 0 5px rgba(189,255,121,.8)); }
+.gw-protection { animation: gw-shield 3s ease-out both; transform-origin: 385px 210px; }
+.gw-attacks { animation: gw-attack 2.3s ease-in-out .4s both; }
+.gw-deflection { animation: gw-deflect 2.3s ease-in-out .6s both; }
+.q-intro-wordmark .glasswing-kicker {
+  color: #bdeea8;
+  font: 650 clamp(10px,1.3vw,13px)/1.35 ui-monospace,monospace;
+  letter-spacing: .36em;
+  margin: 0 0 11px;
+}
+.q-intro-wordmark { bottom: max(11vh, calc(50% - 244px)); animation: q-type 1.1s ease-out both; }
+.q-intro-wordmark h1 { font-size: clamp(21px,3.6vw,33px); }
+.q-intro-wordmark > p:last-child { color: #a7d3d5; }
+@keyframes gw-flight {
+  0% {opacity:0; transform:translate3d(-32px,26px,-40px) scale(.82) rotateZ(-7deg);}
+  23% {opacity:1;}
+  50% {transform:translate3d(0,-8px,0) scale(1) rotateZ(0);}
+  85% {opacity:1;transform:translate3d(9px,0,6px) scale(1.025) rotateZ(1deg);}
+  100% {opacity:.95;transform:translate3d(24px,-9px,0) scale(1.045) rotateZ(0);}
+}
+@keyframes gw-left-flap {
+  from {transform: rotate(-4deg) scaleY(.94);}
+  to {transform: rotate(3deg) scaleY(1.045);}
+}
+@keyframes gw-right-flap {
+  from {transform: rotate(4deg) scaleY(.94);}
+  to {transform: rotate(-3deg) scaleY(1.045);}
+}
+@keyframes gw-syntract {
+  from {opacity:.33;} to {opacity:1;}
+}
+@keyframes gw-shield {
+  0% {opacity:0;transform:scale(.72);}
+  38% {opacity:.3;}
+  70%,100% {opacity:1;transform:scale(1);}
+}
+@keyframes gw-attack {
+  0%,18% {opacity:0;stroke-dashoffset:85;}
+  50% {opacity:1;stroke-dashoffset:20;}
+  72% {opacity:.85;}
+  100% {opacity:0;stroke-dashoffset:-80;}
+}
+@keyframes gw-deflect {
+  0%,37% {opacity:0;transform:scale(.65);}
+  52%,70% {opacity:1;transform:scale(1);}
+  100% {opacity:0;}
+}
+@media (max-width:600px) {
+  .glasswing-stage {width:100vw;height:min(340px,46vh);margin-top:-18px;}
+  .q-intro-wordmark {bottom:max(17vh,calc(50% - 195px));}
+  .q-intro-wordmark .glasswing-kicker {letter-spacing:.21em;font-size:10px;}
+  .q-intro-wordmark h1 {font-size:clamp(20px,6vw,27px);}
+  .q-intro-wordmark p:last-child {font-size:8px;letter-spacing:.1em;}
+}
+@media (prefers-reduced-motion:reduce) {
+  .glasswing-intro-art *, .gw-raven, .gw-attacks, .gw-protection, .gw-deflection,
+  .gw-left-wing, .gw-right-wing {animation:none!important;}
+}
+
+/* Inference comparison is an internal, accessible panel on the same case. */
+.glasswing-context {display:flex;justify-content:space-between;align-items:center;gap:20px;}
+.glasswing-context > div {min-width:0;}
+.glasswing-context h2 {margin:5px 0 8px;}
+.glasswing-context p {margin:0;overflow-wrap:anywhere;}
+.glasswing-context .button {flex-shrink:0;}
+.glasswing-note {border-left:3px solid var(--cyan);color:var(--text);background:var(--panel-soft);padding:15px 18px;margin:18px 0 22px;font-size:14px;line-height:1.55;}
+.glasswing-tracks {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:stretch;}
+.glasswing-track {padding:20px;min-width:0;}
+.glasswing-track-heading {margin-bottom:12px;}
+.glasswing-track-heading h2 {margin-top:4px;font-size:clamp(19px,2vw,24px);}
+.glasswing-track > p {font-size:14px;min-height:110px;line-height:1.55;}
+.glasswing-qcds {border-color:rgba(184,255,57,.52);box-shadow:inset 0 3px 0 rgba(184,255,57,.8);}
+.glasswing-metrics {display:grid;grid-template-columns:1fr;gap:0;margin:16px 0;}
+.glasswing-metrics > div {display:flex;align-items:baseline;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding:9px 0;}
+.glasswing-metrics dt {color:var(--muted);font-size:12px;}
+.glasswing-metrics dd {font-variant-numeric:tabular-nums;color:var(--text);font-weight:700;font-size:18px;margin:0;}
+.glasswing-details {border-top:1px solid var(--line);padding:12px 0;}
+.glasswing-details summary {color:var(--cyan);cursor:pointer;font-size:13px;min-height:25px;}
+.glasswing-details li {overflow-wrap:anywhere;font-size:13px;line-height:1.5;margin:8px 0;color:var(--text);}
+.glasswing-details ol,.glasswing-details ul {padding-left:22px;margin:12px 0;}
+.glasswing-method {margin-top:18px;padding:22px;}
+.glasswing-method > p {font-size:14px;}
+.glasswing-facts {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:16px 0 20px;}
+.glasswing-facts span {border:1px solid var(--line);border-radius:10px;padding:12px;color:var(--muted);font-size:12px;overflow-wrap:anywhere;}
+.glasswing-facts b {display:block;color:var(--text);font-size:19px;font-variant-numeric:tabular-nums;}
+.glasswing-actions {display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;}
+@media (max-width:1100px) {
+  .glasswing-tracks {grid-template-columns:1fr;}
+  .glasswing-track > p {min-height:0;}
+  .glasswing-facts {grid-template-columns:repeat(3,minmax(0,1fr));}
+}
+@media (max-width:670px) {
+  .glasswing-context {flex-direction:column;align-items:stretch;}
+  .glasswing-facts {grid-template-columns:repeat(2,minmax(0,1fr));}
+  .glasswing-actions > a {width:100%;justify-content:center;}
+}
