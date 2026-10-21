@@ -1568,7 +1568,7 @@ function glasswingView() {
     +'<p>Known 1 / 0 conditions stay constrained; only unresolved ? dimensions branch. The wider attack-vector fabric is separate from the compact core condition mask. Perspective rotation, dimensional changes and counter-tests challenge surviving routes. An evidence-bound conclusion still needs observations.</p>'
     +'<details class="glasswing-details"><summary>Show QCDS clarification questions ('+fmt(q.clarifications.length)+')</summary><ul>'+list(q.clarifications.map(item=>item.question))+'</ul></details>'
     +'<div class="glasswing-actions"><a class="button primary" href="#perspectives">Explore security perspectives '+icon("arrow")+'</a>'
-    +'<a class="button" href="#findings">Review findings and evidence</a></div></section>';
+    +'<a class="button" href="#findings">Review findings and evidence</a><button type="button" class="button" data-action="export-glasswing">Export comparison JSON</button><button type="button" class="button" data-action="print">Download investigation PDF</button></div></section>';
 }
 
 function view() {
@@ -1873,6 +1873,24 @@ document.addEventListener("click", async (e) => {
     case "export-json":
       exportProject();
       break;
+    case "export-glasswing": {
+      try {
+        const result = runGlasswing(project());
+        download(JSON.stringify({
+          schema: result.schema,
+          version: result.version,
+          generatedAt: result.generatedAt,
+          system: result.system,
+          conditions: result.conditions,
+          tracks: result.tracks,
+          comparison: result.comparison
+        }, null, 2), "project-glasswing-comparison.json", "application/json");
+        notify("Inference comparison exported from the active investigation.");
+      } catch (error) {
+        notify(error.message || "Comparison could not be exported.", "warning");
+      }
+      break;
+    }
     case "export-perspective-md":
       if (!stale()) {
         const slug = PERSPECTIVE_SLUGS[state.perspective] || "perspective";
