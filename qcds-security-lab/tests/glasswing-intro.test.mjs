@@ -13,6 +13,7 @@ const consumer=read('consumer-ui-stage-v118.js');
 const app=read('app-stage-v118.js');
 const installer=read('app-install.js');
 const update=read('update-lab.html');
+const style=read('style.css'),consumerStyle=read('consumer.css');
 const film=readFileSync(new URL('../glasswing-flight-v125.mp4',import.meta.url));
 
 test('exactly one intro launches directly into the real Security Lab',()=>{
@@ -40,7 +41,8 @@ test('approved flight video is present; only one intro artwork surface',()=>{
 });
 test('all legacy entrance URLs redirect to the one canonical intro',()=>{
   const aliases=['enter.html','glasswing-start.html','glasswing-v120.html',
-    'glasswing-v123.html','glasswing-v124.html','glasswing-v125.html'];
+    'glasswing-v123.html','glasswing-v124.html','glasswing-v125.html',
+    'glasswing-v122.html','open-glasswing-116.html'];
   for(const p of aliases){
     const s=read(p);
     assert.match(s,/location\.replace\(target\.href\)/,p);
@@ -133,4 +135,13 @@ test('one cohesive icy-blue design and no oversized Home eagle',()=>{
   assert.match(css,/object-fit:contain!important;object-position:center!important/);
   assert.match(consumer,/class="gw-lab-heading-mark"[^>]*width="76" height="76"/);
   assert.doesNotMatch(consumer,/data-open-landing|href="\.\/update-lab\.html"/);
+});
+
+test('source base styles do not retain the old green navigation backgrounds',()=>{
+  assert.doesNotMatch(style,/#1b251a|#3d4936/);
+  assert.doesNotMatch(consumerStyle,/#263729|#1b2b26|#18262c|#1b2a24/);
+  assert.match(style,/background: #102c43/);
+  assert.match(consumerStyle,/background:#153c57/);
+  assert.match(index,/style\.css\?v=1\.26\.0/);
+  assert.match(index,/consumer\.css\?v=1\.26\.0/);
 });
