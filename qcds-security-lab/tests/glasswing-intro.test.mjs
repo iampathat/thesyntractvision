@@ -9,6 +9,7 @@ const read = name => readFileSync(new URL("../"+name,import.meta.url),"utf8");
 const blob = name => readFileSync(new URL("../"+name,import.meta.url));
 const index = read("index.html"), entry = read("enter.html");
 const freshLanding = read("glasswing-start.html");
+const cleanLanding = read("glasswing-v120.html");
 const stage = read("glasswing-cinematic-v120.js"), stageCss=read("glasswing-cinematic-v120.css");
 const consumer=read("consumer-ui-stage-v118.js"), app=read("app-stage-v118.js");
 const gateway=read("open-glasswing-116.html"), worker=read("sw.js");
@@ -35,6 +36,8 @@ test("canonical page offers Enter and Watch, separate from the actual app",()=>{
 });
 test("new cache-independent URL renders exactly the same canonical landing",()=>{
   assert.equal(freshLanding,index);
+  assert.equal(cleanLanding,index);
+  assert.match(cleanLanding,/glasswing-cinematic-v120\.js/);
   assert.match(freshLanding,/data-enter-lab/);
   assert.match(freshLanding,/data-watch-intro/);
 });
