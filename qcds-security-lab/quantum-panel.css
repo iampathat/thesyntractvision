@@ -1,10 +1,11 @@
+/* GLASSWING v1.21 — cyan/blue visual palette aligned across app surfaces. */
 /* QCDS by Patrik Sundblom. Local execution comparison. */
 .quantum-card {
-  border-color: #426962;
+  border-color: #226483;
   background: linear-gradient(145deg, #162b2d, #111c24 70%);
 }
 #logical-lab .quantum-panel > summary {
-  color: #c4ff70;
+  color: #71e4ff;
   font-size: 15px;
   font-weight: 600;
   padding: 16px 0;
@@ -19,7 +20,7 @@
 }
 .quantum-scope {
   padding: 14px;
-  border-left: 2px solid #8be9df;
+  border-left: 2px solid #5fe6ff;
   background: #182f34;
 }
 .quantum-body fieldset {
@@ -45,7 +46,7 @@
   text-align: left;
 }
 .quantum-status {
-  color: #b9e8d7;
+  color: #70e5ff;
 }
 .quantum-status:empty {
   display: none;
@@ -96,10 +97,10 @@
   border-radius: inherit;
 }
 .quantum-bar.reference b {
-  color: #bcff69;
+  color: #6ee3ff;
 }
 .quantum-bar.reference .quantum-track > span {
-  background: #bcff69;
+  background: #6ee3ff;
 }
 .quantum-bar.ideal b {
   color: #9ae1ff;
@@ -115,13 +116,13 @@
 }
 .quantum-verdict {
   padding: 16px;
-  border: 1px solid #455e50;
+  border: 1px solid #235872;
   border-radius: 8px;
   background: #1a2d29;
 }
 .quantum-verdict > b {
   display: block;
-  color: #d0eec5;
+  color: #78e6ff;
   margin-bottom: 4px;
 }
 .quantum-body [data-quantum-results] > details {
@@ -145,7 +146,7 @@
   font-size: 11px !important;
 }
 .quantum-legend span:nth-child(1) {
-  color: #bcff69;
+  color: #6ee3ff;
 }
 .quantum-legend span:nth-child(2) {
   color: #9ae1ff;
@@ -185,7 +186,7 @@
   line-height: 1.8;
 }
 .quantum-coordinates code {
-  color: #baff65;
+  color: #6de2ff;
 }
 .quantum-exports {
   display: flex;
@@ -214,7 +215,7 @@
   }
 }
 
-.quantum-alignment { padding: 18px; margin-top: 22px; border: 1px solid #5b7552; border-radius: 12px; background: #213628; }
+.quantum-alignment { padding: 18px; margin-top: 22px; border: 1px solid #2d6a85; border-radius: 12px; background: #11313e; }
 .quantum-alignment.unreached { border-color: #7c6242; background: #302a20; }
 .quantum-alignment h4 { margin: 6px 0; font-size: 22px; }
 .quantum-alignment p:last-child { margin-bottom: 0; }
