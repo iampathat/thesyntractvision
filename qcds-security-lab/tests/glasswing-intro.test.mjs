@@ -93,12 +93,13 @@ test("working Home contains real investigations and only a compact brand header"
   assert.match(app,/consumer-ui-stage-v118\.js/);
   assert.match(app,/glasswing-brand-mark/);
 });
-test("direct-entry route is the full app with optional film, not another splash",()=>{
-  assert.match(entry,/data-entry="direct"/);
+test("previous enter.html bookmarks also open the single real Glasswing landing",()=>{
+  assert.equal(entry,index);
+  assert.match(entry,/data-entry="landing"/);
+  assert.match(entry,/id="gw-landing"/);
   assert.match(entry,/id="gw-film"/);
-  assert.doesNotMatch(entry,/id="gw-landing"/);
+  assert.match(entry,/data-enter-lab/);
   assert.match(entry,/app-stage-v118\.js/);
-  assert.match(index,/app-stage-v118\.js/);
   assert.match(gateway,/url=\.\/\?welcome=1/);
   assert.doesNotMatch(gateway,/unregister|caches\.delete|getRegistrations/);
   assert.match(worker,/const VERSION = '1\.24\.0'/);
