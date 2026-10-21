@@ -1,0 +1,33 @@
+/* QCDS Project Glasswing v1.21 — living articulated vector eagle.
+   Copyright 2026 Patrik Sundblom. R&D support OpenAI / ChatGPT.
+   This overrides the old camera effects, not the existing landing controls. */
+.gw-film {background:#041225}
+.gw-film-background{background:radial-gradient(ellipse at 51% 36%,rgba(19,88,136,.63),transparent 55%),linear-gradient(175deg,#071c33,#031020 58%,#010714)}
+.gw-film-background:before{opacity:.26;background:radial-gradient(circle at 19% 24%,#c0f5ff 0 1px,transparent 2px),radial-gradient(circle at 79% 33%,#84e5ff 0 1px,transparent 2px),radial-gradient(circle at 64% 77%,#8abaff 0 1px,transparent 2px)}
+.gw-film-background:after{display:none!important;content:none!important}
+.gw-film-arc,.gw-film-ground-art,.gw-film-defense,.gw-film-particles{display:none!important}
+.gw-film-flight{width:min(1200px,96vw);aspect-ratio:1200/650;top:46%;isolation:isolate;filter:drop-shadow(0 0 25px rgba(58,183,255,.28))}
+.gw-film-bird.gw-film-rig{display:block;position:absolute;inset:0;width:100%;height:100%;object-fit:contain;-webkit-mask-image:none!important;mask-image:none!important;filter:drop-shadow(0 0 12px rgba(118,220,255,.39));transform:none!important;animation:none!important}
+.gw-vector-inline .gw-wing-left,.gw-vector-inline .gw-wing-right,.gw-vector-inline .gw-head,.gw-vector-inline .gw-tail,.gw-vector-inline .gw-talon-left,.gw-vector-inline .gw-talon-right{will-change:transform}
+.gw-film-flight:after{display:none!important;content:none!important}
+.gw-film-playing .gw-film-flight{animation:gw-rig-camera-flight 6s cubic-bezier(.26,.69,.29,1) both!important}
+.gw-film-playing .gw-film-rig{animation:none!important}
+.gw-film-playing .gw-film-logo{animation:gw-rig-logo .85s 4.32s ease-out both}
+.gw-film-playing .gw-film-title{animation:gw-rig-title 1.75s 4.45s ease-out both}
+@keyframes gw-rig-camera-flight{
+ 0%{opacity:0;transform:translate(-50%,-37%) scale(.7)}
+ 14%{opacity:1;transform:translate(-50%,-50%) scale(.98)}
+ 36%{opacity:1;transform:translate(-50%,-50%) scale(1.04)}
+ 53%{opacity:1;transform:translate(-50%,-53%) scale(.97)}
+ 70%{opacity:1;transform:translate(calc(-50% + var(--gw-film-target-x-mid,-26vw)),calc(-50% + var(--gw-film-target-y-mid,-23vh))) scale(.42)}
+ 84%{opacity:.85;transform:translate(calc(-50% + var(--gw-film-target-x,-37vw)),calc(-50% + var(--gw-film-target-y,-32vh))) scale(.17)}
+ 92%,100%{opacity:0;transform:translate(calc(-50% + var(--gw-film-target-x,-37vw)),calc(-50% + var(--gw-film-target-y,-32vh))) scale(.17)}
+}
+@keyframes gw-rig-logo{0%{opacity:0;transform:translateY(4px) scale(.94)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes gw-rig-title{0%{opacity:0;filter:blur(9px);transform:translate(-50%,-45%) scale(.94)}35%,100%{opacity:1;filter:blur(0);transform:translate(-50%,-50%) scale(1)}}
+@media(max-width:700px){.gw-film-flight{width:min(142vw,110svh);top:41%}.gw-film-title{top:68%;left:50%}.gw-film-logo{left:12px;top:55px;width:110px}}
+@media(prefers-reduced-motion:reduce){
+ .gw-film-playing .gw-film-flight,.gw-film-playing .gw-film-rig{animation:none!important}
+ .gw-film-flight{opacity:.9!important;transform:translate(-50%,-50%) scale(.85)!important}
+ .gw-film-logo,.gw-film-title{animation:none!important;opacity:1!important}
+}
