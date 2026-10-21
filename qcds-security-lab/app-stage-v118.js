@@ -403,9 +403,9 @@ function shell() {
       <div id="stale-slot">${staleNotice()}</div>
       <div id="view">${view()}</div>
       ${workflowContinuation()}
+      ${investigating ? questionNavigation() : ""}
       <footer class="main-footer"><span>QCDS Security Lab · Patrik Sundblom</span><a href="./privacy.html">Privacy</a><a href="#learn">About & license</a></footer>
     </main>
-    ${investigating ? questionNavigation() : ""}
     ${consumerNav({route:state.route,question:state.question,icon,investigationHref})}
   </div>`;
 }
