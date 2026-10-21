@@ -13,13 +13,19 @@
   // This is a single connected vector mesh. WebGL deforms shared vertices;
   // no independently cropped wing/head sprites are rendered.
   let meshController = null;
-  const meshReady = window.GlasswingMeshRig?.mount?.(film);
-  meshReady?.then?.(controller => {
-    meshController = controller;
-    if (controller && film && !film.hidden && !window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) {
-      controller.start();
-    }
-  });
+  let meshReady = null;
+  function prepareMesh() {
+    if (meshReady) return;
+    // Do not parse a megabyte of vectors until the visitor chooses Watch intro.
+    meshReady = window.GlasswingMeshRig?.mount?.(film) || null;
+    meshReady?.then?.(controller => {
+      meshController = controller;
+      if (controller && film && !film.hidden &&
+          !window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) {
+        controller.start();
+      }
+    });
+  }
 
   const reduceMotion = () => window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
   const setEntryMode = visible => {
@@ -76,7 +82,10 @@
     setEntryMode(true);
     film.hidden = false;
     // Real wing flaps/head motion are driven by the same continuous GPU mesh.
-    if (!reduceMotion()) meshController?.start();
+    if (!reduceMotion()) {
+      prepareMesh();
+      meshController?.start();
+    }
     const target = film.querySelector(".gw-film-logo");
     const rect = target?.getBoundingClientRect?.();
     if (rect && rect.width && rect.height) {
