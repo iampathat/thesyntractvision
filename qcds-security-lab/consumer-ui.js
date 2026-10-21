@@ -8,15 +8,29 @@ export function homeView({project,caseId,question,model,cases,archived,icon}) {
   const own=Object.entries(cases).filter(([id,p])=>(!p.example||id.startsWith("case-"))&&!archived.includes(id));
   const unknown=Object.values(project.input.flags).filter(v=>v===null).length;
   const liveRecords=model.findings.reduce((n,f)=>n+f.records.length,0);
-  return `<div class="consumer-home"><section class="glasswing-approved-banner" aria-label="QCDS Security Lab Project Glasswing cinematic artwork">
- <img src="./glasswing-approved.webp?v=1.15.0" alt="Project Glasswing: a fierce crystalline blue-white eagle with glowing blue eyes and bright network nodes defending QCDS Security Lab." loading="eager" fetchpriority="high" />
- <button type="button" class="glasswing-banner-replay" data-replay-intro>▶ Replay Project Glasswing intro</button>
- </section><section class="consumer-hero"><div class="consumer-hero-copy"><span class="eyebrow">Q★ SECURITY · YOUR PERSONAL WORKSPACE</span><h1>Understand the risk.<br><span>Know your next move.</span></h1><p>Turn a security worry into a clear investigation, practical checks and a report you can use.</p><button class="button primary" data-action="new">${icon('plus')} Start an investigation</button><button type="button" class="button" data-replay-intro aria-label="Watch Project Glasswing crystal eagle intro">${icon('play')} Watch the glass eagle</button><a class="text-link" href="#examples">Try a complete example ${icon('arrow')}</a></div><div class="glasswing-approved-card">
- <div class="glasswing-poster-logo"><img src="./glasswing-approved.webp?v=1.15.0" alt="Matching crystalline Project Glasswing eagle logo" loading="eager"></div>
- <span class="glasswing-approved-card-name">PROJECT GLASSWING</span>
- <span class="glasswing-approved-card-label">DEFENSE THROUGH RECURSIVE INFERENCE</span>
- <button class="button" type="button" data-replay-intro>Watch the cinematic intro ↗</button>
- </div></section>
+  return `<div class="consumer-home">
+    <section class="gw-home-feature" aria-label="Project Glasswing · QCDS Security Lab">
+      <div class="gw-home-art">
+        <img class="gw-home-poster" src="./glasswing-approved.webp?v=1.16.0" alt="Project Glasswing — a powerful icy-blue crystalline eagle with lit internal security nodes, soaring above a neon circuit horizon; QCDS Security Lab." fetchpriority="high" decoding="async">
+        <div class="gw-home-energy" aria-hidden="true"><i></i><i></i><i></i></div>
+        <button class="gw-home-replay" type="button" data-replay-intro>${icon('play')} Replay eagle intro</button>
+      </div>
+      <div class="gw-home-controls">
+        <div class="gw-home-copy">
+          <span class="eyebrow">PROJECT GLASSWING · SECURITY IN EVERY DIMENSION</span>
+          <h1>QCDS Security Lab</h1>
+          <p>Explore attack paths, challenge assumptions and verify the evidence — one coherent investigation.</p>
+        </div>
+        <div class="gw-home-buttons">
+          <button class="button primary" type="button" data-action="new">${icon('plus')} Start investigation</button>
+          <a class="button" href="#examples">Explore worked examples ${icon('arrow')}</a>
+        </div>
+      </div>
+      <div class="gw-home-fabric" aria-label="QCDS inference stages">
+        <span><b>01</b> Conditions</span><i></i><span><b>02</b> Evolution</span><i></i>
+        <span><b>03</b> Inference</span><i></i><span><b>04</b> Truth-alignment</span>
+      </div>
+    </section>
     <div class="consumer-trust"><span>${icon('shield')} Saved on your device</span><span>${icon('check')} No account required</span><button data-app-install class="text-button">Install app ↗</button><a class="text-link" href="./update-lab.html">Refresh app ↗</a><span data-offline-status></span></div>
     <section class="consumer-resume"><div class="consumer-section-title"><span class="eyebrow">${project.example?'YOUR PRACTICE CASE':'PICK UP WHERE YOU LEFT OFF'}</span><span class="consumer-tag">${project.example?'Worked example':'Your investigation'}</span></div><h2>${esc(project.input.name)}</h2><p>${esc(project.input.attackerGoal || 'Start by naming what you want to protect.')}</p><div class="consumer-step-track" aria-label="Current position: step ${question} of 5">${steps.map((step,i)=>`<span class="${i+1===question?'current':i+1<question?'visited':''}"><b>${i+1}</b>${step}</span>`).join('')}</div><div class="consumer-resume-bottom"><div><b>Step ${question} of 5 · ${steps[question-1]}</b><small>Your place in the investigation, not a security score.</small></div><button class="button primary" data-consumer-open="${esc(caseId)}">Continue investigation ${icon('arrow')}</button></div></section>
     <section class="consumer-overview" aria-label="Current investigation overview"><a href="#system"><b>${unknown}</b><span>Facts to clarify</span><small>Keep ? when you are unsure</small></a><a href="#findings"><b>${model.findings.length+model.pending.length}</b><span>Paths to review</span><small>Questions worth following</small></a><a href="#report"><b>${liveRecords}</b><span>Current observations</span><small>${project.example?'Synthetic example evidence':'Bound to the current scope'}</small></a></section>
