@@ -3884,7 +3884,7 @@ dialog::backdrop {
   margin: 0 0 24px;
   border: 1px solid #214b5f;
   border-radius: 10px;
-  background: #1b251a;
+  background: #102c43;
 }
 .return-context p {
   margin: 0;
@@ -4004,7 +4004,7 @@ dialog::backdrop {
   left: 238px;
   right: 0;
   z-index: 24;
-  border-top: 1px solid #3d4936;
+  border-top: 1px solid #3c708e;
   background: #151c20;
   padding: 14px 28px calc(14px + env(safe-area-inset-bottom));
 }
