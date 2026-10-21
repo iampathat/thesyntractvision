@@ -15,7 +15,7 @@ import { createLogicalLab, researchLaunch } from "./logical-lab.js?v=1.14.1";
 import { runGlasswing } from "./glasswing.mjs?v=1.14.1";
 import { downloadSecurityPdf } from "./report-export.js?v=1.1.0";
 import { WORKSPACE_KEY, restoreWorkspace, writeWorkspace, mergeWorkspace, copyAsOwnProject, STARTERS, isCaseId } from "./workspace.mjs?v=1.0.1";
-import { homeView, casesView, newCaseMarkup, consumerNav } from "./consumer-ui.js?v=1.0.5";
+import { homeView, casesView, newCaseMarkup, consumerNav } from "./consumer-ui.js?v=1.0.6";
 import { initAppInstall, refreshAppStatus } from "./app-install.js?v=1.0.0";
 import { saveDeviceFile, initNativeApp } from "./device-files.js?v=1.0.0";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
@@ -370,7 +370,7 @@ function shell() {
     ? `<div class="nav-example-loaded"><span>WORKED EXAMPLE LOADED</span><b>${esc(project().input.name)}</b><small>One case · every screen below</small><a href="#examples">Choose another example →</a></div>`
     : `<a class="nav-example-picker" href="#examples">${icon("play")}<span class="nav-copy"><b>Worked examples</b><em>Load a finished case through the whole lab</em></span></a>`;
   return `<aside id="site-nav" ${state.mobile ? 'role="dialog" aria-modal="true" aria-label="Navigation"' : ""} class="sidebar ${state.mobile ? "open" : ""}">
-    <a class="brand" href="#home"><span class="brand-mark">Q<span>★</span></span><span>QCDS<span class="brand-sub">SECURITY LAB</span></span></a>
+    <a class="brand glasswing-brand" href="#home" aria-label="QCDS Security Lab home"><img class="glasswing-brand-mark" src="./glass-eagle.svg?v=1.14.9" alt="" width="72" height="45"><span class="glasswing-brand-label">QCDS<span class="brand-sub">SECURITY LAB</span></span></a>
     <div class="workspace-label">YOUR WORKSPACE <button class="icon-button menu-close" data-action="close-menu" aria-label="Close navigation">${icon("close")}</button></div>
     <nav aria-label="Workspace">
       <a href="#home" ${state.route==='home'?'aria-current="page"':''}>${icon('grid')}<span class="nav-copy"><b>Home</b><em>Your next step, in one place</em></span></a>
