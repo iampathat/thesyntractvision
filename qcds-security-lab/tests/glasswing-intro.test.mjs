@@ -20,21 +20,21 @@ test('exactly one intro launches directly into the real Security Lab',()=>{
   assert.doesNotMatch(index,/id="gw-landing"/);
   assert.doesNotMatch(index,/gw-landing-shell|gw-landing-actions/);
   assert.match(index,/data-entry="intro"/);
-  assert.match(index,/data-release="1\\.26\\.0"/);
+  assert.match(index,/data-release="1\.26\.0"/);
   assert.match(index,/id="gw-film-video"/);
   assert.match(index,/playsinline muted autoplay/);
   assert.match(index,/data-film-skip/);
-  assert.match(index,/src="\\.\\/app-stage-v118\\.js\\?v=1\\.26\\.0"/);
-  assert.match(index,/glasswing-screen-v125\\.js\\?v=1\\.26\\.0/);
-  assert.match(index,/glasswing-screen-v125\\.css\\?v=1\\.26\\.0/);
-  assert.match(js,/video\\.addEventListener\\('ended',finish\\)/);
+  assert.match(index,/src="\.\/app-stage-v118\.js\?v=1\.26\.0"/);
+  assert.match(index,/glasswing-screen-v125\.js\?v=1\.26\.0/);
+  assert.match(index,/glasswing-screen-v125\.css\?v=1\.26\.0/);
+  assert.match(js,/video\.addEventListener\('ended',finish\)/);
   assert.doesNotMatch(js,/showLanding|fromLanding/);
 });
 test('approved flight video is present; only one intro artwork surface',()=>{
   assert.ok(film.length>1_000_000);
   assert.equal(film.subarray(4,8).toString(),'ftyp');
   assert.ok(film.includes(Buffer.from('moov')));
-  assert.match(index,/glasswing-flight-v125\\.mp4/);
+  assert.match(index,/glasswing-flight-v125\.mp4/);
   assert.match(css,/object-fit:contain!important;object-position:center!important/);
   assert.doesNotMatch(consumer,/data-open-landing|>Landing</);
 });
@@ -43,11 +43,11 @@ test('all legacy entrance URLs redirect to the one canonical intro',()=>{
     'glasswing-v123.html','glasswing-v124.html','glasswing-v125.html'];
   for(const p of aliases){
     const s=read(p);
-    assert.match(s,/location\\.replace\\(target\\.href\\)/,p);
-    assert.match(s,/new URL\\('\\.\\/index\\.html',location\\.href\\)/,p);
+    assert.match(s,/location\.replace\(target\.href\)/,p);
+    assert.match(s,/new URL\('\.\/index\.html',location\.href\)/,p);
     assert.doesNotMatch(s,/gw-landing-shell|glasswing-film-v125/,p);
   }
-  assert.match(update,/index\\.html\\?skip_intro=1&settings=1#home/);
+  assert.match(update,/index\.html\?skip_intro=1&settings=1#home/);
   assert.doesNotMatch(update,/id="reset"|id="refresh"/);
 });
 function simulate(search=''){
@@ -109,28 +109,28 @@ test('refresh deep link goes directly to app settings without another intro',()=
   assert.match(app,/data-app-settings/);
   assert.match(installer,/id='gw-settings-dialog'/);
   assert.match(installer,/data-app-refresh/);
-  assert.match(installer,/location\\.replace\\(url\\.href\\)/);
-  assert.doesNotMatch(installer,/localStorage\\.(?:clear|removeItem)|indexedDB\\.deleteDatabase/);
-  assert.match(worker,/const VERSION = '1\\.26\\.0'/);
+  assert.match(installer,/location\.replace\(url\.href\)/);
+  assert.doesNotMatch(installer,/localStorage\.(?:clear|removeItem)|indexedDB\.deleteDatabase/);
+  assert.match(worker,/const VERSION = '1\.26\.0'/);
 });
 test('mobile has one opaque bottom bar and question controls are in the content',()=>{
-  const occurrence=(app.match(/\\$\\{investigating \\? questionNavigation\\(\\) : ""\\}/g)||[]).length;
+  const occurrence=(app.match(/\$\{investigating \? questionNavigation\(\) : ""\}/g)||[]).length;
   assert.equal(occurrence,1);
   const navigation=app.indexOf('${investigating ? questionNavigation() : ""}');
   const footer=app.indexOf('<footer class="main-footer">');
   const closingMain=app.indexOf('</main>',footer);
   assert.ok(navigation>=0&&navigation<footer&&footer<closingMain);
-  assert.match(css,/body\\.glasswing-visual #app \\.question-navigation\\s*\\{\\s*position:static!important/);
-  assert.match(css,/body\\.glasswing-visual #app \\.consumer-bottom-nav\\s*\\{/);
+  assert.match(css,/body\.glasswing-visual #app \.question-navigation\s*\{\s*position:static!important/);
+  assert.match(css,/body\.glasswing-visual #app \.consumer-bottom-nav\s*\{/);
   assert.match(css,/background:#061e32!important/);
   assert.match(index,/id="gw-critical-layout-v126"/);
 });
 test('one cohesive icy-blue design and no oversized Home eagle',()=>{
   assert.match(css,/--gw-ice:#8ce9ff/);
-  assert.match(css,/body\\.glasswing-visual \\.consumer-bottom-nav a\\[aria-current\\]/);
+  assert.match(css,/body\.glasswing-visual \.consumer-bottom-nav a\[aria-current\]/);
   assert.match(css,/background:#153c57!important/);
-  assert.match(css,/\\.gw-settings-dialog \\{/);
+  assert.match(css,/\.gw-settings-dialog \{/);
   assert.match(css,/object-fit:contain!important;object-position:center!important/);
   assert.match(consumer,/class="gw-lab-heading-mark"[^>]*width="76" height="76"/);
-  assert.doesNotMatch(consumer,/data-open-landing|href="\\.\\/update-lab\\.html"/);
+  assert.doesNotMatch(consumer,/data-open-landing|href="\.\/update-lab\.html"/);
 });
