@@ -31,3 +31,7 @@
  .gw-film-flight{opacity:.9!important;transform:translate(-50%,-50%) scale(.85)!important}
  .gw-film-logo,.gw-film-title{animation:none!important;opacity:1!important}
 }
+
+/* 1.22: precisely match the original traced eagle mesh aspect ratio. */
+.gw-film-flight{aspect-ratio:960 / 502}
+.gw-film-rig.gw-webgl-eagle{object-fit:contain;image-rendering:auto}
