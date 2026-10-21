@@ -354,3 +354,247 @@ body.glasswing-visual .consumer-home .consumer-trust [data-offline-status] {
   body.glasswing-visual .question-navigation {display:none}
   body.glasswing-visual .consumer-bottom-nav {display:none}
 }
+
+/* Project Glasswing v1.26 — SINGLE INTRO · ONE WORKSPACE · ONE COLOR SYSTEM.
+   This final stylesheet supersedes inherited green legacy controls and
+   prevents the two mobile navigation layers from overlapping. */
+:root,body.glasswing-visual {
+  color-scheme:dark;
+  --gw-ice:#8ce9ff;
+  --gw-text:#eef9ff;
+  --gw-blue:#061b2e;
+  --gw-panel:#0c2940;
+  --gw-edge:#376b88;
+  --acid:#8ce9ff;
+  --app-accent:#8ce9ff;
+}
+html,body.glasswing-visual {min-width:0;max-width:100%;overflow-x:clip}
+body.glasswing-visual #app {min-width:0;max-width:100%}
+body.glasswing-visual #app .app-body,
+body.glasswing-visual #app .app-body>main,
+body.glasswing-visual #app #view,
+body.glasswing-visual #app .consumer-home {
+  min-width:0;max-width:100%;
+}
+body.glasswing-visual img,
+body.glasswing-visual video {max-width:100%;object-position:center}
+body.glasswing-visual .gw-lab-heading,
+body.glasswing-visual .consumer-resume,
+body.glasswing-visual .consumer-case,
+body.glasswing-visual .question-card,
+body.glasswing-visual .question-position,
+body.glasswing-visual .question-navigation,
+body.glasswing-visual .consumer-nav-case {
+  background:#0d283d;
+  border-color:#386a88;
+}
+body.glasswing-visual .question-position {background:#0d2539}
+body.glasswing-visual .question-navigation {background:#0b2439}
+body.glasswing-visual .consumer-home .consumer-trust {color:#aeddf3}
+body.glasswing-visual .consumer-trust .text-button {color:#9cddfc}
+body.glasswing-visual .button.primary,
+body.glasswing-visual .new-case,
+body.glasswing-visual .gw-settings-refresh {
+  border-color:#b6f5ff;
+  background:linear-gradient(110deg,#baf5ff,#63d4fb);
+  color:#08273d;
+}
+body.glasswing-visual .consumer-bottom-nav a[aria-current],
+body.glasswing-visual .sidebar nav a[aria-current],
+body.glasswing-visual .consumer-nav-more[open]>summary {
+  background:#153c57!important;
+  color:#b7f4ff!important;
+  border-color:#488aa5!important;
+}
+body.glasswing-visual .consumer-step-track .current b,
+body.glasswing-visual .consumer-step-track > span.current {
+  border-color:#7ce9ff;color:#92f0ff;
+}
+body.glasswing-visual .consumer-step-track .current b {
+  color:#052337;background:#8ce9ff;
+}
+body.glasswing-visual .consumer-resume {
+  background:linear-gradient(140deg,#123950,#0c2339);
+}
+body.glasswing-visual .sidebar .consumer-nav-case {
+  background:#102c43;border-color:#386881;
+}
+/* The approved eagle is ONLY a texture in the one cinematic intro.
+   The working page uses the restrained mark (not a full-screen image). */
+body.glasswing-visual .consumer-home img.gw-lab-heading-mark {
+  width:64px!important;height:64px!important;
+  flex:0 0 64px!important;max-width:64px!important;max-height:64px!important;
+  object-fit:contain!important;object-position:center!important;
+}
+body.glasswing-visual .brand.glasswing-brand .glasswing-brand-mark {
+  flex:0 0 62px!important;width:62px!important;height:62px!important;
+  display:grid!important;place-items:center!important;
+  overflow:hidden!important;border-color:#427a99!important;
+  background:#0b2840!important;
+}
+body.glasswing-visual .brand.glasswing-brand .glasswing-brand-mark img {
+  display:block!important;width:100%!important;height:100%!important;
+  object-fit:contain!important;object-position:center!important;
+}
+/* One edge-to-edge intro, centered on every viewport. Never nested in Home. */
+body.glasswing-visual #gw-film {
+  position:fixed;inset:0;z-index:25010;overflow:hidden;
+  display:grid;place-items:center;isolation:isolate;
+  background:radial-gradient(ellipse at 50% 40%,#123958,#020b17 78%);
+}
+body.glasswing-visual #gw-film[hidden]{display:none!important}
+body.glasswing-visual #gw-film .gw-film-video {
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  display:block;object-fit:contain!important;object-position:center!important;
+  background:#020e1c;
+}
+body.glasswing-visual .gw-film-skip {
+  top:auto;bottom:calc(32px + env(safe-area-inset-bottom,0px));
+  right:clamp(12px,4vw,30px);
+  z-index:7;
+  background:#15394f;color:#f0fbff;
+  border-color:#95e8fb;
+  min-height:49px;
+}
+body.glasswing-visual .gw-film-status{
+  top:auto;bottom:calc(98px + env(safe-area-inset-bottom,0px));
+  left:16px;right:16px;
+  z-index:8;
+}
+body.glasswing-visual .gw-film-credit{
+  bottom:calc(5px + env(safe-area-inset-bottom,0px));
+  padding:0 6px;
+  color:#afdaea;
+}
+body.glasswing-visual .gw-intro-caption{
+  position:absolute;top:clamp(18px,4vw,36px);left:clamp(16px,4vw,36px);
+  z-index:5;display:grid;gap:6px;
+  color:#d5f8ff;text-shadow:0 2px 12px #000;
+}
+body.glasswing-visual .gw-intro-caption strong{
+  font-size:clamp(18px,4.2vw,32px);line-height:1.08;
+}
+body.glasswing-visual .gw-intro-caption span {
+  font:650 11px/1.4 ui-monospace,monospace;letter-spacing:.12em;
+}
+body.glasswing-visual #gw-film.gw-film-ending {opacity:.72;transition:opacity .4s}
+body.glasswing-visual .gw-settings-trigger {
+  display:flex;align-items:center;justify-content:flex-start;gap:10px;
+  width:100%;min-height:47px;padding:11px 14px;
+  background:#153b57;color:#c9f5ff;border:1px solid #447e9e;
+  border-radius:9px;font:700 13px/1.25 system-ui,sans-serif;
+  text-align:left;
+}
+body.glasswing-visual .gw-settings-trigger:hover {background:#205170}
+.gw-settings-dialog {
+  box-sizing:border-box;
+  width:min(630px,calc(100vw - 26px));
+  max-height:calc(100dvh - 28px);
+  margin:auto;padding:0;
+  overflow:auto;overscroll-behavior:contain;
+  color:#edfaff;
+  background:#0b2338;border:1px solid #4a89a7;border-radius:17px;
+  box-shadow:0 35px 95px #000c;
+}
+.gw-settings-dialog::backdrop{background:#01101ed9;backdrop-filter:blur(5px)}
+.gw-settings-head {display:flex;align-items:flex-start;justify-content:space-between;
+  gap:10px;padding:23px;border-bottom:1px solid #376b88}
+.gw-settings-head h2 {margin:7px 0;font-size:clamp(23px,5vw,31px)}
+.gw-settings-head p{margin:7px 0 0;color:#bad5e3;font-size:13px;line-height:1.5}
+.gw-settings-eyebrow{font:750 11px/1.3 ui-monospace,monospace;letter-spacing:.15em;color:#8fe6fa}
+.gw-settings-close {
+  flex:0 0 41px;height:41px;border-radius:10px;border:1px solid #4a809f;
+  color:#d8f5ff;background:#163b55;font-size:25px;cursor:pointer;
+}
+.gw-settings-section {padding:19px 23px;border-bottom:1px solid #2f5b77}
+.gw-settings-section h3 {font-size:17px;margin:0 0 8px;color:#effbff}
+.gw-settings-section p {margin:8px 0 15px;line-height:1.55;font-size:13px;color:#b8d7e7}
+.gw-settings-section button {width:100%;min-height:50px;padding:11px 13px;
+  border-radius:10px;font:740 14px/1.3 system-ui,sans-serif;cursor:pointer}
+.gw-settings-section .gw-settings-refresh {border:1px solid #b6f5ff}
+.gw-settings-section .gw-settings-install {
+  border:1px solid #5086a2;background:#143b54;color:#d3f5ff}
+.gw-settings-section #gw-settings-result {font-size:12px;color:#9edcf3}
+.gw-settings-section #gw-settings-result[data-state=error]{color:#ffb8b8}
+.gw-settings-foot {padding:14px 23px;color:#a5c4d5;font-size:11px;line-height:1.6}
+@media (max-width:1024px){
+  body.glasswing-visual #app .question-position {
+    position:static!important;top:auto!important;bottom:auto!important;
+    z-index:auto!important;width:100%;box-sizing:border-box;
+  }
+  body.glasswing-visual #app .question-navigation {
+    position:static!important;inset:auto!important;
+    z-index:auto!important;box-sizing:border-box;
+    margin:20px auto 14px!important;
+    width:100%;max-width:100%;
+    border:1px solid #47758f;
+  }
+  body.glasswing-visual #app .question-navigation>div {min-width:0;max-width:100%}
+  body.glasswing-visual #app .consumer-bottom-nav {
+    position:fixed!important;left:0;right:0;bottom:0;
+    z-index:90!important;display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    background:#061e32!important;
+    color:#d1efff;
+    border-top:1px solid #4c7895;
+    box-shadow:0 -8px 20px #0009;
+    backdrop-filter:none!important;
+    overflow:hidden;
+  }
+  body.glasswing-visual #app .app-body >main {
+    padding-bottom:calc(115px + env(safe-area-inset-bottom,0px))!important;
+  }
+  body.glasswing-visual #app .consumer-home .gw-lab-heading {
+    grid-template-columns:minmax(0,1fr);
+  }
+}
+@media(max-width:600px){
+ body.glasswing-visual .gw-intro-caption {top:20px;left:15px}
+ body.glasswing-visual .gw-film-skip {
+   left:18px;right:18px;width:auto;bottom:calc(31px + env(safe-area-inset-bottom,0px));
+ }
+ body.glasswing-visual #app .question-navigation>div {
+   display:grid;grid-template-columns:auto minmax(0,1fr);
+   gap:9px;
+ }
+ body.glasswing-visual #app .question-navigation>div>span {display:none}
+ body.glasswing-visual #app .question-navigation .primary {
+   width:100%;min-width:0;margin:0;font-size:13px;
+ }
+ body.glasswing-visual #app .question-navigation .button {min-width:0}
+ body.glasswing-visual #app .question-position nav {width:100%;max-width:100%}
+ body.glasswing-visual #app .question-position nav button {
+   flex:1 1 0;min-width:0;
+ }
+ body.glasswing-visual #app .question-position nav button>span {
+   width:26px;height:26px;border-radius:50%;
+   font-size:11px;line-height:1.4;
+ }
+ body.glasswing-visual #app .question-position nav button small {
+   font-size:10px;
+ }
+ body.glasswing-visual #app .consumer-bottom-nav a[aria-current] {
+   background:#143b58!important;
+ }
+ body.glasswing-visual #app .consumer-home .gw-lab-heading-buttons {
+   grid-template-columns:repeat(2,minmax(0,1fr));
+ }
+ body.glasswing-visual #app .consumer-home .gw-lab-heading-buttons>.button:first-child {
+   grid-column:1/-1;
+ }
+}
+@media(max-width:360px){
+ body.glasswing-visual #app .consumer-home .gw-lab-heading-buttons {
+   grid-template-columns:1fr;
+ }
+ body.glasswing-visual #app .consumer-home .gw-lab-heading-buttons>.button:first-child {
+   grid-column:auto;
+ }
+}
+@media print {
+ body.glasswing-visual #gw-film,
+ body.glasswing-visual #app .consumer-bottom-nav,
+ body.glasswing-visual #app .gw-settings-trigger,
+ .gw-settings-dialog {display:none!important}
+}
