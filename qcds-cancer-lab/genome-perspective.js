@@ -213,9 +213,14 @@
     if(!target)return;
     target.replaceChildren();
     target.append(e("h4","","Separate cohort-oracle sensitivity · synthetic model"));
+    const usableLeaveOneOut=audit.leaveOneOut.filter(x=>!x.skipped);
+    const leaveOneText=usableLeaveOneOut.length
+      ?usableLeaveOneOut.filter(x=>x.retainsTop).length+"/"+usableLeaveOneOut.length+
+          " leave-one-out runs still include the reference candidate"
+      :"Not available: removing one case would leave fewer than two profiles.";
     const items=[
       ["8% independent bit flips",audit.repeatability+"/5 runs retain the same first-ranked pattern; "+audit.retained+"/5 still include it among eligible candidates"],
-      ["Leave-one-case-out",audit.leaveOneOut.filter(x=>x.retainsTop).length+"/"+audit.leaveOneOut.length+" trials retain the original pattern"],
+      ["Leave-one-case-out",leaveOneText],
       ["Reversed cohort labels",audit.negativeControl.markedCount+" eligible patterns; original result retained: "+(audit.negativeControl.retainsTop?"yes":"no")]
     ];
     for(const [key,value] of items){
