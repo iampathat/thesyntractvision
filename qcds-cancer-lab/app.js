@@ -7,6 +7,7 @@
   const DIMENSIONS = CORE.DIMENSIONS;
   const ROOM = globalThis.QCDSInferenceRoom;
   const CLINICAL = globalThis.CancerLabClinicalUI;
+  const CONCLUSION = globalThis.QCDSConclusion;
   const DEFAULT_ORACLES = [
     { name: "DNA repair", mask: "11??0???", provenance: "Illustrative · unvalidated mask" },
     { name: "PI3K axis", mask: "??1?1???", provenance: "Illustrative · unvalidated mask" },
@@ -154,7 +155,15 @@
     resultsRunning.style.display = "grid";
     orb.classList.remove("spin");
     resultsRunning.querySelector("h3").textContent = "QCDS complete.";
-    resultsRunning.querySelector("p").textContent = "The simulation completed and its computed trace is available for inspection below.";
+    $("runProgressText").hidden = true;
+    const conclusion = CONCLUSION.summarize(result, DIMENSIONS);
+    $("qcdsConclusion").dataset.outcome = conclusion.category;
+    $("qcdsConclusionTitle").textContent = conclusion.title;
+    $("qcdsConclusionLead").textContent = conclusion.lead;
+    $("qcdsConclusionDetail").textContent = conclusion.detail;
+    $("qcdsConclusionScope").textContent = conclusion.scope;
+    $("qcdsConclusion").hidden = false;
+    resultsRunning.classList.add("completed");
 
     resultsEmpty.hidden = true;
     resultsEmpty.style.display = "none";
@@ -213,7 +222,7 @@
     });
 
     renderLaymanExplanation(result);
-    resultsLive.scrollIntoView({ behavior: "smooth", block: "start" });
+    $("results").scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   function lastInfluenceEntries(result) {
@@ -233,11 +242,14 @@
       runButton.disabled = true;
       runButton.classList.add("running");
       ROOM?.start();
+      resultsRunning.classList.remove("completed");
+      $("qcdsConclusion").hidden = true;
+      $("runProgressText").hidden = false;
 
       const orb = resultsRunning.querySelector(".result-orb");
       orb.classList.add("spin");
       resultsRunning.querySelector("h3").textContent = "QCDS is running.";
-      resultsRunning.querySelector("p").textContent = "Computing 128 logical QCDS lanes: sixteen balanced rotations × eight true-null exclusions. The browser schedules these lanes sequentially.";
+      $("runProgressText").textContent = "Computing 128 logical QCDS lanes: sixteen balanced rotations × eight true-null exclusions. The browser schedules these lanes sequentially.";
       resultsRunning.hidden = false;
       resultsRunning.style.display = "grid";
       resultsEmpty.hidden = true;
