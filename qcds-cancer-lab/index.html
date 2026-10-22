@@ -121,8 +121,10 @@
             <p id="cohortOutcomeDetail" class="cohort-outcome-detail"></p>
           </div>
           <p id="cohortQuality" class="cohort-quality" role="status"></p>
-          <div class="cohort-alternative-intro"><strong id="cohortAlternativeTitle">Compare other matching connections</strong><small>These are alternative results from the same search — not a second search.</small></div>
-          <div id="cohortAlternatives" class="cohort-alternatives" aria-label="Other oracle-qualified multi-locus patterns"></div>
+          <details id="cohortCandidatesPanel" class="cohort-other-candidates">
+            <summary><strong id="cohortAlternativeTitle">See other possible DNA connections</strong><small>All are from the same calculation; select one to see where it appears.</small></summary>
+            <div id="cohortAlternatives" class="cohort-alternatives" aria-label="Other oracle-qualified multi-locus patterns"></div>
+          </details>
           <details class="cohort-technical-details" id="cohortChecks">
             <summary>View technical results and robustness checks <small>Grover iterations, candidate counts, entropy, noise and bias sensitivity</small></summary>
             <div class="cohort-technical-body">
