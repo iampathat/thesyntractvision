@@ -1500,7 +1500,7 @@ function reportView() {
         <li><strong>02</strong><div>Security radar & framework charts<small>Six target sectors, STRIDE, OWASP and labeled scales.</small></div></li>
         <li><strong>03</strong><div>Illustrated attack paths<small>Entry → mechanism → target → consequence, with controls and counter-tests.</small></div></li>
         <li><strong>04</strong><div>Evidence, ownership & traceability<small>QCDS reasoning, scoped observations, actions and the complete mechanism register.</small></div></li></ul>
-        <button class="button primary" data-action="print" ${disabled}>${icon('download')} Download designed PDF</button><p class="report-privacy-note">Generated on this device. Your case is not uploaded to a PDF service.</p><div class="report-export-secondary"><button class="button" data-action="system-guide-pdf">${icon('book')} Generate System Guide PDF</button></div><p class="report-privacy-note">Separate illustrated guide: all seven security perspectives, QCDS, dimensions, attack vectors and evidence. No case data is included.</p>
+        <button class="button primary" data-action="print" ${disabled}>${icon('download')} Download designed PDF</button><p class="report-privacy-note">Generated on this device. Your case is not uploaded to a PDF service.</p><div class="report-export-secondary"><button class="button" data-action="system-guide-pdf">${icon('book')} Generate System Guide PDF</button></div><p class="report-privacy-note">Separate illustrated guide built from the current security perspectives, QCDS conditions, attack mechanisms and evidence model. No case data is included.</p>
         <div class="report-export-secondary"><button class="button" data-action="export-json" ${disabled}>Project JSON</button><button class="button" data-action="export-md" ${disabled}>Markdown</button><button class="button" data-action="import">Import project</button></div>
       </section>
     </div>`;
@@ -1936,7 +1936,7 @@ document.addEventListener("click", async (e) => {
       try {
         notify("Generating the illustrated System Guide PDF...");
         const summary = await downloadSystemGuidePdf();
-        notify(`System Guide ready · ${summary.pages} pages · seven security perspectives.`);
+        notify(`System Guide ready · ${summary.pages} pages · ${summary.frameworks} security perspectives.`);
       } catch (error) {
         notify(error.message || "System Guide PDF export failed. Please retry.", "warning");
       }
