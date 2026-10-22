@@ -53,6 +53,20 @@ assert(audit.repeatability>=0&&audit.repeatability<=5);
 assert(audit.retained>=audit.repeatability);
 assert(typeof audit.negativeControl.retainsTop==="boolean");
 
+// Unknown relationships need not involve all variants being present.
+const parity=D.evaluate({dataset:d42,relation:"parity",anchors:[],minCases:3,maxControls:1});
+assert.equal(parity.relation,"parity");
+assert(parity.examinedCount===375);
+assert(parity.ranked.every(x=>x.caseCount>=3&&x.controlCount<=1));
+assert.notDeepEqual(parity.ranked.map(x=>x.state),other.ranked.map(x=>x.state),
+  "parity and co-occurrence predicates must not be the same oracle");
+if(parity.selected){
+  assert.equal(D.coverage(parity.selected.state,d42.cases,"parity"),parity.selected.caseCount);
+  assert.equal(D.coverage(parity.selected.state,d42.controls,"parity"),parity.selected.controlCount);
+}
+assert.throws(()=>D.evaluate({dataset:d42,relation:"arbitrary"}),/Unsupported/);
+const parityAudit=D.stabilityAudit(parity);
+assert.equal(parityAudit.simulations.length,5);
 const nullData=D.generateProfiles(42,"null");
 assert(nullData.parameters.every(p=>p.delta===0),"null mode removes cohort-specific effects");
 const nullOut=D.evaluate({dataset:nullData});
