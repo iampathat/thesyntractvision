@@ -199,3 +199,51 @@ The website now includes a **data-linked** logical space inspired by the SCC Man
 **Research scope:** The included cancer oracle masks are illustrative mechanistic hypotheses, not patient-derived measurements or clinically validated rules. The result is not a diagnosis, a therapy recommendation, a malignancy probability, or a medical device.
 
 Run `node qcds-cancer-lab/tests/test_core.js` to check numerical invariants and the observation bridge. Run the Python test module for the reference implementation independently.
+
+
+## Oncology research workspace — 22 October 2026
+
+The public Cancer Lab opens directly into an **oncology-oriented research workspace**, not a marketing landing page. Its styling, evidence disclosures and reference layer are designed for scientific review. This does not imply any clinical certification.
+
+### Two distinct layers
+
+**1. Scientific reference material:** \`clinical-knowledge.js\` contains source-linked descriptions for five named exploratory oracle topics, eight semantic model dimensions and ten QCDS concepts. The reference drawer explains molecular pathways, illustrative genes, assays and measurements that would be necessary for clinical interpretation, key caveats, and links to sources including the National Cancer Institute and peer-reviewed literature.
+
+**2. Executable computational rules:** \`qcds-core.js\` evaluates synthetic, eight-position \`0/1/?\` masks on ideal Grover distributions. The current masks are NOT gene variant encoders, validated cancer classifications, biomarker signatures or therapy recommendations. Editing these masks changes the mathematical demonstration only. There is **no pipeline connecting the scientific reference prose to molecular or patient evidence**. The site explicitly separates these two layers.
+
+Click a **?** next to any oracle or model concept. The information drawer provides the current edited mask (not an outdated default), its fixed-position restrictions and the unrotated dimension reference. The interpretation is carefully qualified: during the 16 QCDS input rotations, semantic dimensions move across fixed oracle positions. An oracle name such as “DNA repair” does NOT mean its bit positions remain mapped to BRCA1/2 or measured HRD in all runs.
+
+The eight-dimension feature dictionary always displays the current symbolic bit and offers a detailed definition. A 1 is not automatically a pathogenic variant, a 0 is not necessarily a negative clinical assay result, and ? means the symbolic dimension is unresolved—not a third clinical result class. The true-null exclusion family is a different concept: a semantic feature is **absent** for a sensitivity ablation.
+
+### Built-in research topics (illustrative, not clinically validated)
+
+| Named topic | Fixed legacy mask | What the help drawer explains |
+| --- | --- | --- |
+| DNA repair | \`11??0???\` | HRR vs MMR; BRCA1/2, PALB2, RAD51 genes; genetic/functional assay needs; non-specific mask |
+| PI3K axis | \`??1?1???\` | PI3K–AKT–mTOR, PIK3CA/PTEN and pathway readouts; non-specific positional constraint |
+| Receptor axis | \`???111??\` | EGFR and HER2/ERBB2; variant vs amplification vs expression; receptor not encoded by current mask |
+| HR + broad | \`1??1????\` | Homologous recombination biology, HRD/HRR distinctions and unspecified ‘broad’ scope |
+| PI3K + HR | \`??11????\` | Proposed cross-pathway hypothesis requiring specific causal test and independent validation |
+
+The numbered positions P1…P8 are *positions*, not immutable gene identifiers. In unrotated order their semantic names are D1 Mutation load, D2 DNA repair, D3 Growth signal, D4 Apoptosis escape, D5 Immune evasion, D6 Target engagement, D7 Resistance and D8 Cell process.
+
+### Review protocol
+
+- Inspect a hypothesis's **?** reference: separate the biologically established pathway from the unvalidated computational predicate.
+- Choose symbolic Condition and enabled oracles, adjust depth and run.
+- Inspect local \`N\`, \`M\`, Grover iteration count, marked probability mass, entropy and the selected lane, with 16 rotations × 8 null exclusions.
+- Review the full-distribution 128→8→1 bind and the Parent Grover result; inspect every recursive pass and stability gate.
+- Interpret all probabilities as **conditional on the simulated oracle construction**. No outcome is cancer probability, gene pathogenicity probability, prognosis or drug benefit estimate.
+
+For scientific validation in a later research system, separately specify tumor setting, analyte, assay, specimen, evidence provenance, observation-to-bit mapping, oracle semantics, negative controls, independent test data and endpoints. Nothing in the current application authorizes patient-level clinical use.
+
+### Files
+
+- \`clinical-knowledge.js\` — curated reference content and source URLs, independent of numerical rules.
+- \`clinical-ui.js\` — accessible reference library and detailed scientific explanation drawer.
+- \`clinical.css\` — professional editorial/clinical research UI layer and responsive controls.
+- \`app.js\` — live inputs and trace rendering.
+- \`qcds-core.js\` — unchanged numerical hypothesis model; no patient data.
+- \`inference-room.js\` — per-lane observations and recursive trace.
+
+All additions in this section are research documentation, **not assertions of clinical efficacy**.
