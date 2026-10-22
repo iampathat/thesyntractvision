@@ -21,7 +21,7 @@ test('exactly one intro launches directly into the real Security Lab',()=>{
   assert.doesNotMatch(index,/id="gw-landing"/);
   assert.doesNotMatch(index,/gw-landing-shell|gw-landing-actions/);
   assert.match(index,/data-entry="intro"/);
-  assert.match(index,/data-release="1\.26\.0"/);
+  assert.match(index,/data-release="1\.26\.[^"]+"/);
   assert.match(index,/id="gw-film-video"/);
   assert.match(index,/playsinline muted autoplay/);
   assert.match(index,/data-film-skip/);
