@@ -14,6 +14,11 @@ const ESSENTIAL = [
   'consumer-ui-stage-v118.js','app-install.js',
   'engine.mjs','logical-lab.js','glasswing.mjs',
   'report-export.js','system-guide-pdf.mjs','vendor/report-fonts.mjs','vendor/jspdf.umd.min.js',
+  'assets/system-guide/qcds-dimensional-inference-guide.svg',
+  'assets/system-guide/attack-vectors-across-the-system-landscape.svg',
+  'assets/system-guide/the-seven-security-lenses.svg',
+  'assets/system-guide/recursive-investigation-guide.svg',
+  'assets/system-guide/quantum-execution-and-verification-guide.svg',
   'workspace.mjs','device-files.js',
   'glasswing-mark.webp','glasswing-approved.webp'
 ];
