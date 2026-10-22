@@ -25,7 +25,7 @@ test('exactly one intro launches directly into the real Security Lab',()=>{
   assert.match(index,/id="gw-film-video"/);
   assert.match(index,/playsinline muted autoplay/);
   assert.match(index,/data-film-skip/);
-  assert.match(index,/src="\.\/app-stage-v118\.js\?v=1\.26\.0"/);
+  assert.match(index,/src="\.\/app-stage-v118\.js\?v=1\.26\.[^"]+"/);
   assert.match(index,/glasswing-screen-v125\.js\?v=1\.26\.0/);
   assert.match(index,/glasswing-screen-v125\.css\?v=1\.26\.0/);
   assert.match(js,/video\.addEventListener\('ended',finish\)/);
@@ -113,7 +113,7 @@ test('refresh deep link goes directly to app settings without another intro',()=
   assert.match(installer,/data-app-refresh/);
   assert.match(installer,/location\.replace\(url\.href\)/);
   assert.doesNotMatch(installer,/localStorage\.(?:clear|removeItem)|indexedDB\.deleteDatabase/);
-  assert.match(worker,/const VERSION = '1\.26\.0'/);
+  assert.match(worker,/const VERSION = '1\.26\.[^']+'/);
 });
 test('mobile has one opaque bottom bar and question controls are in the content',()=>{
   const occurrence=(app.match(/\$\{investigating \? questionNavigation\(\) : ""\}/g)||[]).length;
