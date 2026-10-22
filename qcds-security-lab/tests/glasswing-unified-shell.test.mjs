@@ -7,13 +7,13 @@ const read=name=>readFileSync(new URL('../'+name,import.meta.url),'utf8');
 const html=read('index.html'), app=read('app-stage-v118.js'), css=read('glasswing-unified-shell-v127.css');
 const worker=read('sw.js'), intro=read('glasswing-screen-v125.js'), lab=read('logical-lab.js'), install=read('app-install.js');
 test('one authoritative visual layer loads AFTER all inherited styles',()=>{
-  const last=html.indexOf('glasswing-unified-shell-v127.css?v=1.27.0');
+  const last=html.indexOf('glasswing-unified-shell-v127.css?v=1.27.1');
   const prior=html.indexOf('glasswing-screen-v125.css');
   assert.ok(prior>0&&last>prior);
   assert.match(worker,/glasswing-unified-shell-v127\.css/);
-  assert.match(html,/data-release="1\.27\.0"/);
-  assert.match(worker,/const VERSION = '1\.27\.0'/);
-  assert.match(html,/app-stage-v118\.js\?v=1\.27\.0/);
+  assert.match(html,/data-release="1\.27\.1"/);
+  assert.match(worker,/const VERSION = '1\.27\.1'/);
+  assert.match(html,/app-stage-v118\.js\?v=1\.27\.1/);
 });
 test('desktop and Fold/mobile have explicit non-overflowing widths',()=>{
   assert.match(css,/margin-left:242px!important/);
@@ -34,7 +34,7 @@ test('header settings stays visible on mobile rather than rendering a blank rect
 });
 test('primary navigation is simple, advanced work is nested, and guide is independent',()=>{
   const nav=app.slice(app.indexOf('<nav aria-label="Workspace">'),app.indexOf('</nav>',app.indexOf('<nav aria-label="Workspace">')));
-  for(const text of ['Home','My investigations','Worked examples','CURRENT INVESTIGATION','Investigate · five steps','Results & explanation','Reports & PDF','Explore & learn']){
+  for(const text of ['Home','My investigations','Worked examples','CURRENT INVESTIGATION','Investigate','Results & explanation','Reports & PDF','Frameworks & QCDS tools']){
     assert.ok(nav.includes(text),text);
   }
   assert.match(nav,/gw-investigation-nav/);
