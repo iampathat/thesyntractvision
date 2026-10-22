@@ -7,6 +7,15 @@ import { registerReportFonts } from './vendor/report-fonts.mjs';
 import { buildGuideModel } from './system-guide-editorial.mjs';
 const W=595.28,H=841.89,M=43,R=W-M,CW=W-2*M;
 const ink=[229,241,246],navy=[3,20,33],panel=[14,39,58],line=[50,87,104],gold=[225,187,125],cyan=[128,225,239],muted=[166,195,205];
+const FRAMEWORK_EXPLANATIONS={
+ 'STRIDE':'Spoofing means false identity; Tampering means unauthorized modification; Repudiation concerns disputed actions without sufficient evidence; Information Disclosure means confidentiality loss; Denial of Service means loss of availability; Elevation of Privilege means excessive authority.',
+ 'OWASP / AppSec':'Application and API security: broken access control, authentication, object-level and property-level authorization, unsafe input processing and insecure business logic. The active engine maps routes to current OWASP application and API categories.',
+ 'Identity':'Checks the exact principal, role, delegated service identity and resource. A valid login does not establish authority to use every object, API or downstream action.',
+ 'Action / Tool Chain':'Tracks how data and authority move between tools, APIs, workflows and approval gates. A lower-trust input must not cause a higher-privilege action without independent checks.',
+ 'Privacy / Supply Chain':'Follows sensitive records, provenance and external dependencies across systems. Providers, packages, models, imported data and logs can introduce additional trust boundaries.',
+ 'AI / GenAI':'Relevant when the target itself contains AI/ML. Looks at model context, retrieval, generated content and model-guided actions crossing authority boundaries; analyst use of AI alone is not sufficient.',
+ 'Open Search':'Explores routes beyond fixed categories by working backward from harmful consequences, rotating viewpoints and challenging assumptions. This is not automatically external OSINT.'
+};
 const section={intro:'00 / THE READING KEY',condition:'01 / CONDITION FORMATION',
  lenses:'02 / THE SECURITY LENSES',vectors:'03 / ATTACK VECTOR FABRIC',recursive:'04 / RECURSIVE INFERENCE',
  execution:'05 / EXECUTION & VERIFICATION',example:'06 / WORKED EXAMPLE',contract:'07 / DOCUMENT CONTRACT',glossary:'08 / REFERENCE'};
@@ -55,8 +64,10 @@ function heading(d,kicker,title,dek){
 }
 function hero(d,photo,chapter,title,sub,n){
  background(d);
- if(photo){try{d.addImage(photo,'JPEG',0,0,W,H)}catch{}}
- // Title and authorship are independent, real PDF text atop the illustration.
+ // Chapter artwork already contains its own editorial lettering. Treat it as
+ // a complete portrait A4 spread; adding opaque bars would cover the design.
+ if(photo){try{d.addImage(photo,'JPEG',0,0,W,H);return}catch{}}
+ // Text-only fallback for missing artwork.
  color(d,'setFillColor',navy);d.rect(0,0,W,133,'F');d.rect(0,H-123,W,123,'F');
  color(d,'setFillColor',gold);d.rect(M,21,40,2,'F');
  copy(d,'QCDS   /   THE SYNTRACT VISION   /   PROJECT GLASSWING',M,45,CW,8.3,gold,1.1,{bold:true});
@@ -91,7 +102,9 @@ function twoColRows(d,items,y,{max=items.length,rowH=70}={}){
 }
 function cover(d,art,model){
  background(d);
- if(art){try{d.addImage(art,'JPEG',0,185,W,505)}catch{}}
+ // A4 portrait artwork is a COMPLETE magazine cover, not a landscape
+ // banner to stretch into the middle of a portrait sheet.
+ if(art){try{d.addImage(art,'JPEG',0,0,W,H);return}catch{}}
  color(d,'setFillColor',navy);d.rect(0,0,W,187,'F');d.rect(0,H-144,W,144,'F');
  copy(d,'QCDS',M,91,CW,54,ink,1,{serif:true,bold:true});
  copy(d,'S E C U R I T Y   L A B',M,117,CW,15,gold,1,{serif:true,bold:true});
@@ -134,11 +147,11 @@ export function createVisualGlasswingPdf(jsPDF,snapshot,{artwork={},edition='4.0
  copy(d,'Study a target, derive conditions, form possible attack paths, challenge them through multiple perspectives and bind specific claims to evidence. A coherent route is not a confirmed vulnerability.',
  M+15,y+49,CW-30,9.8,ink,1.5);
  y+=113;
- twoColRows(d,[['Four QCDS phases','Condition Formation / Conditional Evolution / Recursive Inference / Truth-Alignment Verification.'],
+ y=twoColRows(d,[['Four QCDS phases','Condition Formation / Conditional Evolution / Recursive Inference / Truth-Alignment Verification.'],
   ['Security perspectives',model.lenses.map(x=>x.name).join(' / ')],
   ['Three fact states','1 = present; 0 = absent; ? = unresolved. Unknowns are maintained explicitly.'],
   ['Evidence contract','Every finding must identify its claim, route, conditions, test context and verification status.']],y,{rowH:105});
- y+=263;
+ y+=13;
  lineBullet(d,'How to read the publication',
   'The image spreads express the architecture. The intervening pages are readable explanations and live source-derived facts; they are not an exhaustive vulnerability catalog.',y);
  next('ILLUSTRATED PHASE');hero(d,artwork.dimensions,'01','Condition Formation',
@@ -156,72 +169,84 @@ export function createVisualGlasswingPdf(jsPDF,snapshot,{artwork={},edition='4.0
  next('LIVE REGISTER');
  y=heading(d,'01A / CURRENT CORE CONDITIONS','The actual '+model.conditions.length+' core inputs',
   'Generated from the active engine definitions, grouped compactly so the guide stays readable.');
- const condRows=model.conditions.map(v=>[v.id+'  '+v.name, v.meaning]);
- const used=Math.min(condRows.length,14);
- const rowH=65;
- twoColRows(d,condRows,y,{max:used,rowH});
- if(condRows.length>used){
-   copy(d,'+'+(condRows.length-used)+' additional current conditions defined in this release.',M,744,CW,9.5,cyan,1.2);
- }
+ const current=model.conditions.slice(0,14);
+ current.forEach((v,i)=>{
+   const ry=y+5+i*32.5;
+   if(i%2===1)panelBox(d,M,ry-16,CW,29);
+   copy(d,v.id,M+13,ry+3,52,9.1,gold,1,{bold:true,limit:1});
+   copy(d,v.meaning||v.name,M+67,ry+3,CW-82,9.0,ink,1.2,{limit:1});
+ });
+ if(model.conditions.length>14)copy(d,
+   '+'+(model.conditions.length-14)+' further conditions in the active engine. See the current source register for full names.',
+   M,730,CW,9.2,cyan,1.2,{limit:2});
  heroPage('02','The seven security lenses','Different frameworks; one investigated system.','lenses');
  next('LENS EXPLANATIONS');
  y=heading(d,'02 / FRAMEWORK OVERVIEW','Seven perspectives, one target',
   'Each lens asks different questions about the same candidate routes; classifications are not independent proof.');
  for(const lens of model.lenses.slice(0,4)){
-  y=lineBullet(d,lens.name,lens.description,y);
+  y=lineBullet(d,lens.name,FRAMEWORK_EXPLANATIONS[lens.name]||lens.description,y);
   if(y>690)break;
  }
  heroContinuation();
  next('LENS EXPLANATIONS');
  y=heading(d,'02A / FRAMEWORK OVERVIEW','Seven perspectives / continued',
   'The remaining perspectives keep their own conditions and scope, including AI-target applicability.');
- for(const lens of model.lenses.slice(4,8))y=lineBullet(d,lens.name,lens.description,y);
+ for(const lens of model.lenses.slice(4,8))y=lineBullet(d,lens.name,FRAMEWORK_EXPLANATIONS[lens.name]||lens.description,y);
  if(model.lenses.length>8)copy(d,model.lenses.length+' perspectives in current release. Additional lenses are tracked by the live engine.',M,717,CW,9.5,cyan);
  next('SYNTHESIS');
  y=heading(d,'02B / SHARED UNDERLYING ROUTE','How multiple lenses converge',
  'The same route can receive several classifications without becoming several separate vulnerabilities.');
- twoColRows(d,[['One route','A proposed mechanism and path over a defined target.'],
+ y=twoColRows(d,[['One route','A proposed mechanism and path over a defined target.'],
   ['One evidence requirement','Observations, counter-tests and scoped context remain mandatory.'],
   ['Many lenses','Each active perspective highlights different kinds of failure.'],
   ['One investigation','The synthesis binds perspectives, controls and observations.']],y,{rowH:119});
- y+=262;
+ y+=13;
  lineBullet(d,'Counterfactual rotation','Remove one perspective or change a known condition to ?; examine which candidate routes lose support.',y);
  heroPage('03','Attack vectors across the system landscape','Paths, dependencies and exposure surfaces.','attack');
  next('VECTOR EXPLANATIONS');
  y=heading(d,'03 / ATTACK VECTORS','How the Attack Vector Fabric is formed',
   'Combine a mechanism, route variant, target surface and consequence; then constrain with known conditions.');
- y=lineBullet(d,'What is an attack vector?','A possible way an adversary or failure could cross a boundary. It is not a confirmed exploit.',y);
- y=lineBullet(d,'What the model currently contains',model.seeds.length+' mechanism seeds; '+model.variants.length+' route variants; '+model.targets.length+' target surfaces.',y);
- twoColRows(d,[['Mechanisms',model.seeds.slice(0,4).map(x=>x.title).join(' / ')],
-  ['Route variants',model.variants.map(x=>x.label).join(' / ')],
-  ['Target surfaces',model.targets.map(x=>x.key).join(' / ')],
-  ['Open Search','Explores boundary crossings outside named framework labels; it is not automatically OSINT.']],y+8,{rowH:125});
+ y=lineBullet(d,'What is an attack vector?',
+   'A modeled mechanism and route through which an adversary, mistake or dependency could cause an unwanted consequence. Object-ID manipulation, injected input, authorization bypass and delegated actions are examples - not confirmed findings.',y);
+ y=lineBullet(d,'Why the route space grows',
+   'The model combines mechanism, route variant, target surface, asset and consequence. Direct access, alternate interfaces, queued work, session state and dependencies yield different paths. The current engine defines '+model.seeds.length+' seeds, '+model.variants.length+' route variants and '+model.targets.length+' target surfaces.',y);
+ y=twoColRows(d,[['Active','The required modeled facts are satisfied. A real security claim still needs an authorized test.'],
+  ['Conditional','At least one required fact is unresolved; the route remains a hypothesis.'],
+  ['Rejected','The current conditions rule the route out. Changed facts can change that decision.'],
+  ['Lens projection','OWASP, STRIDE and other lenses classify the same route instead of creating duplicate attacks.']],y+8,{rowH:105});
+ lineBullet(d,'Open Search is not automatically OSINT',
+  'The open perspective questions assumptions and searches for less taxonomy-dependent pathways; it need not gather external intelligence.',y+9);
  heroPage('04','Recursive inference','Route, control, bypass, counter-test and verification.','recursive');
  next('INFERENCE');
  y=heading(d,'04 / RECURSIVE INFERENCE','Challenge the protection, not only the threat',
   'The loop examines controls, alternate routes and surviving assumptions.');
- for(const [a,b] of [['The candidate','A plausible route is selected from the compatible model.'],
- ['The protection','An explicit control should interrupt that route.'],
- ['The alternative','Another endpoint, asynchronous step or cached state might bypass the control.'],
- ['The verification','Use scoped evidence and counter-tests to accept, reject or qualify a claim.']]){
- y=lineBullet(d,a,b,y);
- }
- panelBox(d,M,y+8,CW,72);
- copy(d,'CONVERGENCE IS NOT PROOF',M+14,y+32,CW-28,10.3,gold,1,{bold:true});
- copy(d,'A stable logical result or simulated distribution does not itself establish a real-world security flaw.',
-  M+14,y+53,CW-28,9.5,ink,1.3);
+ y=lineBullet(d,'The five questions',
+  'The workflow is Goal -> Route -> Control -> Bypass -> Proof. Start from the unwanted outcome, identify a plausible path, challenge the protection and require a counter-test.',y);
+ y=lineBullet(d,'Parallel, sequential and hybrid',
+  'Parallel compares multiple perspectives or dimensions; sequential work carries forward a changed condition; hybrid combines independent lanes with deeper conditional exploration.',y);
+ y=twoColRows(d,[['Perspective rotation','Hold the facts constant while excluding one framework to test what coverage remains.'],
+  ['Dimension walk','Change one fact to 0, 1 or ? and inspect the dependent route candidates.'],
+  ['Control challenge','Introduce a protective condition but do not assume it works without observations.'],
+  ['Counter-test','Seek a safe observation that could disprove, not merely support, the route.']],y+6,{rowH:112});
+ panelBox(d,M,y+8,CW,66);
+ copy(d,'CONVERGENCE IS NOT PROOF',M+14,y+33,CW-28,10.3,gold,1,{bold:true});
+ copy(d,'Agreement among lenses or simulated probabilities does not establish a real-world exploit.',
+  M+14,y+52,CW-28,9.3,ink,1.25);
  heroPage('05','Execution and truth-alignment','The same oracle, different computational representations.','execution');
  next('EXECUTION MODES');
  y=heading(d,'05 / EXECUTION & VERIFICATION','The same oracle, different execution modes',
   'QCDS separates the logical definition of a problem from the substrate used to evaluate it.');
  for(const [a,b] of [
-  ['Symbolic','A compact representation of 1 / 0 / ?-constrained states.'],
-  ['Exact classical','A CPU calculation used for comparison and reproducibility.'],
-  ['Ideal Grover reference','Illustrative mathematical amplitude amplification under an ideal oracle.'],
-  ['Noisy circuit','A small CPU-simulated quantum circuit with an illustrative noise model.'],
-  ['Verified claim','Only a real scoped observation can justify an assertion about a target system.']]){
+  ['Exact symbolic structure','The dimension workbench uses reduced ordered binary decision diagrams and exact counting to represent compatible assignments without allocating each state individually. Complexity still depends on the predicates.'],
+  ['Ideal Grover reference','For a defined marking oracle, the reference predicts ideal amplitude amplification. The explorer checks a finite iteration budget up to 40; it does not assume a universal optimum.'],
+  ['Circuit simulation','Small predicates can be compiled to ideal gate-level simulations and compared with noisy CPU density-matrix calculations. Noise settings are illustrative, not a real device calibration.'],
+  ['What verification means','A convergent probability distribution is not proof of a security failure. Observations require source, scope, traceability and counter-tests; a logical candidate is not a measured exploit.']]){
    y=lineBullet(d,a,b,y);
  }
+ panelBox(d,M,y+8,CW,78);
+ copy(d,'CURRENT IMPLEMENTATION BOUNDARY',M+13,y+34,CW-26,9.3,gold,1,{bold:true});
+ copy(d,'The browser performs classical modeling and limited circuit simulation. It does not use a physical NISQ/QPU backend or demonstrate a quantum speedup.',
+ M+13,y+54,CW-26,9.1,ink,1.3,{limit:2});
  next('CASE STUDY');
  y=heading(d,'06 / FROM QUESTION TO FINDING','A worked example: customer-records portal',
   'A synthetic account boundary, explained from question to evidence.');
