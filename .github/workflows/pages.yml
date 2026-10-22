@@ -453,7 +453,7 @@ jobs:
             cmp _site/qcds-security-lab/enter.html "_site/qcds-security-lab/$name"
           done
           grep -F 'location.replace(target.href)' _site/qcds-security-lab/enter.html
-          grep -F 'data-release="1.26.0"' _site/qcds-security-lab/index.html
+          grep -E 'data-release="1\.26\.[^"]+"' _site/qcds-security-lab/index.html
           grep -F 'id="gw-film"' _site/qcds-security-lab/index.html
           grep -F 'data-film-skip' _site/qcds-security-lab/index.html
           grep -F 'glasswing-flight-v125.mp4' _site/qcds-security-lab/index.html
