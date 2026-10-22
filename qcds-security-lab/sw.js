@@ -67,6 +67,7 @@ self.addEventListener('fetch', event => {
     const isDocument = req.mode === 'navigate' ||
       key.pathname === root.pathname + 'index.html' ||
       key.pathname === root.pathname + 'enter.html' ||
+      key.pathname === root.pathname + 'glasswing.html' ||
       key.pathname === root.pathname + 'open-glasswing-116.html';
     // A fresh page must never be combined with old JavaScript or CSS.
     // Offline cache remains the fallback when the device has no connection.
