@@ -4,7 +4,13 @@
  * © 2026 Patrik Sundblom · OpenAI / ChatGPT R&D support.
  */
 (function(root,factory){
-  const api=factory(root.CancerGenomeDiscovery,root.QCDSGenomeFunnel);
+  // The browser reads the ordered scripts; CommonJS tests require dependencies explicitly.
+  const hasNode=typeof module!=="undefined"&&Boolean(module.exports);
+  if(hasNode && !root.QCDSCore)require("./qcds-core.js");
+  const api=factory(
+    root.CancerGenomeDiscovery||(hasNode?require("./genome-discovery.js"):null),
+    root.QCDSGenomeFunnel||(hasNode?require("./genome-funnel.js"):null)
+  );
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
   root.CancerGenomePerspective=api;
   if(typeof document!=="undefined")api.initialize();
