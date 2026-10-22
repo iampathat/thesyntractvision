@@ -65,6 +65,8 @@
       text("stabilitySummary", "Stability requires multiple independent signals across recursive cycles.");
       return;
     }
+    const topPeaks = cycle.familyDistributions.map(distribution => Math.max(...distribution));
+    const scalePeak = Math.max(...topPeaks, 1e-12);
     cycle.familyDistributions.forEach((distribution, i) => {
       const top = distribution.reduce((best, value, j) => value > distribution[best] ? j : best, 0);
       const p = distribution[top];
@@ -72,7 +74,7 @@
       const name = make("span", "", CORE.DIMENSIONS[i]);
       const track = make("div", "family-track");
       const fill = make("i");
-      fill.style.width = Math.max(1, p * 100).toFixed(2) + "%";
+      fill.style.width = Math.max(2, p / scalePeak * 100).toFixed(2) + "%";
       track.appendChild(fill);
       row.append(name, track, make("strong", "", CORE.stateToBits(top) + " · " + percent(p)));
       holder.appendChild(row);
