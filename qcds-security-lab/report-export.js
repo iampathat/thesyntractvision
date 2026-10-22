@@ -40,3 +40,14 @@ export async function downloadSecurityPdf(model, project, options = {}) {
   await saveDeviceFile(doc.output("blob"), `QCDS-${slug}${lens}-security-report.pdf`, "application/pdf");
   return summary;
 }
+
+// The system guide is universal; it does not read, export or modify saved cases.
+export async function downloadSystemGuidePdf() {
+  const [jsPDF, { createSystemGuidePdf }] = await Promise.all([
+    pdfEngine(),
+    import("./system-guide-pdf.mjs?v=1.0.0"),
+  ]);
+  const { doc, summary } = createSystemGuidePdf(jsPDF);
+  await saveDeviceFile(doc.output("blob"), "QCDS-Security-Lab-System-Guide.pdf", "application/pdf");
+  return summary;
+}
