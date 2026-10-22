@@ -97,7 +97,7 @@ function block(d,ctx,title,body,detail=''){
  const width=I-31,htitle=wrap(d,title,width,11,'bold').length*14.1,
        hbody=wrap(d,body,width,9.8).length*13.9,
        hdetail=detail?wrap(d,detail,width,8.3).length*12:0,
-       height=Math.max(69,26+htitle+hbody+hdetail);
+       height=Math.max(82,47+htitle+hbody+hdetail);
  if(ctx.y+height+13>END)next(d,ctx);
  set(d,'panel','setFillColor');set(d,'line','setDrawColor');
  d.roundedRect(M,ctx.y-15,I,height,6,6,'FD');
