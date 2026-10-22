@@ -32,25 +32,30 @@
         <div><span class="brand-pretitle">QCDS / THE SYNTRACT VISION</span><h1>Cancer Lab <span>· Oncology research</span></h1><p>Exploratory computational hypothesis workspace</p></div>
       </div>
       <nav class="clinical-nav" aria-label="Primary">
-        <a href="#workbench">Workspace</a>
-        <a href="#genomePerspective">Genome perspective</a>
+        <a href="#genomePerspective">Explore DNA</a>
+        <a href="#workbench">8-bit method lab</a>
         <a href="#referenceHub">Reference library</a>
         <a href="#methods">Methods</a>
         <a href="./README.md">Documentation</a>
       </nav>
     </header>
     <section class="research-strip" aria-label="Research scope">
-      <div><small>STUDY MODE</small><strong>Methods development</strong></div>
-      <div><small>INPUT MODEL</small><strong>8 symbolic dimensions</strong></div>
-      <div><small>RULE PROVENANCE</small><strong>Legacy demo masks</strong></div>
-      <div><small>VALIDATION</small><strong>Not clinically validated</strong></div>
+      <div><small>START HERE</small><strong>DNA relationships</strong></div>
+      <div><small>MAIN EXAMPLE</small><strong>10 DNA positions · 10 profiles</strong></div>
+      <div><small>SEPARATE RESEARCH TOOL</small><strong>Original 8-bit method lab</strong></div>
+      <div><small>RESEARCH STATUS</small><strong>Synthetic data · not clinical</strong></div>
     </section>
-    <div class="research-scope"><strong>Scope:</strong> An executable QCDS demonstration with domain reference notes. Molecular biology entries are sourced explanations; they are <em>not</em> biological predicates implemented in the oracle masks. No patient data is processed here. <button class="text-link" data-explain="provenance">How is provenance distinguished?</button></div>
+    <div class="research-scope"><strong>About this demonstration:</strong> Everything is calculated using invented sample data. No real patient DNA is loaded and the patterns are not medical findings. The separate 8-bit laboratory below uses illustrative rules, not clinical gene tests. <button class="text-link" data-explain="provenance">See what is evidence and what is a model ↗</button></div>
     <section class="genome-perspective" id="genomePerspective" aria-labelledby="genomePerspectiveTitle">
       <div class="genome-perspective-head">
         <span class="genome-eyebrow">CROSS-GENOME CONDITION SEARCH · SYNTHETIC RESEARCH EXAMPLE</span>
-        <h2 id="genomePerspectiveTitle">Five genomes. Rotating logical rooms. Emerging relationships.</h2>
-        <p>A genomic relationship need not be a contiguous DNA string. This research model generates five synthetic cancer-labeled profiles and five comparisons without inserting a predetermined winning combination. It explores <strong>previously unspecified connections across distant loci</strong> using 16 rotating four-bit Grover rooms, four probability folds and one recursive bound distribution. Full-cohort verification determines whether a highlighted result is admissible.</p>
+        <h2 id="genomePerspectiveTitle">What if several people share a DNA pattern nobody thought to look for?</h2>
+        <p>Imagine comparing five people with the same cancer with five others. A connection might involve several distant parts of their DNA, not one matching sequence. <strong>QCDS looks for combinations that fit the chosen rules</strong> and lights up the positions involved. Here we test the idea using <strong>invented data</strong>, not actual human genomes.</p>
+        <div class="genome-quickstart" aria-label="How to use this example">
+          <div><b>1</b><span><strong>Start with the example</strong><small>It has already been calculated for you.</small></span></div>
+          <div><b>2</b><span><strong>See what lights up</strong><small>Look at the result and the ten DNA tracks.</small></span></div>
+          <div><b>3</b><span><strong>Try your own question</strong><small>Pick a starting position, or open the advanced options.</small></span></div>
+        </div>
       </div>
       <div class="genome-stats">
         <div><small>SYNTHETIC COHORT</small><strong>5 + 5</strong><span>five labeled cases and five independent comparison profiles</span></div>
@@ -59,49 +64,54 @@
       </div>
       <div id="cohortCombinatorial" class="cohort-lab">
         <div class="cohort-head">
-          <h3>Explore multi-locus relationships <span class="genome-demo-marker">IDEALIZED QCDS / GROVER PROTOTYPE</span></h3>
-          <p>Optionally specify up to three starting loci, leaving the rest open. QCDS tests <strong>2–4-locus relationships</strong> through rotating 4-bit windows. Sixteen local Grover probability distributions flow into four folds and then one global distribution; later rotations are bound without pretending previous evidence is independent. The data generator does not contain a hardcoded answer mask. Change the seed, switch between co-occurrence and parity, swap the null model or edit individual synthetic observations to test whether a different relation emerges.</p>
+          <h3>Ask QCDS to look for a relationship <span class="genome-demo-marker">COMPUTED SIMULATION</span></h3>
+          <p>By default, nothing is preselected: QCDS searches for possible connections across DNA positions. You can point it toward a starting location, but you do <strong>not</strong> need to know the answer. It might find one pattern, several, or none.</p>
         </div>
         <div class="cohort-controls">
           <div class="cohort-seed-panel">
-            <strong>Starting Condition · select locus anchors</strong>
-            <div id="cohortLoci" class="cohort-locus-list" aria-label="Ten selectable genome locus positions"></div><button type="button" id="cohortClearAnchors" class="text-link">Clear anchors / open search</button>
+            <strong>Optional: choose where QCDS should start</strong>
+            <p class="cohort-easy-hint">Select up to three positions to include in the search. Leave all unselected to explore freely.</p>
+            <div id="cohortLoci" class="cohort-locus-list" aria-label="Ten selectable DNA positions"></div>
+            <button type="button" id="cohortClearAnchors" class="text-link">Clear selected positions</button>
+            <button id="cohortRun" type="button" class="cohort-run">▶ Find possible DNA connections</button>
             <p id="cohortAnchors" class="cohort-selection"></p>
             <p id="cohortError" class="cohort-error" role="alert"></p>
           </div>
-          <div class="cohort-oracle-panel">
-            <strong>Cross-person oracles</strong>
-            <label>Relationship type
+          <details class="cohort-oracle-panel" id="cohortAdvancedSettings">
+            <summary>Adjust the search <small>Optional · advanced settings, sample data and rules</small></summary>
+            <div class="cohort-advanced-body">
+            <strong>Search rules for the synthetic group</strong>
+            <label>Type of relationship to test
               <select id="cohortRelation">
                 <option value="cooccurrence" selected>Joint presence across separate loci</option>
                 <option value="parity">Odd-parity joint pattern (mixed 0/1)</option>
               </select>
             </label>
-            <label>Cases with all selected variants
+            <label>Of the five cancer-labeled examples, how many must show this pattern?
               <select id="cohortMinCases" aria-label="Minimum number of case profiles carrying combination">
                 <option value="5">At least 5 / 5</option><option value="4">At least 4 / 5</option><option value="3" selected>At least 3 / 5</option>
               </select>
             </label>
-            <label>Comparators with all selected variants
+            <label>Of the five comparisons, how many may show the pattern?
               <select id="cohortMaxControls" aria-label="Maximum number of comparator profiles carrying combination">
                 <option value="0">At most 0 / 5</option><option value="1" selected>At most 1 / 5</option><option value="2">At most 2 / 5</option>
               </select>
             </label>
             <div class="cohort-data-settings">
-              <label for="cohortDataSeed">Reproducible synthetic-data seed <input id="cohortDataSeed" type="number" min="1" max="1000000" value="173" step="1" /></label>
-              <label for="cohortDataMode">Data-generating hypothesis
+              <label for="cohortDataSeed">Example-data seed (reproducible) <input id="cohortDataSeed" type="number" min="1" max="1000000" value="173" step="1" /></label>
+              <label for="cohortDataMode">How to generate sample data
                 <select id="cohortDataMode">
-                  <option value="structure" selected>Variable cohort effects · unknown loci</option>
-                  <option value="null">Null model · no built-in cohort difference</option>
+                  <option value="structure" selected>Invented sample with possible group differences</option>
+                  <option value="null">Null test · no built-in group difference</option>
                 </select>
               </label>
               <div class="cohort-data-buttons">
-                <button id="cohortRebuild" type="button">Regenerate seed</button>
-                <button id="cohortNextDataset" type="button">New synthetic cohort +</button>
+                <button id="cohortRebuild" type="button">Recreate this sample</button>
+                <button id="cohortNextDataset" type="button">Generate a new sample +</button>
               </div>
             </div>
-            <button id="cohortRun" type="button" class="cohort-run">Run rotating 16 → 4 → 1 QCDS</button>
-          </div>
+            </div>
+          </details>
         </div>
         <section class="funnel-panel" id="qcdsFunnel" aria-labelledby="funnelTitle">
           <header class="funnel-header">
