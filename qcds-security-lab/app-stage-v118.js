@@ -373,29 +373,45 @@ function shell() {
     <a class="brand glasswing-brand" href="#home" aria-label="QCDS Security Lab home"><span class="glasswing-brand-mark"><img src="./glasswing-mark.webp?v=1.18.0" alt="" width="160" height="76"></span><span class="glasswing-brand-label">QCDS<span class="brand-sub">SECURITY LAB</span></span></a>
     <div class="workspace-label">YOUR WORKSPACE <button class="icon-button menu-close" data-action="close-menu" aria-label="Close navigation">${icon("close")}</button></div>
     <nav aria-label="Workspace">
-      <a href="#home" ${state.route==='home'?'aria-current="page"':''}>${icon('grid')}<span class="nav-copy"><b>Home</b><em>Your next step, in one place</em></span></a>
-      <a href="#cases" ${state.route==='cases'?'aria-current="page"':''}>${icon('shield')}<span class="nav-copy"><b>My investigations</b><em>Saved cases and backups</em></span></a>
-      <button type="button" class="gw-nav-guide" data-action="system-guide-pdf">${icon('book')}<span class="nav-copy"><b>Glasswing guide (PDF)</b><em>How the system works</em></span></button>
+      <a href="#home" ${state.route==='home'?'aria-current="page"':''}>${icon('grid')}<span class="nav-copy"><b>Home</b></span></a>
+      <a href="#cases" ${state.route==='cases'?'aria-current="page"':''}>${icon('shield')}<span class="nav-copy"><b>My investigations</b></span></a>
+      <a href="#examples" ${state.route==='examples'?'aria-current="page"':''}>${icon('play')}<span class="nav-copy"><b>Worked examples</b></span></a>
       <div class="nav-section-label">CURRENT INVESTIGATION</div>
-      <div class="consumer-nav-case"><b>${esc(project().input.name)}</b><small>${project().example?'Practice case · synthetic evidence':'Your system · saved locally'}</small></div>
-      <div class="nav-flow">${stepLinks}</div>
-      ${analysisLink('report','My report','report')}
-      <details class="consumer-nav-more" ${['system','perspectives','findings','trace','overview','comparison'].includes(state.route)?'open':''}><summary>Perspectives & lab</summary>
-        ${analysisLink('system','System facts','system')}
-        ${analysisLink('findings','Results & explanation','shield')}
-        ${analysisLink('perspectives','Security perspectives','layers')}
-        <button class="text-button" data-open-logical>Dimensional & quantum lab ↗</button>
-        <a href="#comparison" ${state.route==="comparison"?'aria-current="page"':""}>${icon('layers')}<span>Compare inference methods</span></a>
+      <div class="consumer-nav-case"><b>${esc(project().input.name)}</b><small>${project().example?'Practice case':'Your system'}</small></div>
+      <details class="gw-investigation-nav" ${investigating?'open':''}>
+        <summary>${icon('trace')}<span>Investigate · five steps</span></summary>
+        <div class="nav-flow">${stepLinks}</div>
       </details>
-      <a href="#examples">${icon('play')}<span>Worked examples</span></a>
-      ${analysisLink('learn','In plain English','book')}
+      ${analysisLink('findings','Results & explanation','shield')}
+      ${analysisLink('report','Reports & PDF','report')}
+      <details class="consumer-nav-more" ${!state.mobile && ['system','perspectives','trace','overview','comparison','learn'].includes(state.route)?'open':''}>
+        <summary>${icon('layers')}<span>Explore & learn</span></summary>
+        ${analysisLink('system','System facts','system')}
+        ${analysisLink('perspectives','Security perspectives','layers')}
+        <a href="#comparison" ${state.route==="comparison"?'aria-current="page"':""}>${icon('trace')}<span class="nav-copy"><b>Compare methods</b></span></a>
+        <button type="button" class="gw-lab-nav-link" data-open-logical>${icon('system')}<span>Dimensional & quantum lab</span></button>
+        ${analysisLink('learn','In plain English','book')}
+      </details>
     </nav>
     <button class="new-case" data-action="new">${icon("plus")} New investigation</button>
     <div class="sidebar-bottom"><button type="button" class="gw-settings-trigger" data-app-settings aria-haspopup="dialog">${icon("system")} Settings & updates</button><div class="local-note">${icon("shield")}<span>Saved on this device.<br>No account needed.</span></div><a href="#learn" class="author">By Patrik Sundblom <span>↗</span></a><div class="version">SECURITY LAB <span>v${document.body.dataset.release || VERSION}</span></div></div>
   </aside>
   ${state.mobile ? '<button class="menu-backdrop" data-action="close-menu" aria-label="Close navigation backdrop"></button>' : ""}
   <div class="app-body" ${state.mobile ? "inert" : ""}>
-    <header class="topbar"><div class="breadcrumb"><button class="icon-button mobile-toggle" data-action="menu" aria-controls="site-nav" aria-label="Open navigation" aria-expanded="${state.mobile}">${icon("menu")}</button><b>${investigating ? "Q★ Security" : esc(ROUTES.find((r) => r[0] === state.route)?.[1])}</b></div><div class="top-actions"><span id="save-status" class="save-status">${state.storage ? "Saved on this device" : "Not saved · export your work"}</span><button class="button small plain-button gw-guide-header" data-action="system-guide-pdf">${icon("download")} <span>Glasswing PDF</span></button><button type="button" class="button small plain-button gw-settings-header" data-app-settings aria-haspopup="dialog">${icon("system")} <span>Settings / Refresh</span></button><button class="button small plain-button gw-what-header" data-system-explanation>${icon("book")} What is this?</button></div></header>
+    <header class="topbar">
+      <div class="breadcrumb">
+        <button type="button" class="icon-button mobile-toggle" data-action="menu"
+          aria-controls="site-nav" aria-label="Open navigation" aria-expanded="${state.mobile}">${icon("menu")}</button>
+        <b>${investigating ? "Investigation" : esc(ROUTES.find((r) => r[0] === state.route)?.[1])}</b>
+      </div>
+      <div class="top-actions">
+        <span id="save-status" class="save-status">${state.storage ? "Saved on this device" : "Not saved · export your work"}</span>
+        <button type="button" class="button small plain-button gw-settings-header" data-app-settings
+          aria-haspopup="dialog" aria-label="Settings and updates" title="Settings and updates">
+          ${icon("system")} <span>Settings</span>
+        </button>
+      </div>
+    </header>
     ${investigating ? questionPosition() : ""}
     <main id="main" tabindex="-1">
       ${state.route === "investigate" ? (state.question === 1 && project().example ? casePicker() : "") : !["examples", "learn", "home", "cases"].includes(state.route) ? casePicker() : ""}
