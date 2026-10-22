@@ -108,7 +108,24 @@ export function createSystemGuidePdf(jsPDF,options={}){
   registerReportFonts(doc);
   cover(doc,options.artwork||null);
   const entries=buildSystemGuideCatalog(options.catalog||{});
-  entries.forEach((data,i)=>page(doc,data,i+2));
+  const chapterPlateSlots=new Map([
+    ['CONDITION REGISTER / 1',0],
+    ['ATTACK CATALOG / 1',1],
+    ['ACTIVE PERSPECTIVE / '+Object.keys(options.catalog?.lenses||LENSES)[0]?.toUpperCase(),2],
+    ['DEEPENING',3],
+    ['DIMENSIONAL EXECUTION',4]
+  ]);
+  let pageNumber=2;
+  entries.forEach(data=>{
+    const key=[...chapterPlateSlots.keys()].find(k=>data.tag===k||data.tag.includes(k));
+    const plate=key?options.plates?.[chapterPlateSlots.get(key)]:null;
+    if(plate){
+      doc.addPage();
+      doc.addImage(plate,'JPEG',0,0,W,H);
+      pageNumber++;
+    }
+    page(doc,data,pageNumber++);
+  });
   end(doc,Object.keys(options.catalog?.lenses||LENSES).length);
   doc.setProperties({title:'QCDS Security Lab - Live System Guide',subject:'Dynamic reference generated from QCDS inference engine exports',author:'Patrik Sundblom',
     keywords:'QCDS, Security Lab, dynamically generated, conditions, attack vectors, security perspectives'});
