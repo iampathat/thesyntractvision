@@ -74,4 +74,36 @@ const complete = Q.runCancerQCDS({
 assert.strictEqual(complete.finalState, "01101001");
 assert.deepStrictEqual(Object.keys(complete.finalDistribution), ["01101001"]);
 
-console.log("QCDS Cancer browser core tests: PASS");
+// The observatory must reflect the same Grover measurements, not synthetic UI data.
+const observations = [];
+const observedRun = Q.runCancerQCDS({
+  inputMask: "1111????", hypotheses: [], maxCycles: 1,
+  onProgress(info) { observations.push(info); }
+});
+assert.strictEqual(observations.length, 16, "one callback per completed rotation bank");
+assert.strictEqual(observedRun.cycles[0].laneObservations.length, 128, "128 measured logical lanes");
+observations.forEach((progress, bank) => {
+  assert.strictEqual(progress.lanes.length, 8);
+  assert.strictEqual(progress.lanesDone, 8 * (bank + 1));
+  progress.lanes.forEach((lane, family) => {
+    assert.strictEqual(lane.bankIndex, bank);
+    assert.strictEqual(lane.excludedIndex, family);
+    assert.strictEqual(lane.stateCount, 128);
+    assert(lane.groverIterations >= 0 && lane.groverIterations <= 40);
+    assert(lane.markedMass >= 0 && lane.markedMass <= 1 + 1e-12);
+    assert.deepStrictEqual(lane, observedRun.cycles[0].laneObservations[bank * 8 + family]);
+  });
+});
+
+Q.runCancerQCDSAsync({
+  inputMask: "1111????", hypotheses: [], maxCycles: 1
+}).then(asyncRun => {
+  assert.deepStrictEqual(asyncRun.finalDistribution, observedRun.finalDistribution,
+    "async observable engine must preserve synchronous result");
+  assert.deepStrictEqual(asyncRun.cycles[0].laneObservations, observedRun.cycles[0].laneObservations,
+    "async and synchronous lane traces must match exactly");
+  console.log("QCDS Cancer browser core tests: PASS — 128 lanes and sync/async parity");
+}).catch(error => {
+  console.error(error);
+  process.exitCode = 1;
+});
