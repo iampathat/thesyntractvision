@@ -7,6 +7,7 @@
   const api = factory();
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   root.CancerGenomePerspective = api;
+  if (typeof document !== "undefined") api.initialize();
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
   const CHROMOSOMES = Array.from({length: 22}, (_, i) => String(i + 1)).concat(["X", "Y"]);
