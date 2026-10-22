@@ -594,6 +594,14 @@ jobs:
           print('Project Glasswing vision mirror verified outside application cache scope')
           PYGLASSWING
 
+      - name: Publish Glasswing recovery outside old service-worker scope
+        run: |
+          # Root-level URL cannot be intercepted by the Security Lab's legacy SW.
+          cp qcds-security-lab/update-glasswing.html _site/glasswing-refresh.html
+          test -s _site/glasswing-refresh.html
+          grep -F "location.pathname.endsWith('/glasswing-refresh.html')" _site/glasswing-refresh.html
+          grep -F "getRegistration(root.href)" _site/glasswing-refresh.html
+
       - name: Validate exact public release artifact
         run: python -m qcds_fabric.public_release_guard --site _site
 
