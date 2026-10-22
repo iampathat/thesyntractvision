@@ -60,7 +60,7 @@
       <div id="cohortCombinatorial" class="cohort-lab">
         <div class="cohort-head">
           <h3>Explore multi-locus relationships <span class="genome-demo-marker">IDEALIZED QCDS / GROVER PROTOTYPE</span></h3>
-          <p>Optionally specify up to three starting loci, leaving the rest open. QCDS tests <strong>2–4-locus relationships</strong> within a 1,024-state representation, amplifies all combinations satisfying the cohort oracle, then refines by the strongest observed cohort contrast. The data generator does not contain a hardcoded answer mask. Change the seed, swap the null model, or edit individual synthetic observations to test whether a different relation emerges.</p>
+          <p>Optionally specify up to three starting loci, leaving the rest open. QCDS tests <strong>2–4-locus relationships</strong> within a 1,024-state representation, amplifies all combinations satisfying the cohort oracle, then refines by the strongest observed cohort contrast. The data generator does not contain a hardcoded answer mask. Change the seed, switch between co-occurrence and parity, swap the null model or edit individual synthetic observations to test whether a different relation emerges.</p>
         </div>
         <div class="cohort-controls">
           <div class="cohort-seed-panel">
@@ -70,7 +70,13 @@
             <p id="cohortError" class="cohort-error" role="alert"></p>
           </div>
           <div class="cohort-oracle-panel">
-            <strong>Cross-person oracle</strong>
+            <strong>Cross-person oracles</strong>
+            <label>Relationship type
+              <select id="cohortRelation">
+                <option value="cooccurrence" selected>Joint presence across separate loci</option>
+                <option value="parity">Odd-parity joint pattern (mixed 0/1)</option>
+              </select>
+            </label>
             <label>Cases with all selected variants
               <select id="cohortMinCases" aria-label="Minimum number of case profiles carrying combination">
                 <option value="5">At least 5 / 5</option><option value="4">At least 4 / 5</option><option value="3" selected>At least 3 / 5</option>
@@ -110,11 +116,11 @@
         </section>
         <div class="cohort-visual-head">
           <h3>Genome-wide position schematic · five cases and five controls</h3>
-          <p>Each row is one <strong>synthetic person</strong>, with ten locus markers spread across a schematic genome axis. Amber circles are specified anchors; teal highlights show implicated positions. Click any synthetic 0/1 observation to alter the evidence and rerun the inference. Positions are illustrative, not real genome coordinates.</p>
+          <p>Each row is one <strong>synthetic person</strong>, with ten locus markers spread across a schematic genome axis. Amber circles are specified anchors; teal highlights show implicated positions. Click any synthetic 0/1 observation to alter the evidence and rerun the inference. For parity relations, a highlighted outlined site can denote an absent variant that participates in the logical relation. Positions are illustrative, not real genome coordinates.</p>
         </div>
         <div class="cohort-legend">
           <span><i class="legend-cohort-anchor"></i> Specified Condition</span>
-          <span><i class="legend-cohort-hit"></i> Model-selected combination</span>
+          <span><i class="legend-cohort-hit"></i> Selected present component</span><span><i class="legend-cohort-missing"></i> Selected absent component</span>
           <span><i class="legend-cohort-variant"></i> Other present variant</span>
           <span><i class="legend-cohort-off"></i> Absent variant</span>
         </div>
@@ -125,7 +131,7 @@
         </details>
       </div>
       <div class="genome-perspective-foot">
-        <p><strong>Exactly what was computed:</strong> ten symbolic locus dimensions, 1,024 possible subset states, and candidate relationships of two to four loci. Generic case/control constraints form the first oracle; a predefined maximal-contrast refinement is the second. Both use the existing ideal Grover kernel, first-peak/tangent stopping, 0.999 threshold and maximum 40 iterations. Synthetic cohorts are generated from seed-dependent probabilities rather than an inserted answer signature. Noise, leave-one-out and label-swap tests examine internal sensitivity; none validates a causal cancer relationship.</p>
+        <p><strong>Exactly what was computed:</strong> ten symbolic locus dimensions, 1,024 possible subset states, and candidate relationships of two to four loci. Generic case/control constraints and a selectable relation family form the first oracle; a predefined maximal-contrast refinement is the second. Both use the existing ideal Grover kernel, first-peak/tangent stopping, 0.999 threshold and maximum 40 iterations. Synthetic cohorts are generated from seed-dependent probabilities rather than an inserted answer signature. Noise, leave-one-out and label-swap tests examine internal sensitivity; none validates a causal cancer relationship.</p>
         <p><strong>What this does not prove:</strong> the app does not load five actual three-billion-base genomes, represent all real biological relationships, run 1,024 hardware-parallel quantum states, evaluate all combinations across billions of positions, or establish that classical computers cannot solve the task. Loading genomes into a quantum representation, building defensible gene-aware oracles, measurement/readout and independent validation remain open engineering and scientific work.</p>
       </div>
     </section>
