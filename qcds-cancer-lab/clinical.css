@@ -743,3 +743,12 @@ body.clinical-theme .workbench {margin-top:24px}
  .legacy-workbench-body {padding:7px}
  .legacy-lab-details>summary {padding:15px}
 }
+
+
+/* Clarify full co-occurrence/parity patterns versus partial component presence. */
+.cohort-site.is-partial-match {background:#9bb7c1;border:1px dashed #4a8192;opacity:.78;width:14px;height:14px}
+.cohort-bit.is-partial-match {background:#e4eff2;color:#47778a;outline:1px dashed #97b7c1}
+.cohort-genome-row.is-full-match .cohort-genome-count {color:#28755e;font-weight:800}
+.cohort-genome-count {text-align:right;font-size:10px;white-space:nowrap;overflow:visible}
+.cohort-genome-row {grid-template-columns:52px minmax(0,1fr) 55px}
+@media(max-width:650px) {.cohort-genome-row {grid-template-columns:40px minmax(0,1fr) 48px}}
