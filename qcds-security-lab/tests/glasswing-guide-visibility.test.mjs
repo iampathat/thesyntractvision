@@ -15,7 +15,7 @@ test('Glasswing guide is directly accessible in the actual desktop workspace',()
  assert.match(app,/class="button small plain-button gw-settings-header" data-app-settings/);
  assert.match(app,/class="gw-settings-trigger" data-app-settings/);
  assert.match(app,/class="gw-investigation-nav"/);
- assert.match(app,/Explore & learn/);
+ assert.match(app,/LEARN & EXPLORE/);
  assert.doesNotMatch(app,/gw-guide-header|gw-nav-guide/);
  assert.match(app,/class="gw-guide-export-panel"|class="panel gw-guide-export-panel"/);
 });
