@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {newProject,analyze,validateProject,fingerprint} from '../dist/core/engine.mjs';
 import {runDimensionExperiment} from '../dist/core/logical-space.mjs';
 import {compareExecution} from '../dist/core/quantum-compare.mjs';
-import {reportMarkup} from '../dist/work-data.js';
+import {reportShell,reportFilename} from '../dist/report-view.js';
 
 test('new custom cases start unknown and observations never cross scope',()=>{
  const p=newProject('custom');
@@ -33,9 +33,10 @@ test('actual dimensional and gate calculations agree on a quarter-space oracle',
  assert.ok(q.ideal.maxReferenceError<1e-10);assert.ok(q.noisy.probability<q.ideal.probability);
  assert.equal(q.noise.shots,4096);assert.equal(run.binding.status,'AWAITING TESTS');
 });
-test('report escapes supplied text and cannot turn user content into markup',()=>{
+test('report controls escape supplied text and produce safe download filenames',()=>{
  const p=newProject('coding');p.input.name='<img src=x onerror=alert(1)>';
- const m=analyze(p.input,p.evidence,[]),html=reportMarkup(m,p,null);
+ const m=analyze(p.input,p.evidence,[]),html=reportShell(m);
  assert.ok(html.includes('&lt;img'));assert.ok(!html.includes('<img src=x'));
- assert.ok(html.includes('Patrik Sundblom'));
+ assert.equal(reportFilename('Åtgärder / Översikt'), 'QCDS-atgarder-oversikt-security-report.pdf');
+ assert.ok(!reportFilename(p.input.name).includes('<'));
 });
