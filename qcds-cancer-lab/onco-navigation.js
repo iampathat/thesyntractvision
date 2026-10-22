@@ -104,7 +104,8 @@ function init(){
   }
   page.append(row);
  };
- makeFooter(setup,[["findings","Visa resultat →",true]]);
+ // The main "Find connections" button performs the search and opens Results;
+ // no second lookalike submit/action button is added here.
  makeFooter(findings,[["setup","← Ändra undersökningen",false],["engine","Hur räknade QCDS? →",true]]);
  makeFooter(engine,[["findings","← Till resultatet",false]]);
  nodes.funnel.open=true;
