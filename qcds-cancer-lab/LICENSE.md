@@ -1,4 +1,4 @@
-# QCDS CANCER LAB — COMMERCIAL LICENSE NOTICE v1.0
+# QCDS ONCOLOGY LAB — COMMERCIAL LICENSE NOTICE v1.0
 
 Copyright © 2026 Patrik Sundblom. All rights reserved.
 
@@ -42,7 +42,7 @@ Attribution to Patrik Sundblom does not itself authorize use of this directory.
 
 Nothing in this notice revokes or narrows licenses already granted for QCDS material published previously under CC BY 4.0, MIT or another earlier license.
 
-This notice governs the new and original Cancer Lab material in this directory to the extent legally protectable. Where this directory references or depends on pre-existing QCDS material, those pre-existing portions remain subject to their original licenses.
+This notice governs the new and original Oncology Lab material in this directory to the extent legally protectable. Where this directory references or depends on pre-existing QCDS material, those pre-existing portions remain subject to their original licenses.
 
 ## 7. No implied patent, trademark or other license
 
@@ -67,7 +67,7 @@ Commercial and organizational licenses are available by agreement with Patrik Su
 For an inquiry, open an issue in:
 https://github.com/iampathat/thesyntractvision
 
-Use the title: **QCDS Cancer Lab License Inquiry**.
+Use the title: **QCDS Oncology Lab License Inquiry**.
 
 ---
 
