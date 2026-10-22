@@ -60,7 +60,7 @@
      const size=POP[global];
      if(size<2||size>4)continue;
      // Only enforce anchors if all anchors are present in the four-bit window.
-     // Global input constraint is always enforced again at the final truth gate.
+     // Global input constraint is always enforced again at the full-cohort consistency check.
      const assessment=D.assess(global,settings.dataset,settings.relation||"cooccurrence");
      const passed=(global&visibleMust)===visibleMust&&
        assessment.caseCount>=settings.minCases&&
@@ -189,7 +189,7 @@
    const leaders=[];
    if(ranked.length){
      const peak=ranked[0].foldedProbability;
-     // A probabilistic shortlist, AND verified against the original independent oracle.
+     // A probabilistic shortlist, AND checked against the original full-sample rules (same data).
      for(const row of ranked)if(row.foldedProbability>=peak*.8-1e-15)leaders.push(row);
    }
    const parent=Q.runGrover(STATES,leaders.map(x=>x.state),40);
