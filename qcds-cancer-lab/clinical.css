@@ -631,10 +631,10 @@ body.clinical-theme .qcds-conclusion .qcds-conclusion-scope {
 
 /* The QCDS genome funnel: genuinely computed probabilistic 16→4→1 hierarchy.
    Author/creator: Patrik Sundblom. R&D support: OpenAI / ChatGPT. */
-.funnel-panel {margin:22px 0 20px;padding:22px;border:1px solid #cfdee5;border-radius:11px;background:#f9fbfc;color:#243f52;overflow:hidden}
-.funnel-header small {font-size:10px;font-weight:800;color:#266e7e;letter-spacing:.1em}
-.funnel-header h3 {margin:6px 0 8px;font-size:clamp(21px,2.2vw,28px);line-height:1.25;letter-spacing:-.02em;color:#21465b}
-.funnel-header p {margin:0 0 17px;color:#4c677a;font-size:13px;line-height:1.72;max-width:1000px}
+.genome-funnel-panel {margin:22px 0 20px;padding:22px;border:1px solid #cfdee5;border-radius:11px;background:#f9fbfc;color:#243f52;overflow:hidden}
+.genome-funnel-header small {font-size:10px;font-weight:800;color:#266e7e;letter-spacing:.1em}
+.genome-funnel-header h3 {margin:6px 0 8px;font-size:clamp(21px,2.2vw,28px);line-height:1.25;letter-spacing:-.02em;color:#21465b}
+.genome-funnel-header p {margin:0 0 17px;color:#4c677a;font-size:13px;line-height:1.72;max-width:1000px}
 .funnel-controls {display:flex;align-items:flex-end;gap:11px;flex-wrap:wrap;padding:13px;background:white;border:1px solid #d9e6eb;border-radius:8px}
 .funnel-controls>label {display:grid;gap:6px;font-size:12px;font-weight:700;color:#526b7c;min-width:185px;flex:1}
 .funnel-controls select {border:1px solid #c0d5dd;border-radius:6px;background:#fff;color:#214b61;font-size:13px;padding:9px;width:100%}
@@ -684,5 +684,62 @@ body.clinical-theme .qcds-conclusion .qcds-conclusion-scope {
 .funnel-diagnostic {margin:0;padding:9px 0;border-top:1px solid #ebf1f4;line-height:1.6;font-size:12px;color:#5a7687}
 .funnel-diagnostic strong {color:#29566c}
 @media(max-width:1100px) {.funnel-lane-grid {grid-template-columns:repeat(3,minmax(0,1fr))}.funnel-group-grid {grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:750px) {.funnel-panel {padding:14px}.funnel-lane-grid {grid-template-columns:repeat(2,minmax(0,1fr))}.funnel-live-metrics {flex-basis:100%}.funnel-flow {grid-template-columns:1fr;gap:5px}.funnel-flow>b {font-size:18px;transform:rotate(90deg)}.funnel-controls>label {min-width:130px}.funnel-group-grid {grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:750px) {.genome-funnel-panel {padding:14px}.funnel-lane-grid {grid-template-columns:repeat(2,minmax(0,1fr))}.funnel-live-metrics {flex-basis:100%}.funnel-flow {grid-template-columns:1fr;gap:5px}.funnel-flow>b {font-size:18px;transform:rotate(90deg)}.funnel-controls>label {min-width:130px}.funnel-group-grid {grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:425px) {.funnel-lane-grid {grid-template-columns:1fr}.funnel-prob-row {grid-template-columns:minmax(0,1fr) 50px;gap:8px}.funnel-prob-track {grid-column:1/-1;grid-row:2}.funnel-live-metrics {grid-template-columns:repeat(3,minmax(0,1fr));min-width:0}.funnel-live-metrics strong {font-size:17px}}
+
+
+/* Cancer Lab 2026-10-22 — progressive layperson flow without changing algorithms.
+   Scope new funnel selectors to avoid styling the separate legacy 8-bit funnel. */
+.genome-quickstart {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:20px 0 4px}
+.genome-quickstart>div {display:flex;align-items:flex-start;gap:12px;min-width:0;border:1px solid #d8e7ed;border-radius:9px;padding:14px;background:#f4f9fa}
+.genome-quickstart b {display:grid;place-items:center;flex:0 0 29px;width:29px;height:29px;border-radius:50%;background:#216e7d;color:#fff;font-size:14px}
+.genome-quickstart span {display:grid;gap:4px}
+.genome-quickstart strong {font-size:13px;line-height:1.35;color:#24485a}
+.genome-quickstart small {font-size:12px;line-height:1.6;color:#60798a}
+.cohort-easy-hint {margin:0 0 13px;color:#597487;font-size:12px;line-height:1.6}
+.cohort-seed-panel>.cohort-run {display:block;width:100%;margin-top:14px;font-size:15px;padding:13px 12px;line-height:1.35}
+.cohort-oracle-panel {align-self:start}
+.cohort-oracle-panel>summary {cursor:pointer;display:grid;gap:4px;color:#25576b;font-size:14px;font-weight:800;line-height:1.45}
+.cohort-oracle-panel>summary small {display:block;color:#668093;font-size:11px;font-weight:520}
+.cohort-advanced-body {padding:14px 0 0}
+.cohort-advanced-body>strong {display:block;color:#2b576a;font-size:13px;margin:0 0 12px}
+.cohort-technical-details {margin-top:13px;background:#fff;border:1px solid #d8e5ec;border-radius:8px}
+.cohort-technical-details>summary {display:grid;gap:3px;cursor:pointer;padding:13px 15px;color:#28566b;font-size:13px;font-weight:750}
+.cohort-technical-details>summary small {font-size:11px;font-weight:450;color:#648093}
+.cohort-technical-body {padding:4px 14px 15px}
+.cohort-technical-body .cohort-grover-stats {margin-top:8px}
+.cohort-quality {margin:10px 0 13px;padding:10px 13px;border-left:3px solid #749eab;border-radius:3px;background:#fff;color:#395e70;font-size:12px;line-height:1.6}
+.cohort-quality[data-status="unstable"] {border-left-color:#bc914e;color:#70572e;background:#fffbf1}
+.cohort-quality[data-status="stable"] {border-left-color:#4a937e;background:#f3fbf8}
+.cohort-alternative-intro {display:grid;gap:3px;margin:9px 0 7px}
+.cohort-alternative-intro strong {font-size:12px;color:#2c576c}
+.cohort-alternative-intro small {font-size:11px;color:#60798a;line-height:1.5}
+.cohort-result {scroll-margin-top:16px}
+.cohort-result-top p {overflow-wrap:anywhere}
+.cohort-matrix-details>summary small {display:block;font-size:11px;color:#6b8394;font-weight:400;margin-top:3px}
+.funnel-walkthrough {margin:19px 0 2px;border:1px solid #cddfe7;border-radius:10px;background:#fff;scroll-margin-top:18px}
+.funnel-walkthrough>summary {display:grid;gap:5px;padding:19px 20px;cursor:pointer;color:#265a6c}
+.funnel-walkthrough>summary strong {font-size:16px;line-height:1.4}
+.funnel-walkthrough>summary span {font-size:12px;line-height:1.6;color:#668193}
+.funnel-walkthrough-body {padding:0 12px 14px}
+.funnel-walkthrough-body .genome-funnel-panel {margin:0}
+body.clinical-theme .workbench {margin-top:24px}
+.legacy-lab-details {margin:0;border:1px solid #d7e5ed;background:#f7fbfc;border-radius:10px}
+.legacy-lab-details>summary {display:grid;gap:5px;padding:18px 22px;cursor:pointer;color:#27556b}
+.legacy-lab-details>summary strong {font-size:15px;line-height:1.4}
+.legacy-lab-details>summary span {font-size:12px;line-height:1.55;color:#648193}
+.legacy-workbench-body {padding:15px}
+@media(max-width:800px) {
+ .genome-quickstart {grid-template-columns:1fr;gap:7px}
+ .genome-quickstart>div {padding:10px 12px}
+ .cohort-controls {grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:540px) {
+ .cohort-seed-panel {padding:13px}
+ .cohort-oracle-panel {padding:13px}
+ .cohort-technical-body {padding:7px}
+ .funnel-walkthrough>summary {padding:15px}
+ .funnel-walkthrough-body {padding:0 4px 7px}
+ .legacy-workbench-body {padding:7px}
+ .legacy-lab-details>summary {padding:15px}
+}
