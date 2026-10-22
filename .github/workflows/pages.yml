@@ -1,4 +1,4 @@
-name: Living Logical Robot + Cally.One + Cally ChatGPT + Fabric 4.2 + Security Lab + Cancer Lab Pages
+name: Living Logical Robot + Cally.One + Cally ChatGPT + Fabric 4.2 + Security Lab + Oncology Lab Pages
 
 on:
   push:
@@ -217,7 +217,7 @@ jobs:
         working-directory: qcds-security-lab
         run: node scripts/build-web.mjs --out ../_site/qcds-security-lab
 
-      - name: Publish QCDS Cancer Lab static surface
+      - name: Publish QCDS Oncology Lab static surface
         run: |
           mkdir -p _site/qcds-cancer-lab
           cp -a qcds-cancer-lab/. _site/qcds-cancer-lab/
@@ -284,7 +284,13 @@ jobs:
           grep -F 'getUserMedia' _site/qgen/app.js
           grep -F 'SENSE STATE' _site/qgen/app.js
 
-      - name: Validate QCDS Cancer Lab surface
+      - name: Publish QCDS Oncology Lab canonical URL
+        run: |
+          mkdir -p _site/qcds-oncology-lab
+          cp -a _site/qcds-cancer-lab/. _site/qcds-oncology-lab/
+          test -s _site/qcds-oncology-lab/index.html
+
+      - name: Validate QCDS Oncology Lab surface
         run: |
           test -s _site/qcds-cancer-lab/index.html
           test -s _site/qcds-cancer-lab/style.css
@@ -310,7 +316,8 @@ jobs:
           test -s _site/qcds-cancer-lab/tests/test_engine.py
           test -s _site/qcds-cancer-lab/tests/test_core.js
           test -s _site/qcds-cancer-lab/tests/test_clinical.js
-          grep -F 'Cancer Lab' _site/qcds-cancer-lab/index.html
+          grep -F 'Oncology Lab' _site/qcds-cancer-lab/index.html
+          grep -F 'Oncology Lab' _site/qcds-oncology-lab/index.html
           grep -F 'Oncology research' _site/qcds-cancer-lab/index.html
           grep -F '128 → 8 → 1' _site/qcds-cancer-lab/index.html
           grep -F 'data-ref-tab="oracles"' _site/qcds-cancer-lab/index.html
