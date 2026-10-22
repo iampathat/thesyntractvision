@@ -180,8 +180,11 @@
     }
     const leaveOneOut=baseline.dataset.cases.map((person,i)=>{
       const reduced={...baseline.dataset,cases:baseline.dataset.cases.filter((_,j)=>i!==j)};
-      const run=evaluate({...settings,minCases:Math.min(settings.minCases,reduced.cases.length),dataset:reduced});
-      return {excluded:person.id,sameTop:Boolean(top&&run.selected?.state===top),retainsTop:Boolean(top&&run.ranked.some(x=>x.state===top))};
+      if(reduced.cases.length<2)return {excluded:person.id,sameTop:false,retainsTop:false,skipped:true};
+      const adjustedMin=Math.max(1,Math.min(reduced.cases.length,
+        Math.ceil(settings.minCases*reduced.cases.length/baseline.dataset.cases.length)));
+      const run=evaluate({...settings,minCases:adjustedMin,dataset:reduced});
+      return {excluded:person.id,sameTop:Boolean(top&&run.selected?.state===top),retainsTop:Boolean(top&&run.ranked.some(x=>x.state===top)),skipped:false};
     });
     const permuted={...baseline.dataset,cases:baseline.dataset.controls,controls:baseline.dataset.cases};
     const nullRun=evaluate({...settings,
