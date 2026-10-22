@@ -84,7 +84,10 @@ async function loadSystemGuidePlates() {
   ];
   // Optional chapter artwork: the engine remains fully functional if a media
   // asset is unavailable or not yet installed by this release.
-  const plateFiles=await Promise.all(names.map(name=>jpegArtwork('./assets/system-guide/'+name)));
+  const plateFiles=await Promise.all(names.map(async name=>
+    (await jpegArtwork('./assets/system-guide/'+name)) ||
+    (await jpegArtwork('./assets/system-guide/'+name.replace(/\.jpg$/,'.svg')))
+  ));
   const fallback=plateFiles[0]||await jpegArtwork('./glasswing-approved.webp');
   return {cover:fallback,chapters:plateFiles.slice(1)};
 }
