@@ -5,6 +5,7 @@
   if (!CORE) throw new Error("QCDSCore failed to load.");
 
   const DIMENSIONS = CORE.DIMENSIONS;
+  const ROOM = globalThis.QCDSInferenceRoom;
   const DEFAULT_ORACLES = [
     { name: "DNA repair", mask: "11??0???", provenance: "legacy cancer hypothesis" },
     { name: "PI3K axis", mask: "??1?1???", provenance: "legacy cancer hypothesis" },
@@ -231,11 +232,12 @@
 
       runButton.disabled = true;
       runButton.classList.add("running");
+      ROOM?.start();
 
       const orb = resultsRunning.querySelector(".result-orb");
       orb.classList.add("spin");
       resultsRunning.querySelector("h3").textContent = "QCDS is running.";
-      resultsRunning.querySelector("p").textContent = "128 QCDS lanes: 16 unique balanced input rotations × 8 true-null exclusions, all through the same fixed oracle bank.";
+      resultsRunning.querySelector("p").textContent = "Computing 128 logical QCDS lanes: sixteen balanced rotations × eight true-null exclusions. The browser schedules these lanes sequentially.";
       resultsRunning.hidden = false;
       resultsRunning.style.display = "grid";
       resultsEmpty.hidden = true;
@@ -250,13 +252,15 @@
         hypotheses,
         maxCycles,
         onProgress(info) {
-          runState.textContent = `Cycle ${info.cycle + 1}/${maxCycles}: ${info.lanesDone}/${info.lanesTotal} QCDS lanes complete · rotation bank ${info.bank}/${info.banks}`;
+          runState.textContent = `Cycle ${info.cycle + 1}/${maxCycles}: ${info.lanesDone}/${info.lanesTotal} computed lanes · rotation bank ${info.bank}/${info.banks}`;
+          ROOM?.update(info);
         }
       });
 
       const last = result.cycles[result.cycles.length - 1];
       runState.textContent =
         `Complete · ${result.cycles.length} recursive cycle${result.cycles.length === 1 ? "" : "s"} · 128→8→1 · Parent Grover m=${last.parent.grover.iterations} · no target state supplied.`;
+      ROOM?.finish(result);
       renderResults(result);
     } catch (err) {
       resultsRunning.hidden = true;
@@ -265,7 +269,12 @@
       resultsEmpty.style.display = "grid";
       resultsLive.hidden = true;
       resultsLive.style.display = "none";
-      resultsEmpty.innerHTML = `<div class="result-orb error">!</div><h3>Input needs attention.</h3><p>${err.message}</p>`;
+      resultsEmpty.replaceChildren();
+      const symbol = document.createElement("div");
+      symbol.className = "result-orb error"; symbol.textContent = "!";
+      const heading = document.createElement("h3"); heading.textContent = "Input needs attention.";
+      const message = document.createElement("p"); message.textContent = err.message;
+      resultsEmpty.append(symbol, heading, message);
       runState.textContent = "Run stopped: " + err.message;
     } finally {
       runButton.disabled = false;
@@ -287,6 +296,7 @@
 
   runButton.addEventListener("click", execute);
 
+  ROOM?.initialize();
   renderDimensions();
   renderMask();
   renderOracles();
