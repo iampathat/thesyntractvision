@@ -13,7 +13,7 @@
  "use strict";
  if(!Q||!D)throw Error("QCDS core and genome discovery are required");
  const WIDTH=10, STATES=1024, LANE_WIDTH=4, LANE_STATES=16;
- const LANES=16, FAN_IN=4, GROUPS=4, FLOOR=.08;
+ const LANES=16, FAN_IN=4, GROUPS=4;
  const MAX_PASSES=12, DEFAULT_PASSES=6;
  const CHOICES=[];
  for(let a=0;a<WIDTH;a++)for(let b=a+1;b<WIDTH;b++)
@@ -49,7 +49,10 @@
  }
  function localOracle(window,settings){
    const marks=[],observations=[];
+   // Enforce the part of the Condition visible in this projection.
+   // Other anchored loci are enforced by the global candidate domain.
    const must=D.mask(settings.anchors||[]);
+   const visibleMust=must&D.mask(window);
    for(let s=0;s<LANE_STATES;s++){
      const global=embedding(s,window);
      const size=POP[global];
@@ -57,17 +60,19 @@
      // Only enforce anchors if all anchors are present in the four-bit window.
      // Global input constraint is always enforced again at the final truth gate.
      const assessment=D.assess(global,settings.dataset,settings.relation||"cooccurrence");
-     const passed=assessment.caseCount>=settings.minCases&&
+     const passed=(global&visibleMust)===visibleMust&&
+       assessment.caseCount>=settings.minCases&&
        assessment.controlCount<=settings.maxControls&&assessment.contrast>0;
      observations.push({local:s,state:global,size,contrast:assessment.contrast,passed});
      if(passed)marks.push(s);
    }
    const grover=Q.runGrover(LANE_STATES,marks,40);
    const noise=Number(settings.readoutNoise||0);
-   // Classical proxy: convex mixture with the uniform distribution.
-   // Represents readout uncertainty only; not a NISQ device/circuit model.
-   const likelihood=grover.probabilities.map(p=>FLOOR/LANE_STATES+
-       (1-FLOOR)*((1-noise)*p+noise/LANE_STATES));
+   // Noise=0 leaves the ideal simulated Grover distribution untouched.
+   // Any positive noise is ONLY a classical uniform-readout-mixing proxy.
+   // Logs later use EPS strictly for numerical safety (not added noise).
+   const likelihood=grover.probabilities.map(p=>
+      (1-noise)*p+noise/LANE_STATES);
    return {window,marks:marks.length,grover,likelihood,observations,
      iterations:grover.iterations,markedMass:grover.markedMass};
  }
@@ -111,7 +116,7 @@
    return normalize(logs.map((v,s)=>domain.includes(s)?Math.exp(v-max):0));
  }
  function bindRotations(rounds,domain){
-   const logs=Array(STATES).fill(-Infinity), mx=[];
+   const logs=Array(STATES).fill(-Infinity);
    let max=-Infinity;
    for(const s of domain){
      // Equal-weight rotation evidence. Earlier passes do not become a prior
@@ -148,7 +153,6 @@
    const domain=subsetValidity(settings);
    const verification=verify(domain,settings);
    const eligible=verification.filter(v=>v.passed);
-   const lookup=new Map(verification.map(v=>[v.state,v]));
    const rounds=[];
    let previous=null,previousEntropy=null,stableCount=0;
    let bound=null;
