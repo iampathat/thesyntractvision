@@ -128,7 +128,7 @@
     const panel=$("cohortGroverStats");panel.replaceChildren();
     const iters=result.rounds.flatMap(r=>r.lanes.map(l=>l.iterations));
     const metrics=[
-      ["Input","10 profiles × 10 loci"],
+      ["Input",all().length+" fictional profiles × "+LOCI.length+" loci"],
       ["Small logical room","4 bits / 16 states"],
       ["Funnel bandwidth","16 → 4 → 1"],
       ["Local Grover searches",String(iters.length)],
@@ -247,8 +247,8 @@
       :count+" possible connections remain near the top — there is no single answer.";
     const relation=result.settings.relation==="parity"?"a shared combination of present (1) and absent (0) features":"variants that occur together";
     detail.textContent="Highlighted positions: "+locusNames(item.loci)+". This is a search for "+
-      relation+". It fits "+item.caseCount+" of the 5 invented cancer examples and "+
-      item.controlCount+" of the 5 comparisons. The positions are linked by the model rules, not by a known cancer diagnosis.";
+      relation+". It fits "+item.caseCount+" of "+dataset.cases.length+" invented cases and "+
+      item.controlCount+" of "+dataset.controls.length+" comparisons. These are model relationships, not a cancer diagnosis.";
     quality.dataset.status=result.stable?"stable":"unstable";
     quality.textContent=(result.stable
       ?"The probability pattern met the model's internal stability checks."
@@ -258,12 +258,17 @@
       const nullCheck=D.permutationAudit({...readSettings(),selectedState:item.state});
       const pct=(100*nullCheck.familywiseFraction).toFixed(1)+"%";
       evidence.dataset.status=nullCheck.familywiseFraction>.05?"weak":"unvalidated";
-      evidence.textContent="Does this really distinguish the groups? We tested all "+
-        nullCheck.assignments+" possible ways to reassign these ten invented profiles into two groups of five. "+
-        nullCheck.tailAssignments+" of those assignments ("+pct+
-        ") produced at least one eligible relationship with a group difference as large as this one. "+
-        "This check accounts for testing "+nullCheck.validCandidates+
-        " candidate combinations, but not for choosing the oracle after seeing results. It is not medical evidence.";
+      const groupDescription=dataset.cases.length+" cases and "+dataset.controls.length+" comparisons";
+      const samplingText=nullCheck.method==="exact"
+        ?"We checked all "+nullCheck.assignments+" possible ways of reassigning "+groupDescription+"."
+        :"We tried "+nullCheck.assignments+" reproducible random reassignments of "+groupDescription+
+          "; this is an ESTIMATE using sampled labels, not every possible grouping.";
+      const proportionText=nullCheck.method==="exact"
+        ?nullCheck.tailAssignments+" of those groupings ("+pct+")"
+        :nullCheck.tailAssignments+" of those sampled groupings (corrected estimate "+pct+")";
+      evidence.textContent="How convincing is the grouping? "+samplingText+" "+
+        proportionText+" produced at least one eligible pattern with a group difference as large as this one. "+
+        "We considered "+nullCheck.validCandidates+" candidate combinations. This does not account for adjusting the search rules after seeing the results, and it is not medical evidence.";
     }
     const allOptions=result.ranked.slice(0,16);
     for(const alt of allOptions){
@@ -299,11 +304,45 @@
       renderSelectors();showStats();renderOutcome();renderGenomes();renderFunnel();renderAudit();
     }catch(error){$("cohortError").textContent=error.message;}
   }
+  // The cohort is a user-chosen research input, never a fixed property of QCDS.
+  // Refresh available counts, preserving each old threshold as a fraction
+  // of its prior group size if the sample size changes.
+  function populateThresholds(previousCases,previousControls){
+    const cases=dataset.cases.length,controls=dataset.controls.length;
+    for(const [id,n,oldN,minMode] of [
+      ["cohortMinCases",cases,previousCases,true],
+      ["cohortMaxControls",controls,previousControls,false]
+    ]){
+      const el=$(id);
+      const old=Number(el.value);
+      const fraction=Number.isFinite(old)&&oldN>0?old/oldN:(minMode?.6:.2);
+      const chosen=minMode?Math.min(n,Math.max(1,Math.ceil(fraction*n-.000001))):
+        Math.max(0,Math.min(n,Math.floor(fraction*n+.000001)));
+      el.replaceChildren();
+      for(let i=minMode?1:0;i<=n;i++){
+        const option=e("option","",(minMode?"At least ":"At most ")+i+" / "+n);
+        option.value=String(i);
+        el.append(option);
+      }
+      el.value=String(chosen);
+    }
+    if($("cohortStatsPeople"))$("cohortStatsPeople").textContent=cases+" + "+controls;
+    if($("cohortStatsPeopleLabel"))
+      $("cohortStatsPeopleLabel").textContent="fictional cases + fictional comparisons · adjustable example";
+    if($("cohortHeaderCount"))$("cohortHeaderCount").textContent=cases+" cases + "+controls+" comparisons";
+  }
   function regenerate(delta=0){
     const seedInput=$("cohortDataSeed");
     const seed=Number(seedInput.value)+delta;
     const mode=$("cohortDataMode").value;
-    dataset=D.generateProfiles(seed,mode);
+    const caseCount=Number($("cohortCaseCount").value),controlCount=Number($("cohortControlCount").value);
+    if(!Number.isInteger(caseCount)||!Number.isInteger(controlCount)||
+       caseCount<2||controlCount<2||caseCount>30||controlCount>30)
+      throw Error("Choose between 2 and 30 fictional profiles in each group for this browser example.");
+    const previousCases=dataset.cases.length,previousControls=dataset.controls.length;
+    const next=D.generateProfiles(seed,mode,caseCount,controlCount);
+    dataset=next;
+    populateThresholds(previousCases,previousControls);
     seedInput.value=String(seed);
     anchors=[];
     selectedState=null;
@@ -316,6 +355,9 @@
       const conclusion=$("cohortResultTitle");
       if(conclusion && typeof conclusion.scrollIntoView==="function")conclusion.scrollIntoView({behavior:"smooth",block:"start"});
     });
+    populateThresholds(dataset.cases.length,dataset.controls.length);
+    $("cohortCaseCount").addEventListener("change",()=>{try{regenerate(0)}catch(e){$("cohortError").textContent=e.message;}});
+    $("cohortControlCount").addEventListener("change",()=>{try{regenerate(0)}catch(e){$("cohortError").textContent=e.message;}});
     $("cohortMinCases").addEventListener("change",run);
     $("cohortMaxControls").addEventListener("change",run);
     $("cohortRelation").addEventListener("change",run);
