@@ -237,13 +237,16 @@ export function createVisualGlasswingPdf(jsPDF,snapshot,{artwork={},edition='4.0
  y=heading(d,'05 / EXECUTION & VERIFICATION','The same oracle, different execution modes',
   'QCDS separates the logical definition of a problem from the substrate used to evaluate it.');
  for(const [a,b] of [
-  ['Symbolic','A compact representation of 1 / 0 / ?-constrained states.'],
-  ['Exact classical','A CPU calculation used for comparison and reproducibility.'],
-  ['Ideal Grover reference','Illustrative mathematical amplitude amplification under an ideal oracle.'],
-  ['Noisy circuit','A small CPU-simulated quantum circuit with an illustrative noise model.'],
-  ['Verified claim','Only a real scoped observation can justify an assertion about a target system.']]){
+  ['Exact symbolic structure','The dimension workbench uses reduced ordered binary decision diagrams and exact counting to represent compatible assignments without allocating each state individually. Complexity still depends on the predicates.'],
+  ['Ideal Grover reference','For a defined marking oracle, the reference predicts ideal amplitude amplification. The explorer checks a finite iteration budget up to 40; it does not assume a universal optimum.'],
+  ['Circuit simulation','Small predicates can be compiled to ideal gate-level simulations and compared with noisy CPU density-matrix calculations. Noise settings are illustrative, not a real device calibration.'],
+  ['What verification means','A convergent probability distribution is not proof of a security failure. Observations require source, scope, traceability and counter-tests; a logical candidate is not a measured exploit.']]){
    y=lineBullet(d,a,b,y);
  }
+ panelBox(d,M,y+8,CW,78);
+ copy(d,'CURRENT IMPLEMENTATION BOUNDARY',M+13,y+34,CW-26,9.3,gold,1,{bold:true});
+ copy(d,'The browser performs classical modeling and limited circuit simulation. It does not use a physical NISQ/QPU backend or demonstrate a quantum speedup.',
+ M+13,y+54,CW-26,9.1,ink,1.3,{limit:2});
  next('CASE STUDY');
  y=heading(d,'06 / FROM QUESTION TO FINDING','A worked example: customer-records portal',
   'A synthetic account boundary, explained from question to evidence.');
