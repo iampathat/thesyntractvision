@@ -305,6 +305,7 @@ jobs:
           test -s _site/qcds-cancer-lab/genome-discovery.js
           test -s _site/qcds-cancer-lab/genome-funnel.js
           test -s _site/qcds-cancer-lab/tests/test_funnel.js
+          test -s _site/qcds-cancer-lab/tests/test_calibration.js
           test -s _site/qcds-cancer-lab/tests/test_ui_layout.js
           test -s _site/qcds-cancer-lab/tests/test_genome.js
           test -s _site/qcds-cancer-lab/tests/test_conclusion.js
@@ -347,6 +348,7 @@ jobs:
           node _site/qcds-cancer-lab/tests/test_conclusion.js
           node _site/qcds-cancer-lab/tests/test_genome.js
           node _site/qcds-cancer-lab/tests/test_funnel.js
+          node _site/qcds-cancer-lab/tests/test_calibration.js
           node _site/qcds-cancer-lab/tests/test_ui_layout.js
           PYTHONPATH=qcds_fabric_4_2/src python qcds-cancer-lab/tests/test_engine.py
 
