@@ -135,7 +135,7 @@
       ["Rotation passes",String(result.rotations)],
       ["Active local amplifications",iters.filter(v=>v>0).length+"/"+iters.length],
       ["Candidate subsets",String(result.evaluatedCount)],
-      ["Independently verified",String(result.qualifiedCount)],
+      ["Passed full-sample rules",String(result.qualifiedCount)],
       ["Parent Grover m",String(result.parentGrover.iterations)],
       ["Parent marked mass",percent(result.parentGrover.markedMass)],
       ["Composite entropy",result.entropyBits.toFixed(3)+" bits"],
@@ -203,7 +203,7 @@
       ["Convergence","TVD "+(last.deltaTvd===null?"—":last.deltaTvd.toFixed(4))+
        " · top-k Jaccard "+(last.topkJaccard===null?"—":last.topkJaccard.toFixed(2))+
        " · "+(result.stable?"stable":"not stable under pass cap")],
-      ["Independent truth gate","Candidate highlights are checked against all case/control observations and the exact specified Condition."],
+      ["Full-sample consistency","Candidate highlights are checked against the SAME synthetic observations used in discovery; this is not independent biological verification."],
       ["Information bound","Correlations spanning more than one four-locus projection need not be recoverable after folding."]
     ];
     for(const [title,desc] of messages){const row=e("p","funnel-diagnostic");row.append(e("strong","",title+": "),e("span","",desc));notes.append(row);}
@@ -212,7 +212,7 @@
     const target=$("cohortAudit");
     if(!target)return;
     target.replaceChildren();
-    target.append(e("h4","","Independent cohort-oracle sensitivity · synthetic model"));
+    target.append(e("h4","","Separate cohort-oracle sensitivity · synthetic model"));
     const items=[
       ["8% independent bit flips",audit.repeatability+"/5 runs retain the same first-ranked pattern; "+audit.retained+"/5 still include it among eligible candidates"],
       ["Leave-one-case-out",audit.leaveOneOut.filter(x=>x.retainsTop).length+"/"+audit.leaveOneOut.length+" trials retain the original pattern"],
