@@ -113,6 +113,12 @@
     .legend-dot{display:inline-block;flex:0 0 8px;width:8px;height:8px;border-radius:50%}
     .legend-dot.asset{background:#9de5ff;box-shadow:0 0 13px #9de5ff4f}.legend-dot.mesh{background:#e5c37e;box-shadow:0 0 13px #dfbd7155}.legend-dot.threat{background:#f38a77;box-shadow:0 0 13px #f38a774f}
     @media(max-width:640px){.glasswing-still{min-height:0;aspect-ratio:1672/941;margin-top:22px}.glasswing-still .eagle{transform:none!important;animation:none!important}.glasswing-still .still-caption{padding:14px 12px;font-size:9px}.glasswing-still .still-caption span{display:none}.still-legend{display:grid;gap:9px;padding:15px 6px;font-size:10px}}
+
+    /* The chosen Project Glasswing poster is the visual headline: no competing title above it. */
+    .hero-inner{padding-top:clamp(25px,3.5vw,53px)}
+    .glasswing-still{margin-top:16px}
+    .glasswing-still .eagle{object-fit:contain}
+    .hero-lead{max-width:860px;margin:19px auto 16px;font-size:clamp(15px,1.55vw,18px)}
   </style>
 </head>
 <body>
@@ -131,14 +137,14 @@
   <main id="top">
     <section class="hero" aria-labelledby="hero-heading">
       <div class="hero-inner">
-        <p class="eyebrow">A vision of resilience · QCDS</p>
-        <h1 id="hero-heading"><span>The Syntract Vision</span><em>Project Glasswing</em></h1>
-        <p class="hero-lead">What we build can be extraordinary. What we depend on can be fragile. <strong>Glasswing is the idea that we must understand the structures holding our world together before we can truly protect them.</strong></p>
+        <p class="eyebrow">The Syntract Vision · QCDS Security Lab</p>
+        <h1 id="hero-heading" class="sr-only">The Syntract Vision — Project Glasswing</h1>
 
         <figure class="scene glasswing-still" id="glasswing-scene" aria-label="Project Glasswing static concept illustration">
-          <img class="eagle" src="./glasswing-approved.webp?v=glasswing-still-20261022" width="1672" height="941" alt="A detailed crystalline cyber eagle. Its glass-like wings and connected luminous structures evoke the information and systems Project Glasswing seeks to understand and protect.">
+          <img class="eagle" id="glasswing-selected-artwork" src="./glasswing-approved.webp?v=glasswing-vision-fallback" data-selected-art="glasswing-selected.webp" width="1672" height="941" alt="The selected Project Glasswing artwork: a crystalline eagle with protected knowledge and systems in its wings, luminous QCDS inference fabric, a protective barrier, and attack vectors approaching from ahead.">
           <figcaption class="still-caption">PROJECT GLASSWING <span>THE SYNTRACT VISION / CONCEPT ART</span></figcaption>
         </figure>
+        <p class="hero-lead"><strong>Supporting Knowledge Across All Dimensions.</strong> Protecting what matters through QCDS inference — preserving information, strengthening systems, empowering people and pursuing evidence-aligned decisions.</p>
         <div class="still-legend" aria-label="The meaning of the glass-wing illustration">
           <span><i class="legend-dot asset"></i> 01 / FRAGILE INFORMATION &amp; SYSTEMS</span>
           <span><i class="legend-dot mesh"></i> 02 / CONNECTED QCDS INFERENCE</span>
@@ -236,5 +242,25 @@
     <nav class="footer-links" aria-label="Further reading"><a href="./index.html?skip_intro=1">Security Lab</a><a href="./GLASSWING.md">Glasswing methods</a><a href="https://syntract.org/">Syntract.org</a><a href="https://zenodo.org/records/15455541">Original QCDS publication</a></nav>
   </footer>
 
+
+  <script>
+    // Prefer the user-selected Glasswing artwork when its actual image file is
+    // present in this directory. Keep the existing approved picture visible
+    // until the binary asset has been uploaded; never show a broken image.
+    (() => {
+      const poster = document.getElementById('glasswing-selected-artwork');
+      if (!poster) return;
+      const selected = new URL(poster.dataset.selectedArt, poster.currentSrc || poster.src);
+      selected.searchParams.set('v', '20261022-selected');
+      const probe = new Image();
+      probe.onload = () => {
+        if (probe.naturalWidth > 0 && probe.naturalHeight > 0) {
+          poster.src = selected.href;
+          document.getElementById('glasswing-scene')?.setAttribute('data-image', 'selected');
+        }
+      };
+      probe.src = selected.href;
+    })();
+  </script>
 </body>
 </html>
