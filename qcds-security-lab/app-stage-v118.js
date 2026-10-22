@@ -371,29 +371,39 @@ function shell() {
     : `<a class="nav-example-picker" href="#examples">${icon("play")}<span class="nav-copy"><b>Worked examples</b><em>Load a finished case through the whole lab</em></span></a>`;
   return `<aside id="site-nav" ${state.mobile ? 'role="dialog" aria-modal="true" aria-label="Navigation"' : ""} class="sidebar ${state.mobile ? "open" : ""}">
     <a class="brand glasswing-brand" href="#home" aria-label="QCDS Security Lab home"><span class="glasswing-brand-mark"><img src="./glasswing-mark.webp?v=1.18.0" alt="" width="160" height="76"></span><span class="glasswing-brand-label">QCDS<span class="brand-sub">SECURITY LAB</span></span></a>
-    <div class="workspace-label">YOUR WORKSPACE <button class="icon-button menu-close" data-action="close-menu" aria-label="Close navigation">${icon("close")}</button></div>
-    <nav aria-label="Workspace">
-      <a href="#home" ${state.route==='home'?'aria-current="page"':''}>${icon('grid')}<span class="nav-copy"><b>Home</b></span></a>
-      <a href="#cases" ${state.route==='cases'?'aria-current="page"':''}>${icon('shield')}<span class="nav-copy"><b>My investigations</b></span></a>
-      <a href="#examples" ${state.route==='examples'?'aria-current="page"':''}>${icon('play')}<span class="nav-copy"><b>Worked examples</b></span></a>
-      <div class="nav-section-label">CURRENT INVESTIGATION</div>
-      <div class="consumer-nav-case"><b>${esc(project().input.name)}</b><small>${project().example?'Practice case':'Your system'}</small></div>
-      <details class="gw-investigation-nav" ${investigating?'open':''}>
-        <summary>${icon('trace')}<span>Investigate · five steps</span></summary>
-        <div class="nav-flow">${stepLinks}</div>
-      </details>
-      ${analysisLink('findings','Results & explanation','shield')}
-      ${analysisLink('report','Reports & PDF','report')}
-      <details class="consumer-nav-more" ${!state.mobile && ['system','perspectives','trace','overview','comparison','learn'].includes(state.route)?'open':''}>
-        <summary>${icon('layers')}<span>Explore & learn</span></summary>
-        ${analysisLink('system','System facts','system')}
-        ${analysisLink('perspectives','Security perspectives','layers')}
-        <a href="#comparison" ${state.route==="comparison"?'aria-current="page"':""}>${icon('trace')}<span class="nav-copy"><b>Compare methods</b></span></a>
-        <button type="button" class="gw-lab-nav-link" data-open-logical>${icon('system')}<span>Dimensional & quantum lab</span></button>
-        ${analysisLink('learn','In plain English','book')}
-      </details>
+    <div class="workspace-label">MENU <button class="icon-button menu-close" data-action="close-menu" aria-label="Close navigation">${icon("close")}</button></div>
+    <nav aria-label="Security Lab navigation">
+      <section class="gw-nav-section" aria-labelledby="gw-nav-workspace-title">
+        <h2 class="nav-section-label" id="gw-nav-workspace-title">WORKSPACE</h2>
+        <a href="#home" ${state.route==='home'?'aria-current="page"':''}>${icon('grid')}<span class="nav-copy"><b>Home</b></span></a>
+        <a href="#cases" ${state.route==='cases'?'aria-current="page"':''}>${icon('shield')}<span class="nav-copy"><b>My investigations</b></span></a>
+        <button type="button" class="gw-nav-new" data-action="new">${icon("plus")} <span>New investigation</span></button>
+      </section>
+      <section class="gw-nav-section gw-nav-current" aria-labelledby="gw-nav-current-title">
+        <h2 class="nav-section-label" id="gw-nav-current-title">CURRENT INVESTIGATION</h2>
+        <div class="consumer-nav-case"><b>${esc(project().input.name)}</b><small>${project().example?'Worked example · synthetic evidence':'Your saved investigation'}</small></div>
+        <div class="gw-case-actions" aria-label="Steps and results for the current investigation">
+          <details class="gw-investigation-nav" ${investigating?'open':''}>
+            <summary>${icon('trace')}<span>Investigate <small>5 steps · Goal to Proof</small></span></summary>
+            <div class="nav-flow">${stepLinks}</div>
+          </details>
+          ${analysisLink('findings','Results & explanation','shield')}
+          ${analysisLink('report','Reports & PDF','report')}
+        </div>
+      </section>
+      <section class="gw-nav-section gw-nav-resources" aria-labelledby="gw-nav-resources-title">
+        <h2 class="nav-section-label" id="gw-nav-resources-title">LEARN & EXPLORE</h2>
+        <a href="#examples" ${state.route==='examples'?'aria-current="page"':''}>${icon('play')}<span class="nav-copy"><b>Worked examples</b></span></a>
+        <details class="consumer-nav-more" ${['system','perspectives','trace','overview','comparison'].includes(state.route)?'open':''}>
+          <summary>${icon('layers')}<span>Frameworks & QCDS tools</span></summary>
+          ${analysisLink('system','System facts','system')}
+          ${analysisLink('perspectives','Security frameworks','layers')}
+          <a href="#comparison" ${state.route==="comparison"?'aria-current="page"':""}>${icon('trace')}<span class="nav-copy"><b>Compare inference methods</b></span></a>
+          <button type="button" class="gw-lab-nav-link" data-open-logical>${icon('system')}<span>Dimensional & quantum lab</span></button>
+        </details>
+        ${analysisLink('learn','How Security Lab works','book')}
+      </section>
     </nav>
-    <button class="new-case" data-action="new">${icon("plus")} New investigation</button>
     <div class="sidebar-bottom"><button type="button" class="gw-settings-trigger" data-app-settings aria-haspopup="dialog">${icon("system")} Settings & updates</button><div class="local-note">${icon("shield")}<span>Saved on this device.<br>No account needed.</span></div><a href="#learn" class="author">By Patrik Sundblom <span>↗</span></a><div class="version">SECURITY LAB <span>v${document.body.dataset.release || VERSION}</span></div></div>
   </aside>
   ${state.mobile ? '<button class="menu-backdrop" data-action="close-menu" aria-label="Close navigation backdrop"></button>' : ""}
@@ -1719,6 +1729,13 @@ function setMenu(open) {
   $(open ? ".menu-close" : ".mobile-toggle")?.focus({ preventScroll: true });
 }
 document.addEventListener("click", async (e) => {
+  // Closing the drawer must also work when selecting the current route,
+  // since navigating to an identical hash will not fire hashchange.
+  const sameNavLink = e.target.closest('#site-nav a[href^="#"]');
+  if (state.mobile && sameNavLink?.getAttribute('href') === location.hash) {
+    setMenu(false);
+    return;
+  }
   if (e.target.closest('a[href="#main"]')) {
     e.preventDefault();
     $("#main").focus();
