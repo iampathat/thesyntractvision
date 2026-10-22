@@ -249,30 +249,33 @@ For scientific validation in a later research system, separately specify tumor s
 All additions in this section are research documentation, **not assertions of clinical efficacy**.
 
 
-## Multi-person genomic combinatorial research model — 22 October 2026
+## Open cross-genome combinatorial inference — 22 October 2026
 
-The genomics illustration now shows **distributed combinations across separate loci**, not repeated copies of a contiguous sequence. This conveys the broader QCDS architecture: a Condition defines candidate relations; an oracle evaluates admissibility; Grover amplifies marked configuration states; an output highlights all selected loci across participant profiles.
+The Cancer Lab genomics panel no longer performs contiguous DNA-string matching or searches for a planted three-position answer. It demonstrates a **hypothesis-open logical search over relations between positions** in multiple synthetic profiles. The 8D Cancer Lab workbench is separate from this 10D cohort demonstrator.
 
-### Worked mechanism with reproducible synthetic profiles
+### Input width, candidate space and oracles
 
-- Ten **symbolic variant loci** are distributed schematically over chromosome labels 1, 3, 5, 7, 9, 11, 13, 15, 17, X. They are *not* actual genomic coordinates or variants assigned to those chromosomes.
-- Five **synthetic cases** stand for people with the same hypothetical cancer cohort label, and five **synthetic controls** provide comparison values. These are fixtures for testing; no real humans or clinical data are represented.
-- For ten possible loci, QCDS's existing exact idealized Grover kernel is run over N = 2^10 = 1,024 candidate *subset states*. There are **120 possible 3-locus subsets**, checked by a cohort oracle. This is a mathematical subset encoding; it does not represent all possible states of actual genomic DNA.
-- Oracle predicates are explicit and editable: select 0–3 required **anchor loci**, minimum cases with **all three** variants, and maximum controls with all three. Each proposed triple is checked as a whole. The default is 5/5 cases and 0/5 comparators.
-- Only qualifying triples become Grover-marked candidates. The engine uses its dynamic first-peak/threshold Grover iteration selector, bounded by 40, and reports state count, candidate count, marked count, iterations, and probability mass from the kernel.
-- The standard fixture returns **one qualified triple L02 (chr3), L05 (chr9), L08 (chr15)**, shared by all five synthetic cases and absent as a *complete triple* from the five controls. Grover uses **25** amplification iterations and yields approximately **99.946% marked probability mass** for this single marked subset, conditional on the synthetic oracle.
-- User selections are *not* a display decoration: requiring L01 (chr1) with the strict cohort condition produces zero marked patterns. When different thresholds admit multiple triples, the UI states that there is no unique solution and allows each candidate to be inspected.
-- The selected multi-locus pattern is highlighted at three separated positions **on each synthetic person's schematic genome track** and in the underlying 10 × 10 profile-feature matrix. Individual variant markers do not imply cancer causality. Controls may carry one or two selected variants without satisfying the full combination.
-- A leave-one-case-out check reports whether the discovered triple remains shared in each group of four remaining synthetic cases. This is internal consistency only, not independent biological validation.
+- There are 10 synthetic locus columns across 5 labeled cancer cases and 5 labeled comparators: **100 synthetic 0/1 observations**, with chromosome labels used only for graphical perspective, not authentic genomic coordinates.
+- A chosen random seed (1–1,000,000) produces reproducible but different profile matrices. The generator samples locus-specific background probabilities and group-related variation. **No winning locus mask or target combination is inserted.** Another seed or user-editable observation can change the result.
+- The *null* generator has no systematic case-specific group effect but, with only five samples per group, can still produce accidental associations. Thus a pattern or very high internal amplification probability is not evidence of cancer causality.
+- The logical representation contains **2^10 = 1,024 possible subset states**. It evaluates every 2-, 3- and 4-locus subset: **375 candidate relations**. Subset size is not forced to three; between zero and three anchor loci can be bound and all other positions stay open.
+- The first oracle checks **case support**, **maximum comparator support**, **anchor compatibility** and a *preselected relation family*: either (i) joint presence or (ii) an odd-parity interaction, where both 0 and 1 features can form a relation. These are generic, explicitly user-visible rules, not answers encoded as gene names.
+- All oracle-qualified subsets are marked and processed by the actual **QCDSCore.runGrover** kernel. The shared implementation uses **alignment threshold 0.999**, stops at the **first Grover tangent/peak** rather than chasing periodic recurrences, and caps iterations at **40**.
+- A second, predefined inference stage refines candidates to **the strongest measured case-vs-comparator contrast** (retaining equal-best candidates rather than pretending they are unique). A second independent Grover calculation amplifies this refined set. Neither stage receives a target state.
+- The display reports both Grover iteration counts and probability masses and names the first stage's stopping reason. Where multiple relations survive, it says so. A winning locus relation is highlighted across the case profiles; for odd-parity relations both present and absent contributors are visualized with different markers.
 
-### Critical substrate distinction
+### Robustness and source of apparent coherence
 
-The demonstrator reuses QCDSCore.runGrover, an **ordinary JavaScript classical simulation of ideal Grover amplitudes** over 1,024 states. Although its states represent alternatives in a quantum algorithm, the JavaScript loop computes amplitudes on a classical processor. It **does not** physically execute 1,024 computations simultaneously, offer quantum speedup, or establish that a classical algorithm cannot solve this small combinatorial problem.
+The results panel repeats the analysis under **five independent 8%-bit-perturbed synthetic inputs**, five leave-one-case-out tests, and one case/control-label reversal. It reports whether the *same leading relation* survives and whether it remains among candidate solutions.
 
-Extrapolating to **five complete human genomes** (roughly 3 billion bases each for haploid reference scale), or to enormous cross-genomic multi-locus spaces, would require real multi-sample variant/sequence data, provenance and consent, semantic feature encoding, efficient data access, defensible cross-patient biological oracles, substrate resource measurements, a valid readout/verification strategy, and a comparison against optimized classical computational genomics methods. Whole-genome association and all possible genomic combinations are not demonstrated here. Mathematical combinations such as choose(3 billion, 3) ≈ 4.5 × 10²⁷ describe a hypothetical possibility space, **not a measured QCDS search**.
+These exercises are **sensitivity probes, not proof of bias/noise resistance**. Noise in a NISQ device involves gates, readout, decoherence and hardware topology and is not equivalent to flipping synthetic input bits. Synthetic datasets of 5+5 subjects cannot establish statistically significant associations or medical biomarkers. Internal stability is not clinical truth.
 
-The eight-bit clinical workbench elsewhere on the same page is a separate existing 128→8→1 model. The ten-locus panel is a cohort-combination Grover-adapter proof of mechanism; it is **not yet the full recursive four-phase genomics pipeline**.
+### Substrate and bandwidth
 
-Source and tests: genome-perspective.js, tests/test_genome.js, qcds-core.js. The old motif-scanning demonstration has been replaced, not merely repainted.
+QCDS's substrate-independent ambition is to separate **Condition and oracle semantics** from their physical evaluation. This prototype shows one small exactly simulable search space with 100 pieces of incoming synthetic evidence, 1,024 logical subset states, independently testable relation oracles and two ideal amplitude-amplification stages. The browser performs those evaluations **classically**. It does not read complete human genomes simultaneously, perform quantum operations on hardware, demonstrate true hardware-level parallel throughput or validate an advantage over optimized classical methods.
 
-**Theory and creation:** Patrik Sundblom. **Research and development support:** OpenAI / ChatGPT.
+The intended much larger system needs whole-genome data across persons, a scalable locus-and-relationship representation, validated oracle mappings, resource budgets for NISQ/noise models and higher-bandwidth substrates, reproducible measurements and independent biological validation. The present code is a small architectural example, not a measured genome-scale result.
+
+Implementation: [genome-discovery.js](genome-discovery.js) is the parameterized cohort generator and QCDS oracle/assessment layer; [genome-perspective.js](genome-perspective.js) is the UI adapter; [tests/test_genome.js](tests/test_genome.js) covers different seeds, absence of a known answer, tangent/threshold behavior, parity, zero-solution cases and the perturbation audit. Code contains no secret target mask or prefilled winning locus IDs.
+
+Theory and creation: **Patrik Sundblom**. Research and development support: **OpenAI / ChatGPT**.
