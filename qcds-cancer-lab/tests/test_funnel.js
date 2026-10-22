@@ -26,6 +26,11 @@ for(const round of [0,1,2,5]){
  }
 }
 assert.notDeepEqual(F.schedule(0,0),F.schedule(1,0),"rotations must change window mapping");
+const twelvePassWindows=new Set();
+for(let round=0;round<12;round++)for(let lane=0;lane<16;lane++)
+ twelvePassWindows.add(F.schedule(round,lane).slice().sort((a,b)=>a-b).join(","));
+assert.equal(twelvePassWindows.size,192,"12 passes must cover 192 different windows, with no redundant local searches");
+
 const run=F.run(opts());
 assert(run.rotations>=3&&run.rotations<=6);
 assert.equal(run.domainCount,375);
@@ -47,7 +52,9 @@ for(const round of run.rounds){
    assert.equal(lane.likelihood.length,16);
    assert(Math.abs(lane.likelihood.reduce((a,b)=>a+b,0)-1)<1e-10);
    assert.equal(lane.iterations,Q.peakIterationCount(16,lane.marks,40,.999));
-   assert(lane.likelihood.filter(v=>v>0).length===16,"preserve the full local joint distribution");
+   assert(lane.likelihood.every(p=>Number.isFinite(p)&&p>=0),"probability entries are valid, including exact zeros");
+   assert.deepEqual(lane.likelihood,lane.grover.probabilities,
+    "noise=0 means the actual ideal Grover distribution, with no hidden 8% smoothing");
  }
  for(const group of round.groups){
    assert.deepEqual(group.memberIndices,[0,1,2,3].map(j=>4*group.index+j));
@@ -76,12 +83,23 @@ assert.notDeepEqual(parity.distribution,run.distribution,"oracle family must aff
 const noisy=F.run(opts(173,"cooccurrence",.25));
 assert(F.tvd(noisy.distribution,run.distribution)>1e-6,"classical noise proxy must alter the actual probabilities");
 const constrained=F.run({...opts(),anchors:[2]});
+for(const round of constrained.rounds){
+ for(const lane of round.lanes){
+  if(lane.window.includes(2)){
+   for(const obs of lane.observations){
+    if(!obs.passed)continue;
+    assert.equal(obs.state&(1<<2),1<<2,"local oracle may mark only states respecting visible anchor");
+   }
+  }
+ }
+}
 assert(constrained.ranked.every(r=>r.loci.includes(2)),"Condition must survive binding and truth gate");
 const noSolution=F.run(opts(81));
 assert.equal(noSolution.qualifiedCount,0);
 assert.equal(noSolution.leaders.length,0);
 assert.equal(noSolution.selected,null);
 assert.equal(noSolution.parentGrover.iterations,0);
+assert.equal(noSolution.stable,false,"empty candidate set is not verified success despite flat numerical distributions");
 assert.throws(()=>F.run({...opts(),maxPasses:13}),/1–12/);
 assert.throws(()=>F.run({...opts(),readoutNoise:.6}),/0–35/);
 console.log("QCDS genome 16→4→1 rotating probability funnel numerical tests: PASS");
