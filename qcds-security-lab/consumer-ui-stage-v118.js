@@ -9,25 +9,15 @@ export function homeView({project,caseId,question,model,cases,archived,icon}) {
   const unknown=Object.values(project.input.flags).filter(v=>v===null).length;
   const liveRecords=model.findings.reduce((n,f)=>n+f.records.length,0);
   return `<div class="consumer-home">
-    <section class="gw-lab-heading" aria-label="QCDS Security Lab workspace">
-      <div class="gw-lab-heading-main">
-        <img class="gw-lab-heading-mark" src="./glasswing-mark.webp?v=1.18.0" width="76" height="76" style="display:block;width:76px;height:76px;max-width:76px;max-height:76px;flex:0 0 76px;object-fit:contain" alt="Project Glasswing crystal eagle">
-        <div>
-          <span class="eyebrow">QCDS · PROJECT GLASSWING</span>
-          <h1>Security Lab</h1>
-          <p>Your investigations, evidence, and QCDS inference in one place.</p>
-        </div>
-      </div>
-      <div class="gw-lab-heading-buttons">
-        <button type="button" class="button primary" data-action="new">${icon("plus")} New investigation</button>
-        <button type="button" class="button" data-watch-intro>${icon("play")} Replay intro</button>
-      </div>
-    </section>
-    <div class="consumer-trust"><span>${icon('shield')} Saved on your device</span><span>${icon('check')} No account required</span><button data-app-install class="text-button">Install app ↗</button><span data-offline-status></span></div>
+    <header class="gw-home-page-title">
+      <span class="eyebrow">QCDS · THE SYNTRACT VISION · PROJECT GLASSWING</span>
+      <h1>Your workspace</h1>
+      <p>Continue your investigation or open another case from the menu.</p>
+    </header>
     <section class="consumer-resume"><div class="consumer-section-title"><span class="eyebrow">${project.example?'YOUR PRACTICE CASE':'PICK UP WHERE YOU LEFT OFF'}</span><span class="consumer-tag">${project.example?'Worked example':'Your investigation'}</span></div><h2>${esc(project.input.name)}</h2><p>${esc(project.input.attackerGoal || 'Start by naming what you want to protect.')}</p><div class="consumer-step-track" aria-label="Current position: step ${question} of 5">${steps.map((step,i)=>`<span class="${i+1===question?'current':i+1<question?'visited':''}"><b>${i+1}</b>${step}</span>`).join('')}</div><div class="consumer-resume-bottom"><div><b>Step ${question} of 5 · ${steps[question-1]}</b><small>Your place in the investigation, not a security score.</small></div><button class="button primary" data-consumer-open="${esc(caseId)}">Continue investigation ${icon('arrow')}</button></div></section>
     <section class="consumer-overview" aria-label="Current investigation overview"><a href="#system"><b>${unknown}</b><span>Facts to clarify</span><small>Keep ? when you are unsure</small></a><a href="#findings"><b>${model.findings.length+model.pending.length}</b><span>Paths to review</span><small>Questions worth following</small></a><a href="#report"><b>${liveRecords}</b><span>Current observations</span><small>${project.example?'Synthetic example evidence':'Bound to the current scope'}</small></a></section>
     <section class="consumer-shortcuts"><a href="#cases">${icon('grid')}<div><h3>My investigations</h3><p>${own.length} saved personal ${own.length===1?'case':'cases'}. Keep each system separate.</p></div>${icon('arrow')}</a><a href="#report">${icon('report')}<div><h3>Build my report</h3><p>Findings, evidence, next actions and illustrated PDF.</p></div>${icon('arrow')}</a></section>
-    <details class="consumer-lab"><summary>${icon('layers')} Explore the QCDS engine</summary><p>Follow dimensions, compare security perspectives and simulate ideal or noisy Grover circuits.</p><button class="button" data-open-logical>Run dimensional inference ↗</button><a class="text-link" href="#comparison">Compare inference methods →</a></details><p class="consumer-footnote">Q Security helps you investigate possible attack paths. Device scanning and automatic security certification are outside this app’s scope.</p></div>`;
+    <details class="consumer-lab"><summary>${icon('layers')} Explore the QCDS engine</summary><p>Follow dimensions, compare security perspectives and simulate ideal or noisy Grover circuits.</p><button class="button" data-open-logical>Run dimensional inference ↗</button><a class="text-link" href="#comparison">Compare inference methods →</a></details><div class="consumer-trust gw-home-service-status"><span>${icon('shield')} Saved on your device</span><span>${icon('check')} No account required</span><span data-offline-status></span><button data-app-install class="text-button">Install app ↗</button></div><p class="consumer-footnote">Q Security helps you investigate possible attack paths. Device scanning and automatic security certification are outside this app’s scope.</p></div>`;
 }
 
 export function casesView({cases,places,archived,caseId,icon}) {
