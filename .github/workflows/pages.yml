@@ -575,7 +575,7 @@ jobs:
           destination = Path('_site/project-glasswing.html')
           destination.write_text(mirror, encoding='utf-8')
           assert 'Project Glasswing' in mirror
-          assert 'qcds-security-lab/glasswing-rig-v121.svg' in mirror
+          assert 'qcds-security-lab/glasswing-approved.webp' in mirror
           assert 'qcds-security-lab/index.html?skip_intro=1' in mirror
           print('Project Glasswing vision mirror verified outside application cache scope')
           PYGLASSWING
