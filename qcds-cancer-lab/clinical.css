@@ -440,3 +440,84 @@ body.clinical-theme .qcds-conclusion .qcds-conclusion-scope {
   body.clinical-theme .qcds-conclusion .qcds-conclusion-lead { font-size:16px; }
   body.clinical-theme .qcds-conclusion .qcds-conclusion-detail { font-size:13px; }
 }
+
+
+/* Genome perspective: genuine computed motif positions on clearly synthetic data. */
+.genome-perspective {
+  margin-top:22px; padding:25px;
+  border:1px solid #cadce4; border-radius:12px;
+  background:#fff; scroll-margin-top:20px;
+}
+.genome-eyebrow {font-size:11px;font-weight:800;letter-spacing:.09em;color:#176979}
+.genome-perspective-head h2 {margin:5px 0 9px;font-size:clamp(23px,2.5vw,33px);line-height:1.27;color:#1b3f52;letter-spacing:-.024em}
+.genome-perspective-head p {margin:0;max-width:1100px;color:#4f687d;font-size:14px;line-height:1.7}
+.genome-stats {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:22px 0 23px}
+.genome-stats>div {display:grid;gap:3px;padding:16px;background:#f2f7f9;border:1px solid #dce8ed;border-radius:9px;min-width:0}
+.genome-stats small {color:#5c7486;font-size:10px;font-weight:780;letter-spacing:.05em}
+.genome-stats strong {font-size:clamp(22px,2.4vw,32px);color:#1c5368;font-weight:780;letter-spacing:-.025em;line-height:1.3}
+.genome-stats span {color:#526d80;font-size:12px;line-height:1.45}
+.genome-demo-head h3 {font-size:19px;line-height:1.3;color:#23475b;margin:0 0 7px}
+.genome-demo-marker {font-size:10px;letter-spacing:.055em;color:#6c5938;border:1px solid #e0d5bc;background:#faf6e9;border-radius:5px;padding:5px 7px;white-space:nowrap;vertical-align:middle;display:inline-block;margin-left:6px}
+.genome-demo-head p {max-width:1050px;margin:0;color:#587284;font-size:13px;line-height:1.65}
+.genome-search-form {margin:18px 0 15px;display:grid;gap:7px}
+.genome-search-form label {font-size:12px;font-weight:750;color:#294e64}
+.genome-search-fields {display:flex;gap:9px;max-width:550px}
+.genome-search-fields input {
+  width:min(340px,100%);min-width:0;flex:1;border:1px solid #b8cdd9;
+  border-radius:7px;background:white;padding:10px 12px;color:#17445b;
+  font:750 15px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.07em;
+}
+.genome-search-fields button {
+  border:1px solid #146078;background:#1a687a;color:white;cursor:pointer;
+  font-size:13px;font-weight:700;border-radius:7px;padding:10px 13px;
+}
+.genome-search-fields button:hover {background:#145064}
+.genome-error {color:#9a3c38;font-size:12px;margin:0;min-height:0}
+.genome-demo-layout {display:grid;grid-template-columns:minmax(0,1.45fr) minmax(270px,.85fr);gap:13px;align-items:start}
+.genome-track-panel,.genome-hits-panel {min-width:0;padding:16px;border:1px solid #dce7ec;border-radius:9px;background:#fafcfd}
+.genome-track-key {display:flex;gap:14px;flex-wrap:wrap;color:#687c8e;font-size:11px;margin:0 0 13px}
+.genome-track-key span {display:inline-flex;align-items:center;gap:5px}
+.genome-track-key i {width:9px;height:9px;border-radius:50%;background:#c17c20;display:inline-block}
+.chromosome-board {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 16px}
+.chromosome-row {display:grid;grid-template-columns:42px minmax(0,1fr) 25px;gap:8px;align-items:center;min-width:0}
+.chromosome-label {font:700 12px/1.2 ui-monospace,SFMono-Regular,monospace;color:#435f73}
+.chromosome-track {position:relative;height:12px;min-width:0;background:#d7e6ed;border-radius:12px;box-shadow:inset 0 0 0 1px #bed2dc}
+.genome-hit-marker {
+  position:absolute;top:50%;width:13px;height:20px;border:2px solid white;border-radius:7px;
+  transform:translate(-50%,-50%);background:#b77724;box-shadow:0 0 0 1px #ad731e;
+  padding:0;cursor:pointer;z-index:1;
+}
+.genome-hit-marker:hover,.genome-hit-marker:focus-visible {z-index:3;background:#875711;box-shadow:0 0 0 3px #f5dd9f}
+.chromosome-count {text-align:right;font:700 11px/1.2 ui-monospace,SFMono-Regular,monospace;color:#4c7381}
+.genome-hits-panel h4 {font-size:16px;color:#235268;margin:0 0 9px;line-height:1.4}
+.genome-hits {display:flex;flex-wrap:wrap;gap:7px;max-height:155px;overflow-y:auto}
+.genome-list-summary {width:100%;font-size:11px;color:#688294;line-height:1.5;margin:0 0 4px}
+.genome-match-row {
+  padding:7px 10px;border:1px solid #c9dce3;border-radius:6px;
+  background:#eff7f8;color:#28556b;font-size:12px;font-weight:680;cursor:pointer;
+}
+.genome-match-row:hover {background:#deeff2}
+.genome-empty {font-size:13px;color:#607789;line-height:1.5}
+.genome-position-detail {margin-top:16px;padding-top:13px;border-top:1px solid #dce8ee;display:grid;gap:8px;min-width:0}
+.genome-position-detail strong {color:#345e73;font-size:12px}
+.genome-sequence {background:#edf4f6;border:1px solid #d5e5eb;padding:9px;border-radius:7px;word-break:break-all;font:700 12px/1.9 ui-monospace,SFMono-Regular,monospace;letter-spacing:.01em}
+.genome-sequence code {font:inherit!important;white-space:normal;color:#557287!important}
+.genome-sequence mark {background:#f6d38d;color:#4b3617;font:inherit;padding:2px;border-radius:3px}
+.genome-position-detail small {color:#668296;font-size:11px;line-height:1.6}
+.genome-perspective-foot {display:grid;gap:9px;margin-top:16px;border-top:1px solid #e0e9ee;padding-top:14px}
+.genome-perspective-foot p {margin:0;color:#536d7e;font-size:12px;line-height:1.68}
+.genome-perspective-foot strong {color:#244b61}
+@media(max-width:1050px) {
+  .genome-demo-layout {grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:750px) {
+  .genome-perspective {padding:17px}
+  .genome-stats {grid-template-columns:1fr;gap:7px}
+  .genome-stats>div {padding:12px 15px}
+  .genome-stats strong {font-size:24px}
+  .chromosome-board {grid-template-columns:1fr}
+}
+@media(max-width:400px) {
+  .genome-search-fields {flex-direction:column}
+  .genome-search-fields input {width:100%}
+}
