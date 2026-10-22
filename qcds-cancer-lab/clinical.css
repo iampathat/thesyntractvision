@@ -777,3 +777,13 @@ body.clinical-theme .workbench {margin-top:24px}
 .cohort-evidence[data-status="unvalidated"]{background:#f2f7f8;border-color:#cfe0e6;color:#466477}
 .cohort-evidence[data-status="unvalidated"]::before{color:#36697b}
 .cohort-evidence:empty{display:none}
+
+
+/* User-defined cohort cardinalities; five is only an editable example. */
+.cohort-size-note {margin:0 0 10px;color:#4b687c;font-size:12px;line-height:1.63}
+.cohort-size-note strong {color:#24516a}
+.cohort-size-controls {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 13px}
+.cohort-size-controls label {display:grid;gap:6px;font-size:12px;line-height:1.5;color:#456678}
+.cohort-size-controls input {min-width:0}
+.cohort-stats strong {overflow-wrap:anywhere}
+@media(max-width:440px){.cohort-size-controls{grid-template-columns:minmax(0,1fr)}}
