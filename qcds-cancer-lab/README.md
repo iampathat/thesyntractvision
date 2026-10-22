@@ -8,7 +8,7 @@ This directory contains the current QCDS cancer research engine. It is deliberat
 
 **QCDS Cancer Lab:** https://iampathat.github.io/thesyntractvision/qcds-cancer-lab/
 
-The public surface is a runnable workbench. You can edit the 0/1/? Condition, enable or disable top-down cancer-oracle hypotheses, run the full 128 → 8 → 1 QCDS path, inspect the local and parent Grover depths, dimensional influence, recursive return and the final Parent-Grover distribution.
+The public surface is a runnable workbench. You can edit the 0/1/? Condition, enable or disable top-down cancer-oracle hypotheses, run the full 128 → 8 → 1 QCDS path, inspect all 128 per-lane Grover observations in the interactive inference space, select any recursive pass, inspect its eight full-distribution family binds, local and parent Grover depths, dimensional influence and the final Parent-Grover distribution.
 
 > **License:** public to view for evaluation; company / organizational use requires a separate agreement. See [LICENSE.md](./LICENSE.md).
 
@@ -107,7 +107,7 @@ The included masks are research/demo hypotheses carried forward from earlier QCD
 - `hr_plus_broad`
 - `pi3k_hr_combo`
 
-They are treated as **alternative top-down oracle hypotheses (union / OR)** under the hard input Condition. If a true-null lane removes a semantic dimension required by a particular hypothesis, that hypothesis is inactive in that lane rather than being evaluated with fabricated data.
+They are treated as **alternative top-down oracle hypotheses (union / OR)** under the hard input Condition. If a true-null lane removes a semantic dimension, the oracle remains in the fixed bank, but the positional constraint falling on the absent value is unobserved; the remaining constraints are tested. No missing bit is fabricated. This follows the browser core and its rotation regression test.
 
 A recursive Parent-Grover return is an additional constraint on the next cycle.
 
@@ -180,3 +180,22 @@ The test suite checks, among other things:
 ## Research / medical boundary
 
 This is an experimental inference architecture. It is not a diagnostic system, medical device or treatment recommendation and must not be used for clinical decision-making without appropriate validation, regulation and qualified medical oversight.
+
+## Inference Observatory — October 22, 2026
+
+The website now includes a **data-linked** logical space inspired by the SCC Mandelbrot observatory. The view is not a pre-rendered animation:
+
+- Matrix = eight true-null families (rows) × sixteen balanced rotations (columns), **128 real computed local lanes per recursive pass**.
+- Every cell inspects the same engine's `N`, `M`, Grover iteration count `m`, marked probability mass, highest individual probability and entropy.
+- The display refreshes when each group of eight local Grover kernels completes, using the actual `onProgress.lanes` results. No made-up interpolation.
+- After a run, selecting a recursive pass restores its 128 lane observations and the eight family distribution summaries. Each family shows its top canonical bit-string and associated normalized family probability.
+- The Parent Grover summary shows the selected pass's actual candidate space, marked count, iterations and marked mass. The stability gate is shown independently; Grover amplification is **not** biological or mathematical truth verification.
+- The visualization is plain HTML/CSS/JavaScript, keyboard-accessible for individual cells, and horizontally scrollable on small displays. Typography uses non-condensed system fonts with readable body text.
+
+**Important computational distinction:** The 128 lanes are parallel *logical entrances / perspectives*; the current reference **browser** engine computes them sequentially in an asynchronous yielding loop to keep the UI responsive. This is not 128-way hardware parallel execution and does not demonstrate quantum advantage or a hardware speedup. The architecture can map independent lanes onto additional physical compute backends in the future; only measured backend results should be reported as physical throughput.
+
+**Semantics:** fixed 0/1 Condition bits survive the true-null sensitivity experiment after Syntract binding; `?` represents unresolved represented input bits, while true-null means a dimension is absent from that lane. Eight exclusion families are combined using full normalized distributions (a logarithmic opinion pool), not majority votes. Stability across repeated cycles measures changes in distributions, entropy, top-state identity, top-k and dimension influence.
+
+**Research scope:** The included cancer oracle masks are illustrative mechanistic hypotheses, not patient-derived measurements or clinically validated rules. The result is not a diagnosis, a therapy recommendation, a malignancy probability, or a medical device.
+
+Run `node qcds-cancer-lab/tests/test_core.js` to check numerical invariants and the observation bridge. Run the Python test module for the reference implementation independently.
