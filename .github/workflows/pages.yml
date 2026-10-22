@@ -564,6 +564,22 @@ jobs:
           grep -F 'assets/syntract_public_shell.js?v=' _site/index.html
           grep -F 'qcdsCoreReimplemented:false' _site/assets/syntract_public_shell.js
 
+      - name: Publish Glasswing vision outside legacy offline-app scope
+        run: |
+          python - <<'PYGLASSWING'
+          from pathlib import Path
+          source = Path('qcds-security-lab/glasswing.html').read_text(encoding='utf-8')
+          # Independent public mirror: older Security Lab service workers cannot
+          # intercept this root-level document, unlike their cached legacy route.
+          mirror = source.replace('="./', '="./qcds-security-lab/')
+          destination = Path('_site/project-glasswing.html')
+          destination.write_text(mirror, encoding='utf-8')
+          assert 'Project Glasswing' in mirror
+          assert 'qcds-security-lab/glasswing-rig-v121.svg' in mirror
+          assert 'qcds-security-lab/index.html?skip_intro=1' in mirror
+          print('Project Glasswing vision mirror verified outside application cache scope')
+          PYGLASSWING
+
       - name: Validate exact public release artifact
         run: python -m qcds_fabric.public_release_guard --site _site
 
