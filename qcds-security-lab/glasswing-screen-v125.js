@@ -7,7 +7,7 @@
   const film=document.getElementById('gw-film');
   const video=document.getElementById('gw-film-video');
   const app=document.getElementById('app');
-  let finishTimer=0,returnFocus=null;
+  let finishTimer=0,playDeadline=0,returnFocus=null;
   const status=(message)=>{
     const note=film?.querySelector('[data-film-status]');
     if(note){note.textContent=message;note.hidden=!message;}
@@ -18,6 +18,7 @@
   };
   const enter=()=>{
     clearTimeout(finishTimer);
+    clearTimeout(playDeadline);
     if(video){video.pause();try{video.currentTime=0;}catch{}}
     if(film){film.hidden=true;film.classList.remove('gw-film-ending');}
     block(false);
@@ -28,6 +29,7 @@
   const finish=()=>{
     if(!film||film.hidden)return;
     clearTimeout(finishTimer);
+    clearTimeout(playDeadline);
     film.classList.add('gw-film-ending');
     finishTimer=setTimeout(enter,430);
   };
@@ -35,6 +37,7 @@
     if(!film||!video){enter();return;}
     returnFocus=fromButton;
     clearTimeout(finishTimer);
+    clearTimeout(playDeadline);
     film.hidden=false;
     film.classList.remove('gw-film-ending');
     block(true);
@@ -45,8 +48,11 @@
     const started=video.play();
     if(started?.catch)started.catch(err=>{
       console.warn('Project Glasswing intro playback unavailable',err);
-      status('Video could not start. Choose Enter Security Lab to continue.');
+      status('Intro video unavailable. Opening Security Lab.');
+      finish();
     });
+    // Even if Safari never fires ended/error, never leave the app locked.
+    playDeadline=setTimeout(finish,4800);
   };
   if(video){
     video.addEventListener('ended',finish);
@@ -65,11 +71,21 @@
     if(event.key==='Escape'&&film&&!film.hidden)enter();
   });
   const params=new URLSearchParams(location.search);
-  if(params.has('skip_intro')||params.has('settings')){
+  const deepLink=Boolean(location.hash && location.hash!=='#home');
+  const updateOrEntry=['skip_intro','settings','refreshed','glasswing_refresh']
+    .some(key=>params.has(key));
+  const reducedMotion=typeof matchMedia==='function' &&
+    matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let previouslyEntered=false;
+  try{previouslyEntered=sessionStorage.getItem('qcds-glasswing-entered')==='1'}
+  catch{ /* No session storage: skip only explicit deep links and refreshes. */ }
+  const requestedReplay=params.has('watch_intro');
+  if(!requestedReplay && (updateOrEntry||deepLink||previouslyEntered||reducedMotion)){
     if(film)film.hidden=true;
     block(false);
   }else{
-    // There is no secondary landing screen and no session-storage intro gate.
+    // One cinematic entrance per session, never an update/cache gate.
+    try{sessionStorage.setItem('qcds-glasswing-entered','1')}catch{}
     play();
   }
 })();
