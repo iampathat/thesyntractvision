@@ -231,11 +231,13 @@
     if(!result.selected){
       headline.textContent="No matching connection found with these settings.";
       detail.textContent="None of the possible combinations passed the complete sample check. You can try a different starting point or change the example data.";
+      if($("cohortCandidatesPanel"))$("cohortCandidatesPanel").hidden=true;
       quality.dataset.status="unresolved";
       quality.textContent="The model has no valid match. No DNA positions are highlighted; this does not rule anything out for real patients.";
       selectedState=null;
       return;
     }
+    if($("cohortCandidatesPanel"))$("cohortCandidatesPanel").hidden=result.ranked.length<=1;
     const item=result.ranked.find(x=>x.state===selectedState)||result.selected;
     selectedState=item.state;
     const count=result.leaders.length;
@@ -260,7 +262,7 @@
       alts.append(b);
     }
     const title=$("cohortAlternativeTitle");
-    if(title)title.textContent=result.ranked.length===1?"The model's selected candidate":"Compare other matching connections";
+    if(title)title.textContent="See other possible DNA connections ("+Math.min(result.ranked.length,16)+")";
   }
   function readSettings(){
     return {
