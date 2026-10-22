@@ -1,5 +1,8 @@
 # QCDS Oncology Lab — Recursive Engine — 128 → 8 → 1
 
+> **Scientific audit (22 October 2026):** [Read the detailed audit](AUDIT_2026-10-22.md) before interpreting simulated genomic results. In 100 null-generated cohorts, 57 had at least one apparent match under the current default thresholds; signal amplification does not imply biological validation.
+
+
 **Theory and creation by Patrik Sundblom**
 
 This directory contains the current QCDS cancer research engine. It is deliberately separate from the older BRCA2 / mutation scripts so the historical work remains intact.
