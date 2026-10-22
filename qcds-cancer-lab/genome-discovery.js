@@ -35,9 +35,12 @@
     };
   }
   function clamp(value,a,b){return Math.max(a,Math.min(b,value));}
-  function generateProfiles(seed=173,mode="structure"){
+  function generateProfiles(seed=173,mode="structure",caseCount=5,controlCount=caseCount){
     if(!["structure","null"].includes(mode))throw Error("Unknown synthetic generation mode");
     if(!Number.isInteger(Number(seed))||Number(seed)<1||Number(seed)>1000000)throw Error("Data seed must be an integer from 1 to 1,000,000.");
+    if(!Number.isInteger(caseCount)||!Number.isInteger(controlCount)||
+       caseCount<2||controlCount<2||caseCount>100||controlCount>100)
+       throw Error("Synthetic browser examples support 2–100 people per group; this is not an architectural QCDS limit.");
     const rand=randomSource(seed);
     // Unobserved cohort-level shift and locus-specific effects are sampled,
     // rather than hardcoding a winning triple or fixed set of co-occurrences.
@@ -47,8 +50,8 @@
       covariance:(rand()-.5)*.38
     }));
     const cases=[],controls=[];
-    for(const [group,target] of [["cases",cases],["controls",controls]]){
-      for(let k=0;k<5;k++){
+    for(const [group,target,nPeople] of [["cases",cases,caseCount],["controls",controls,controlCount]]){
+      for(let k=0;k<nPeople;k++){
         const latent=(rand()-.5)*2;
         const variants=[];
         parameters.forEach((p,i)=>{
@@ -97,8 +100,8 @@
     const dataset=options.dataset||generateProfiles(173,"structure");
     checkProfiles(dataset);
     const anchors=options.anchors===undefined?[]:options.anchors;
-    const minCases=options.minCases===undefined?3:Number(options.minCases);
-    const maxControls=options.maxControls===undefined?1:Number(options.maxControls);
+    const minCases=options.minCases===undefined?Math.ceil(.6*dataset.cases.length):Number(options.minCases);
+    const maxControls=options.maxControls===undefined?Math.floor(.2*dataset.controls.length):Number(options.maxControls);
     const minSize=options.minSize===undefined?2:Number(options.minSize);
     const maxSize=options.maxSize===undefined?4:Number(options.maxSize);
     const relation=options.relation||"cooccurrence";
@@ -181,7 +184,10 @@
       return {excluded:person.id,sameTop:Boolean(top&&run.selected?.state===top),retainsTop:Boolean(top&&run.ranked.some(x=>x.state===top))};
     });
     const permuted={...baseline.dataset,cases:baseline.dataset.controls,controls:baseline.dataset.cases};
-    const nullRun=evaluate({...settings,dataset:permuted});
+    const nullRun=evaluate({...settings,
+       minCases:Math.max(1,Math.ceil(settings.minCases/baseline.dataset.cases.length*permuted.cases.length)),
+       maxControls:Math.floor(settings.maxControls/baseline.dataset.controls.length*permuted.controls.length),
+       dataset:permuted});
     return {
       simulations,leaveOneOut,negativeControl:{markedCount:nullRun.markedCount,retainsTop:Boolean(top&&nullRun.ranked.some(x=>x.state===top))},
       repeatability:simulations.filter(x=>x.sameTop).length,
@@ -189,28 +195,27 @@
     };
   }
 
-  // Exact conditional randomization check over all C(10,5)=252 case-label assignments.
-  // Compares the selected result with the MOST extreme qualifying association
-  // under each shuffled labeling, explicitly accounting for searching hundreds
-  // of loci combinations. It is a synthetic-data diagnostic, not validation.
+  // Combinatorial label-permutation calibration across ANY 2+2 input cohorts.
+  // <=12 total participants: exhaustive assignments, regardless of balance.
+  // >12: deterministic Monte Carlo, with +1 correction, clearly identified.
+  // This is a synthetic model check, not medical or independent validation.
   function permutationAudit(options={}){
     const dataset=options.dataset;
     checkProfiles(dataset);
-    if(dataset.cases.length!==5||dataset.controls.length!==5)
-      throw Error("Exact permutation calibration currently requires 5 cases and 5 comparisons.");
+    const nCase=dataset.cases.length,nControl=dataset.controls.length;
+    const nTotal=nCase+nControl;
     const anchors=options.anchors||[];
     if(!Array.isArray(anchors)||new Set(anchors).size!==anchors.length||
        anchors.some(i=>!Number.isInteger(i)||i<0||i>=LOCI.length))
        throw Error("Invalid permutation anchor Condition.");
-    const must=mask(anchors);
-    const relation=options.relation||"cooccurrence";
-    const minCases=options.minCases===undefined?3:Number(options.minCases);
-    const maxControls=options.maxControls===undefined?1:Number(options.maxControls);
+    const must=mask(anchors),relation=options.relation||"cooccurrence";
+    const minCases=options.minCases===undefined?Math.ceil(.6*nCase):Number(options.minCases);
+    const maxControls=options.maxControls===undefined?Math.floor(.2*nControl):Number(options.maxControls);
     const minSize=options.minSize===undefined?2:Number(options.minSize);
     const maxSize=options.maxSize===undefined?4:Number(options.maxSize);
     if(!["cooccurrence","parity"].includes(relation))throw Error("Unsupported relation oracle.");
-    if(!Number.isInteger(minCases)||minCases<1||minCases>5||
-       !Number.isInteger(maxControls)||maxControls<0||maxControls>5||
+    if(!Number.isInteger(minCases)||minCases<1||minCases>nCase||
+       !Number.isInteger(maxControls)||maxControls<0||maxControls>nControl||
        !Number.isInteger(minSize)||!Number.isInteger(maxSize)||minSize<2||maxSize>5||minSize>maxSize)
        throw Error("Invalid permutation search constraints.");
     const people=[...dataset.cases,...dataset.controls];
@@ -218,54 +223,83 @@
     for(let state=1;state<N;state++){
       const size=countBits(state);
       if(size<minSize||size>maxSize||(state&must)!==must)continue;
-      let positive=0;
-      people.forEach((person,index)=>{
-        if(satisfies(state,person,relation))positive|=1<<index;
-      });
-      candidates.push({state,positive,total:countBits(positive)});
+      const supporters=[];
+      for(let i=0;i<nTotal;i++)if(satisfies(state,people[i],relation))supporters.push(i);
+      candidates.push({state,supporters,total:supporters.length});
     }
     const observed=options.selectedState;
-    const observedCaseMask=(1<<dataset.cases.length)-1;
     const observedDatum=observed==null?null:assess(observed,dataset,relation);
-    if(observed!=null && (!Number.isInteger(observed)||observed<0||observed>=N ||
+    if(observed!=null&&(!Number.isInteger(observed)||observed<0||observed>=N||
        !candidates.some(c=>c.state===observed)))
        throw Error("Selected state is not a valid candidate under the Condition.");
-    const threshold=observedDatum?.contrast;
-    let assignments=0,asExtreme=0,maxObserved=-1,obsQualified=0;
-    const FULL=(1<<10)-1;
-    const bestForCases=(caseMask)=>{
-      let best=-1;
-      for(const candidate of candidates){
-        const cases=countBits(candidate.positive&caseMask);
-        const controls=candidate.total-cases;
-        if(cases<minCases||controls>maxControls)continue;
-        const contrast=(cases-controls)/5;
-        if(contrast>0 && contrast>best)best=contrast;
+    const passed=observedDatum!==null&&observedDatum.caseCount>=minCases&&
+      observedDatum.controlCount<=maxControls&&observedDatum.contrast>0;
+    const observedMembership=new Uint8Array(nTotal);
+    observedMembership.fill(1,0,nCase);
+    const bestForAssignment=(membership)=>{
+      let best=-1,qualified=0;
+      for(const item of candidates){
+        let presentCases=0;
+        for(const i of item.supporters)presentCases+=membership[i];
+        const presentControls=item.total-presentCases;
+        if(presentCases<minCases||presentControls>maxControls)continue;
+        const contrast=presentCases/nCase-presentControls/nControl;
+        if(contrast<=0)continue;
+        qualified++;
+        if(contrast>best)best=contrast;
       }
-      return best;
+      return {best,qualified};
     };
-    maxObserved=bestForCases(observedCaseMask);
-    obsQualified=candidates.filter(c=>{
-      const cases=countBits(c.positive&observedCaseMask);
-      const controls=c.total-cases;
-      return cases>=minCases&&controls<=maxControls&&cases>controls;
-    }).length;
-    // Combination masks: 10 bits with exactly 5 selected cases.
-    const nullMax=[];
-    for(let caseMask=0;caseMask<=FULL;caseMask++){
-      if(countBits(caseMask)!==5)continue;
-      const max=bestForCases(caseMask);
-      nullMax.push(max);assignments++;
-      if(threshold!==undefined && max>=threshold-1e-12)asExtreme++;
+    const baseline=bestForAssignment(observedMembership);
+    const threshold=passed?observedDatum.contrast:null;
+    let asExtreme=0,anyPositive=0,assignments=0;
+    const checkMembership=(membership)=>{
+      const {best}=bestForAssignment(membership);
+      assignments++;
+      if(best>0)anyPositive++;
+      if(threshold!==null&&best>=threshold-1e-12)asExtreme++;
+    };
+    const exact=nTotal<=12;
+    if(exact){
+      const indices=Array.from({length:nCase},(_,i)=>i);
+      while(true){
+        const membership=new Uint8Array(nTotal);
+        for(const i of indices)membership[i]=1;
+        checkMembership(membership);
+        let k=nCase-1;
+        while(k>=0 && indices[k]===nTotal-nCase+k)k--;
+        if(k<0)break;
+        indices[k]++;
+        for(let j=k+1;j<nCase;j++)indices[j]=indices[j-1]+1;
+      }
+    }else{
+      // Simulate 399 randomized case assignments. Includes actual configuration
+      // as the observed case, yielding a conservative +1 Monte Carlo tail estimate.
+      const rng=randomSource(Number(dataset.seed||173)+nCase*1009+nControl*9176+
+        (relation==="parity"?413:0));
+      for(let r=0;r<399;r++){
+        const perm=Array.from({length:nTotal},(_,i)=>i);
+        for(let i=nTotal-1;i>0;i--){
+          const j=Math.floor(rng()*(i+1));
+          [perm[i],perm[j]]=[perm[j],perm[i]];
+        }
+        const membership=new Uint8Array(nTotal);
+        for(let i=0;i<nCase;i++)membership[perm[i]]=1;
+        checkMembership(membership);
+      }
     }
-    const passed=observed!==undefined&&observed!==null&&
-      observedDatum.caseCount>=minCases&&observedDatum.controlCount<=maxControls&&observedDatum.contrast>0;
-    return {assignments,validCandidates:candidates.length,observedQualified:obsQualified,
-      selectedContrast:threshold??null,observedMaximumContrast:maxObserved,
-      tailAssignments:passed?asExtreme:null,
-      familywiseFraction:passed?asExtreme/assignments:null,
-      nullAnyFraction:nullMax.filter(v=>v>0).length/assignments,
-      method:"Exact label permutations across all eligible 2–4-locus candidates; conditional on these ten synthetic observations and the chosen oracle family."
+    const estimatedFraction=passed?
+      (exact?asExtreme/assignments:(1+asExtreme)/(1+assignments)):null;
+    return {method:exact?"exact":"monte_carlo",assignments,
+      caseCount:nCase,controlCount:nControl,validCandidates:candidates.length,
+      observedQualified:baseline.qualified,selectedContrast:observedDatum?.contrast??null,
+      observedMaximumContrast:baseline.best,
+      tailAssignments:passed?asExtreme:null,familywiseFraction:estimatedFraction,
+      nullAnyFraction:anyPositive/assignments,
+      description:exact?
+        "Exhaustive regrouping of "+nTotal+" synthetic profiles into "+nCase+" cases and "+nControl+" comparators.":
+        "399 deterministic random regroupings, corrected (1+extreme)/(400). Estimated, not an exhaustive permutation test.",
+      qualification:"Accounts for the searched symbolic subset family under these fixed oracle settings, not post-hoc tuning or biological validation."
     };
   }
   return {LOCI,N,MAX_ITERATIONS,ALIGNMENT_THRESHOLD,randomSource,generateProfiles,permutationAudit,
