@@ -95,7 +95,7 @@ export async function downloadSystemGuidePdf() {
     import("./system-guide-pdf.mjs?v=1.0.0"),
   ]);
   const media=typeof document === "undefined"?{cover:null,chapters:[]} :await loadSystemGuidePlates();
-  const { doc, summary } = createSystemGuidePdf(jsPDF,{artwork:media.cover,plates:media.chapters});
+  const { doc, summary } = createSystemGuidePdf(jsPDF,{artwork:media.cover,plates:media.chapters,appRelease:document.body.dataset.release||"unknown"});
   await saveDeviceFile(doc.output("blob"), "QCDS-Security-Lab-System-Guide.pdf", "application/pdf");
   return summary;
 }
