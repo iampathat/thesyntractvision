@@ -68,11 +68,15 @@
   }
   function mask(indices){return indices.reduce((s,i)=>s|(1<<i),0);}
   function countBits(v){let count=0;while(v){v&=v-1;count++;}return count;}
-  function coverage(state,profiles){
-    return profiles.reduce((sum,p)=>{
-      const included=bits(state).every(i=>p.variants.includes(i));
-      return sum+Number(included);
-    },0);
+  function satisfies(state,person,relation="cooccurrence"){
+    const chosen=bits(state);
+    const positives=chosen.filter(i=>person.variants.includes(i)).length;
+    if(relation==="cooccurrence")return positives===chosen.length;
+    if(relation==="parity")return positives%2===1;
+    throw Error("Unsupported relation-oracle family.");
+  }
+  function coverage(state,profiles,relation="cooccurrence"){
+    return profiles.reduce((sum,p)=>sum+Number(satisfies(state,p,relation)),0);
   }
   function checkProfiles(dataset){
     if(!dataset||!Array.isArray(dataset.cases)||!Array.isArray(dataset.controls)||dataset.cases.length<2||dataset.controls.length<2)
@@ -82,8 +86,8 @@
         throw Error("Invalid genotype vector for profile "+p.id);
     }
   }
-  function assess(state,dataset){
-    const c=coverage(state,dataset.cases),k=coverage(state,dataset.controls);
+  function assess(state,dataset,relation="cooccurrence"){
+    const c=coverage(state,dataset.cases,relation),k=coverage(state,dataset.controls,relation);
     const caseRate=c/dataset.cases.length,controlRate=k/dataset.controls.length;
     const contrast=caseRate-controlRate;
     return {caseCount:c,controlCount:k,caseRate,controlRate,contrast};
@@ -97,6 +101,8 @@
     const maxControls=options.maxControls===undefined?1:Number(options.maxControls);
     const minSize=options.minSize===undefined?2:Number(options.minSize);
     const maxSize=options.maxSize===undefined?4:Number(options.maxSize);
+    const relation=options.relation||"cooccurrence";
+    if(!["cooccurrence","parity"].includes(relation))throw Error("Unsupported relation-oracle family.");
     if(!Array.isArray(anchors)||anchors.length>3||new Set(anchors).size!==anchors.length||anchors.some(i=>!Number.isInteger(i)||i<0||i>=LOCI.length))throw Error("Choose up to three distinct valid locus anchors.");
     if(!Number.isInteger(minCases)||minCases<1||minCases>dataset.cases.length||
        !Number.isInteger(maxControls)||maxControls<0||maxControls>dataset.controls.length)
@@ -107,7 +113,7 @@
     for(let state=1;state<N;state++){
       const size=countBits(state);
       if(size<minSize||size>maxSize)continue;
-      const assessment=assess(state,dataset);
+      const assessment=assess(state,dataset,relation);
       const eligible=(state&must)===must;
       const passed=eligible&&assessment.caseCount>=minCases&&assessment.controlCount<=maxControls&&assessment.contrast>0;
       const row={state,loci:bits(state),size,...assessment,passed,eligible};
@@ -136,7 +142,7 @@
       else stopReason="First-peak selection";
     }
     return {
-      dataset,anchors:anchors.slice(),minCases,maxControls,minSize,maxSize,
+      dataset,anchors:anchors.slice(),minCases,maxControls,minSize,maxSize,relation,
       states:N,examinedCount:examined.length,markedCount:marked.length,
       ranked,refined,selected:refined[0]||null,grover,refinedGrover,refinedCount:refined.length,stopReason,threshold:ALIGNMENT_THRESHOLD,
       ratio:marked.length/N,theta
@@ -157,7 +163,7 @@
   function stabilityAudit(baseline,options={}){
     const settings={
       anchors:baseline.anchors,minCases:baseline.minCases,maxControls:baseline.maxControls,
-      minSize:baseline.minSize,maxSize:baseline.maxSize
+      minSize:baseline.minSize,maxSize:baseline.maxSize,relation:baseline.relation
     };
     const top=baseline.selected?.state;
     const seed=Number(baseline.dataset.seed||173);
@@ -183,5 +189,5 @@
     };
   }
   return {LOCI,N,MAX_ITERATIONS,ALIGNMENT_THRESHOLD,randomSource,generateProfiles,
-    bits,mask,countBits,coverage,assess,evaluate,perturb,stabilityAudit};
+    bits,mask,countBits,satisfies,coverage,assess,evaluate,perturb,stabilityAudit};
 });
