@@ -2,6 +2,7 @@
 // Editable editorial system-guide PDF generator. Created by Patrik Sundblom.
 // OpenAI / ChatGPT provided research and development support.
 // Media are separate files, never encoded as blobs in source.
+import { registerReportFonts } from './vendor/report-fonts.mjs';
 const P={navy:[7,22,37],panel:[16,41,60],ink:[239,248,251],muted:[179,201,209],
   cyan:[121,220,233],gold:[214,183,126],line:[58,84,102]};
 const W=595.28,H=841.89,M=45,I=W-M*2,END=H-78;
@@ -49,16 +50,17 @@ export function guideOutline(model){
  ];
 }
 const set=(d,k,fn)=>d[fn](...P[k]);
+const chooseFont=(d,size,style)=>d.setFont(size>=18?'times':'QCDSReport',style);
 function base(d){
  set(d,'navy','setFillColor');d.rect(0,0,W,H,'F');
  set(d,'line','setDrawColor');d.setLineWidth(.65);
  d.line(M,56,W-M,56);d.line(M,H-52,W-M,H-52);
 }
 function one(d,s,x,y,size=10,c='ink',style='normal'){
- d.setFont('helvetica',style);d.setFontSize(size);set(d,c,'setTextColor');d.text(text(s),x,y);
+ chooseFont(d,size,style);d.setFontSize(size);set(d,c,'setTextColor');d.text(text(s),x,y);
 }
 function wrap(d,s,width,size=10,style='normal'){
- d.setFont('helvetica',style);d.setFontSize(size);const out=[];let cur='';
+ chooseFont(d,size,style);d.setFontSize(size);const out=[];let cur='';
  for(const token of text(s).split(/\s+/)){
   if(d.getTextWidth(token)>width){
    if(cur){out.push(cur);cur='';}
@@ -74,7 +76,7 @@ function wrap(d,s,width,size=10,style='normal'){
 }
 function paragraphLines(d,s,x,y,width,size=10,c='ink',leading=1.45,style='normal'){
  const ls=wrap(d,s,width,size,style);
- d.setFont('helvetica',style);d.setFontSize(size);set(d,c,'setTextColor');
+ chooseFont(d,size,style);d.setFontSize(size);set(d,c,'setTextColor');
  ls.forEach((line,i)=>d.text(line,x,y+i*size*leading));
  return y+ls.length*size*leading;
 }
@@ -147,6 +149,7 @@ function finish(d,model){
 export function createEditorialSystemGuidePdf(jsPDF,raw,{artwork={},edition='3.0'}={}){
  const model=buildGuideModel(raw);
  const d=new jsPDF({unit:'pt',format:'a4',compress:true,putOnlyUsedFonts:true});
+ registerReportFonts(d);
  cover(d,artwork.guardian,model);
  let ctx={title:'How to read this guide',dek:'A living reference to the actual Security Lab implementation',y:0};
  ctx.y=head(d,'00 / THE READING KEY',ctx.title,ctx.dek);
