@@ -1,6 +1,6 @@
 // QCDS Security Lab — offline-first app cache with user-approved updates.
 // Copyright © 2026 Patrik Sundblom. R&D support: OpenAI / ChatGPT.
-const VERSION = '1.26.0';
+const VERSION = '1.26.2-glasswing-guide-preview';
 const PREFIX = 'qcds-security-app-';
 const CACHE = PREFIX + VERSION;
 const root = new URL('./', self.location.href);
@@ -13,7 +13,15 @@ const ESSENTIAL = [
   'glasswing-screen-v125.js','app-stage-v118.js',
   'consumer-ui-stage-v118.js','app-install.js',
   'engine.mjs','logical-lab.js','glasswing.mjs',
-  'report-export.js','workspace.mjs','device-files.js',
+  'report-export.js','system-guide-pdf.mjs','system-guide-editorial.mjs',
+  'vendor/report-fonts.mjs','vendor/jspdf.umd.min.js',
+  'assets/system-guide/qcds-the-guardian-network.svg',
+  'assets/system-guide/qcds-dimensional-inference-guide.svg',
+  'assets/system-guide/attack-vectors-across-the-system-landscape.svg',
+  'assets/system-guide/the-seven-security-lenses.svg',
+  'assets/system-guide/recursive-investigation-guide.svg',
+  'assets/system-guide/quantum-execution-and-verification-guide.svg',
+  'workspace.mjs','device-files.js',
   'glasswing-mark.webp','glasswing-approved.webp'
 ];
 self.addEventListener('install', event => event.waitUntil((async () => {

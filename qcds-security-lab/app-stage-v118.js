@@ -13,7 +13,7 @@ import {
 } from "./engine.mjs?v=1.14.1";
 import { createLogicalLab, researchLaunch } from "./logical-lab.js?v=1.14.1";
 import { runGlasswing } from "./glasswing.mjs?v=1.14.1";
-import { downloadSecurityPdf } from "./report-export.js?v=1.1.0";
+import { downloadSecurityPdf, downloadSystemGuidePdf } from "./report-export.js?v=1.2.0";
 import { WORKSPACE_KEY, restoreWorkspace, writeWorkspace, mergeWorkspace, copyAsOwnProject, STARTERS, isCaseId } from "./workspace.mjs?v=1.0.1";
 import { homeView, casesView, newCaseMarkup, consumerNav } from "./consumer-ui-stage-v118.js?v=1.26.0";
 import { initAppInstall, refreshAppStatus } from "./app-install.js?v=1.26.0";
@@ -1500,7 +1500,7 @@ function reportView() {
         <li><strong>02</strong><div>Security radar & framework charts<small>Six target sectors, STRIDE, OWASP and labeled scales.</small></div></li>
         <li><strong>03</strong><div>Illustrated attack paths<small>Entry → mechanism → target → consequence, with controls and counter-tests.</small></div></li>
         <li><strong>04</strong><div>Evidence, ownership & traceability<small>QCDS reasoning, scoped observations, actions and the complete mechanism register.</small></div></li></ul>
-        <button class="button primary" data-action="print" ${disabled}>${icon('download')} Download designed PDF</button><p class="report-privacy-note">Generated on this device. Your case is not uploaded to a PDF service.</p>
+        <button class="button primary" data-action="print" ${disabled}>${icon('download')} Download designed PDF</button><p class="report-privacy-note">Generated on this device. Your case is not uploaded to a PDF service.</p><div class="report-export-secondary"><button class="button" data-action="system-guide-pdf">${icon('book')} Generate Glasswing System Guide PDF</button></div><p class="report-privacy-note">A living Project Glasswing guide. Dimensions, security lenses and attack mechanisms update from the current source. No case data is included.</p>
         <div class="report-export-secondary"><button class="button" data-action="export-json" ${disabled}>Project JSON</button><button class="button" data-action="export-md" ${disabled}>Markdown</button><button class="button" data-action="import">Import project</button></div>
       </section>
     </div>`;
@@ -1931,6 +1931,15 @@ document.addEventListener("click", async (e) => {
       break;
     case "print":
       await exportDesignedPdf();
+      break;
+    case "system-guide-pdf":
+      try {
+        notify("Generating the illustrated System Guide PDF...");
+        const summary = await downloadSystemGuidePdf();
+        notify(`System Guide ready · ${summary.pages} pages · ${summary.frameworks} security perspectives.`);
+      } catch (error) {
+        notify(error.message || "System Guide PDF export failed. Please retry.", "warning");
+      }
       break;
     case "import":
       $("#import-file").click();
