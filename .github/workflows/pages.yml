@@ -471,6 +471,8 @@ jobs:
           test -s _site/qcds-security-lab/glasswing-flight-v125.mp4
           test -s _site/qcds-security-lab/glasswing-screen-v125.css
           test -s _site/qcds-security-lab/glasswing-screen-v125.js
+          test -s _site/qcds-security-lab/glasswing-unified-shell-v127.css
+          grep -F 'glasswing-unified-shell-v127.css' _site/qcds-security-lab/index.html
           test -s _site/qcds-security-lab/app-stage-v118.js
           test -s _site/qcds-security-lab/consumer-ui-stage-v118.js
           # Assert guide assets exist in the actual deploy artifact.
@@ -486,7 +488,7 @@ jobs:
             cmp _site/qcds-security-lab/enter.html "_site/qcds-security-lab/$name"
           done
           grep -F 'location.replace(target.href)' _site/qcds-security-lab/enter.html
-          grep -E 'data-release="1\.26\.[^"]+"' _site/qcds-security-lab/index.html
+          grep -E 'data-release="1\.[0-9]+\.[0-9]+"' _site/qcds-security-lab/index.html
           grep -F 'id="gw-film"' _site/qcds-security-lab/index.html
           grep -F 'data-film-skip' _site/qcds-security-lab/index.html
           grep -F 'glasswing-flight-v125.mp4' _site/qcds-security-lab/index.html
