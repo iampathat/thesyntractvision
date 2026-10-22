@@ -23,10 +23,11 @@ test('exactly one intro launches directly into the real Security Lab',()=>{
   assert.match(index,/data-entry="intro"/);
   assert.match(index,/data-release="1\.26\.[^"]+"/);
   assert.match(index,/id="gw-film-video"/);
-  assert.match(index,/playsinline muted autoplay/);
+  assert.match(index,/playsinline muted/);
+  assert.doesNotMatch(index,/playsinline muted autoplay/);
   assert.match(index,/data-film-skip/);
   assert.match(index,/src="\.\/app-stage-v118\.js\?v=1\.26\.[^"]+"/);
-  assert.match(index,/glasswing-screen-v125\.js\?v=1\.26\.0/);
+  assert.match(index,/glasswing-screen-v125\.js\?v=1\.27\.0/);
   assert.match(index,/glasswing-screen-v125\.css\?v=1\.26\.\d+/);
   assert.match(js,/video\.addEventListener\('ended',finish\)/);
   assert.doesNotMatch(js,/showLanding|fromLanding/);
@@ -52,7 +53,7 @@ test('all legacy entrance URLs redirect to the one canonical intro',()=>{
   assert.match(update,/index\.html\?skip_intro=1&settings=1#home/);
   assert.doesNotMatch(update,/id="reset"|id="refresh"/);
 });
-function simulate(search=''){
+function simulate(search='',{entered=false,hash=''}={}){
   const events={},videoEvents={},calls={play:0,pause:0,focus:0};
   const classes=new Set();
   const film={hidden:false,classList:{
@@ -70,7 +71,9 @@ function simulate(search=''){
     })[id]||null,addEventListener:(name,fn)=>events[name]=fn};
   let timer=null;
   vm.runInNewContext(js,{
-    document:doc,location:{search},URLSearchParams,
+    document:doc,location:{search,hash},URLSearchParams,
+    sessionStorage:{getItem:()=>entered?'1':null,setItem:()=>{}},
+    matchMedia:()=>({matches:false}),
     setTimeout:fn=>{timer=fn;return 1},
     clearTimeout:()=>{},console
   },{timeout:2000});
@@ -144,4 +147,21 @@ test('source base styles do not retain the old green navigation backgrounds',()=
   assert.match(consumerStyle,/background:#153c57/);
   assert.match(index,/style\.css\?v=1\.26\.\d+/);
   assert.match(index,/consumer\.css\?v=1\.26\.\d+/);
+});
+
+test('repeat entry or report deep link bypasses intro, but manual replay is possible',()=>{
+  const repeat=simulate('',{entered:true});
+  assert.equal(repeat.film.hidden,true);
+  assert.equal(repeat.calls.play,0);
+  assert.equal(repeat.app.inert,false);
+  const direct=simulate('',{hash:'#report'});
+  assert.equal(direct.calls.play,0);
+  assert.equal(direct.app.inert,false);
+  const manual=simulate('?watch_intro=1',{entered:true});
+  assert.equal(manual.calls.play,1);
+});
+test('intro has no unrequested autoplay or initial blocking overlay',()=>{
+  assert.match(index,/id="gw-film"[^>]*hidden/);
+  assert.doesNotMatch(index,/glasswing-visual gw-entry-active/);
+  assert.match(js,/playDeadline=setTimeout\(finish,4800\)/);
 });

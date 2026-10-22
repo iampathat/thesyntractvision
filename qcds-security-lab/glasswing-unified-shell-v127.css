@@ -1,0 +1,408 @@
+/* Project Glasswing / Security Lab — Unified product shell 1.27.0
+   Single design layer for desktop, Fold and mobile. Explicitly resolves
+   conflicting legacy declarations in style, consumer and film styles.
+   Does not alter Security Lab inference or model data.
+   Theory and creation: Patrik Sundblom. OpenAI / ChatGPT R&D support. */
+body.glasswing-visual {
+  --gw-shell-bg:#061827;
+  --gw-shell-side:#091d2d;
+  --gw-shell-surface:#10293d;
+  --gw-shell-raised:#153348;
+  --gw-shell-border:#3a6175;
+  --gw-shell-text:#edf8fc;
+  --gw-shell-muted:#abc5d3;
+  --gw-shell-accent:#89e4f5;
+  --gw-shell-gold:#dfbd88;
+  --acid:#89e4f5;
+  --cyan:#89e4f5;
+  --app-accent:#89e4f5;
+  background:var(--gw-shell-bg);
+  color:var(--gw-shell-text);
+}
+body.glasswing-visual *,
+body.glasswing-visual *::before,
+body.glasswing-visual *::after { box-sizing:border-box; }
+body.glasswing-visual { max-width:100%;overflow-x:clip; }
+body.glasswing-visual #app { max-width:100%;min-width:0;overflow-x:clip; }
+body.glasswing-visual #app .app-body {
+  width:auto!important;
+  min-width:0!important;
+  max-width:none!important;
+  margin-left:242px!important;
+  background:var(--gw-shell-bg);
+}
+body.glasswing-visual #app .app-body > main {
+  width:100%;
+  max-width:1200px;
+  min-width:0;
+  margin:0 auto;
+  padding-inline:clamp(19px,3.6vw,46px);
+}
+body.glasswing-visual #app #view,
+body.glasswing-visual #app #view > *,
+body.glasswing-visual #app .page-heading,
+body.glasswing-visual #app .casebar,
+body.glasswing-visual #app .report-studio,
+body.glasswing-visual #app .report-cover-preview {
+  min-width:0;max-width:100%;
+}
+body.glasswing-visual #app #view :is(p,h1,h2,h3,small,b,strong,.mono),
+body.glasswing-visual #app .sidebar :is(b,em,small) {
+  overflow-wrap:anywhere;
+}
+body.glasswing-visual #app :is(.panel,.consumer-case,.consumer-resume,.gw-guide-export-panel,.report-cover-preview) {
+  background:var(--gw-shell-surface);
+  border:1px solid var(--gw-shell-border);
+  border-radius:14px;
+  box-shadow:none;
+}
+body.glasswing-visual #app .page-heading h1 {
+  font-size:clamp(29px,3.4vw,47px);
+  line-height:1.16;
+  letter-spacing:-.024em;
+}
+body.glasswing-visual #app .page-heading p {
+  max-width:70ch;
+  font-size:clamp(15px,1.3vw,18px);
+  line-height:1.55;
+}
+body.glasswing-visual #app .panel p { max-width:75ch;line-height:1.6; }
+body.glasswing-visual #app .button {
+  border-radius:9px;
+}
+body.glasswing-visual #app .button.primary,
+body.glasswing-visual #app .new-case {
+  background:linear-gradient(120deg,#b8f4ff,#69d0f4);
+  border:1px solid #99e6f3;
+  color:#092336;
+}
+body.glasswing-visual #app .topbar {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  min-width:0;
+  background:#081e30f5;
+  border-bottom:1px solid #31576d;
+  z-index:50;
+}
+body.glasswing-visual #app .breadcrumb {min-width:0;flex:1 1 auto}
+body.glasswing-visual #app .breadcrumb b {
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:100%;
+}
+body.glasswing-visual #app .top-actions {gap:10px;min-width:0;flex:0 0 auto}
+body.glasswing-visual #app .top-actions .gw-settings-header {
+  min-width:42px;
+  min-height:42px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  color:var(--gw-shell-text);
+  background:var(--gw-shell-raised);
+  border:1px solid #4a8091;
+}
+body.glasswing-visual #app .top-actions .gw-settings-header .icon {
+  display:block!important;
+  visibility:visible!important;
+  flex:0 0 20px;
+  width:20px!important;
+  height:20px!important;
+}
+body.glasswing-visual #app .sidebar {
+  background:linear-gradient(160deg,#0c2941,#071c2d 75%);
+  border-right:1px solid #375d77;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+  scrollbar-color:#40687b transparent;
+}
+body.glasswing-visual #app .sidebar .brand {
+  display:flex;
+  min-width:0;
+}
+body.glasswing-visual #app .sidebar nav {display:flex;flex-direction:column;gap:4px;min-width:0}
+body.glasswing-visual #app .sidebar nav > a,
+body.glasswing-visual #app .sidebar nav details > a,
+body.glasswing-visual #app .sidebar nav .gw-lab-nav-link {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-width:0;
+  min-height:43px;
+  margin:0;
+  padding:11px 12px;
+  color:#c2d7e3;
+  border:1px solid transparent;
+  background:transparent;
+  border-radius:8px;
+  text-align:left;
+  font:inherit;
+  font-size:13px;
+  text-decoration:none;
+  cursor:pointer;
+}
+body.glasswing-visual #app .sidebar nav .icon {
+  display:block;
+  width:20px;height:20px;
+  min-width:20px;
+  color:#8dcce3;
+}
+body.glasswing-visual #app .sidebar nav :is(a,.gw-lab-nav-link)[aria-current="page"],
+body.glasswing-visual #app .sidebar nav a[aria-current="step"],
+body.glasswing-visual #app .sidebar nav :is(a,.gw-lab-nav-link):hover {
+  border-color:#40728a!important;
+  color:#eefbff!important;
+  background:#193e55!important;
+}
+body.glasswing-visual #app .sidebar nav .nav-copy b {
+  font-weight:600;
+  font-size:13px;
+}
+body.glasswing-visual #app .sidebar nav .nav-copy em {display:none}
+body.glasswing-visual #app .sidebar .nav-section-label {
+  margin:16px 10px 7px;
+  color:#b2c8d4;
+  font-size:10px;
+  letter-spacing:.13em;
+}
+body.glasswing-visual #app .sidebar .consumer-nav-case {
+  margin:0 5px 9px;
+  padding:10px 12px;
+  border:1px solid #315e75;
+  border-radius:9px;
+  background:#0e293c;
+}
+body.glasswing-visual #app .sidebar nav :is(.gw-investigation-nav,.consumer-nav-more) {
+  display:block;
+  margin:1px 0;
+  border:1px solid transparent;
+  border-radius:9px;
+  background:transparent;
+  padding:0;
+  overflow:visible;
+}
+body.glasswing-visual #app .sidebar nav :is(.gw-investigation-nav,.consumer-nav-more)>summary {
+  list-style:none;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  border:1px solid transparent!important;
+  background:transparent!important;
+  border-radius:8px;
+  min-height:44px;
+  margin:0;
+  padding:10px 12px;
+  color:#cbdfe9!important;
+  font:600 13px/1.3 system-ui,sans-serif;
+  cursor:pointer;
+}
+body.glasswing-visual #app .sidebar nav :is(.gw-investigation-nav,.consumer-nav-more)>summary::-webkit-details-marker {display:none}
+body.glasswing-visual #app .sidebar nav :is(.gw-investigation-nav,.consumer-nav-more)>summary::after {
+  content:'⌄';
+  margin-left:auto;
+  font-size:17px;
+  color:var(--gw-shell-accent);
+  transition:transform .15s ease;
+}
+body.glasswing-visual #app .sidebar nav :is(.gw-investigation-nav,.consumer-nav-more)[open]>summary::after {
+  transform:rotate(180deg);
+}
+body.glasswing-visual #app .sidebar nav :is(.gw-investigation-nav,.consumer-nav-more)[open]>summary {
+  background:#15374d!important;
+  border-color:#365d76!important;
+}
+body.glasswing-visual #app .sidebar nav .nav-flow {
+  position:relative;
+  margin:3px 5px 7px 14px;
+  padding-left:8px;
+}
+body.glasswing-visual #app .sidebar nav a.nav-flow-step {
+  min-height:36px;
+  padding:6px 8px;
+  font-size:12px;
+  gap:8px;
+}
+body.glasswing-visual #app .sidebar nav a.nav-flow-step .nav-copy b{font-size:12px}
+body.glasswing-visual #app .sidebar nav a.nav-flow-step .nav-step-number{flex:0 0 23px;width:23px;height:23px}
+body.glasswing-visual #app .sidebar .new-case {
+  margin:12px 4px;
+  min-height:45px;
+  font-size:13px;
+}
+body.glasswing-visual #app .sidebar .sidebar-bottom {
+  margin-top:8px;
+  padding:10px 8px 0;
+  border-top:1px solid #34566e;
+}
+body.glasswing-visual #app .sidebar .gw-settings-trigger {
+  display:flex;align-items:center;gap:9px;
+  width:100%;padding:10px 12px;
+  font-size:13px;color:#cce9f5;
+  border:1px solid #31586d;
+  border-radius:9px;
+  background:#102b40;
+}
+body.glasswing-visual #app .sidebar .gw-settings-trigger .icon {width:18px;height:18px;flex:0 0 18px}
+body.glasswing-visual #app .sidebar .local-note {margin-top:13px}
+body.glasswing-visual #app .sidebar .author {font-size:11px}
+body.glasswing-visual #app .sidebar .version {font-size:10px}
+/* Workbench is a focused layer of the same app, not a differently branded product. */
+body.glasswing-visual #logical-lab {
+  width:min(1080px,calc(100vw - 34px));
+  height:min(94dvh,900px);
+  max-height:94dvh;
+  border:1px solid #436a80;
+  border-radius:16px;
+  background:var(--gw-shell-bg);
+  color:var(--gw-shell-text);
+}
+body.glasswing-visual #logical-lab .logic-header {
+  display:flex;
+  align-items:center;
+  gap:16px;
+  padding:18px 22px;
+  background:#0d2b41;
+  border-bottom:1px solid #43687e;
+}
+body.glasswing-visual #logical-lab .logic-brand-mark {
+  display:block;
+  width:54px;height:54px;
+  object-fit:contain;
+  border-radius:10px;
+  border:1px solid #3a7490;
+  flex:0 0 54px;
+}
+body.glasswing-visual #logical-lab .logic-header > div:not(.logic-brand) {min-width:0;flex:1}
+body.glasswing-visual #logical-lab .logic-header h2 {font-size:clamp(16px,2vw,22px);overflow-wrap:anywhere}
+body.glasswing-visual #logical-lab .logic-header .button {min-height:42px;flex:0 0 auto}
+body.glasswing-visual #logical-lab .logic-scroll {padding:clamp(16px,3vw,26px)}
+body.glasswing-visual #logical-lab :is(.logic-focus,.logic-path) {max-width:100%;min-width:0}
+body.glasswing-visual #logical-lab .logic-focus h3 {font-size:clamp(22px,3vw,30px);line-height:1.2}
+body.glasswing-visual #logical-lab .logic-path,
+body.glasswing-visual #logical-lab label,
+body.glasswing-visual #logical-lab option {overflow-wrap:anywhere}
+/* Reports show two different deliverables, never a giant duplicate download action. */
+body.glasswing-visual #app .gw-guide-export-panel {
+  padding:clamp(18px,3vw,28px);
+  border-color:#49798e;
+  margin:18px 0 28px;
+}
+body.glasswing-visual #app .gw-guide-export-panel h2 {font-size:clamp(21px,2.6vw,28px);margin:8px 0 12px}
+body.glasswing-visual #app .gw-guide-export-panel .button {margin:12px 0 8px;max-width:100%;white-space:normal;text-align:center}
+body.glasswing-visual #app .report-cover-preview {overflow:hidden}
+body.glasswing-visual #app .report-cover-preview svg {width:100%;height:auto;max-width:100%}
+@media (max-width:1190px) and (min-width:1025px){
+  body.glasswing-visual #app .app-body {margin-left:215px!important;}
+}
+@media (max-width:1024px){
+  /* Legacy CSS forced a 242px desktop deduction here; this is the overflow root cause. */
+  body.glasswing-visual #app .app-body {
+    margin:0!important;
+    padding:0!important;
+    width:100%!important;
+    max-width:100%!important;
+  }
+  body.glasswing-visual #app .topbar {
+    min-height:60px;
+    height:60px;
+    padding:0 16px;
+    gap:10px;
+  }
+  body.glasswing-visual #app .top-actions .save-status {display:none}
+  body.glasswing-visual #app .top-actions .gw-settings-header {
+    width:44px;min-width:44px;max-width:44px;
+    height:44px;min-height:44px;
+    padding:10px;
+  }
+  body.glasswing-visual #app .top-actions .gw-settings-header span {display:none}
+  body.glasswing-visual #app .top-actions .gw-settings-header .icon {
+    display:block!important;visibility:visible!important;
+  }
+  body.glasswing-visual #app .sidebar {
+    display:none;
+    width:min(334px,87vw);
+    height:100dvh;
+    max-height:100dvh;
+    top:0;bottom:0;
+    padding:15px 14px 21px;
+    background:#092136;
+    z-index:110;
+  }
+  body.glasswing-visual #app .sidebar.open {display:flex;}
+  body.glasswing-visual #app .sidebar .brand {display:flex;min-height:62px;margin-bottom:10px}
+  body.glasswing-visual #app .sidebar .brand .glasswing-brand-label {font-size:23px}
+  body.glasswing-visual #app .sidebar nav {gap:1px}
+  body.glasswing-visual #app .sidebar nav > a,
+  body.glasswing-visual #app .sidebar nav details > a {
+    min-height:42px;padding:9px 11px;font-size:13px;
+  }
+  body.glasswing-visual #app .menu-backdrop {z-index:109}
+  body.glasswing-visual #app .consumer-bottom-nav {
+    display:grid!important;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    position:fixed!important;
+    left:0;right:0;bottom:0;
+    min-height:65px;
+    z-index:80!important;
+    background:#071e32!important;
+    border-top:1px solid #3b6a80;
+    padding:7px 7px calc(7px + env(safe-area-inset-bottom,0px));
+    box-shadow:none;
+    backdrop-filter:none;
+  }
+  body.glasswing-visual #app .consumer-bottom-nav a {
+    min-width:0;min-height:53px;
+    padding:5px 2px;
+    font-size:12px;
+    line-height:1.1;
+  }
+  body.glasswing-visual #app .consumer-bottom-nav .icon {width:20px;height:20px}
+  body.glasswing-visual #app .app-body > main {
+    padding:19px clamp(16px,4vw,25px) calc(160px + env(safe-area-inset-bottom,0px))!important;
+    scroll-margin-bottom:130px;
+  }
+  body.glasswing-visual #app .app-body #view {scroll-margin-bottom:125px}
+  body.glasswing-visual #app .page-heading {margin-block:12px 18px}
+  body.glasswing-visual #app #view :is(.report-studio,.report-cover-preview) {min-width:0;max-width:100%}
+  body.glasswing-visual #app #logical-lab {width:calc(100vw - 20px)}
+  body.glasswing-visual #logical-lab .logic-header {flex-wrap:wrap;padding:14px 16px}
+  body.glasswing-visual #logical-lab .logic-header .button {margin:0 0 0 auto}
+}
+@media (max-width:560px){
+  body.glasswing-visual #app .topbar {padding:0 13px}
+  body.glasswing-visual #app .breadcrumb b {font-size:14px}
+  body.glasswing-visual #app .app-body > main {
+    padding:16px 15px calc(165px + env(safe-area-inset-bottom,0px))!important;
+  }
+  body.glasswing-visual #app #view .report-studio,
+  body.glasswing-visual #app #view .metrics,
+  body.glasswing-visual #app #view .report-grid {display:block;min-width:0;max-width:100%}
+  body.glasswing-visual #app #view .report-cover-preview {margin-inline:0;padding:clamp(17px,4vw,23px)}
+  body.glasswing-visual #app #view .report-cover-preview h2 {font-size:clamp(23px,7vw,38px)}
+  body.glasswing-visual #logical-lab {
+    width:100vw;height:100dvh;max-height:100dvh;
+    border:0;border-radius:0;margin:0;
+  }
+  body.glasswing-visual #logical-lab .logic-header {
+    display:grid;
+    grid-template-columns:44px minmax(0,1fr) auto;
+    gap:10px;
+    padding:13px 14px;
+  }
+  body.glasswing-visual #logical-lab .logic-brand-mark {width:42px;height:42px;flex-basis:42px}
+  body.glasswing-visual #logical-lab .logic-header .eyebrow {font-size:9px;letter-spacing:.07em}
+  body.glasswing-visual #logical-lab .logic-header h2 {font-size:16px}
+  body.glasswing-visual #logical-lab .logic-header p {display:none}
+  body.glasswing-visual #logical-lab .logic-header .button {font-size:12px;min-width:0;padding:9px}
+  body.glasswing-visual #logical-lab .logic-header .button > span {display:none}
+  body.glasswing-visual #logical-lab .logic-scroll {padding:15px}
+  body.glasswing-visual #logical-lab .logic-columns {display:grid;grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:reduce){
+ body.glasswing-visual #app *,
+ body.glasswing-visual #app *::before,
+ body.glasswing-visual #app *::after {scroll-behavior:auto!important;transition:none!important;}
+}

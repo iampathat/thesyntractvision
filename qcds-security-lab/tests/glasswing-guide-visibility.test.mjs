@@ -8,14 +8,16 @@ const css=read('consumer.css');
 const sw=read('sw.js');
 const exportJs=read('report-export.js');
 test('Glasswing guide is directly accessible in the actual desktop workspace',()=>{
- const sidebar=app.indexOf('class="gw-nav-guide" data-action="system-guide-pdf"');
  const cases=app.indexOf('<b>My investigations</b>');
  const steps=app.indexOf('CURRENT INVESTIGATION');
- assert.ok(cases>0 && sidebar>cases && sidebar<steps,'Guide should appear just under My investigations');
- assert.match(app,/class="button small plain-button gw-guide-header" data-action="system-guide-pdf"/);
+ const report=app.indexOf("analysisLink('report','Reports & PDF','report')");
+ assert.ok(cases>0 && steps>cases && report>steps,'Reports in the context of the current investigation');
  assert.match(app,/class="button small plain-button gw-settings-header" data-app-settings/);
  assert.match(app,/class="gw-settings-trigger" data-app-settings/);
- assert.match(css,/\.sidebar nav button\.gw-nav-guide/);
+ assert.match(app,/class="gw-investigation-nav"/);
+ assert.match(app,/Explore & learn/);
+ assert.doesNotMatch(app,/gw-guide-header|gw-nav-guide/);
+ assert.match(app,/class="gw-guide-export-panel"|class="panel gw-guide-export-panel"/);
 });
 test('My report offers the independent system guide first',()=>{
  const report=app.slice(app.indexOf('function reportView()'),app.indexOf('function learnView()'));
@@ -30,7 +32,7 @@ test('UI and PWA advertise the same release, without deleting case data',()=>{
  const htmlVersion=html.match(/data-release="([^"]+)"/)?.[1];
  const scriptVersion=html.match(/app-stage-v118\.js\?v=([^"]+)"/)?.[1];
  const workerVersion=sw.match(/const VERSION = '([^']+)'/)?.[1];
- assert.match(htmlVersion,/^1\.26\.[0-9]+$/);
+ assert.match(htmlVersion,/^1\.[0-9]+\.[0-9]+$/);
  assert.equal(scriptVersion,htmlVersion);
  assert.equal(workerVersion,htmlVersion);
  assert.ok(sw.includes("'attack-vectors.mjs'"));

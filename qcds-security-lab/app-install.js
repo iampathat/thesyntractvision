@@ -26,6 +26,11 @@ function settingsDialog() {
     <p id="gw-settings-result" role="status" aria-live="polite">Ready to update.</p>
   </section>
   <section class="gw-settings-section">
+    <h3>Project Glasswing intro</h3>
+    <p>The eagle film is an optional welcome, not part of updating or returning to your work.</p>
+    <button type="button" class="gw-settings-install" data-replay-intro>Watch intro</button>
+  </section>
+  <section class="gw-settings-section">
     <h3>Installation</h3>
     <button type="button" class="gw-settings-install" data-app-install>Install app</button>
     <p data-offline-status>Local storage remains on your device.</p>
@@ -52,33 +57,52 @@ export function refreshAppStatus() {
   if(available) status('An update is ready. Use Refresh app to apply it.');
 }
 
+const bounded=async(promise,label,timeoutMs=3800)=>{
+  let timer;
+  try{
+    return await Promise.race([
+      Promise.resolve(promise),
+      new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(label+' timed out')),timeoutMs)})
+    ]);
+  }finally{clearTimeout(timer)}
+};
 async function refreshWithoutDeletingWork() {
   if(!navigator.onLine){status('Connect to the internet before refreshing. No data changed.',true);return;}
   const button=document.querySelector('[data-app-refresh]');
   if(button)button.disabled=true;
-  status('Refreshing program files. Your investigations are being preserved…');
+  status('Refreshing app files only. Your investigations and evidence will be preserved.');
   try {
     if('serviceWorker' in navigator && !native()){
-      const registrations=await navigator.serviceWorker.getRegistrations();
-      for(const item of registrations) {
-        if(item.scope.startsWith(ROOT.href)) await item.unregister();
-      }
+      const reg=await bounded(navigator.serviceWorker.getRegistration(ROOT.href),'Service worker');
+      if(reg?.scope===ROOT.href)await bounded(reg.unregister(),'App update');
     }
     if('caches' in globalThis){
-      const names=await caches.keys();
+      const names=await bounded(caches.keys(),'Cache list');
       for(const key of names){
-        if(key.startsWith('qcds-security-app-')) await caches.delete(key);
+        if(key.startsWith('qcds-security-app-'))
+          await bounded(caches.delete(key),'App cache');
       }
     }
     // Do not touch localStorage, sessionStorage, indexedDB or user files.
-    status('Program files refreshed. Opening Security Lab…');
+    status('Program files refreshed. Opening the same workspace without the intro.');
     const url=new URL('./index.html',ROOT);
     url.searchParams.set('skip_intro','1');
     url.searchParams.set('refreshed',String(Date.now()));
-    url.hash='home';
+    url.hash=location.hash || '#home';
     location.replace(url.href);
   }catch(err){
-    status('Refresh could not finish: '+(err?.message||String(err))+'. Your saved work is untouched.',true);
+    const message='Refresh could not finish: '+(err?.message||String(err))+
+      '. Your saved cases are unchanged. Open the repair link if needed.';
+    status(message,true);
+    const out=document.querySelector('#gw-settings-result');
+    if(out&&!out.querySelector('a')){
+      const link=document.createElement('a');
+      link.href=new URL('../glasswing-refresh.html',ROOT).href;
+      link.textContent='Open the independent recovery page';
+      link.style.display='block';
+      link.style.marginTop='12px';
+      out.append(link);
+    }
     if(button)button.disabled=false;
   }
 }
@@ -98,6 +122,11 @@ export function initAppInstall({notify}) {
       const dialog=settingsDialog();
       if(!dialog.open)dialog.showModal();
       refreshAppStatus();
+      return;
+    }
+    if(event.target.closest('[data-replay-intro]')) {
+      settingsDialog().close();
+      // The Glasswing intro controller handles the same click separately.
       return;
     }
     if(event.target.closest('[data-settings-close]')){

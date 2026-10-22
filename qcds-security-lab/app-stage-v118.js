@@ -11,12 +11,12 @@ import {
   validateProject,
   markdown,
 } from "./engine.mjs?v=1.14.1";
-import { createLogicalLab, researchLaunch } from "./logical-lab.js?v=1.14.1";
+import { createLogicalLab, researchLaunch } from "./logical-lab.js?v=1.27.0";
 import { runGlasswing } from "./glasswing.mjs?v=1.14.1";
 import { downloadSecurityPdf, downloadSystemGuidePdf } from "./report-export.js?v=1.26.6";
 import { WORKSPACE_KEY, restoreWorkspace, writeWorkspace, mergeWorkspace, copyAsOwnProject, STARTERS, isCaseId } from "./workspace.mjs?v=1.0.1";
-import { homeView, casesView, newCaseMarkup, consumerNav } from "./consumer-ui-stage-v118.js?v=1.26.0";
-import { initAppInstall, refreshAppStatus } from "./app-install.js?v=1.26.4";
+import { homeView, casesView, newCaseMarkup, consumerNav } from "./consumer-ui-stage-v118.js?v=1.27.0";
+import { initAppInstall, refreshAppStatus } from "./app-install.js?v=1.27.0";
 import { saveDeviceFile, initNativeApp } from "./device-files.js?v=1.0.0";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
@@ -373,29 +373,45 @@ function shell() {
     <a class="brand glasswing-brand" href="#home" aria-label="QCDS Security Lab home"><span class="glasswing-brand-mark"><img src="./glasswing-mark.webp?v=1.18.0" alt="" width="160" height="76"></span><span class="glasswing-brand-label">QCDS<span class="brand-sub">SECURITY LAB</span></span></a>
     <div class="workspace-label">YOUR WORKSPACE <button class="icon-button menu-close" data-action="close-menu" aria-label="Close navigation">${icon("close")}</button></div>
     <nav aria-label="Workspace">
-      <a href="#home" ${state.route==='home'?'aria-current="page"':''}>${icon('grid')}<span class="nav-copy"><b>Home</b><em>Your next step, in one place</em></span></a>
-      <a href="#cases" ${state.route==='cases'?'aria-current="page"':''}>${icon('shield')}<span class="nav-copy"><b>My investigations</b><em>Saved cases and backups</em></span></a>
-      <button type="button" class="gw-nav-guide" data-action="system-guide-pdf">${icon('book')}<span class="nav-copy"><b>Glasswing guide (PDF)</b><em>How the system works</em></span></button>
+      <a href="#home" ${state.route==='home'?'aria-current="page"':''}>${icon('grid')}<span class="nav-copy"><b>Home</b></span></a>
+      <a href="#cases" ${state.route==='cases'?'aria-current="page"':''}>${icon('shield')}<span class="nav-copy"><b>My investigations</b></span></a>
+      <a href="#examples" ${state.route==='examples'?'aria-current="page"':''}>${icon('play')}<span class="nav-copy"><b>Worked examples</b></span></a>
       <div class="nav-section-label">CURRENT INVESTIGATION</div>
-      <div class="consumer-nav-case"><b>${esc(project().input.name)}</b><small>${project().example?'Practice case · synthetic evidence':'Your system · saved locally'}</small></div>
-      <div class="nav-flow">${stepLinks}</div>
-      ${analysisLink('report','My report','report')}
-      <details class="consumer-nav-more" ${['system','perspectives','findings','trace','overview','comparison'].includes(state.route)?'open':''}><summary>Perspectives & lab</summary>
-        ${analysisLink('system','System facts','system')}
-        ${analysisLink('findings','Results & explanation','shield')}
-        ${analysisLink('perspectives','Security perspectives','layers')}
-        <button class="text-button" data-open-logical>Dimensional & quantum lab ↗</button>
-        <a href="#comparison" ${state.route==="comparison"?'aria-current="page"':""}>${icon('layers')}<span>Compare inference methods</span></a>
+      <div class="consumer-nav-case"><b>${esc(project().input.name)}</b><small>${project().example?'Practice case':'Your system'}</small></div>
+      <details class="gw-investigation-nav" ${investigating?'open':''}>
+        <summary>${icon('trace')}<span>Investigate · five steps</span></summary>
+        <div class="nav-flow">${stepLinks}</div>
       </details>
-      <a href="#examples">${icon('play')}<span>Worked examples</span></a>
-      ${analysisLink('learn','In plain English','book')}
+      ${analysisLink('findings','Results & explanation','shield')}
+      ${analysisLink('report','Reports & PDF','report')}
+      <details class="consumer-nav-more" ${!state.mobile && ['system','perspectives','trace','overview','comparison','learn'].includes(state.route)?'open':''}>
+        <summary>${icon('layers')}<span>Explore & learn</span></summary>
+        ${analysisLink('system','System facts','system')}
+        ${analysisLink('perspectives','Security perspectives','layers')}
+        <a href="#comparison" ${state.route==="comparison"?'aria-current="page"':""}>${icon('trace')}<span class="nav-copy"><b>Compare methods</b></span></a>
+        <button type="button" class="gw-lab-nav-link" data-open-logical>${icon('system')}<span>Dimensional & quantum lab</span></button>
+        ${analysisLink('learn','In plain English','book')}
+      </details>
     </nav>
     <button class="new-case" data-action="new">${icon("plus")} New investigation</button>
     <div class="sidebar-bottom"><button type="button" class="gw-settings-trigger" data-app-settings aria-haspopup="dialog">${icon("system")} Settings & updates</button><div class="local-note">${icon("shield")}<span>Saved on this device.<br>No account needed.</span></div><a href="#learn" class="author">By Patrik Sundblom <span>↗</span></a><div class="version">SECURITY LAB <span>v${document.body.dataset.release || VERSION}</span></div></div>
   </aside>
   ${state.mobile ? '<button class="menu-backdrop" data-action="close-menu" aria-label="Close navigation backdrop"></button>' : ""}
   <div class="app-body" ${state.mobile ? "inert" : ""}>
-    <header class="topbar"><div class="breadcrumb"><button class="icon-button mobile-toggle" data-action="menu" aria-controls="site-nav" aria-label="Open navigation" aria-expanded="${state.mobile}">${icon("menu")}</button><b>${investigating ? "Q★ Security" : esc(ROUTES.find((r) => r[0] === state.route)?.[1])}</b></div><div class="top-actions"><span id="save-status" class="save-status">${state.storage ? "Saved on this device" : "Not saved · export your work"}</span><button class="button small plain-button gw-guide-header" data-action="system-guide-pdf">${icon("download")} <span>Glasswing PDF</span></button><button type="button" class="button small plain-button gw-settings-header" data-app-settings aria-haspopup="dialog">${icon("system")} <span>Settings / Refresh</span></button><button class="button small plain-button gw-what-header" data-system-explanation>${icon("book")} What is this?</button></div></header>
+    <header class="topbar">
+      <div class="breadcrumb">
+        <button type="button" class="icon-button mobile-toggle" data-action="menu"
+          aria-controls="site-nav" aria-label="Open navigation" aria-expanded="${state.mobile}">${icon("menu")}</button>
+        <b>${investigating ? "Investigation" : esc(ROUTES.find((r) => r[0] === state.route)?.[1])}</b>
+      </div>
+      <div class="top-actions">
+        <span id="save-status" class="save-status">${state.storage ? "Saved on this device" : "Not saved · export your work"}</span>
+        <button type="button" class="button small plain-button gw-settings-header" data-app-settings
+          aria-haspopup="dialog" aria-label="Settings and updates" title="Settings and updates">
+          ${icon("system")} <span>Settings</span>
+        </button>
+      </div>
+    </header>
     ${investigating ? questionPosition() : ""}
     <main id="main" tabindex="-1">
       ${state.route === "investigate" ? (state.question === 1 && project().example ? casePicker() : "") : !["examples", "learn", "home", "cases"].includes(state.route) ? casePicker() : ""}
@@ -1489,10 +1505,10 @@ function traceView() {
 }
 function reportView() {
   const m = state.model, disabled = stale() ? 'disabled' : '';
-  return header('REPORTS / READY TO SHARE', 'Turn the investigation into a clear decision.', 'A designed A4 report with vector charts, security sectors, attack paths, controls and scoped evidence.') + `<section class="panel gw-guide-export-panel"><span class="eyebrow">QCDS / THE SYNTRACT VISION / PROJECT GLASSWING</span><h2>Glasswing System Guide</h2><p>Illustrated documentation about dimensions, every active security perspective, attack routes, recursion and evidence. Updated from this release of the QCDS engine. No investigation is required.</p><button type="button" class="button primary" data-action="system-guide-pdf">${icon('download')} Generate the System Guide PDF</button><p class="small muted">Independent of your case report. Generated locally on this device.</p></section>` + conclusionReadiness() + `
+  return header('REPORTS / TWO TYPES OF PDF', 'Two documents, two clear purposes.', 'Download a security assessment for the current investigation, or the separate Project Glasswing system guide.') + `<section class="panel gw-guide-export-panel"><span class="eyebrow">QCDS / THE SYNTRACT VISION / PROJECT GLASSWING</span><h2>About Security Lab · System Guide</h2><p>Illustrated documentation about dimensions, every active security perspective, attack routes, recursion and evidence. Updated from this release of the QCDS engine. No investigation is required.</p><button type="button" class="button primary" data-action="system-guide-pdf">${icon('download')} Generate the System Guide PDF</button><p class="small muted">Independent of your case report. Generated locally on this device.</p></section>` + conclusionReadiness() + `
     <div class="report-studio">
-      <section class="report-cover-preview"><span class="report-stamp">Q★ / SECURITY LAB / REPORT EDITION</span><h2>SECURITY<br>ASSESSMENT</h2><h3>${esc(m.input.name)}</h3><p>${esc(m.input.attackerGoal || 'Understand the paths. Challenge the controls. Follow the evidence.')}</p>
-        <svg viewBox="0 0 500 160" role="img" aria-label="The report follows input, boundaries, protected assets and evidence"><g fill="none" stroke="#39676d"><path d="M50 80 180 20 320 20 450 80 320 140 180 140Z M50 80H450 M180 20 320 140 M320 20 180 140 M180 20V140 M320 20V140"/></g><g fill="#bceb52"><circle cx="50" cy="80" r="7"/><circle cx="450" cy="80" r="7"/></g><g fill="#53d4d0"><circle cx="180" cy="20" r="5"/><circle cx="320" cy="20" r="5"/><circle cx="320" cy="140" r="5"/><circle cx="180" cy="140" r="5"/></g><g fill="#c4dce1" font-size="12" font-family="sans-serif" text-anchor="middle"><text x="65" y="111">INPUT</text><text x="250" y="76">TRUST BOUNDARIES</text><text x="432" y="111">EVIDENCE</text></g></svg>
+      <section class="report-cover-preview"><span class="report-stamp">PROJECT GLASSWING / SECURITY LAB / CASE REPORT</span><h2>SECURITY<br>ASSESSMENT</h2><h3>${esc(m.input.name)}</h3><p>${esc(m.input.attackerGoal || 'Understand the paths. Challenge the controls. Follow the evidence.')}</p>
+        <svg viewBox="0 0 500 160" role="img" aria-label="The report follows input, boundaries, protected assets and evidence"><g fill="none" stroke="#39676d"><path d="M50 80 180 20 320 20 450 80 320 140 180 140Z M50 80H450 M180 20 320 140 M320 20 180 140 M180 20V140 M320 20V140"/></g><g fill="#89e4f5"><circle cx="50" cy="80" r="7"/><circle cx="450" cy="80" r="7"/></g><g fill="#53d4d0"><circle cx="180" cy="20" r="5"/><circle cx="320" cy="20" r="5"/><circle cx="320" cy="140" r="5"/><circle cx="180" cy="140" r="5"/></g><g fill="#c4dce1" font-size="12" font-family="sans-serif" text-anchor="middle"><text x="65" y="111">INPUT</text><text x="250" y="76">TRUST BOUNDARIES</text><text x="432" y="111">EVIDENCE</text></g></svg>
         <div class="report-cover-stats"><div><b>${m.searchSpace.generatedAttackVectors}</b><small>modeled vectors</small></div><div><b>${m.searchSpace.survivingAttackVectors}</b><small>retain a basis</small></div><div><b>${allPaths().length}</b><small>route families</small></div></div>
         <footer>Patrik Sundblom · QCDS Security Lab<br>${project().example ? 'Worked example · synthetic observations' : 'Your system · current analysis snapshot'}</footer>
       </section>
