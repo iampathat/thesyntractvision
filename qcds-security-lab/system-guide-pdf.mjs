@@ -46,7 +46,7 @@ function cover(doc,artwork=null){fill(doc,'navy');doc.rect(0,0,W,H,'F');if(artwo
 function end(doc,lensCount=7){doc.addPage();fill(doc,'navy');doc.rect(0,0,W,H,'F');text(doc,'QCDS   /   SECURITY LAB',M,68,10,'ice',true);const cx=W/2,cy=310;for(let i=0;i<lensCount;i++){const a=2*Math.PI*i/lensCount,x=cx+144*Math.cos(a),y=cy+106*Math.sin(a);stroke(doc,'ice');doc.line(cx,cy,x,y);fill(doc,'mid');doc.circle(x,y,12,'F');fill(doc,'cyan');doc.circle(x,y,3,'F');}fill(doc,'cyan');doc.circle(cx,cy,49,'F');text(doc,'QCDS',cx-27,cy+5,18,'navy',true);text(doc,'A question becomes a condition.',M,548,24,'white',true);text(doc,'A condition becomes a test.',M,586,24,'white',true);text(doc,'A test becomes evidence.',M,624,24,'white',true);text(doc,'Theory and creation by Patrik Sundblom',M,756,9.4,'ice');text(doc,'with OpenAI / ChatGPT as research & development support',M,776,8.7,'ice');}
 
 const groups = (values, size) => Array.from({length:Math.ceil(values.length/size)},(_,i)=>values.slice(i*size,(i+1)*size));
-const basic = (s) => String(s??'').replace(/[\\x00-\\x1f]/g,' ').trim();
+const basic = (s) => String(s??'').replace(/[\x00-\x1f]/g,' ').trim();
 const clamp = (s, n=265) => basic(s).length>n ? basic(s).slice(0,n-3).trim()+'...' : basic(s);
 const conditionName=(key,meta=FIELD_META)=>meta[key]?.[0] || String(key).replace(/_/g,' ');
 function detailsFromLens(name,lens,seeds=ATTACK_VECTOR_SEEDS,meta=FIELD_META){
