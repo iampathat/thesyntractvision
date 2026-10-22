@@ -3,11 +3,13 @@
 // with OpenAI / ChatGPT as research & development support.
 // Generates a self-contained vector PDF on the user's device, independently of any case.
 import { registerReportFonts } from './vendor/report-fonts.mjs';
+import { VERSION, CONDITION_DEFS, LENSES, FIELD_META } from './engine.mjs';
+import { ATTACK_VECTOR_SEEDS, ROUTE_VARIANTS, TARGETS } from './attack-vectors.mjs';
 
-const P={navy:[7,27,43],mid:[12,38,56],cyan:[25,161,178],ice:[142,218,228],white:[255,255,255],paper:[248,250,249],ink:[20,42,53],muted:[82,103,115],pale:[232,242,244],line:[220,231,233],gold:[188,146,91]};
+const P={navy:[7,22,37],mid:[15,41,58],cyan:[121,220,233],ice:[142,218,228],white:[255,255,255],paper:[7,22,37],ink:[236,247,250],muted:[175,201,210],pale:[18,42,61],line:[54,82,101],gold:[214,183,126]};
 const W=595.28,H=841.89,M=46,INNER=W-2*M;
 const font='QCDSReport';
-const guide=[
+const editorialArchive=[
 {tag:'01 / ORIENTATION',title:'What the Security Lab does',lede:'A system guide, not a case report. The target is described as explicit facts; candidate routes are constrained, examined from many angles and tested against observations.',cards:[['DESCRIBE','Record what the system is, what matters, what is known and what is unresolved.'],['EXPLORE','Expand mechanisms across interface variants, targets, assets and possible consequences.'],['CHALLENGE','Keep alternative paths alive, compare perspectives and test whether a proposed control blocks a route.'],['VERIFY','Bind supporting or contradicting observations to the exact scope of each claim.']],route:['TARGET','CONDITIONS','EVIDENCE'],note:'A plausible route is a hypothesis. A named framework category, a simulated probability or consensus among lenses is never, by itself, proof.'},
 {tag:'02 / ARCHITECTURE',title:'One system, one shared vector fabric',lede:'Every active perspective examines the same modeled target and the same underlying candidate vectors. The perspective changes the question, not the core conditions.',cards:[['TARGET SYSTEM','Any application, API, service, network, organization, process or physical/digital workflow.'],['CORE CONDITIONS','Fourteen stable 1 / 0 / ? coordinates describe material properties of the target.'],['VECTOR FABRIC','Mechanisms x variants x targets x assets x consequences produce specific route instances.'],['FRAMEWORK PROJECTIONS','Seven active lenses classify and challenge vector instances from different viewpoints.'],['RECURSION','A control is challenged by possible bypasses, next controls and counter-tests.'],['EVIDENCE','Observations are recorded against a bounded claim, route, assumptions and controls.']],route:['CONDITIONS','VECTORS','LENSES'],note:'The eight human-readable F-route families are convergence clusters for investigation, not a fixed catalog of eight attacks.'},
 {tag:'03 / FORMATION',title:'Conditions and logical dimensions',lede:'A dimension is one explicitly represented coordinate. 1 means present; 0 means absent; ? means unresolved. Only unknown binary coordinates branch into alternatives.',cards:[['14 CORE FACTS','Entry, lower trust, connected sources, sensitive data, shared principals, tools, impact, approvals, authorization, dependencies, secrets, logs, rollback, AI in target.'],['MASKED SPACE','With k unresolved binary coordinates the condition mask admits 2^k assignments. Known values constrain rather than multiply the possibilities.'],['SET TO ZERO','The coordinate remains present and is fixed false. A predicate requiring it true becomes false.'],['SET TO UNKNOWN','The coordinate remains present but both compatible alternatives survive.'],['TRUE EXCLUSION','The coordinate is removed; dependent predicates become inactive, not automatically true.'],['ORACLE','A checkable constraint, test or evidence function that can retain, reject or challenge candidates.']],route:['1 / PRESENT','? / UNKNOWN','0 / ABSENT'],note:'A larger possible logical space is not a larger number of observed security weaknesses. Unknown does not mean vulnerable.'},
@@ -35,11 +37,83 @@ function fill(doc,k){doc.setFillColor(...P[k]);}
 function stroke(doc,k){doc.setDrawColor(...P[k]);}
 function text(doc,s,x,y,size=10,colorName='ink',bold=false,maxW=Infinity){doc.setFont(font,bold?'bold':'normal');doc.setFontSize(size);color(doc,colorName);if(maxW===Infinity){doc.text(String(s),x,y);return y+size*1.34;}const parts=doc.splitTextToSize(String(s),maxW);doc.text(parts,x,y,{lineHeightFactor:1.34});return y+parts.length*size*1.34;}
 function rect(doc,x,y,w,h,bg='white',radius=8,line=null){fill(doc,bg);if(line){stroke(doc,line);doc.setLineWidth(.7);}doc.roundedRect(x,y,w,h,radius,radius,line?'FD':'F');}
-function header(doc,tag,title,lede,page){fill(doc,'paper');doc.rect(0,0,W,H,'F');fill(doc,'cyan');doc.rect(0,0,6,H,'F');text(doc,'QCDS SECURITY LAB   /   '+tag.toUpperCase(),M,39,8.5,'cyan',true);stroke(doc,'line');doc.line(M,51,W-M,51);text(doc,title,M,108,25,'ink',true,INNER);text(doc,lede,M,155,10.5,'muted',false,INNER);stroke(doc,'line');doc.line(M,H-42,W-M,H-42);text(doc,'THEORY AND CREATION BY PATRIK SUNDBLOM',M,H-25,7.3,'muted',true);text(doc,String(page).padStart(2,'0')+' / 23',W-M-40,H-25,7.7,'muted',true);}
+function header(doc,tag,title,lede,page){fill(doc,'paper');doc.rect(0,0,W,H,'F');fill(doc,'cyan');doc.rect(0,0,6,H,'F');text(doc,'QCDS SECURITY LAB   /   '+tag.toUpperCase(),M,39,8.5,'cyan',true);stroke(doc,'line');doc.line(M,51,W-M,51);text(doc,title,M,108,25,'ink',true,INNER);text(doc,lede,M,155,10.5,'muted',false,INNER);stroke(doc,'line');doc.line(M,H-42,W-M,H-42);text(doc,'THEORY AND CREATION BY PATRIK SUNDBLOM',M,H-25,7.3,'muted',true);text(doc,String(page).padStart(2,'0'),W-M-23,H-25,8.4,'gold',true);}
 function miniArrow(doc,x,y){stroke(doc,'cyan');doc.setLineWidth(1.4);doc.line(x-7,y,x+6,y);doc.line(x+2,y-3,x+6,y);doc.line(x+2,y+3,x+6,y);}
 function route(doc,labels,y){const w=(INNER-32)/3;for(let i=0;i<3;i++){const x=M+i*(w+16);rect(doc,x,y,w,62,'mid',7);text(doc,String(i+1).padStart(2,'0'),x+12,y+20,8,'ice',true);text(doc,labels[i],x+12,y+42,9.5,'white',true,w-24);if(i<2)miniArrow(doc,x+w+8,y+31);}}
-function card(doc,x,y,w,h,cap,description){rect(doc,x,y,w,h,'white',8,'line');text(doc,cap.toUpperCase(),x+14,y+25,9,'cyan',true,w-28);text(doc,description,x+14,y+43,9.15,'muted',false,w-28);}
+function card(doc,x,y,w,h,cap,description){rect(doc,x,y,w,h,'pale',8,'line');text(doc,cap.toUpperCase(),x+14,y+24,8.8,'gold',true,w-28);text(doc,description,x+14,y+41,9.0,'ink',false,w-28);}
 function page(doc,data,n){doc.addPage();header(doc,data.tag,data.title,data.lede,n);let y=215;const cards=data.cards;const cols=2,gap=14,w=(INNER-gap)/2;const rows=Math.ceil(cards.length/cols);const h=rows>=4?98:rows==3?123:151;for(let i=0;i<cards.length;i++){const row=Math.floor(i/2),col=i%2;card(doc,M+col*(w+gap),y+row*(h+12),w,h,cards[i][0],cards[i][1]);}y+=rows*(h+12)+12;if(y+150<H-58){text(doc,'ILLUSTRATED RELATIONSHIP',M,y+6,8.1,'cyan',true);route(doc,data.route,y+18);y+=100;}const noteY=Math.min(y+6,H-124);rect(doc,M,noteY,INNER,Math.min(94,H-61-noteY),'pale',7);text(doc,data.note,M+15,noteY+22,9.6,'ink',false,INNER-30);}
-function cover(doc){fill(doc,'navy');doc.rect(0,0,W,H,'F');text(doc,'THE SYNTRACT VISION   /   PROJECT GLASSWING',M,71,9,'ice',true);stroke(doc,'ice');doc.setLineWidth(.6);doc.line(M,88,W-M,88);for(let i=0;i<18;i++){const t=i/17;stroke(doc,'cyan');doc.setLineWidth(.45+(i%3)*.14);doc.line(290,370,330+t*245,220+130*Math.sin(t*Math.PI));}rect(doc,368,189,120,68,'mid',12,'cyan');text(doc,'QCDS',395,231,22,'white',true);text(doc,'SECURITY',M,401,46,'white',true);text(doc,'LAB',M,450,46,'white',true);text(doc,'A field guide to',M,520,19,'ice');text(doc,'condition-driven',M,549,19,'ice');text(doc,'security inference',M,578,19,'ice');stroke(doc,'ice');doc.line(M,624,W-M,624);text(doc,'SEVEN SECURITY LENSES  /  ONE INFERENCE ARCHITECTURE',M,654,9,'ice',true);text(doc,'Theory and creation by Patrik Sundblom',M,745,9.5,'white');text(doc,'with OpenAI / ChatGPT as research & development support',M,763,8.5,'ice');text(doc,'SYSTEM GUIDE   /   OCT 2026',M,H-34,8.3,'ice',true);}
-function end(doc){doc.addPage();fill(doc,'navy');doc.rect(0,0,W,H,'F');text(doc,'QCDS   /   SECURITY LAB',M,68,10,'ice',true);const cx=W/2,cy=310;for(let i=0;i<7;i++){const a=2*Math.PI*i/7,x=cx+144*Math.cos(a),y=cy+106*Math.sin(a);stroke(doc,'ice');doc.line(cx,cy,x,y);fill(doc,'mid');doc.circle(x,y,12,'F');fill(doc,'cyan');doc.circle(x,y,3,'F');}fill(doc,'cyan');doc.circle(cx,cy,49,'F');text(doc,'QCDS',cx-27,cy+5,18,'navy',true);text(doc,'A question becomes a condition.',M,548,24,'white',true);text(doc,'A condition becomes a test.',M,586,24,'white',true);text(doc,'A test becomes evidence.',M,624,24,'white',true);text(doc,'Theory and creation by Patrik Sundblom',M,756,9.4,'ice');text(doc,'with OpenAI / ChatGPT as research & development support',M,776,8.7,'ice');}
-export function createSystemGuidePdf(jsPDF){const doc=new jsPDF({unit:'pt',format:'a4',compress:true,putOnlyUsedFonts:true});registerReportFonts(doc);cover(doc);guide.forEach((data,i)=>page(doc,data,i+2));end(doc);doc.setProperties({title:'QCDS Security Lab - System Guide',subject:'Dimensions, vector fabric, seven security frameworks, QCDS and evidence',author:'Patrik Sundblom',keywords:'QCDS, Security Lab, STRIDE, OWASP, Identity, attack vectors, inference'});return {doc,summary:{pages:doc.getNumberOfPages(),frameworks:7,edition:'1.0.0'}};}
+function cover(doc,artwork=null){fill(doc,'navy');doc.rect(0,0,W,H,'F');if(artwork){try{doc.addImage(artwork,'JPEG',236,129,341,376);}catch{ /* Use vector illustration when artwork is unavailable. */}}text(doc,'THE SYNTRACT VISION   /   PROJECT GLASSWING',M,71,9,'ice',true);stroke(doc,'ice');doc.setLineWidth(.6);doc.line(M,88,W-M,88);for(let i=0;i<18;i++){const t=i/17;stroke(doc,'cyan');doc.setLineWidth(.45+(i%3)*.14);doc.line(290,370,330+t*245,220+130*Math.sin(t*Math.PI));}rect(doc,368,189,120,68,'mid',12,'cyan');text(doc,'QCDS',395,231,22,'white',true);text(doc,'SECURITY',M,401,46,'white',true);text(doc,'LAB',M,450,46,'white',true);text(doc,'A field guide to',M,520,19,'ice');text(doc,'condition-driven',M,549,19,'ice');text(doc,'security inference',M,578,19,'ice');stroke(doc,'ice');doc.line(M,624,W-M,624); text(doc,Object.keys(LENSES).length+' SECURITY LENSES  /  ONE INFERENCE ARCHITECTURE',M,654,9,'ice',true);text(doc,'Theory and creation by Patrik Sundblom',M,745,9.5,'white');text(doc,'with OpenAI / ChatGPT as research & development support',M,763,8.5,'ice');text(doc,'SYSTEM GUIDE   /   OCT 2026',M,H-34,8.3,'ice',true);}
+function end(doc,lensCount=7){doc.addPage();fill(doc,'navy');doc.rect(0,0,W,H,'F');text(doc,'QCDS   /   SECURITY LAB',M,68,10,'ice',true);const cx=W/2,cy=310;for(let i=0;i<lensCount;i++){const a=2*Math.PI*i/lensCount,x=cx+144*Math.cos(a),y=cy+106*Math.sin(a);stroke(doc,'ice');doc.line(cx,cy,x,y);fill(doc,'mid');doc.circle(x,y,12,'F');fill(doc,'cyan');doc.circle(x,y,3,'F');}fill(doc,'cyan');doc.circle(cx,cy,49,'F');text(doc,'QCDS',cx-27,cy+5,18,'navy',true);text(doc,'A question becomes a condition.',M,548,24,'white',true);text(doc,'A condition becomes a test.',M,586,24,'white',true);text(doc,'A test becomes evidence.',M,624,24,'white',true);text(doc,'Theory and creation by Patrik Sundblom',M,756,9.4,'ice');text(doc,'with OpenAI / ChatGPT as research & development support',M,776,8.7,'ice');}
+
+const groups = (values, size) => Array.from({length:Math.ceil(values.length/size)},(_,i)=>values.slice(i*size,(i+1)*size));
+const basic = (s) => String(s??'').replace(/[\\x00-\\x1f]/g,' ').trim();
+const clamp = (s, n=265) => basic(s).length>n ? basic(s).slice(0,n-3).trim()+'...' : basic(s);
+const conditionName=(key,meta=FIELD_META)=>meta[key]?.[0] || String(key).replace(/_/g,' ');
+function detailsFromLens(name,lens,seeds=ATTACK_VECTOR_SEEDS,meta=FIELD_META){
+  const tests=(lens.tests||[]).map(([key,meaning])=>[conditionName(key,meta),clamp(meaning,175)]);
+  const categories=[...new Set(seeds.flatMap(s=>s.frameworks?.[name]||[]))];
+  const cards=[
+    ...tests,
+    ['WHEN THIS LENS APPLIES',lens.requiresTargetAI?'Only when the TARGET SYSTEM includes AI/ML; an analyst using AI alone does not activate it.':'When enabled and relevant to the declared target conditions.'],
+    ['MAPPED SECURITY CATEGORIES',categories.length?clamp(categories.slice(0,5).join(' / '),205):'No catalog mapping in the current seed set; review this lens in the updated engine.']
+  ];
+  return {tag:'ACTIVE PERSPECTIVE / '+name.toUpperCase(),title:name,
+    lede:'Live from the current inference engine. '+(lens.requiresTargetAI?'Target-dependent lens. ':'')+'Its conditions project over the shared vector fabric.',
+    cards,route:['SYSTEM','VECTOR','EVIDENCE'],
+    note:'This classification is a reasoning perspective, not security evidence. '+categories.length+' distinct seed category labels currently map here.'
+  };
+}
+export function buildSystemGuideCatalog({
+  conditionDefs=CONDITION_DEFS,lenses=LENSES,fieldMeta=FIELD_META,
+  seeds=ATTACK_VECTOR_SEEDS,variants=ROUTE_VARIANTS,targets=TARGETS,engineVersion=VERSION
+}={}){
+  const names=Object.keys(lenses);
+  const cv=conditionDefs.map(([key,desc],i)=>['C'+String(i+1).padStart(2,'0')+' / '+conditionName(key,fieldMeta),clamp(desc,215)]);
+  const register=groups(cv,6).map((cards,i)=>({tag:'CONDITION REGISTER / '+(i+1),title:'Current system dimensions '+(i+1),
+    lede:'Generated from CONDITION_DEFS in the running inference engine. An unknown (?) remains unresolved.',
+    cards,route:['INPUT','MASK','CANDIDATE'],note:conditionDefs.length+' declared binary condition coordinates in engine '+engineVersion+'. They are constraints, not vulnerability findings.'}));
+  const mechanisms=seeds.map(seed=>[seed.id || seed.title || 'Mechanism',clamp((seed.mechanism||seed.title||'')+'. '+(seed.consequence||''),195)]);
+  const mechanismPages=groups(mechanisms,6).map((cards,i)=>({tag:'ATTACK CATALOG / '+(i+1),title:'Generated mechanism catalog '+(i+1),
+    lede:'Current named mechanism seeds in attack-vectors.mjs. Their variants and targets create the candidate fabric.',
+    cards,route:['MECHANISM','VARIANT','TARGET'],
+    note:seeds.length+' mechanism seeds, '+Object.keys(variants).length+' route variants and '+Object.keys(targets).length+' target surfaces. Candidates are not confirmed exploits.'}));
+  const lensPages=names.map(name=>detailsFromLens(name,lenses[name],seeds,fieldMeta));
+  const overview=[{
+    tag:'LIVE ARCHITECTURE / ENGINE '+engineVersion,title:'System guide generated from source',
+    lede:'The document reads current runtime exports rather than copying a frozen table. This edition is not a case assessment.',
+    cards:[['SOURCE ENGINE',engineVersion+' / live metadata'],
+      ['CONDITIONS',conditionDefs.length+' active core coordinate definitions; 1 present, 0 absent, ? unresolved.'],
+      ['PERSPECTIVES',names.length+' active lens definitions: '+clamp(names.join(', '),165)],
+      ['VECTOR CATALOG',seeds.length+' mechanism seeds × '+Object.keys(variants).length+' route variants × '+Object.keys(targets).length+' target types.'],
+      ['QCDS PHASES','Condition Formation; Conditional Evolution; Recursive Inference; Truth-Alignment Verification.'],
+      ['EVIDENCE RULE','A logical candidate, lens mapping or simulated probability is not an observed vulnerability.']],
+    route:['CONDITIONS','VECTORS','EVIDENCE'],
+    note:'Generated on '+new Date().toISOString().slice(0,10)+' from the same JavaScript exports used by the investigation.'
+  },{
+    tag:'VECTOR MODEL / LIVE',title:'Current route and target vocabulary',
+    lede:'New route variants or target surfaces in the model are reflected here on the next export.',
+    cards:[
+      ...Object.entries(variants).map(([key,v])=>['ROUTE: '+key,clamp(v.segment||v.label||key,155)]),
+      ...Object.entries(targets).slice(0,3).map(([key,value])=>['TARGET: '+key,clamp(value,155)])
+    ],route:['ENTRY','ROUTE','CONSEQUENCE'],
+    note:'Remaining targets are enumerated in the registered mechanisms. The defined mask limits candidates; it does not measure actual risk.'
+  }];
+  const stable=editorialArchive.filter(entry=>/SYNTHESIS|COUNTERFACTUALS|DEEPENING|DIMENSIONAL EXECUTION|VERIFICATION|WORKED EXAMPLE|OTHER FRAMEWORKS|READING OUTPUT|IMPLEMENTATION/.test(entry.tag));
+  return [...overview,...register,...mechanismPages,...lensPages,...stable];
+}
+
+
+export function createSystemGuidePdf(jsPDF,options={}){
+  const doc=new jsPDF({unit:'pt',format:'a4',compress:true,putOnlyUsedFonts:true});
+  registerReportFonts(doc);
+  cover(doc,options.artwork||null);
+  const entries=buildSystemGuideCatalog(options.catalog||{});
+  entries.forEach((data,i)=>page(doc,data,i+2));
+  end(doc,Object.keys(options.catalog?.lenses||LENSES).length);
+  doc.setProperties({title:'QCDS Security Lab - Live System Guide',subject:'Dynamic reference generated from QCDS inference engine exports',author:'Patrik Sundblom',
+    keywords:'QCDS, Security Lab, dynamically generated, conditions, attack vectors, security perspectives'});
+  return {doc,summary:{pages:doc.getNumberOfPages(),frameworks:Object.keys(options.catalog?.lenses||LENSES).length,
+    conditions:(options.catalog?.conditionDefs||CONDITION_DEFS).length,
+    mechanismSeeds:(options.catalog?.seeds||ATTACK_VECTOR_SEEDS).length,
+    engineVersion:String(options.catalog?.engineVersion||VERSION),edition:'2.0.0-dynamic'}};
+}
