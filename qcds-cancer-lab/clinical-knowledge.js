@@ -167,6 +167,7 @@
   const oracles=[
   {
     "id": "dna-repair",
+    "mask": "11??0???",
     "name": "DNA repair",
     "category": "DNA damage response",
     "summary": "Exploratory, legacy-position mask labeled for DNA repair; not a demonstrated HRR or MMR classifier.",
@@ -184,6 +185,7 @@
   },
   {
     "id": "pi3k",
+    "mask": "??1?1???",
     "name": "PI3K axis",
     "category": "Proliferation / survival signaling",
     "summary": "Hypothesis label for PI3K–AKT–mTOR signaling. The current mask is a positional toy, not a pathway activation test.",
@@ -200,6 +202,7 @@
   },
   {
     "id": "receptor",
+    "mask": "???111??",
     "name": "Receptor axis",
     "category": "Receptor tyrosine kinase signaling",
     "summary": "Exploratory label covering receptor-driven signaling; receptor identity and alteration type are not yet encoded.",
@@ -217,6 +220,7 @@
   },
   {
     "id": "hr-broad",
+    "mask": "1??1????",
     "name": "HR + broad",
     "category": "Homologous recombination / composite",
     "summary": "Composite exploratory label; ‘HR’ is intended as homologous recombination, not a measured HRD status.",
@@ -233,6 +237,7 @@
   },
   {
     "id": "pi3k-hr",
+    "mask": "??11????",
     "name": "PI3K + HR",
     "category": "Cross-pathway interaction",
     "summary": "Exploratory cross-domain hypothesis combining a growth-signaling concept with DNA-repair biology.",
