@@ -7,7 +7,7 @@
   <title>QCDS Cancer Lab — Translational Oncology Research Workspace</title>
   <meta name="description" content="An inspectable, research-only QCDS oncology hypothesis workbench with model state definitions, molecular reference notes and traceable inference." />
   <link rel="stylesheet" href="./style.css?v=20261022-inference" />
-  <link rel="stylesheet" href="./clinical.css?v=20261022-cohort" />
+  <link rel="stylesheet" href="./clinical.css?v=20261022-inference" />
 </head>
 <body class="clinical-theme">
   <main class="shell">
@@ -49,39 +49,52 @@
     <section class="genome-perspective" id="genomePerspective" aria-labelledby="genomePerspectiveTitle">
       <div class="genome-perspective-head">
         <span class="genome-eyebrow">CROSS-GENOME CONDITION SEARCH · SYNTHETIC RESEARCH EXAMPLE</span>
-        <h2 id="genomePerspectiveTitle">Five genomes. Ten distant loci. One shared combination.</h2>
-        <p>A DNA pattern is not necessarily a single contiguous sequence. Here the condition is a <strong>relationship between separate genomic loci</strong> across five synthetic individuals representing the same cancer cohort. An ideal Grover kernel amplifies combinations meeting the cross-person oracle. The selected positions light up across each case's genome track.</p>
+        <h2 id="genomePerspectiveTitle">Five genomes. Ten distant loci. Unknown relationships.</h2>
+        <p>A genomic relationship need not be a contiguous DNA string. This research model generates five synthetic cancer-labeled profiles and five comparisons without inserting a predetermined winning combination. It explores <strong>previously unspecified connections across distant loci</strong>; the strongest eligible pattern, if any, emerges from the specified cohort oracle and two Grover passes.</p>
       </div>
       <div class="genome-stats">
         <div><small>SYNTHETIC COHORT</small><strong>5 + 5</strong><span>five labeled cases and five independent comparison profiles</span></div>
-        <div><small>POSITIONAL DIMENSIONS</small><strong>10</strong><span>different chromosomes; 1,024 subset states and 120 three-locus combinations</span></div>
+        <div><small>POSITIONAL DIMENSIONS</small><strong>10</strong><span>distributed across chromosomes; 1,024 candidate subset states</span></div>
         <div><small>GENOME-WIDE AMBITION</small><strong>~3 × 10⁹</strong><span>bases per haploid human genome; not loaded or searched here</span></div>
       </div>
       <div id="cohortCombinatorial" class="cohort-lab">
         <div class="cohort-head">
           <h3>Explore multi-locus relationships <span class="genome-demo-marker">IDEALIZED QCDS / GROVER PROTOTYPE</span></h3>
-          <p>Choose up to three starting loci. The system evaluates all <strong>1,024 candidate locus-subset states</strong>, tests three-locus combinations against the five cases and five comparators, and applies the shared QCDS Grover amplification kernel to the marked combinations. A selected anchor is a constraint, not a preprogrammed winning answer.</p>
+          <p>Optionally specify up to three starting loci, leaving the rest open. QCDS tests <strong>2–4-locus relationships</strong> within a 1,024-state representation, amplifies all combinations satisfying the cohort oracle, then refines by the strongest observed cohort contrast. The data generator does not contain a hardcoded answer mask. Change the seed, swap the null model, or edit individual synthetic observations to test whether a different relation emerges.</p>
         </div>
         <div class="cohort-controls">
           <div class="cohort-seed-panel">
             <strong>Starting Condition · select locus anchors</strong>
-            <div id="cohortLoci" class="cohort-locus-list" aria-label="Ten selectable genome locus positions"></div>
+            <div id="cohortLoci" class="cohort-locus-list" aria-label="Ten selectable genome locus positions"></div><button type="button" id="cohortClearAnchors" class="text-link">Clear anchors / open search</button>
             <p id="cohortAnchors" class="cohort-selection"></p>
             <p id="cohortError" class="cohort-error" role="alert"></p>
           </div>
           <div class="cohort-oracle-panel">
             <strong>Cross-person oracle</strong>
-            <label>Cases carrying the complete combination
+            <label>Cases with all selected variants
               <select id="cohortMinCases" aria-label="Minimum number of case profiles carrying combination">
-                <option value="5" selected>At least 5 / 5</option><option value="4">At least 4 / 5</option><option value="3">At least 3 / 5</option>
+                <option value="5">At least 5 / 5</option><option value="4">At least 4 / 5</option><option value="3" selected>At least 3 / 5</option>
               </select>
             </label>
-            <label>Comparators carrying the combination
+            <label>Comparators with all selected variants
               <select id="cohortMaxControls" aria-label="Maximum number of comparator profiles carrying combination">
-                <option value="0" selected>At most 0 / 5</option><option value="1">At most 1 / 5</option><option value="2">At most 2 / 5</option>
+                <option value="0">At most 0 / 5</option><option value="1" selected>At most 1 / 5</option><option value="2">At most 2 / 5</option>
               </select>
             </label>
-            <button id="cohortRun" type="button" class="cohort-run">Run combinatorial Grover search</button>
+            <div class="cohort-data-settings">
+              <label for="cohortDataSeed">Reproducible synthetic-data seed <input id="cohortDataSeed" type="number" min="1" max="1000000" value="173" step="1" /></label>
+              <label for="cohortDataMode">Data-generating hypothesis
+                <select id="cohortDataMode">
+                  <option value="structure" selected>Variable cohort effects · unknown loci</option>
+                  <option value="null">Null model · no built-in cohort difference</option>
+                </select>
+              </label>
+              <div class="cohort-data-buttons">
+                <button id="cohortRebuild" type="button">Regenerate seed</button>
+                <button id="cohortNextDataset" type="button">New synthetic cohort +</button>
+              </div>
+            </div>
+            <button id="cohortRun" type="button" class="cohort-run">Run two-stage Grover / oracle search</button>
           </div>
         </div>
         <section class="cohort-result" aria-labelledby="cohortResultTitle">
@@ -92,11 +105,12 @@
             <p id="cohortOutcomeDetail" class="cohort-outcome-detail"></p>
           </div>
           <div id="cohortGroverStats" class="cohort-grover-stats" aria-label="Computed local state space and Grover metrics"></div>
-          <div id="cohortAlternatives" class="cohort-alternatives" aria-label="Other oracle-qualified three-locus patterns"></div>
+          <div id="cohortAlternatives" class="cohort-alternatives" aria-label="Other oracle-qualified multi-locus patterns"></div>
+          <div id="cohortAudit" class="cohort-audit" aria-label="Noise, leave-one-out and label-permutation sensitivity checks"></div>
         </section>
         <div class="cohort-visual-head">
           <h3>Genome-wide position schematic · five cases and five controls</h3>
-          <p>Each row is one <strong>synthetic person</strong>, with ten locus markers spread across a schematic genome axis. Amber circles are specified anchors; teal highlights indicate the selected three-locus combination where that synthetic person carries it. Positions are illustrative, not actual genome coordinates.</p>
+          <p>Each row is one <strong>synthetic person</strong>, with ten locus markers spread across a schematic genome axis. Amber circles are specified anchors; teal highlights show implicated positions. Click any synthetic 0/1 observation to alter the evidence and rerun the inference. Positions are illustrative, not real genome coordinates.</p>
         </div>
         <div class="cohort-legend">
           <span><i class="legend-cohort-anchor"></i> Specified Condition</span>
@@ -106,12 +120,12 @@
         </div>
         <div id="cohortGenomeTracks" class="cohort-tracks" aria-label="Computed highlighted locus positions across individual genomes"></div>
         <details class="cohort-matrix-details">
-          <summary>Inspect the exact synthetic genotype matrix (all ten loci × ten profiles)</summary>
+          <summary>Inspect and edit all synthetic genotype observations (10 loci × 10 profiles)</summary>
           <div id="cohortDataMatrix" class="cohort-data-matrix" aria-label="Synthetic 0/1 variants for every case and comparator"></div>
         </details>
       </div>
       <div class="genome-perspective-foot">
-        <p><strong>Exactly what was computed:</strong> ten symbolic locus dimensions, 1,024 possible selection masks, and 120 three-locus combinations. Cohort support and exclusion are the executable oracle. Grover amplitudes are computed by QCDS's existing ideal kernel (max 40 iterations), not by painting arbitrary targets. The synthetic profiles were constructed to contain a shared example; this is a demonstration of the <em>search mechanism</em>, not an independent cancer discovery.</p>
+        <p><strong>Exactly what was computed:</strong> ten symbolic locus dimensions, 1,024 possible subset states, and candidate relationships of two to four loci. Generic case/control constraints form the first oracle; a predefined maximal-contrast refinement is the second. Both use the existing ideal Grover kernel, first-peak/tangent stopping, 0.999 threshold and maximum 40 iterations. Synthetic cohorts are generated from seed-dependent probabilities rather than an inserted answer signature. Noise, leave-one-out and label-swap tests examine internal sensitivity; none validates a causal cancer relationship.</p>
         <p><strong>What this does not prove:</strong> the app does not load five actual three-billion-base genomes, represent all real biological relationships, run 1,024 hardware-parallel quantum states, evaluate all combinations across billions of positions, or establish that classical computers cannot solve the task. Loading genomes into a quantum representation, building defensible gene-aware oracles, measurement/readout and independent validation remain open engineering and scientific work.</p>
       </div>
     </section>
@@ -311,6 +325,7 @@
   <script src="./inference-room.js?v=20261022-inference"></script>
   <script src="./qcds-conclusion.js?v=20261022-outcome"></script>
   <script src="./app.js?v=20261022-outcome"></script>
-  <script src="./genome-perspective.js?v=20261022-cohort"></script>
+  <script src="./genome-discovery.js?v=20261022-inference"></script>
+  <script src="./genome-perspective.js?v=20261022-inference"></script>
 </body>
 </html>
