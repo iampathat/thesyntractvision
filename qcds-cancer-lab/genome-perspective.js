@@ -4,17 +4,17 @@
  * © 2026 Patrik Sundblom · OpenAI / ChatGPT R&D support.
  */
 (function(root,factory){
-  const api=factory(root.CancerGenomeDiscovery);
+  const api=factory(root.CancerGenomeDiscovery,root.QCDSGenomeFunnel);
   if(typeof module!=="undefined"&&module.exports)module.exports=api;
   root.CancerGenomePerspective=api;
   if(typeof document!=="undefined")api.initialize();
-})(typeof globalThis!=="undefined"?globalThis:this,function(D){
+})(typeof globalThis!=="undefined"?globalThis:this,function(D,F){
   "use strict";
-  if(!D)throw Error("CancerGenomeDiscovery must load first.");
+  if(!D||!F)throw Error("Cancer Genome Discovery and rotating QCDS funnel are required.");
   const LOCI=D.LOCI,N=D.N;
   let dataset=D.generateProfiles(173,"structure");
   let anchors=[];
-  let result=null,audit=null,selectedState=null;
+  let result=null,audit=null,selectedState=null,selectedPass=0;
   const $=id=>document.getElementById(id);
   function e(tag,cls,value){
     const node=document.createElement(tag);
@@ -112,31 +112,97 @@
     run();
   }
   function showStats(){
-    const panel=$("cohortGroverStats");
-    panel.replaceChildren();
-    const stats=[
-      ["Input breadth",all().length+" profiles × 10 loci"],
-      ["Candidate space","1,024 subsets"],
-      ["2–4-locus subsets tested",result.examinedCount.toLocaleString("en-US")],
-      ["First oracle marks",result.markedCount],
-      ["Grover 1 iterations",result.grover.iterations],
-      ["Grover 1 marked mass",percent(result.grover.markedMass)],
-      ["Grover stop",result.stopReason],
-      ["Second-stage candidates",result.refinedCount],
-      ["Grover 2 iterations",result.refinedGrover.iterations],
-      ["Grover 2 marked mass",percent(result.refinedGrover.markedMass)]
+    const panel=$("cohortGroverStats");panel.replaceChildren();
+    const iters=result.rounds.flatMap(r=>r.lanes.map(l=>l.iterations));
+    const metrics=[
+      ["Input","10 profiles × 10 loci"],
+      ["Small logical room","4 bits / 16 states"],
+      ["Funnel bandwidth","16 → 4 → 1"],
+      ["Local Grover searches",String(iters.length)],
+      ["Rotation passes",String(result.rotations)],
+      ["Active local amplifications",iters.filter(v=>v>0).length+"/"+iters.length],
+      ["Candidate subsets",String(result.evaluatedCount)],
+      ["Independently verified",String(result.qualifiedCount)],
+      ["Parent Grover m",String(result.parentGrover.iterations)],
+      ["Parent marked mass",percent(result.parentGrover.markedMass)],
+      ["Composite entropy",result.entropyBits.toFixed(3)+" bits"],
+      ["Rotational convergence",result.stable?"Yes":"Not demonstrated"]
     ];
-    stats.forEach(([label,value])=>{
-      const box=e("div","cohort-stat");
-      box.append(e("small","",label),e("strong","",value));
-      panel.append(box);
+    for(const [label,value] of metrics){
+      const card=e("div","cohort-stat");
+      card.append(e("small","",label),e("strong","",value));panel.append(card);
+    }
+  }
+  function miniBars(values,cls){
+    const el=e("div",cls),max=Math.max(1e-12,...values);
+    values.forEach((p,i)=>{
+      const bar=e("i","");bar.style.height=Math.max(3,100*p/max).toFixed(1)+"%";
+      bar.title="Index "+i+": "+percent(p);el.append(bar);
     });
+    return el;
+  }
+  function renderFunnel(){
+    const local=$("funnelLaneGrid"),groups=$("funnelGroupGrid"),timeline=$("funnelTimeline");
+    const dist=$("funnelDistribution"),notes=$("funnelDiagnostics");
+    if(!local||!groups||!timeline||!dist||!notes)return;
+    local.replaceChildren();groups.replaceChildren();timeline.replaceChildren();dist.replaceChildren();notes.replaceChildren();
+    $("funnelPassCount").textContent=String(result.rotations);
+    $("funnelInputCount").textContent=String(result.rotations*result.lanesPerPass);
+    $("funnelOutputCount").textContent=String(result.leaders.length);
+    const pass=result.rounds[Math.min(selectedPass,result.rotations-1)];
+    for(const [i,r] of result.rounds.entries()){
+      const btn=e("button","funnel-pass-button","R"+(i+1));
+      btn.type="button";btn.classList.toggle("is-selected",r.index===pass.index);
+      btn.addEventListener("click",()=>{selectedPass=i;renderFunnel();});
+      timeline.append(btn);
+    }
+    $("funnelPassDescription").textContent="Rotation "+pass.index+"/"+result.rotations+
+      " · 16 independent four-locus probability distributions · 4 groups of 4 · 1 bound 10D distribution. Entropy "+
+      pass.alignment.boundEntropyBits.toFixed(3)+" bits.";
+    for(const lane of pass.lanes){
+      const card=e("article","funnel-lane-card");
+      card.append(e("strong","","L"+String(lane.index+1).padStart(2,"0")+" · "+lane.window.map(i=>LOCI[i].label).join(" / ")));
+      card.append(miniBars(lane.likelihood,"funnel-lane-spark"));
+      card.append(e("small","","16 states · M="+lane.marks+" · Grover m="+lane.iterations+" · mass "+percent(lane.markedMass)));
+      local.append(card);
+    }
+    for(const g of pass.groups){
+      const card=e("article","funnel-fold-card");
+      card.append(e("strong","","F"+(g.index+1)+" · L"+g.memberIndices.map(i=>i+1).join(", L")));
+      const vals=g.posterior.filter(p=>p>0).sort((a,b)=>b-a).slice(0,12);
+      card.append(miniBars(vals,"funnel-fold-spark"));
+      card.append(e("small","","Joint 10D distribution · entropy "+g.entropyBits.toFixed(3)+" bits"));
+      groups.append(card);
+    }
+    const top=result.ranked.slice(0,12);
+    if(!top.length)dist.append(e("p","funnel-empty","The final oracle confirms no valid pattern. The folder does not invent a highlight."));
+    for(const [i,item] of top.entries()){
+      const btn=e("button","funnel-prob-row");
+      btn.type="button";btn.classList.toggle("is-selected",selectedState===item.state);
+      btn.append(e("span","funnel-prob-name","#"+(i+1)+" · "+locusNames(item.loci)));
+      const track=e("span","funnel-prob-track"),bar=e("i","");
+      bar.style.width=Math.max(3,100*item.foldedProbability/(top[0].foldedProbability||1)).toFixed(1)+"%";
+      track.append(bar);btn.append(track,e("b","",percent(item.foldedProbability)));
+      btn.addEventListener("click",()=>{selectedState=item.state;renderOutcome();renderGenomes();renderFunnel();});
+      dist.append(btn);
+    }
+    const last=result.rounds.at(-1).alignment;
+    const messages=[
+      ["Probability retention","All 16 probabilities from each four-bit Grover room pass into its fold, not just the winning index."],
+      ["Rotation synthesis","The 4→1 bind retains each group's probability distribution; rotation passes are equally pooled without double-counting them as independent evidence."],
+      ["Convergence","TVD "+(last.deltaTvd===null?"—":last.deltaTvd.toFixed(4))+
+       " · top-k Jaccard "+(last.topkJaccard===null?"—":last.topkJaccard.toFixed(2))+
+       " · "+(result.stable?"stable":"not stable under pass cap")],
+      ["Independent truth gate","Candidate highlights are checked against all case/control observations and the exact specified Condition."],
+      ["Information bound","Correlations spanning more than one four-locus projection need not be recoverable after folding."]
+    ];
+    for(const [title,desc] of messages){const row=e("p","funnel-diagnostic");row.append(e("strong","",title+": "),e("span","",desc));notes.append(row);}
   }
   function renderAudit(){
     const target=$("cohortAudit");
     if(!target)return;
     target.replaceChildren();
-    target.append(e("h4","","Perturbation / bias checks · synthetic model"));
+    target.append(e("h4","","Independent cohort-oracle sensitivity · synthetic model"));
     const items=[
       ["8% independent bit flips",audit.repeatability+"/5 runs retain the same first-ranked pattern; "+audit.retained+"/5 still include it among eligible candidates"],
       ["Leave-one-case-out",audit.leaveOneOut.filter(x=>x.retainsTop).length+"/"+audit.leaveOneOut.length+" trials retain the original pattern"],
@@ -146,32 +212,29 @@
       const row=e("div","cohort-audit-row");
       row.append(e("strong","",key),e("span","",value));target.append(row);
     }
-    target.append(e("p","cohort-audit-caveat","These are robustness probes, not proof of NISQ noise tolerance, freedom from bias, statistical significance or clinical validity."));
+    target.append(e("p","cohort-audit-caveat","These checks rerun the standalone cohort oracle, not the complete rotating funnel. The noise selector above adds classical readout uncertainty, not real NISQ gate/decoherence noise. Neither proves NISQ robustness, freedom from bias or clinical validity."));
   }
   function renderOutcome(){
     const headline=$("cohortOutcome"),detail=$("cohortOutcomeDetail"),alts=$("cohortAlternatives");
     alts.replaceChildren();
-    if(!result.markedCount){
-      headline.textContent="No relationship meets the current Condition and cohort thresholds.";
-      detail.textContent="No locus is amplified as a valid answer. Try modifying synthetic data, constraints or minimum cohort support. Absence is an admissible inference outcome.";
-      selectedState=null;
-    }else{
-      const selected=result.ranked.find(x=>x.state===selectedState)||result.selected;
-      selectedState=selected.state;
-      headline.textContent=result.refinedCount===1
-        ?"One previously unspecified relation is strongest under the declared oracle."
-        :result.refinedCount+" equally strong relations survive refinement; no unique answer.";
-      detail.textContent=locusNames(selected.loci)+". Relation satisfied in "+selected.caseCount+"/"+dataset.cases.length+
-        " synthetic cases versus "+selected.controlCount+"/"+dataset.controls.length+
-        " synthetic comparators. Difference: "+percent(selected.contrast)+
-        ". Relation: "+(result.relation==="parity"?"odd parity among selected 0/1 loci":"all selected variants present")+". Grover amplitudes quantify oracle-marked states, not biological confidence or causal discovery.";
-      result.ranked.slice(0,20).forEach(x=>{
-        const btn=e("button","cohort-alt",locusNames(x.loci));
-        btn.type="button";
-        btn.classList.toggle("is-selected",x.state===selectedState);
-        btn.addEventListener("click",()=>{selectedState=x.state;renderOutcome();renderGenomes();});
-        alts.append(btn);
-      });
+    if(!result.selected){
+      headline.textContent="No relation survives the complete-cohort truth gate.";
+      detail.textContent="Rotated 4-bit rooms and 4→1 distributions were computed, but no candidate meets the full Condition. No genomic highlight is invented.";
+      selectedState=null;return;
+    }
+    const item=result.ranked.find(x=>x.state===selectedState)||result.selected;
+    selectedState=item.state;
+    headline.textContent=result.leaders.length===1
+      ?"One oracle-verified relation leads the rotating probability funnel."
+      :result.leaders.length+" candidate relations remain near the folded peak — not a unique solution.";
+    detail.textContent=locusNames(item.loci)+". Joint relation passes "+item.caseCount+"/"+dataset.cases.length+
+      " synthetic cases and "+item.controlCount+"/"+dataset.controls.length+" comparisons. Cohort contrast "+percent(item.contrast)+
+      ". Folded model-state mass "+percent(item.foldedProbability)+
+      ". This is synthetic inference; model-state probability is not biological confidence or a cancer-risk estimate.";
+    for(const alt of result.ranked.slice(0,16)){
+      const b=e("button","cohort-alt",locusNames(alt.loci));b.type="button";
+      b.classList.toggle("is-selected",selectedState===alt.state);
+      b.addEventListener("click",()=>{selectedState=alt.state;renderOutcome();renderGenomes();renderFunnel();});alts.append(b);
     }
   }
   function readSettings(){
@@ -181,17 +244,20 @@
       minCases:Number($("cohortMinCases").value),
       maxControls:Number($("cohortMaxControls").value),
       relation:$("cohortRelation").value,
+      readoutNoise:Number($("funnelNoise").value)/100,
+      maxPasses:Number($("funnelPasses").value),
       minSize:2,
       maxSize:4
     };
   }
   function run(){
     try{
-      result=D.evaluate(readSettings());
+      result=F.run(readSettings());
+      selectedPass=result.rotations-1;
       selectedState=result.selected?.state??null;
-      audit=D.stabilityAudit(result);
+      audit=D.stabilityAudit(D.evaluate(readSettings()));
       $("cohortError").textContent="";
-      renderSelectors();showStats();renderOutcome();renderGenomes();renderAudit();
+      renderSelectors();showStats();renderOutcome();renderGenomes();renderFunnel();renderAudit();
     }catch(error){$("cohortError").textContent=error.message;}
   }
   function regenerate(delta=0){
@@ -210,6 +276,8 @@
     $("cohortMinCases").addEventListener("change",run);
     $("cohortMaxControls").addEventListener("change",run);
     $("cohortRelation").addEventListener("change",run);
+    $("funnelNoise").addEventListener("change",run);
+    $("funnelPasses").addEventListener("change",run);
     $("cohortRebuild").addEventListener("click",()=>{try{regenerate(0)}catch(e){$("cohortError").textContent=e.message;}});
     $("cohortNextDataset").addEventListener("click",()=>{try{regenerate(1)}catch(e){$("cohortError").textContent=e.message;}});
     $("cohortClearAnchors").addEventListener("click",()=>{anchors=[];run();});
