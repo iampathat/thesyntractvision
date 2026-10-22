@@ -7,6 +7,15 @@ import { registerReportFonts } from './vendor/report-fonts.mjs';
 import { buildGuideModel } from './system-guide-editorial.mjs';
 const W=595.28,H=841.89,M=43,R=W-M,CW=W-2*M;
 const ink=[229,241,246],navy=[3,20,33],panel=[14,39,58],line=[50,87,104],gold=[225,187,125],cyan=[128,225,239],muted=[166,195,205];
+const FRAMEWORK_EXPLANATIONS={
+ 'STRIDE':'Spoofing means false identity; Tampering means unauthorized modification; Repudiation concerns disputed actions without sufficient evidence; Information Disclosure means confidentiality loss; Denial of Service means loss of availability; Elevation of Privilege means excessive authority.',
+ 'OWASP / AppSec':'Application and API security: broken access control, authentication, object-level and property-level authorization, unsafe input processing and insecure business logic. The active engine maps routes to current OWASP application and API categories.',
+ 'Identity':'Checks the exact principal, role, delegated service identity and resource. A valid login does not establish authority to use every object, API or downstream action.',
+ 'Action / Tool Chain':'Tracks how data and authority move between tools, APIs, workflows and approval gates. A lower-trust input must not cause a higher-privilege action without independent checks.',
+ 'Privacy / Supply Chain':'Follows sensitive records, provenance and external dependencies across systems. Providers, packages, models, imported data and logs can introduce additional trust boundaries.',
+ 'AI / GenAI':'Relevant when the target itself contains AI/ML. Looks at model context, retrieval, generated content and model-guided actions crossing authority boundaries; analyst use of AI alone is not sufficient.',
+ 'Open Search':'Explores routes beyond fixed categories by working backward from harmful consequences, rotating viewpoints and challenging assumptions. This is not automatically external OSINT.'
+};
 const section={intro:'00 / THE READING KEY',condition:'01 / CONDITION FORMATION',
  lenses:'02 / THE SECURITY LENSES',vectors:'03 / ATTACK VECTOR FABRIC',recursive:'04 / RECURSIVE INFERENCE',
  execution:'05 / EXECUTION & VERIFICATION',example:'06 / WORKED EXAMPLE',contract:'07 / DOCUMENT CONTRACT',glossary:'08 / REFERENCE'};
@@ -175,14 +184,14 @@ export function createVisualGlasswingPdf(jsPDF,snapshot,{artwork={},edition='4.0
  y=heading(d,'02 / FRAMEWORK OVERVIEW','Seven perspectives, one target',
   'Each lens asks different questions about the same candidate routes; classifications are not independent proof.');
  for(const lens of model.lenses.slice(0,4)){
-  y=lineBullet(d,lens.name,lens.description,y);
+  y=lineBullet(d,lens.name,FRAMEWORK_EXPLANATIONS[lens.name]||lens.description,y);
   if(y>690)break;
  }
  heroContinuation();
  next('LENS EXPLANATIONS');
  y=heading(d,'02A / FRAMEWORK OVERVIEW','Seven perspectives / continued',
   'The remaining perspectives keep their own conditions and scope, including AI-target applicability.');
- for(const lens of model.lenses.slice(4,8))y=lineBullet(d,lens.name,lens.description,y);
+ for(const lens of model.lenses.slice(4,8))y=lineBullet(d,lens.name,FRAMEWORK_EXPLANATIONS[lens.name]||lens.description,y);
  if(model.lenses.length>8)copy(d,model.lenses.length+' perspectives in current release. Additional lenses are tracked by the live engine.',M,717,CW,9.5,cyan);
  next('SYNTHESIS');
  y=heading(d,'02B / SHARED UNDERLYING ROUTE','How multiple lenses converge',
