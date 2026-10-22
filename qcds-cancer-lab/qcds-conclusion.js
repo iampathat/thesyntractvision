@@ -1,4 +1,4 @@
-/* QCDS Cancer Lab — interpretation of actual computational outcomes.
+/* QCDS Oncology Lab — interpretation of actual computational outcomes.
    Pure result-to-text summary. Does not alter the inference engine.
    © 2026 Patrik Sundblom — R&D support OpenAI / ChatGPT.
  */
