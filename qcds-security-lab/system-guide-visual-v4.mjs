@@ -160,13 +160,16 @@ export function createVisualGlasswingPdf(jsPDF,snapshot,{artwork={},edition='4.0
  next('LIVE REGISTER');
  y=heading(d,'01A / CURRENT CORE CONDITIONS','The actual '+model.conditions.length+' core inputs',
   'Generated from the active engine definitions, grouped compactly so the guide stays readable.');
- const condRows=model.conditions.map(v=>[v.id+'  '+v.name, v.meaning]);
- const used=Math.min(condRows.length,14);
- const rowH=65;
- twoColRows(d,condRows,y,{max:used,rowH});
- if(condRows.length>used){
-   copy(d,'+'+(condRows.length-used)+' additional current conditions defined in this release.',M,744,CW,9.5,cyan,1.2);
- }
+ const current=model.conditions.slice(0,14);
+ current.forEach((v,i)=>{
+   const ry=y+5+i*32.5;
+   if(i%2===1)panelBox(d,M,ry-16,CW,29);
+   copy(d,v.id,M+13,ry+3,52,9.1,gold,1,{bold:true,limit:1});
+   copy(d,v.meaning||v.name,M+67,ry+3,CW-82,9.0,ink,1.2,{limit:1});
+ });
+ if(model.conditions.length>14)copy(d,
+   '+'+(model.conditions.length-14)+' further conditions in the active engine. See the current source register for full names.',
+   M,730,CW,9.2,cyan,1.2,{limit:2});
  heroPage('02','The seven security lenses','Different frameworks; one investigated system.','lenses');
  next('LENS EXPLANATIONS');
  y=heading(d,'02 / FRAMEWORK OVERVIEW','Seven perspectives, one target',
