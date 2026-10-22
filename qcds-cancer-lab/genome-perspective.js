@@ -24,10 +24,12 @@
       let seed = (0x9e3779b9 ^ Math.imul(ix + 1, 0x85ebca6b)) >>> 0;
       const sequence = new Array(FRAGMENT_LENGTH);
       for (let j = 0; j < sequence.length; j++) {
-        seed ^= seed << 13;
-        seed ^= seed >>> 17;
-        seed ^= seed << 5;
-        sequence[j] = ALPHABET[seed & 3];
+        // Mulberry32-style mixing avoids short low-bit cycles in synthetic DNA.
+        seed = (seed + 0x6D2B79F5) >>> 0;
+        let t = seed;
+        t = Math.imul(t ^ (t >>> 15), t | 1);
+        t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+        sequence[j] = ALPHABET[((t ^ (t >>> 14)) >>> 0) & 3];
       }
       const insert = INSERTIONS.find(v => v.chr === chr);
       if (insert) for (let j = 0; j < MOTIF.length; j++) sequence[insert.offset+j] = MOTIF[j];
