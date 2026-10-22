@@ -599,3 +599,25 @@ body.clinical-theme .qcds-conclusion .qcds-conclusion-scope {
  .cohort-tracks {padding:13px 9px}
  .cohort-site {width:10px;height:10px}
 }
+
+
+/* Open-inference and perturbation audit, no fixed target mask. */
+.cohort-data-settings {border-top:1px solid #dde8ec;padding-top:12px;margin:13px 0 16px}
+.cohort-oracle-panel .cohort-data-settings label {margin-bottom:12px}
+.cohort-data-settings input {display:block;width:100%;background:#fff;border:1px solid #bfd3dc;border-radius:6px;color:#294c63;padding:9px;font-size:13px}
+.cohort-data-buttons {display:flex;gap:8px;flex-wrap:wrap;margin-bottom:7px}
+.cohort-data-buttons button {border:1px solid #a7c4d0;border-radius:6px;color:#2a6075;background:#eff6f8;padding:9px 11px;cursor:pointer;font-size:12px;font-weight:720}
+.cohort-data-buttons button:hover {background:#dceff2}
+.cohort-seed-panel>.text-link {margin-top:9px;font-size:12px}
+.cohort-audit {margin-top:15px;padding:15px;border-radius:8px;background:#fff;border:1px solid #d2e1e7}
+.cohort-audit h4 {font-size:14px;color:#275367;margin:0 0 10px}
+.cohort-audit-row {display:grid;grid-template-columns:minmax(120px,.65fr) minmax(0,1fr);gap:8px;padding:10px 0;border-top:1px solid #edf1f4}
+.cohort-audit-row strong {font-size:12px;color:#365b6b}
+.cohort-audit-row span {font-size:12px;color:#516d80;line-height:1.6}
+.cohort-audit-caveat {color:#75583c;font-size:12px;margin:11px 0 0;line-height:1.65}
+.cohort-bit {appearance:none;border:0;cursor:pointer}
+.cohort-bit:hover {outline:2px solid #4b96a3;outline-offset:0}
+@media(max-width:650px) {
+ .cohort-audit-row {grid-template-columns:minmax(0,1fr)}
+ .cohort-controls {grid-template-columns:minmax(0,1fr)}
+}
