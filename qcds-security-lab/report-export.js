@@ -93,12 +93,38 @@ async function loadSystemGuidePlates() {
 }
 
 export async function downloadSystemGuidePdf() {
-  const [jsPDF, { createSystemGuidePdf }] = await Promise.all([
+  // Fetch all registry definitions from the same modules as the current Lab.
+  const [jsPDF, { createEditorialSystemGuidePdf }, core, vectors] = await Promise.all([
     pdfEngine(),
-    import("./system-guide-pdf.mjs?v=1.0.0"),
+    import("./system-guide-editorial.mjs?v=3.0.0"),
+    import("./engine.mjs"),
+    import("./attack-vectors.mjs"),
   ]);
-  const media=typeof document === "undefined"?{cover:null,chapters:[]} :await loadSystemGuidePlates();
-  const { doc, summary } = createSystemGuidePdf(jsPDF,{artwork:media.cover,plates:media.chapters,appRelease:document.body.dataset.release||"unknown"});
-  await saveDeviceFile(doc.output("blob"), "QCDS-Security-Lab-System-Guide.pdf", "application/pdf");
+  const media = await loadSystemGuidePlates();
+  const src = document.querySelector('script[type="module"][src*="app-stage"]')?.src;
+  const appRelease = src ? new URL(src,location.href).searchParams.get("v") : null;
+  const snapshot = {
+    appRelease: appRelease || core.VERSION,
+    engineVersion: core.VERSION,
+    conditions: core.CONDITION_DEFS,
+    fieldMeta: core.FIELD_META,
+    lenses: core.LENSES,
+    seeds: vectors.ATTACK_VECTOR_SEEDS,
+    variants: vectors.ROUTE_VARIANTS,
+    targets: vectors.TARGETS,
+    generatedAt: new Date().toISOString().slice(0,10),
+  };
+  const {doc,summary} = createEditorialSystemGuidePdf(jsPDF,snapshot,{
+    artwork: {
+      guardian: media.cover,
+      dimensions: media.chapters[0],
+      attack: media.chapters[1],
+      lenses: media.chapters[2],
+      recursive: media.chapters[3],
+      execution: media.chapters[4],
+    },
+    edition: "3.0.0",
+  });
+  await saveDeviceFile(doc.output("blob"),"QCDS-Project-Glasswing-Security-Lab-System-Guide.pdf","application/pdf");
   return summary;
 }
