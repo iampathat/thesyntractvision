@@ -49,6 +49,7 @@ jobs:
           node --test qcds-security-lab/tests/system-guide-export.test.mjs
           node --test qcds-security-lab/tests/system-guide-editorial.test.mjs
           node --test qcds-security-lab/tests/glasswing-guide-visibility.test.mjs
+          node --test qcds-security-lab/tests/glasswing-unified-shell.test.mjs
           node --test qcds-security-lab/tests/glasswing-portrait-master.test.mjs
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e '.[test]'
