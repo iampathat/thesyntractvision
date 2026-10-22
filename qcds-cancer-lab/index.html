@@ -140,9 +140,16 @@
 
       <section class="results" id="results" aria-live="polite">
         <div class="results-running" id="resultsRunning" hidden>
-          <div class="result-orb spin">Q</div>
+          <div class="result-orb spin" aria-hidden="true">Q</div>
           <h3>QCDS is running.</h3>
-          <p>128 lanes are running: 16 unique input rotations × 8 true-null exclusions, all through the same oracle bank.</p>
+          <p id="runProgressText">128 lanes are running: 16 unique input rotations × 8 true-null exclusions, all through the same oracle bank.</p>
+          <section id="qcdsConclusion" class="qcds-conclusion" aria-label="QCDS inferred conclusion" hidden>
+            <p class="qcds-conclusion-label">QCDS CONCLUSION · COMPUTED OUTCOME</p>
+            <h4 id="qcdsConclusionTitle">—</h4>
+            <p class="qcds-conclusion-lead" id="qcdsConclusionLead"></p>
+            <p class="qcds-conclusion-detail" id="qcdsConclusionDetail"></p>
+            <p class="qcds-conclusion-scope" id="qcdsConclusionScope"></p>
+          </section>
         </div>
 
         <div class="results-empty" id="resultsEmpty">
@@ -231,6 +238,7 @@
   <script src="./clinical-knowledge.js?v=20261022-oncology"></script>
   <script src="./clinical-ui.js?v=20261022-oncology"></script>
   <script src="./inference-room.js?v=20261022-inference"></script>
-  <script src="./app.js?v=20261022-oncology"></script>
+  <script src="./qcds-conclusion.js?v=20261022-outcome"></script>
+  <script src="./app.js?v=20261022-outcome"></script>
 </body>
 </html>
