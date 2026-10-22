@@ -6,7 +6,7 @@ from case_cancer import HYPOTHESES, OPEN_INPUT, PARTIAL_INPUT, COMPLETE_INPUT
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="Run QCDS Cancer Lab 128→8→1")
+    ap = argparse.ArgumentParser(description="Run QCDS Oncology Lab 128→8→1")
     ap.add_argument("--mask", default=OPEN_INPUT, help="8-symbol 0/1/? Condition")
     ap.add_argument("--cycles", type=int, default=4)
     ap.add_argument("--out", default="results_cancer_recursive.json")
