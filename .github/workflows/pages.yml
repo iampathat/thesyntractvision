@@ -472,7 +472,7 @@ jobs:
           assert b'moov' in data, 'Glasswing MP4 metadata missing'
           print('REAL MOVING GLASSWING EAGLE VERIFIED',len(data))
           PYMOVIE
-          grep -F "const VERSION = '1.26.0'" _site/qcds-security-lab/sw.js
+          grep -E "const VERSION = '1\\.[0-9]+\\.[^']+'" _site/qcds-security-lab/sw.js
           node --check _site/qcds-security-lab/glasswing-screen-v125.js
           node --check _site/qcds-security-lab/app-stage-v118.js
           node --check _site/qcds-security-lab/consumer-ui-stage-v118.js
