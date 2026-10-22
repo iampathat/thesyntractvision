@@ -406,3 +406,211 @@ body.glasswing-visual #app .report-cover-preview svg {width:100%;height:auto;max
  body.glasswing-visual #app *::before,
  body.glasswing-visual #app *::after {scroll-behavior:auto!important;transition:none!important;}
 }
+
+
+/* v1.27.1 — Clear hierarchy: workspace / current case / reference.
+   The Home page deliberately has no redundant splash or replay action. */
+body.glasswing-visual #app .sidebar nav[aria-label="Security Lab navigation"] {
+  display:flex;
+  flex-direction:column;
+  gap:0;
+}
+body.glasswing-visual #app .sidebar nav .gw-nav-section {
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  min-width:0;
+  padding:3px 0 17px;
+  border-bottom:1px solid #31566d;
+  margin-bottom:12px;
+}
+body.glasswing-visual #app .sidebar nav .gw-nav-section:last-child {
+  border-bottom:0;
+  margin-bottom:0;
+}
+body.glasswing-visual #app .sidebar nav .nav-section-label {
+  display:block;
+  margin:5px 10px 9px;
+  padding:0;
+  font:600 10px/1.4 system-ui,sans-serif;
+  letter-spacing:.12em;
+  color:#9fc4d6;
+}
+body.glasswing-visual #app .sidebar nav .gw-nav-section > a,
+body.glasswing-visual #app .sidebar nav .gw-case-actions > a,
+body.glasswing-visual #app .sidebar nav .gw-nav-section details > a,
+body.glasswing-visual #app .sidebar nav .gw-nav-new {
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  min-width:0;
+  min-height:42px;
+  gap:11px;
+  padding:10px 12px;
+  margin:0;
+  border-radius:9px;
+  border:1px solid transparent;
+  background:transparent;
+  color:#cee1ed;
+  font:500 13px/1.35 system-ui,sans-serif;
+  text-align:left;
+  text-decoration:none;
+  cursor:pointer;
+}
+body.glasswing-visual #app .sidebar nav .gw-nav-new {
+  color:#b9f4ff;
+  border:1px solid #386a7d;
+  background:#102e44;
+  font-weight:650;
+  margin-top:5px;
+}
+body.glasswing-visual #app .sidebar nav .gw-nav-new .icon {
+  color:#98eaf8;
+}
+body.glasswing-visual #app .sidebar nav .gw-nav-current .consumer-nav-case {
+  margin:0 5px 7px;
+  padding:11px 12px;
+  border:1px solid #487c90;
+  border-radius:10px;
+  background:#102d42;
+}
+body.glasswing-visual #app .sidebar nav .gw-nav-current .consumer-nav-case b {
+  display:block;
+  font-size:14px;
+  line-height:1.3;
+  color:#eaf9ff;
+}
+body.glasswing-visual #app .sidebar nav .gw-nav-current .consumer-nav-case small {
+  display:block;
+  margin:5px 0 0;
+  background:transparent;
+  font:400 11px/1.35 system-ui,sans-serif;
+  color:#9ec3d4;
+}
+body.glasswing-visual #app .sidebar nav .gw-case-actions {
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  margin:0 5px 0 10px;
+  padding:0 0 0 11px;
+  border-left:2px solid #427c96;
+}
+body.glasswing-visual #app .sidebar nav .gw-case-actions a,
+body.glasswing-visual #app .sidebar nav .gw-case-actions summary {
+  padding-left:10px;
+}
+body.glasswing-visual #app .sidebar nav .gw-case-actions .gw-investigation-nav {
+  margin:0;
+}
+body.glasswing-visual #app .sidebar nav .gw-case-actions .gw-investigation-nav > summary {
+  align-items:flex-start;
+  line-height:1.35;
+  min-height:49px;
+}
+body.glasswing-visual #app .sidebar nav .gw-case-actions .gw-investigation-nav > summary > span {
+  display:block;
+  min-width:0;
+}
+body.glasswing-visual #app .sidebar nav .gw-case-actions .gw-investigation-nav > summary small {
+  display:block;
+  margin-top:3px;
+  color:#9bbccd;
+  font:400 10px/1.3 system-ui,sans-serif;
+}
+body.glasswing-visual #app .sidebar nav .gw-case-actions .nav-flow {
+  margin:3px 0 7px 6px;
+}
+body.glasswing-visual #app .sidebar nav .gw-case-actions .nav-flow-step {
+  min-height:35px;
+  padding:6px;
+}
+body.glasswing-visual #app .sidebar nav .gw-nav-resources details > summary {
+  font-size:13px;
+  white-space:normal;
+}
+body.glasswing-visual #app .sidebar nav .gw-nav-resources details > a,
+body.glasswing-visual #app .sidebar nav .gw-nav-resources details > button {
+  margin-left:13px;
+  width:calc(100% - 13px);
+  padding-left:11px;
+}
+body.glasswing-visual #app .sidebar nav .gw-nav-section a[aria-current="page"],
+body.glasswing-visual #app .sidebar nav .gw-case-actions a[aria-current="page"]{
+  border-color:#447d98!important;
+  background:#15425c!important;
+  color:#eefcff!important;
+}
+body.glasswing-visual #app .sidebar nav .gw-case-actions a[aria-current="page"]::before {
+  content:"";
+  position:absolute;
+  left:-13px;
+  width:3px;height:22px;
+  background:#8be5fa;
+  border-radius:3px;
+}
+@media(hover:none){
+  /* A previously touched link is not a second active page. */
+  body.glasswing-visual #app .sidebar nav a:hover:not([aria-current]),
+  body.glasswing-visual #app .sidebar nav .gw-nav-new:hover:not(:focus-visible) {
+    background:transparent!important;
+    border-color:transparent!important;
+    color:#cee1ed!important;
+  }
+  body.glasswing-visual #app .sidebar nav .gw-nav-new:hover:not(:focus-visible) {
+    border-color:#386a7d!important;
+    background:#102e44!important;
+    color:#b9f4ff!important;
+  }
+}
+/* Open the page on the actual case rather than a second brand/intro splash. */
+body.glasswing-visual #app .consumer-home .gw-home-page-title {
+  display:block;
+  margin:0 0 18px;
+  padding:4px 2px 0;
+  background:none;
+  border:0;
+  box-shadow:none;
+}
+body.glasswing-visual #app .consumer-home .gw-home-page-title .eyebrow {
+  color:#8eddf3;
+  letter-spacing:.12em;
+  font-size:10px;
+}
+body.glasswing-visual #app .consumer-home .gw-home-page-title h1 {
+  margin:7px 0 4px;
+  font-size:clamp(25px,3vw,35px);
+  line-height:1.2;
+}
+body.glasswing-visual #app .consumer-home .gw-home-page-title p {
+  margin:0;
+  font-size:14px;
+  line-height:1.5;
+  color:#a7c6d7;
+}
+body.glasswing-visual #app .consumer-home .consumer-resume {margin:0 0 16px}
+body.glasswing-visual #app .consumer-home .gw-home-service-status {
+  margin-top:17px;
+  padding:13px 3px;
+  border-top:1px solid #31556c;
+  color:#a7c5d6;
+  background:transparent;
+}
+body.glasswing-visual #app .consumer-home .gw-home-service-status button {
+  margin-left:auto;
+  color:#9de4f7;
+}
+@media(max-width:1024px) {
+  body.glasswing-visual #app .sidebar nav .gw-nav-section {padding-bottom:12px;margin-bottom:8px}
+  body.glasswing-visual #app .sidebar nav .gw-nav-section > a,
+  body.glasswing-visual #app .sidebar nav .gw-case-actions > a,
+  body.glasswing-visual #app .sidebar nav .gw-nav-section details > a {
+    min-height:42px;padding-block:9px;
+  }
+  body.glasswing-visual #app .sidebar nav .nav-section-label {margin-top:5px;margin-bottom:6px}
+}
+@media(max-width:560px){
+  body.glasswing-visual #app .consumer-home .gw-home-page-title {margin:0 0 16px}
+  body.glasswing-visual #app .consumer-home .gw-home-page-title p {font-size:13px}
+  body.glasswing-visual #app .consumer-home .consumer-resume {padding:19px 16px}
+}
