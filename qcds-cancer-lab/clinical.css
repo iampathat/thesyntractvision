@@ -621,3 +621,9 @@ body.clinical-theme .qcds-conclusion .qcds-conclusion-scope {
  .cohort-audit-row {grid-template-columns:minmax(0,1fr)}
  .cohort-controls {grid-template-columns:minmax(0,1fr)}
 }
+
+
+/* A selected locus may contribute a zero in a parity relation. */
+.cohort-legend .legend-cohort-missing {background:#fff6e4;border:2px dashed #a87937;}
+.cohort-site.is-pattern-missing {background:#fff6e4;border:2px dashed #af813a;width:17px;height:17px;box-shadow:0 0 0 2px #f4dfaf,0 0 8px #d7ad6c;z-index:3}
+.cohort-bit.is-pattern-missing {background:#fff6e4;color:#94631f;box-shadow:inset 0 0 0 2px #c99e57}
