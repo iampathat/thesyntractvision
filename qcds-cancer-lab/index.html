@@ -7,7 +7,7 @@
   <title>QCDS Cancer Lab — Translational Oncology Research Workspace</title>
   <meta name="description" content="An inspectable, research-only QCDS oncology hypothesis workbench with model state definitions, molecular reference notes and traceable inference." />
   <link rel="stylesheet" href="./style.css?v=20261022-inference" />
-  <link rel="stylesheet" href="./clinical.css?v=20261022-genome" />
+  <link rel="stylesheet" href="./clinical.css?v=20261022-cohort" />
 </head>
 <body class="clinical-theme">
   <main class="shell">
@@ -48,43 +48,71 @@
     <div class="research-scope"><strong>Scope:</strong> An executable QCDS demonstration with domain reference notes. Molecular biology entries are sourced explanations; they are <em>not</em> biological predicates implemented in the oracle masks. No patient data is processed here. <button class="text-link" data-explain="provenance">How is provenance distinguished?</button></div>
     <section class="genome-perspective" id="genomePerspective" aria-labelledby="genomePerspectiveTitle">
       <div class="genome-perspective-head">
-        <span class="genome-eyebrow">SEARCH-SCALE PERSPECTIVE · DNA / LOGICAL SPACE</span>
-        <h2 id="genomePerspectiveTitle">Three highlighted matches can be the entire answer.</h2>
-        <p>A genome contains billions of bases; combinations of genomic positions, sequence motifs and biological relationships create even larger hypothesis spaces. The objective for a future QCDS genome engine is to identify the few configurations satisfying an explicit oracle, not to show thousands of raw search candidates.</p>
+        <span class="genome-eyebrow">CROSS-GENOME CONDITION SEARCH · SYNTHETIC RESEARCH EXAMPLE</span>
+        <h2 id="genomePerspectiveTitle">Five genomes. Ten distant loci. One shared combination.</h2>
+        <p>A DNA pattern is not necessarily a single contiguous sequence. Here the condition is a <strong>relationship between separate genomic loci</strong> across five synthetic individuals representing the same cancer cohort. An ideal Grover kernel amplifies combinations meeting the cross-person oracle. The selected positions light up across each case's genome track.</p>
       </div>
       <div class="genome-stats">
-        <div><small>HUMAN GENOME · REFERENCE SCALE</small><strong>~3 × 10⁹</strong><span>base pairs per haploid genome</span></div>
-        <div><small>HYPOTHETICAL THREE-POSITION SETS</small><strong id="genomeTriples">≈4.5 × 10²⁷</strong><span>combinations: choose(3 billion, 3), not evaluated</span></div>
-        <div><small>VERIFIABLE MICRO-DEMO</small><strong id="genomeDemoBases">196,608</strong><span>synthetic DNA bases across 24 fragments</span></div>
+        <div><small>SYNTHETIC COHORT</small><strong>5 + 5</strong><span>five labeled cases and five independent comparison profiles</span></div>
+        <div><small>POSITIONAL DIMENSIONS</small><strong>10</strong><span>different chromosomes; 1,024 subset states and 120 three-locus combinations</span></div>
+        <div><small>GENOME-WIDE AMBITION</small><strong>~3 × 10⁹</strong><span>bases per haploid human genome; not loaded or searched here</span></div>
       </div>
-      <div class="genome-demo-head">
-        <div>
-          <h3>Trace three exact DNA-pattern matches <span class="genome-demo-marker">SYNTHETIC DEMO</span></h3>
-          <p>Each horizontal bar represents <strong>8,192 generated bases</strong> assigned to one chromosome label. The first example has three inserted occurrences of the same DNA motif. The search below actually checks every base of the synthetic fragments; change the motif to recompute the matches. This does not search a human genome.</p>
+      <div id="cohortCombinatorial" class="cohort-lab">
+        <div class="cohort-head">
+          <h3>Explore multi-locus relationships <span class="genome-demo-marker">IDEALIZED QCDS / GROVER PROTOTYPE</span></h3>
+          <p>Choose up to three starting loci. The system evaluates all <strong>1,024 candidate locus-subset states</strong>, tests three-locus combinations against the five cases and five comparators, and applies the shared QCDS Grover amplification kernel to the marked combinations. A selected anchor is a constraint, not a preprogrammed winning answer.</p>
         </div>
-      </div>
-      <form id="genomeSearchForm" class="genome-search-form">
-        <label for="genomeMotif">Exact DNA motif · + strand · 6–18 A/C/G/T bases</label>
-        <div class="genome-search-fields">
-          <input id="genomeMotif" name="motif" maxlength="18" spellcheck="false" autocomplete="off" placeholder="GATTACAGTCGA" aria-describedby="genomeSearchError" />
-          <button type="submit">Search test sequences</button>
+        <div class="cohort-controls">
+          <div class="cohort-seed-panel">
+            <strong>Starting Condition · select locus anchors</strong>
+            <div id="cohortLoci" class="cohort-locus-list" aria-label="Ten selectable genome locus positions"></div>
+            <p id="cohortAnchors" class="cohort-selection"></p>
+            <p id="cohortError" class="cohort-error" role="alert"></p>
+          </div>
+          <div class="cohort-oracle-panel">
+            <strong>Cross-person oracle</strong>
+            <label>Cases carrying the complete combination
+              <select id="cohortMinCases" aria-label="Minimum number of case profiles carrying combination">
+                <option value="5" selected>At least 5 / 5</option><option value="4">At least 4 / 5</option><option value="3">At least 3 / 5</option>
+              </select>
+            </label>
+            <label>Comparators carrying the combination
+              <select id="cohortMaxControls" aria-label="Maximum number of comparator profiles carrying combination">
+                <option value="0" selected>At most 0 / 5</option><option value="1">At most 1 / 5</option><option value="2">At most 2 / 5</option>
+              </select>
+            </label>
+            <button id="cohortRun" type="button" class="cohort-run">Run combinatorial Grover search</button>
+          </div>
         </div>
-        <p id="genomeSearchError" class="genome-error" role="alert"></p>
-      </form>
-      <div class="genome-demo-layout">
-        <div class="genome-track-panel">
-          <div class="genome-track-key"><span><i></i> Exact sequence match</span><span>chr = synthetic fragment label</span></div>
-          <div id="chromosomeBoard" class="chromosome-board" aria-label="Search results across 24 simulated chromosome fragments"></div>
+        <section class="cohort-result" aria-labelledby="cohortResultTitle">
+          <div class="cohort-result-top">
+            <span>QCDS MULTI-LOCUS OUTCOME</span>
+            <h3 id="cohortResultTitle">Cross-genome pattern discovery</h3>
+            <p id="cohortOutcome" class="cohort-outcome" aria-live="polite">Evaluating the cohort oracle…</p>
+            <p id="cohortOutcomeDetail" class="cohort-outcome-detail"></p>
+          </div>
+          <div id="cohortGroverStats" class="cohort-grover-stats" aria-label="Computed local state space and Grover metrics"></div>
+          <div id="cohortAlternatives" class="cohort-alternatives" aria-label="Other oracle-qualified three-locus patterns"></div>
+        </section>
+        <div class="cohort-visual-head">
+          <h3>Genome-wide position schematic · five cases and five controls</h3>
+          <p>Each row is one <strong>synthetic person</strong>, with ten locus markers spread across a schematic genome axis. Amber circles are specified anchors; teal highlights indicate the selected three-locus combination where that synthetic person carries it. Positions are illustrative, not actual genome coordinates.</p>
         </div>
-        <div class="genome-hits-panel">
-          <h4 id="genomeHitsHeadline" aria-live="polite">Search results</h4>
-          <div id="genomeHits" class="genome-hits" aria-label="Exact matching synthetic sequence positions"></div>
-          <div id="genomePositionDetail" class="genome-position-detail"></div>
+        <div class="cohort-legend">
+          <span><i class="legend-cohort-anchor"></i> Specified Condition</span>
+          <span><i class="legend-cohort-hit"></i> Model-selected combination</span>
+          <span><i class="legend-cohort-variant"></i> Other present variant</span>
+          <span><i class="legend-cohort-off"></i> Absent variant</span>
         </div>
+        <div id="cohortGenomeTracks" class="cohort-tracks" aria-label="Computed highlighted locus positions across individual genomes"></div>
+        <details class="cohort-matrix-details">
+          <summary>Inspect the exact synthetic genotype matrix (all ten loci × ten profiles)</summary>
+          <div id="cohortDataMatrix" class="cohort-data-matrix" aria-label="Synthetic 0/1 variants for every case and comparator"></div>
+        </details>
       </div>
       <div class="genome-perspective-foot">
-        <p><strong>The distinction:</strong> This small-scale demonstration performs ordinary exact string matching on synthetic DNA. It is <strong>not</strong> the QCDS oracle search, does not evaluate 4.5 × 10²⁷ combinations, and does not demonstrate a whole-genome quantum advantage. It illustrates how a very small output can be selected from a much larger represented input. Real QCDS genome-scale claims require defined genomic data, a biological pattern-to-oracle mapping, measured compute costs and independent validation.</p>
-        <p><strong>Biological examples, separate from the synthetic hits:</strong> <a href="https://www.ncbi.nlm.nih.gov/gene/5290" target="_blank" rel="noopener noreferrer">PIK3CA · chromosome 3</a>, <a href="https://www.cancer.gov/publications/pdq/information-summaries/genetics/brca-genes-hp-pdq" target="_blank" rel="noopener noreferrer">BRCA2 · chromosome 13 and BRCA1 · chromosome 17</a>. These gene locations are references only: the generated demo motifs are not gene annotations. Genome scale: <a href="https://www.genome.gov/about-genomics/educational-resources/fact-sheets/human-genomic-variation" target="_blank" rel="noopener noreferrer">NHGRI</a>.</p>
+        <p><strong>Exactly what was computed:</strong> ten symbolic locus dimensions, 1,024 possible selection masks, and 120 three-locus combinations. Cohort support and exclusion are the executable oracle. Grover amplitudes are computed by QCDS's existing ideal kernel (max 40 iterations), not by painting arbitrary targets. The synthetic profiles were constructed to contain a shared example; this is a demonstration of the <em>search mechanism</em>, not an independent cancer discovery.</p>
+        <p><strong>What this does not prove:</strong> the app does not load five actual three-billion-base genomes, represent all real biological relationships, run 1,024 hardware-parallel quantum states, evaluate all combinations across billions of positions, or establish that classical computers cannot solve the task. Loading genomes into a quantum representation, building defensible gene-aware oracles, measurement/readout and independent validation remain open engineering and scientific work.</p>
       </div>
     </section>
 
@@ -283,6 +311,6 @@
   <script src="./inference-room.js?v=20261022-inference"></script>
   <script src="./qcds-conclusion.js?v=20261022-outcome"></script>
   <script src="./app.js?v=20261022-outcome"></script>
-  <script src="./genome-perspective.js?v=20261022-genome"></script>
+  <script src="./genome-perspective.js?v=20261022-cohort"></script>
 </body>
 </html>
