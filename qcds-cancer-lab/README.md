@@ -247,3 +247,20 @@ For scientific validation in a later research system, separately specify tumor s
 - \`inference-room.js\` — per-lane observations and recursive trace.
 
 All additions in this section are research documentation, **not assertions of clinical efficacy**.
+
+
+## Genome-wide perspective and three-hit sequence demonstration — 22 October 2026
+
+The clinical research workspace now includes a **genome perspective** designed to communicate why 8 symbolic bits are not the intended biological scale of QCDS:
+
+- One haploid human genome contains approximately **3 billion DNA base pairs** across 23 chromosomes. Human chromosome types comprise chr1–chr22, X and Y (24 distinct labels; an individual haploid complement contains X *or* Y, not both). See [NHGRI: Human Genomic Variation](https://www.genome.gov/about-genomics/educational-resources/fact-sheets/human-genomic-variation).
+- Choosing any three positions from a hypothetical 3,000,000,000-position reference gives **4,499,999,995,500,000,001,000,000,000** distinct unordered triples, approximately **4.5 × 10²⁷**. This is only a mathematical illustration of combinatorial hypothesis spaces. It is *not* the size of the input DNA itself, the number of actual QCDS states evaluated or a quantum-resource claim.
+- A separate, honest **synthetic exact-match demonstration** generates 24 chromosome-*labeled* fragments, each exactly **8,192 bases**, totaling **196,608 synthetic DNA bases**. These fragment labels do not describe an actual haploid individual's chromosomes or authentic human reference coordinates.
+- Three fixed occurrences of the demonstration DNA motif **GATTACAGTCGA** are placed in the synthetic fragments labeled chr3 (position 1,846), chr13 (4,104) and chr17 (6,553), using 1-based within-fragment positions. The built-in normal CPU exact-sequence matcher re-scans all synthetic fragments; regression tests independently check that the same motif actually occurs at precisely these three positions and nowhere else.
+- Users can enter another **6–18-base A/C/G/T motif**, run the real exact sequence search, inspect hit counts for all fragments, and click each match to examine its actual surrounding generated bases. The search is forward-strand and counts overlapping matches. It is NOT an implementation of QCDS on genome data.
+- An independent note names PIK3CA on chromosome 3, BRCA2 on chromosome 13, and BRCA1 on chromosome 17 with scientific sources. These **real gene annotations are NOT the artificial positions/motifs in the synthetic demonstration**.
+- The eight-bit QCDS runtime is kept unchanged. The whole-genome inference **goal** is separate: an indexed actual reference and patient data with provenance, independently validated biological predicates/oracles, encoding and resource accounting across substrate types, a measured parallel/multidimensional execution plan, and external validation of highlighted discoveries.
+
+Core operational distinction: *QCDS is designed to formulate a very large condition space, apply constraints, amplify candidates and return a few meaningful matches. The current browser engine has not yet demonstrated a search over a complete genome or 10²⁷ candidate combinations.* Do not confuse a theoretical possibility-space size with achieved throughput, readout or accuracy.
+
+Implementation: \`genome-perspective.js\` (UI plus self-contained pure synthetic motif matcher), \`tests/test_genome.js\` (exact-match and combinatorial regression checks), and the \`#genomePerspective\` section in \`index.html\`.
