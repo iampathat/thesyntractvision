@@ -1,11 +1,11 @@
 # QCDS Oncology Lab — Recursive Engine — 128 → 8 → 1
 
-> **Scientific audit (22 October 2026):** [Read the detailed audit](AUDIT_2026-10-22.md) before interpreting simulated genomic results. In 100 null-generated cohorts, 57 had at least one apparent match under the current default thresholds; signal amplification does not imply biological validation.
+> **Scientific audit (22 October 2026):** [Read the detailed audit](AUDIT_2026-10-22.md) before interpreting simulated genomic results. In one fixed-size 5+5 audit scenario, 57 of 100 null-generated cohorts had at least one apparent match under that scenario’s thresholds; signal amplification does not imply biological validation.
 
 
 **Theory and creation by Patrik Sundblom**
 
-This directory contains the current QCDS cancer research engine. It is deliberately separate from the older BRCA2 / mutation scripts so the historical work remains intact.
+This directory contains the current QCDS oncology research engine. It is deliberately separate from the older BRCA2 / mutation scripts so the historical work remains intact.
 
 ## Live site — run it in the browser
 
@@ -254,15 +254,25 @@ For scientific validation in a later research system, separately specify tumor s
 All additions in this section are research documentation, **not assertions of clinical efficacy**.
 
 
+## Group size is a model input, not part of QCDS — updated 22 October 2026
+
+The example of *five people with a cancer and five comparison profiles* came from one explanation. **Neither five people nor equal-sized groups are an architectural QCDS assumption.** In the Oncology Lab UI, users choose independent group sizes from 2 to 30 synthetic profiles per group; the generating module accepts 2 to 100. These are **browser/example limits**, not claims about the limits of the substrate-independent QCDS architecture. The ten-locus encoding and 16-lane 4→1 rotating funnel are also finite teaching/reference configurations, not genome-wide limits.
+
+Regenerating a synthetic cohort updates the data matrix, individual visualization tracks, percentage-scaled cohort thresholds, full-cohort oracles, Grover distributions and the recorded statistical check. The default five-and-five dataset is retained as a **reproducible test fixture** only.
+
+The multiple-comparison audit scales with group size. With **12 or fewer total profiles**, every assignment of the existing profiles into groups of the selected sizes is evaluated (for example, 5+5 produces C(10,5)=252 groupings). With **more than 12 total profiles**, the UI executes **399 reproducible random assignments** and displays a *Monte Carlo estimate*, not an exact enumeration. Its adjusted estimate is (1+extreme)/(1+399); this is diagnostic conditional on an already chosen model and not proof of cancer biology.
+
+The historical audit's 57/100 null results and 22/252 reassignment statistic are **measurements of one specific 5+5 demonstration configuration**, not universal QCDS rates, fixed QCDS input bandwidth, or claims that five observations suffice for any oncology inference.
+
 ## Open cross-genome combinatorial inference — 22 October 2026
 
 The Oncology Lab genomics panel no longer performs contiguous DNA-string matching or searches for a planted three-position answer. It demonstrates a **hypothesis-open logical search over relations between positions** in multiple synthetic profiles. The 8D Oncology Lab workbench is separate from this 10D cohort demonstrator.
 
 ### Input width, candidate space and oracles
 
-- There are 10 synthetic locus columns across 5 labeled cancer cases and 5 labeled comparators: **100 synthetic 0/1 observations**, with chromosome labels used only for graphical perspective, not authentic genomic coordinates.
+- The illustrative 10-locus browser model now supports independently selected case and comparison group sizes (2–30 in the UI, 2–100 in the synthetic engine). The former default of 5+5 gave **100 synthetic 0/1 observations**, with chromosome labels used only for graphical perspective, not authentic genomic coordinates.
 - A chosen random seed (1–1,000,000) produces reproducible but different profile matrices. The generator samples locus-specific background probabilities and group-related variation. **No winning locus mask or target combination is inserted.** Another seed or user-editable observation can change the result.
-- The *null* generator has no systematic case-specific group effect but, with only five samples per group, can still produce accidental associations. Thus a pattern or very high internal amplification probability is not evidence of cancer causality.
+- The *null* generator has no systematic case-specific group effect. Especially with small samples and many tested combinations, it can still produce accidental associations. Thus a pattern or very high internal amplification probability is not evidence of cancer causality.
 - The logical representation contains **2^10 = 1,024 possible subset states**. It evaluates every 2-, 3- and 4-locus subset: **375 candidate relations**. Subset size is not forced to three; between zero and three anchor loci can be bound and all other positions stay open.
 - The first oracle checks **case support**, **maximum comparator support**, **anchor compatibility** and a *preselected relation family*: either (i) joint presence or (ii) an odd-parity interaction, where both 0 and 1 features can form a relation. These are generic, explicitly user-visible rules, not answers encoded as gene names.
 - All oracle-qualified subsets are marked and processed by the actual **QCDSCore.runGrover** kernel. The shared implementation uses **alignment threshold 0.999**, stops at the **first Grover tangent/peak** rather than chasing periodic recurrences, and caps iterations at **40**.
@@ -273,7 +283,7 @@ The Oncology Lab genomics panel no longer performs contiguous DNA-string matchin
 
 The results panel repeats the analysis under **five independent 8%-bit-perturbed synthetic inputs**, five leave-one-case-out tests, and one case/control-label reversal. It reports whether the *same leading relation* survives and whether it remains among candidate solutions.
 
-These exercises are **sensitivity probes, not proof of bias/noise resistance**. Noise in a NISQ device involves gates, readout, decoherence and hardware topology and is not equivalent to flipping synthetic input bits. Synthetic datasets of 5+5 subjects cannot establish statistically significant associations or medical biomarkers. Internal stability is not clinical truth.
+These exercises are **sensitivity probes, not proof of bias/noise resistance**. Noise in a NISQ device involves gates, readout, decoherence and hardware topology and is not equivalent to flipping synthetic input bits. These synthetic datasets, regardless of group size, do not establish clinically validated associations or medical biomarkers. Internal stability is not clinical truth.
 
 ### Substrate and bandwidth
 
@@ -292,7 +302,7 @@ The Oncology Lab synthetic cohort panel now runs a **numerical rotating probabil
 
 **Actual data flow in each rotation**
 
-1. **High-bandwidth Condition formation:** ten synthetic locus dimensions across five cases and five comparators (100 synthetic 0/1 observations). A Condition may select zero to three anchors; the oracle tests joint presence or odd-parity interactions with case/control thresholds.
+1. **High-bandwidth Condition formation:** ten synthetic locus dimensions across N cases and M comparators (10×(N+M) invented 0/1 observations; N and M are adjustable). A Condition may select zero to three anchors; the oracle tests joint presence or odd-parity interactions with case/control thresholds.
 2. **Sixteen small four-bit logical rooms:** 16 lanes are assigned different deterministic windows from the 210 four-locus windows; mapped locus positions and order rotate. Every lane performs a genuine 16-state local oracle search using QCDSCore.runGrover with the existing first-tangent/peak, 0.999 alignment threshold, and no more than 40 Grover iterations.
 3. **Four 4→1 probability syntheses:** each four-lane group passes **all 16 local probabilities** as joint factors into an embedded 1024-state candidate representation by a normalized logarithmic opinion pool. No winner-only reduction.
 4. **One 4→1 global bind:** a second log opinion pool binds four 1024-state group distributions into one normalized 10D distribution. Joint correlations present within each small four-locus factor can affect global ranking. Four-locus factors alone do **not** guarantee recovery of arbitrary higher-order ten-locus correlations.
