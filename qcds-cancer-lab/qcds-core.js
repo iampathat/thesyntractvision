@@ -371,6 +371,22 @@
     return { stable: reasons.length === 0, reasons, maxTvd, maxEntropyDelta, minJ, maxInfluenceDelta, topStable };
   }
 
+  // UI observations use computed amplitudes and probabilities, never fabricated progress.
+  // A lane is a logical branch; the browser evaluates branches sequentially.
+  function laneObservation(lane) {
+    return {
+      bankIndex: lane.bankIndex,
+      rotation: lane.view.bankId % ROTATION_BANKS,
+      excludedIndex: lane.view.excludedIndex,
+      stateCount: lane.grover.stateCount,
+      markedCount: lane.markedCount,
+      groverIterations: lane.grover.iterations,
+      markedMass: lane.grover.markedMass,
+      topProbability: lane.grover.topProbability,
+      entropyBits: lane.grover.entropyBits
+    };
+  }
+
   function runCycle(inputMask, hypotheses, recursiveStates, cycle, onProgress) {
     const familyLanes = Array.from({ length: 8 }, () => []);
     const allLanes = [];
@@ -382,11 +398,15 @@
         const marked = compileCancerOracle(view, inputMask, hypotheses, recursiveStates);
         const grover = runGrover(view.stateCount, marked, MAX_GROVER_ITERS);
         const lifted = liftLaneDistribution(view, grover.probabilities);
-        const lane = { view, markedCount: marked.length, grover, lifted };
+        const lane = { view, markedCount: marked.length, grover, lifted, bankIndex: bank };
         familyLanes[excluded].push(lane);
         allLanes.push(lane);
       }
-      if (onProgress) onProgress({ cycle, bank: bank + 1, banks: ROTATION_BANKS, lanesDone: (bank + 1) * 8, lanesTotal: PARALLEL_LANES });
+      if (onProgress) onProgress({
+        cycle, bank: bank + 1, banks: ROTATION_BANKS,
+        lanesDone: (bank + 1) * 8, lanesTotal: PARALLEL_LANES,
+        lanes: familyLanes.map(family => laneObservation(family[family.length - 1]))
+      });
     }
 
     const familyDistributions = familyLanes.map(lanes => logOpinionPool(lanes.map(l => l.lifted)));
@@ -410,6 +430,7 @@
       markedMin: Math.min(...markedCounts),
       markedMax: Math.max(...markedCounts),
       familyDistributions,
+      laneObservations: allLanes.map(laneObservation),
       boundDistribution,
       boundTopState: boundTop.state,
       boundTopProbability: boundTop.p,
@@ -495,11 +516,15 @@
           const marked = compileCancerOracle(view, inputMask, hypotheses, recursiveStates);
           const grover = runGrover(view.stateCount, marked, MAX_GROVER_ITERS);
           const lifted = liftLaneDistribution(view, grover.probabilities);
-          const lane = { view, markedCount: marked.length, grover, lifted };
+          const lane = { view, markedCount: marked.length, grover, lifted, bankIndex: bank };
           familyLanes[excluded].push(lane);
           allLanes.push(lane);
         }
-        if (progress) progress({ cycle, bank: bank + 1, banks: ROTATION_BANKS, lanesDone: (bank + 1) * 8, lanesTotal: PARALLEL_LANES });
+        if (progress) progress({
+          cycle, bank: bank + 1, banks: ROTATION_BANKS,
+          lanesDone: (bank + 1) * 8, lanesTotal: PARALLEL_LANES,
+          lanes: familyLanes.map(family => laneObservation(family[family.length - 1]))
+        });
         await new Promise(resolve => setTimeout(resolve, 0));
       }
 
@@ -515,7 +540,7 @@
         cycle, laneCount: allLanes.length, familyCount: 8,
         groverMin: Math.min(...groverIters), groverMax: Math.max(...groverIters),
         markedMin: Math.min(...markedCounts), markedMax: Math.max(...markedCounts),
-        familyDistributions, boundDistribution, boundTopState: boundTop.state, boundTopProbability: boundTop.p,
+        familyDistributions, laneObservations: allLanes.map(laneObservation), boundDistribution, boundTopState: boundTop.state, boundTopProbability: boundTop.p,
         influence, parent, derivedLogic
       };
       cycles.push(result);
@@ -558,6 +583,7 @@
     groverSuccessProbability,
     peakIterationCount,
     runGrover,
+    laneObservation,
     runCancerQCDS,
     runCancerQCDSAsync
   };
