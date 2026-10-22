@@ -68,6 +68,17 @@
           <h3>Ask QCDS to look for a relationship <span class="genome-demo-marker">COMPUTED SIMULATION</span></h3>
           <p>By default, nothing is preselected: QCDS searches for possible connections across DNA positions. You can point it toward a starting location, but you do <strong>not</strong> need to know the answer. It might find one pattern, several, or none.</p>
         </div>
+        <div class="cohort-group-config">
+          <p class="cohort-size-note"><strong>How many people should QCDS compare?</strong> You decide both group sizes. The initial values are only a reproducible example, not a requirement. DNA-position count is a separate model dimension.</p>
+          <div class="cohort-size-controls">
+            <label for="cohortCaseCount">Cancer-labeled profiles
+              <input id="cohortCaseCount" type="number" min="2" max="30" step="1" value="5" />
+            </label>
+            <label for="cohortControlCount">Comparison profiles
+              <input id="cohortControlCount" type="number" min="2" max="30" step="1" value="5" />
+            </label>
+          </div>
+        </div>
         <div class="cohort-controls">
           <div class="cohort-seed-panel">
             <strong>Optional: choose where QCDS should start</strong>
@@ -95,15 +106,6 @@
               <select id="cohortMaxControls" aria-label="Maximum comparison profiles carrying this combination"><option value="1">1 of 5</option></select>
             </label>
             <div class="cohort-data-settings">
-              <p class="cohort-size-note"><strong>Choose the size of your example.</strong> Five was just one illustration, not a requirement of QCDS. This browser model still uses ten symbolic loci regardless of group size.</p>
-              <div class="cohort-size-controls">
-                <label for="cohortCaseCount">People in the cancer-labeled group
-                  <input id="cohortCaseCount" type="number" min="2" max="30" step="1" value="5" />
-                </label>
-                <label for="cohortControlCount">People in the comparison group
-                  <input id="cohortControlCount" type="number" min="2" max="30" step="1" value="5" />
-                </label>
-              </div>
               <label for="cohortDataSeed">Example-data seed (reproducible) <input id="cohortDataSeed" type="number" min="1" max="1000000" value="173" step="1" /></label>
               <label for="cohortDataMode">How to generate sample data
                 <select id="cohortDataMode">
