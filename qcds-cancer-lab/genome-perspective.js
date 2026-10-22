@@ -226,7 +226,7 @@
   }
   function renderOutcome(){
     const headline=$("cohortOutcome"),detail=$("cohortOutcomeDetail"),alts=$("cohortAlternatives"),
-      quality=$("cohortQuality");
+      quality=$("cohortQuality"),evidence=$("cohortEvidence");
     alts.replaceChildren();
     if(!result.selected){
       headline.textContent="No matching connection found with these settings.";
@@ -234,6 +234,7 @@
       if($("cohortCandidatesPanel"))$("cohortCandidatesPanel").hidden=true;
       quality.dataset.status="unresolved";
       quality.textContent="The model has no valid match. No DNA positions are highlighted; this does not rule anything out for real patients.";
+      if(evidence)evidence.textContent="No candidate met the preset rules in these invented observations. This is a model result, not a conclusion about any real person.";
       selectedState=null;
       return;
     }
@@ -252,7 +253,18 @@
     quality.textContent=(result.stable
       ?"The probability pattern met the model's internal stability checks."
       :"The rotating probabilities have NOT fully stabilized in the selected number of passes.")+
-      " "+result.rotations+" rotations were calculated. This is not a medically validated discovery.";
+      " "+result.rotations+" rotations were calculated. Stability does not establish biological truth.";
+    if(evidence){
+      const nullCheck=D.permutationAudit({...readSettings(),selectedState:item.state});
+      const pct=(100*nullCheck.familywiseFraction).toFixed(1)+"%";
+      evidence.dataset.status=nullCheck.familywiseFraction>.05?"weak":"unvalidated";
+      evidence.textContent="Does this really distinguish the groups? We tested all "+
+        nullCheck.assignments+" possible ways to reassign these ten invented profiles into two groups of five. "+
+        nullCheck.tailAssignments+" of those assignments ("+pct+
+        ") produced at least one eligible relationship with a group difference as large as this one. "+
+        "This check accounts for testing "+nullCheck.validCandidates+
+        " candidate combinations, but not for choosing the oracle after seeing results. It is not medical evidence.";
+    }
     const allOptions=result.ranked.slice(0,16);
     for(const alt of allOptions){
       const b=e("button","cohort-alt",locusNames(alt.loci));b.type="button";
