@@ -1571,8 +1571,8 @@ function glasswingView() {
     ];
     return '<article class="glasswing-track panel '+(track.id==="qcds"?"glasswing-qcds":"")+'">'
       +'<div class="glasswing-track-heading"><span class="eyebrow">0'+(index+1)+' · '+esc(track.eyebrow)+'</span><h2>'+esc(track.name)+'</h2></div>'
-      +'<p>'+esc(track.explanation)+'</p>'
-      +'<dl class="glasswing-metrics">'+counts.map(([name,value])=>'<div><dt>'+esc(name)+'</dt><dd>'+value+'</dd></div>').join("")+'</dl>'
+      +'<p class="glasswing-track-explainer">'+esc(track.explanation)+'</p>'
+      +'<dl class="glasswing-metrics">'+counts.map(([name,value],position)=>'<div class="glasswing-metric '+(position<2?'glasswing-metric-primary':'')+'"><dt>'+esc(name)+'</dt><dd>'+value+'</dd></div>').join("")+'</dl>'
       +'<details class="glasswing-details"><summary>What this track actually does</summary><ol>'+list(track.trace)+'</ol></details>'
       +'<details class="glasswing-details"><summary>Example paths ('+fmt(track.routes.length)+')</summary>'
       +'<ul>'+list(track.routes.slice(0,6).map(route => route.title+' — '+route.status))+'</ul></details>'
@@ -1584,7 +1584,7 @@ function glasswingView() {
     '<section class="panel glasswing-context"><div><span class="eyebrow">CURRENT INVESTIGATION</span><h2>'+esc(result.system.name)+'</h2>'
     +'<p>'+esc(result.system.attackerGoal || "No attacker goal declared yet.")+'</p></div>'
     +'<a class="button" href="#system">Review facts and 1 / 0 / ? '+icon("arrow")+'</a></section>'
-    +'<div class="glasswing-note"><b>Important:</b> This is a reproducible structural comparison using three projections of the same QCDS Security Lab engine. It is <b>not</b> a performance test against independent AI models, and more discovered paths are not proof of vulnerability.</div>'
+    +'<aside class="glasswing-note" aria-label="Comparison limitations"><b>How to read this:</b> Same engine, three inference depths. Not a benchmark of independent AI models, and more candidate paths do not prove vulnerability.</aside>'
     +'<section class="glasswing-tracks" aria-label="Comparison of inference depth">'+cards+'</section>'
     +'<section class="panel glasswing-method"><div class="panel-header"><div><span class="eyebrow">QCDS INFERENTIAL SPACE</span><h2>From conditions to evidence</h2></div><a href="#trace" class="text-link">Inspect the QCDS trace →</a></div>'
     +'<div class="glasswing-facts"><span><b>'+fmt(mask.knownMaskDimensions)+'</b> Known coordinates</span>'
@@ -1627,6 +1627,7 @@ function render() {
     state.route === "perspectives",
   );
   document.body.classList.toggle("menu-open", state.mobile);
+  document.body.classList.toggle("comparison-mode", state.route === "comparison");
   $("#app").innerHTML = shell();
   refreshAppStatus();
   document.title = `${ROUTES.find((r) => r[0] === state.route)?.[1] || "Overview"} · QCDS Security Lab`;
