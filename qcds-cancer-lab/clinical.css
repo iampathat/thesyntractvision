@@ -752,3 +752,8 @@ body.clinical-theme .workbench {margin-top:24px}
 .cohort-genome-count {text-align:right;font-size:10px;white-space:nowrap;overflow:visible}
 .cohort-genome-row {grid-template-columns:52px minmax(0,1fr) 55px}
 @media(max-width:650px) {.cohort-genome-row {grid-template-columns:40px minmax(0,1fr) 48px}}
+
+.cohort-legend .legend-cohort-partial {background:#b0cbd3;border:1px dashed #5d8fa0}
+.funnel-prob-row {cursor:default}
+.funnel-prob-row:hover {background:#fff;border-color:#dce8ee}
+.funnel-prob-row.is-selected:hover {background:#e2f3ed;border-color:#82bfa9}
