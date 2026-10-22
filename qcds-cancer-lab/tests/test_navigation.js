@@ -24,7 +24,13 @@ for(const view of ["home","setup","findings","engine","legacy","knowledge"])
 const byId=new Map(),all=[];
 class Node {
  constructor(tag="div",id=null,classes=[]){
-  this.tag=tag;this.id=id;this._classes=new Set(classes);
+  this.tag=tag;this._id=null;
+  Object.defineProperty(this,"id",{get:()=>this._id,set:newId=>{
+    if(this._id)byId.delete(this._id);
+    this._id=newId;
+    if(newId)byId.set(newId,this);
+  }});
+  this.id=id;this._classes=new Set(classes);
   this.parent=null;this.children=[];this.events={};this.attrs={};
   this.dataset={};this.hidden=false;this.textContent="";this._html="";
   this.classList={
