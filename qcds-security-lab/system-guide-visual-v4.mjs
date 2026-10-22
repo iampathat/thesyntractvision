@@ -220,16 +220,18 @@ export function createVisualGlasswingPdf(jsPDF,snapshot,{artwork={},edition='4.0
  next('INFERENCE');
  y=heading(d,'04 / RECURSIVE INFERENCE','Challenge the protection, not only the threat',
   'The loop examines controls, alternate routes and surviving assumptions.');
- for(const [a,b] of [['The candidate','A plausible route is selected from the compatible model.'],
- ['The protection','An explicit control should interrupt that route.'],
- ['The alternative','Another endpoint, asynchronous step or cached state might bypass the control.'],
- ['The verification','Use scoped evidence and counter-tests to accept, reject or qualify a claim.']]){
- y=lineBullet(d,a,b,y);
- }
- panelBox(d,M,y+8,CW,72);
- copy(d,'CONVERGENCE IS NOT PROOF',M+14,y+32,CW-28,10.3,gold,1,{bold:true});
- copy(d,'A stable logical result or simulated distribution does not itself establish a real-world security flaw.',
-  M+14,y+53,CW-28,9.5,ink,1.3);
+ y=lineBullet(d,'The five questions',
+  'The workflow is Goal -> Route -> Control -> Bypass -> Proof. Start from the unwanted outcome, identify a plausible path, challenge the protection and require a counter-test.',y);
+ y=lineBullet(d,'Parallel, sequential and hybrid',
+  'Parallel compares multiple perspectives or dimensions; sequential work carries forward a changed condition; hybrid combines independent lanes with deeper conditional exploration.',y);
+ y=twoColRows(d,[['Perspective rotation','Hold the facts constant while excluding one framework to test what coverage remains.'],
+  ['Dimension walk','Change one fact to 0, 1 or ? and inspect the dependent route candidates.'],
+  ['Control challenge','Introduce a protective condition but do not assume it works without observations.'],
+  ['Counter-test','Seek a safe observation that could disprove, not merely support, the route.']],y+6,{rowH:112});
+ panelBox(d,M,y+8,CW,66);
+ copy(d,'CONVERGENCE IS NOT PROOF',M+14,y+33,CW-28,10.3,gold,1,{bold:true});
+ copy(d,'Agreement among lenses or simulated probabilities does not establish a real-world exploit.',
+  M+14,y+52,CW-28,9.3,ink,1.25);
  heroPage('05','Execution and truth-alignment','The same oracle, different computational representations.','execution');
  next('EXECUTION MODES');
  y=heading(d,'05 / EXECUTION & VERIFICATION','The same oracle, different execution modes',
