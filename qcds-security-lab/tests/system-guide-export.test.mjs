@@ -68,7 +68,7 @@ test('Reports has a separate case-free system guide action',()=>{
   assert.ok(app.includes('data-action="system-guide-pdf"'));
   assert.ok(app.includes('case "system-guide-pdf"'));
   assert.ok(exp.includes('export async function downloadSystemGuidePdf()'));
-  assert.ok(exp.includes('createEditorialSystemGuidePdf(jsPDF,'));
+  assert.ok(exp.includes('createVisualGlasswingPdf(jsPDF,'));
   assert.ok(exp.includes('QCDS-Project-Glasswing-Security-Lab-System-Guide.pdf'));
   assert.ok(!exp.includes('canvas.toDataURL('));
 });
