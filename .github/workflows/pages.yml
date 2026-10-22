@@ -289,6 +289,7 @@ jobs:
           mkdir -p _site/qcds-oncology-lab
           cp -a _site/qcds-cancer-lab/. _site/qcds-oncology-lab/
           test -s _site/qcds-oncology-lab/index.html
+          test -s _site/qcds-oncology-lab/AUDIT_2026-10-22.md
 
       - name: Validate QCDS Oncology Lab surface
         run: |
