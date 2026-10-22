@@ -78,6 +78,7 @@
         circle.classList.toggle("is-anchor",anchors.includes(i));
         circle.classList.toggle("is-hit",hit&&present&&person.group==="cases");
         circle.classList.toggle("is-control-hit",hit&&present&&person.group==="controls");
+        circle.classList.toggle("is-pattern-missing",hit&&!present&&result?.relation==="parity"&&D.satisfies(selectedState,person,"parity"));
         circle.title=person.id+" · "+loc.label+": "+(present?"variant present":"variant absent")+". Click to toggle observation.";
         circle.setAttribute("aria-label",circle.title);
         circle.addEventListener("click",()=>toggleVariant(profileIndex,i));
@@ -95,6 +96,7 @@
         cell.classList.toggle("is-variant",present);
         cell.classList.toggle("is-anchor",anchors.includes(i));
         cell.classList.toggle("is-highlight",present&&person.group==="cases"&&selectedState!==null&&(selectedState&(1<<i))!==0);
+        cell.classList.toggle("is-pattern-missing",!present&&selectedState!==null&&(selectedState&(1<<i))!==0&&result?.relation==="parity"&&D.satisfies(selectedState,person,"parity"));
         cell.title="Toggle synthetic observation "+person.id+" / "+loc.label;
         cell.setAttribute("aria-label",person.id+" "+loc.label+": "+(present?"1":"0")+". Toggle.");
         cell.addEventListener("click",()=>toggleVariant(profileIndex,i));
@@ -159,10 +161,10 @@
       headline.textContent=result.refinedCount===1
         ?"One previously unspecified relation is strongest under the declared oracle."
         :result.refinedCount+" equally strong relations survive refinement; no unique answer.";
-      detail.textContent=locusNames(selected.loci)+". Combination co-occurs in "+selected.caseCount+"/"+dataset.cases.length+
+      detail.textContent=locusNames(selected.loci)+". Relation satisfied in "+selected.caseCount+"/"+dataset.cases.length+
         " synthetic cases versus "+selected.controlCount+"/"+dataset.controls.length+
         " synthetic comparators. Difference: "+percent(selected.contrast)+
-        ". Grover amplitudes quantify oracle-marked states, not biological confidence or causal discovery.";
+        ". Relation: "+(result.relation==="parity"?"odd parity among selected 0/1 loci":"all selected variants present")+". Grover amplitudes quantify oracle-marked states, not biological confidence or causal discovery.";
       result.ranked.slice(0,20).forEach(x=>{
         const btn=e("button","cohort-alt",locusNames(x.loci));
         btn.type="button";
@@ -178,6 +180,7 @@
       anchors:anchors.slice(),
       minCases:Number($("cohortMinCases").value),
       maxControls:Number($("cohortMaxControls").value),
+      relation:$("cohortRelation").value,
       minSize:2,
       maxSize:4
     };
@@ -206,6 +209,7 @@
     $("cohortRun").addEventListener("click",run);
     $("cohortMinCases").addEventListener("change",run);
     $("cohortMaxControls").addEventListener("change",run);
+    $("cohortRelation").addEventListener("change",run);
     $("cohortRebuild").addEventListener("click",()=>{try{regenerate(0)}catch(e){$("cohortError").textContent=e.message;}});
     $("cohortNextDataset").addEventListener("click",()=>{try{regenerate(1)}catch(e){$("cohortError").textContent=e.message;}});
     $("cohortClearAnchors").addEventListener("click",()=>{anchors=[];run();});
