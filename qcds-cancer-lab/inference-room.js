@@ -1,4 +1,4 @@
-/* QCDS Cancer Lab — inspectable logical inference space.
+/* QCDS Oncology Lab — inspectable logical inference space.
  * Displays engine-generated lane observations, not decorative/proxy scores.
  * Theory and creation by Patrik Sundblom.
  * R&D support: OpenAI / ChatGPT.
