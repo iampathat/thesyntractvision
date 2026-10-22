@@ -296,6 +296,7 @@ jobs:
           test -s _site/qcds-cancer-lab/clinical-ui.js
           test -s _site/qcds-cancer-lab/qcds-conclusion.js
           test -s _site/qcds-cancer-lab/genome-perspective.js
+          test -s _site/qcds-cancer-lab/genome-discovery.js
           test -s _site/qcds-cancer-lab/tests/test_genome.js
           test -s _site/qcds-cancer-lab/tests/test_conclusion.js
           test -s _site/qcds-cancer-lab/LICENSE.md
@@ -328,6 +329,7 @@ jobs:
           node --check _site/qcds-cancer-lab/clinical-ui.js
           node --check _site/qcds-cancer-lab/qcds-conclusion.js
           node --check _site/qcds-cancer-lab/genome-perspective.js
+          node --check _site/qcds-cancer-lab/genome-discovery.js
           node --check _site/qcds-cancer-lab/inference-room.js
           node _site/qcds-cancer-lab/tests/test_core.js
           node _site/qcds-cancer-lab/tests/test_clinical.js
