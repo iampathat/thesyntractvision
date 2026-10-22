@@ -7,13 +7,13 @@ const read=name=>readFileSync(new URL('../'+name,import.meta.url),'utf8');
 const html=read('index.html'), app=read('app-stage-v118.js'), css=read('glasswing-unified-shell-v127.css');
 const worker=read('sw.js'), intro=read('glasswing-screen-v125.js'), lab=read('logical-lab.js'), install=read('app-install.js');
 test('one authoritative visual layer loads AFTER all inherited styles',()=>{
-  const last=html.indexOf('glasswing-unified-shell-v127.css?v=1.27.0');
+  const last=html.indexOf('glasswing-unified-shell-v127.css?v=1.27.1');
   const prior=html.indexOf('glasswing-screen-v125.css');
   assert.ok(prior>0&&last>prior);
   assert.match(worker,/glasswing-unified-shell-v127\.css/);
-  assert.match(html,/data-release="1\.27\.0"/);
-  assert.match(worker,/const VERSION = '1\.27\.0'/);
-  assert.match(html,/app-stage-v118\.js\?v=1\.27\.0/);
+  assert.match(html,/data-release="1\.27\.1"/);
+  assert.match(worker,/const VERSION = '1\.27\.1'/);
+  assert.match(html,/app-stage-v118\.js\?v=1\.27\.1/);
 });
 test('desktop and Fold/mobile have explicit non-overflowing widths',()=>{
   assert.match(css,/margin-left:242px!important/);
@@ -33,8 +33,8 @@ test('header settings stays visible on mobile rather than rendering a blank rect
   assert.doesNotMatch(app,/gw-what-header|gw-guide-header/);
 });
 test('primary navigation is simple, advanced work is nested, and guide is independent',()=>{
-  const nav=app.slice(app.indexOf('<nav aria-label="Workspace">'),app.indexOf('</nav>',app.indexOf('<nav aria-label="Workspace">')));
-  for(const text of ['Home','My investigations','Worked examples','CURRENT INVESTIGATION','Investigate · five steps','Results & explanation','Reports & PDF','Explore & learn']){
+  const nav=app.slice(app.indexOf('<nav aria-label="Security Lab navigation">'),app.indexOf('</nav>',app.indexOf('<nav aria-label="Security Lab navigation">')));
+  for(const text of ['Home','My investigations','Worked examples','CURRENT INVESTIGATION','Investigate','Results & explanation','Reports & PDF','Frameworks & QCDS tools']){
     assert.ok(nav.includes(text),text);
   }
   assert.match(nav,/gw-investigation-nav/);
@@ -59,4 +59,31 @@ test('dimension workbench is branded as Project Glasswing, not a second Q-star p
   assert.match(lab,/class="logic-brand-mark"/);
   assert.doesNotMatch(lab,/class="logic-brand">Q<span>★<\/span>/);
   assert.match(css,/#logical-lab \.logic-brand-mark/);
+});
+
+test('Home focuses on the active investigation instead of an intro advertisement',()=>{
+ const home=read('consumer-ui-stage-v118.js').split('export function homeView')[1].split('export function casesView')[0];
+ assert.match(home,/class="gw-home-page-title"/);
+ assert.match(home,/class="consumer-resume"/);
+ assert.ok(home.indexOf('gw-home-page-title')<home.indexOf('consumer-resume'));
+ assert.ok(home.indexOf('consumer-resume')<home.indexOf('gw-home-service-status'));
+ assert.doesNotMatch(home,/data-watch-intro|class="gw-lab-heading"/);
+ assert.doesNotMatch(home,/data-action="new"/);
+});
+test('Sidebar keeps all current-case actions visibly together and one New button',()=>{
+ const start=app.indexOf('<nav aria-label="Security Lab navigation">');
+ const end=app.indexOf('</nav>',start);
+ const nav=app.slice(start,end);
+ const first=nav.indexOf('id="gw-nav-workspace-title"');
+ const current=nav.indexOf('id="gw-nav-current-title"');
+ const reference=nav.indexOf('id="gw-nav-resources-title"');
+ assert.ok(first>0 && current>first && reference>current);
+ assert.ok(nav.indexOf('class="consumer-nav-case"')>current);
+ assert.ok(nav.indexOf("analysisLink('findings'")>current);
+ assert.ok(nav.indexOf("analysisLink('report'")>current);
+ assert.ok(nav.indexOf("analysisLink('report'")<reference);
+ assert.match(nav,/class="gw-nav-new" data-action="new"/);
+ assert.match(nav,/Goal to Proof/);
+ assert.doesNotMatch(nav,/Replay intro|data-watch-intro/);
+ assert.match(css,/@media\(hover:none\)/);
 });

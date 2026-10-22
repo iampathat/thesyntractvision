@@ -15,7 +15,7 @@ import { createLogicalLab, researchLaunch } from "./logical-lab.js?v=1.27.0";
 import { runGlasswing } from "./glasswing.mjs?v=1.14.1";
 import { downloadSecurityPdf, downloadSystemGuidePdf } from "./report-export.js?v=1.26.6";
 import { WORKSPACE_KEY, restoreWorkspace, writeWorkspace, mergeWorkspace, copyAsOwnProject, STARTERS, isCaseId } from "./workspace.mjs?v=1.0.1";
-import { homeView, casesView, newCaseMarkup, consumerNav } from "./consumer-ui-stage-v118.js?v=1.27.0";
+import { homeView, casesView, newCaseMarkup, consumerNav } from "./consumer-ui-stage-v118.js?v=1.27.1";
 import { initAppInstall, refreshAppStatus } from "./app-install.js?v=1.27.0";
 import { saveDeviceFile, initNativeApp } from "./device-files.js?v=1.0.0";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
@@ -29,7 +29,7 @@ const esc = (s) =>
       ],
   );
 const icon = (name, cls = "") =>
-  `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${{ grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>', system: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 21h8m-4-5v5"/>', shield: '<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="M12 8v5m0 3h.01"/>', trace: '<circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="12" cy="19" r="2"/><path d="m5 7 6 10m8-10-6 10M7 5h10"/>', report: '<path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8m-8 4h6"/>', book: '<path d="M12 5c-3-2-6-2-10-1v15c4-1 7-1 10 1 3-2 6-2 10-1V4c-4-1-7-1-10 1zm0 0v15"/>', arrow: '<path d="M4 12h16m-6-6 6 6-6 6"/>', play: '<path d="m8 5 11 7-11 7z"/>', plus: '<path d="M12 5v14M5 12h14"/>', spark: '<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z"/>', download: '<path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/>', check: '<path d="m5 12 4 4L19 6"/>', close: '<path d="m6 6 12 12M6 18 18 6"/>', external: '<path d="M14 3h7v7m0-7L10 14M10 3H3v18h18v-7"/>', layers: '<path d="m12 3 10 5-10 5L2 8zm-10 9 10 5 10-5m-20 5 10 5 10-5"/>', mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 5 10 8L22 5"/>', database: '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 4 16 4 16 0V5M4 12c0 4 16 4 16 0"/>', menu: '<path d="M4 6h16M4 12h16M4 18h16"/>', undo: '<path d="m9 3-6 6 6 6M3 9h11a6 6 0 0 1 0 12"/>' }[name] || '<circle cx="12" cy="12" r="8"/>'}</svg>`;
+  `<svg class="icon ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${{ grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>', system: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 21h8m-4-5v5"/>', shield: '<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="M12 8v5m0 3h.01"/>', trace: '<circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="12" cy="19" r="2"/><path d="m5 7 6 10m8-10-6 10M7 5h10"/>', report: '<path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8m-8 4h6"/>', book: '<path d="M12 5c-3-2-6-2-10-1v15c4-1 7-1 10 1 3-2 6-2 10-1V4c-4-1-7-1-10 1zm0 0v15"/>', arrow: '<path d="M4 12h16m-6-6 6 6-6 6"/>', play: '<path d="m8 5 11 7-11 7z"/>', plus: '<path d="M12 5v14M5 12h14"/>', spark: '<path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z"/>', download: '<path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/>', check: '<path d="m5 12 4 4L19 6"/>', close: '<path d="m6 6 12 12M6 18 18 6"/>', external: '<path d="M14 3h7v7m0-7L10 14M10 3H3v18h18v-7"/>', layers: '<path d="m12 3 10 5-10 5L2 8zm-10 9 10 5 10-5m-20 5 10 5 10-5"/>', mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 5 10 8L22 5"/>', database: '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 4 16 4 16 0V5M4 12c0 4 16 4 16 0"/>', settings: '<circle cx="12" cy="12" r="3"/><path d="m10 2-.4 2.1-2 1L5.6 4l-2 3.4 1.6 1.7v2.3L3.6 13l2 3.4 2.2-.9 2 1L10 19h4l.4-2.1 2-1 2.2.9 2-3.4-1.6-1.7V9.1l1.6-1.7-2-3.4-2.2 1-2-1L14 2z"/>', menu: '<path d="M4 6h16M4 12h16M4 18h16"/>', undo: '<path d="m9 3-6 6 6 6M3 9h11a6 6 0 0 1 0 12"/>' }[name] || '<circle cx="12" cy="12" r="8"/>'}</svg>`;
 const ROUTES = [
   ["home", "Home", "grid"],
   ["cases", "My investigations", "shield"],
@@ -371,30 +371,40 @@ function shell() {
     : `<a class="nav-example-picker" href="#examples">${icon("play")}<span class="nav-copy"><b>Worked examples</b><em>Load a finished case through the whole lab</em></span></a>`;
   return `<aside id="site-nav" ${state.mobile ? 'role="dialog" aria-modal="true" aria-label="Navigation"' : ""} class="sidebar ${state.mobile ? "open" : ""}">
     <a class="brand glasswing-brand" href="#home" aria-label="QCDS Security Lab home"><span class="glasswing-brand-mark"><img src="./glasswing-mark.webp?v=1.18.0" alt="" width="160" height="76"></span><span class="glasswing-brand-label">QCDS<span class="brand-sub">SECURITY LAB</span></span></a>
-    <div class="workspace-label">YOUR WORKSPACE <button class="icon-button menu-close" data-action="close-menu" aria-label="Close navigation">${icon("close")}</button></div>
-    <nav aria-label="Workspace">
-      <a href="#home" ${state.route==='home'?'aria-current="page"':''}>${icon('grid')}<span class="nav-copy"><b>Home</b></span></a>
-      <a href="#cases" ${state.route==='cases'?'aria-current="page"':''}>${icon('shield')}<span class="nav-copy"><b>My investigations</b></span></a>
-      <a href="#examples" ${state.route==='examples'?'aria-current="page"':''}>${icon('play')}<span class="nav-copy"><b>Worked examples</b></span></a>
-      <div class="nav-section-label">CURRENT INVESTIGATION</div>
-      <div class="consumer-nav-case"><b>${esc(project().input.name)}</b><small>${project().example?'Practice case':'Your system'}</small></div>
-      <details class="gw-investigation-nav" ${investigating?'open':''}>
-        <summary>${icon('trace')}<span>Investigate · five steps</span></summary>
-        <div class="nav-flow">${stepLinks}</div>
-      </details>
-      ${analysisLink('findings','Results & explanation','shield')}
-      ${analysisLink('report','Reports & PDF','report')}
-      <details class="consumer-nav-more" ${!state.mobile && ['system','perspectives','trace','overview','comparison','learn'].includes(state.route)?'open':''}>
-        <summary>${icon('layers')}<span>Explore & learn</span></summary>
-        ${analysisLink('system','System facts','system')}
-        ${analysisLink('perspectives','Security perspectives','layers')}
-        <a href="#comparison" ${state.route==="comparison"?'aria-current="page"':""}>${icon('trace')}<span class="nav-copy"><b>Compare methods</b></span></a>
-        <button type="button" class="gw-lab-nav-link" data-open-logical>${icon('system')}<span>Dimensional & quantum lab</span></button>
-        ${analysisLink('learn','In plain English','book')}
-      </details>
+    <div class="workspace-label">MENU <button class="icon-button menu-close" data-action="close-menu" aria-label="Close navigation">${icon("close")}</button></div>
+    <nav aria-label="Security Lab navigation">
+      <section class="gw-nav-section" aria-labelledby="gw-nav-workspace-title">
+        <h2 class="nav-section-label" id="gw-nav-workspace-title">WORKSPACE</h2>
+        <a href="#home" ${state.route==='home'?'aria-current="page"':''}>${icon('grid')}<span class="nav-copy"><b>Home</b></span></a>
+        <a href="#cases" ${state.route==='cases'?'aria-current="page"':''}>${icon('shield')}<span class="nav-copy"><b>My investigations</b></span></a>
+        <button type="button" class="gw-nav-new" data-action="new">${icon("plus")} <span>New investigation</span></button>
+      </section>
+      <section class="gw-nav-section gw-nav-current" aria-labelledby="gw-nav-current-title">
+        <h2 class="nav-section-label" id="gw-nav-current-title">CURRENT INVESTIGATION</h2>
+        <div class="consumer-nav-case"><b>${esc(project().input.name)}</b><small>${project().example?'Worked example · synthetic evidence':'Your saved investigation'}</small></div>
+        <div class="gw-case-actions" aria-label="Steps and results for the current investigation">
+          <details class="gw-investigation-nav" ${investigating?'open':''}>
+            <summary>${icon('trace')}<span>Investigate <small>5 steps · Goal to Proof</small></span></summary>
+            <div class="nav-flow">${stepLinks}</div>
+          </details>
+          ${analysisLink('findings','Results & explanation','shield')}
+          ${analysisLink('report','Reports & PDF','report')}
+        </div>
+      </section>
+      <section class="gw-nav-section gw-nav-resources" aria-labelledby="gw-nav-resources-title">
+        <h2 class="nav-section-label" id="gw-nav-resources-title">LEARN & EXPLORE</h2>
+        <a href="#examples" ${state.route==='examples'?'aria-current="page"':''}>${icon('play')}<span class="nav-copy"><b>Worked examples</b></span></a>
+        <details class="consumer-nav-more" ${['system','perspectives','trace','overview','comparison'].includes(state.route)?'open':''}>
+          <summary>${icon('layers')}<span>Frameworks & QCDS tools</span></summary>
+          ${analysisLink('system','System facts','system')}
+          ${analysisLink('perspectives','Security frameworks','layers')}
+          <a href="#comparison" ${state.route==="comparison"?'aria-current="page"':""}>${icon('trace')}<span class="nav-copy"><b>Compare inference methods</b></span></a>
+          <button type="button" class="gw-lab-nav-link" data-open-logical>${icon('system')}<span>Dimensional & quantum lab</span></button>
+        </details>
+        ${analysisLink('learn','How Security Lab works','book')}
+      </section>
     </nav>
-    <button class="new-case" data-action="new">${icon("plus")} New investigation</button>
-    <div class="sidebar-bottom"><button type="button" class="gw-settings-trigger" data-app-settings aria-haspopup="dialog">${icon("system")} Settings & updates</button><div class="local-note">${icon("shield")}<span>Saved on this device.<br>No account needed.</span></div><a href="#learn" class="author">By Patrik Sundblom <span>↗</span></a><div class="version">SECURITY LAB <span>v${document.body.dataset.release || VERSION}</span></div></div>
+    <div class="sidebar-bottom"><button type="button" class="gw-settings-trigger" data-app-settings aria-haspopup="dialog">${icon("settings")} Settings & updates</button><div class="local-note">${icon("shield")}<span>Saved on this device.<br>No account needed.</span></div><a href="#learn" class="author">By Patrik Sundblom <span>↗</span></a><div class="version">SECURITY LAB <span>v${document.body.dataset.release || VERSION}</span></div></div>
   </aside>
   ${state.mobile ? '<button class="menu-backdrop" data-action="close-menu" aria-label="Close navigation backdrop"></button>' : ""}
   <div class="app-body" ${state.mobile ? "inert" : ""}>
@@ -408,7 +418,7 @@ function shell() {
         <span id="save-status" class="save-status">${state.storage ? "Saved on this device" : "Not saved · export your work"}</span>
         <button type="button" class="button small plain-button gw-settings-header" data-app-settings
           aria-haspopup="dialog" aria-label="Settings and updates" title="Settings and updates">
-          ${icon("system")} <span>Settings</span>
+          ${icon("settings")} <span>Settings</span>
         </button>
       </div>
     </header>
@@ -1719,6 +1729,13 @@ function setMenu(open) {
   $(open ? ".menu-close" : ".mobile-toggle")?.focus({ preventScroll: true });
 }
 document.addEventListener("click", async (e) => {
+  // Closing the drawer must also work when selecting the current route,
+  // since navigating to an identical hash will not fire hashchange.
+  const sameNavLink = e.target.closest('#site-nav a[href^="#"]');
+  if (state.mobile && sameNavLink?.getAttribute('href') === location.hash) {
+    setMenu(false);
+    return;
+  }
   if (e.target.closest('a[href="#main"]')) {
     e.preventDefault();
     $("#main").focus();
@@ -1834,6 +1851,7 @@ document.addEventListener("click", async (e) => {
       setMenu(!state.mobile);
       break;
     case "new":
+      if (state.mobile) setMenu(false);
       openNewCase();
       break;
     case "reset":

@@ -136,7 +136,8 @@ test('one cohesive icy-blue design and no oversized Home eagle',()=>{
   assert.match(css,/background:#153c57!important/);
   assert.match(css,/\.gw-settings-dialog \{/);
   assert.match(css,/object-fit:contain!important;object-position:center!important/);
-  assert.match(consumer,/class="gw-lab-heading-mark"[^>]*width="76" height="76"/);
+  assert.match(consumer,/class="gw-home-page-title"/);
+  assert.doesNotMatch(consumer,/data-watch-intro|class="gw-lab-heading-buttons"/);
   assert.doesNotMatch(consumer,/data-open-landing|href="\.\/update-lab\.html"/);
 });
 
