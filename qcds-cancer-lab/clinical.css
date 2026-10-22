@@ -757,3 +757,11 @@ body.clinical-theme .workbench {margin-top:24px}
 .funnel-prob-row {cursor:default}
 .funnel-prob-row:hover {background:#fff;border-color:#dce8ee}
 .funnel-prob-row.is-selected:hover {background:#e2f3ed;border-color:#82bfa9}
+
+/* Secondary candidates remain selectable without repeating the primary result. */
+.cohort-other-candidates[hidden]{display:none!important}
+.cohort-other-candidates{margin:13px 0 4px;background:#fff;border:1px solid #d8e5eb;border-radius:7px}
+.cohort-other-candidates>summary{display:grid;gap:3px;cursor:pointer;padding:12px 15px;color:#2b5f71}
+.cohort-other-candidates>summary strong{font-size:13px}
+.cohort-other-candidates>summary small{font-size:11px;color:#6b8596;font-weight:430;line-height:1.5}
+.cohort-other-candidates>.cohort-alternatives{padding:0 13px 14px}
