@@ -206,12 +206,16 @@ export function createVisualGlasswingPdf(jsPDF,snapshot,{artwork={},edition='4.0
  next('VECTOR EXPLANATIONS');
  y=heading(d,'03 / ATTACK VECTORS','How the Attack Vector Fabric is formed',
   'Combine a mechanism, route variant, target surface and consequence; then constrain with known conditions.');
- y=lineBullet(d,'What is an attack vector?','A possible way an adversary or failure could cross a boundary. It is not a confirmed exploit.',y);
- y=lineBullet(d,'What the model currently contains',model.seeds.length+' mechanism seeds; '+model.variants.length+' route variants; '+model.targets.length+' target surfaces.',y);
- twoColRows(d,[['Mechanisms',model.seeds.slice(0,4).map(x=>x.title).join(' / ')],
-  ['Route variants',model.variants.map(x=>x.label).join(' / ')],
-  ['Target surfaces',model.targets.map(x=>x.key).join(' / ')],
-  ['Open Search','Explores boundary crossings outside named framework labels; it is not automatically OSINT.']],y+8,{rowH:125});
+ y=lineBullet(d,'What is an attack vector?',
+   'A modeled mechanism and route through which an adversary, mistake or dependency could cause an unwanted consequence. Object-ID manipulation, injected input, authorization bypass and delegated actions are examples - not confirmed findings.',y);
+ y=lineBullet(d,'Why the route space grows',
+   'The model combines mechanism, route variant, target surface, asset and consequence. Direct access, alternate interfaces, queued work, session state and dependencies yield different paths. The current engine defines '+model.seeds.length+' seeds, '+model.variants.length+' route variants and '+model.targets.length+' target surfaces.',y);
+ y=twoColRows(d,[['Active','The required modeled facts are satisfied. A real security claim still needs an authorized test.'],
+  ['Conditional','At least one required fact is unresolved; the route remains a hypothesis.'],
+  ['Rejected','The current conditions rule the route out. Changed facts can change that decision.'],
+  ['Lens projection','OWASP, STRIDE and other lenses classify the same route instead of creating duplicate attacks.']],y+8,{rowH:105});
+ lineBullet(d,'Open Search is not automatically OSINT',
+  'The open perspective questions assumptions and searches for less taxonomy-dependent pathways; it need not gather external intelligence.',y+9);
  heroPage('04','Recursive inference','Route, control, bypass, counter-test and verification.','recursive');
  next('INFERENCE');
  y=heading(d,'04 / RECURSIVE INFERENCE','Challenge the protection, not only the threat',
