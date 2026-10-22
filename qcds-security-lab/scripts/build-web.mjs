@@ -13,7 +13,7 @@ const files=[];
 async function copyFolder(folder='') {
   for(const entry of await readdir(resolve(root,folder),{withFileTypes:true})) {
     const path=folder?`${folder}/${entry.name}`:entry.name;
-    if(entry.isDirectory()) {if(['assets','vendor','qa'].includes(path))await copyFolder(path);continue;}
+    if(entry.isDirectory()) {if(path==='assets'||path.startsWith('assets/')||path==='vendor'||path==='qa')await copyFolder(path);continue;}
     if(!['.html','.css','.js','.mjs','.md','.svg','.png','.webp','.mp4','.webmanifest','.txt'].includes(extname(path)))continue;
     if(['native-bridge.js'].includes(path))continue;
     await mkdir(dirname(resolve(out,path)),{recursive:true});
