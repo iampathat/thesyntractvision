@@ -433,7 +433,8 @@ jobs:
           grep -F 'Load example everywhere' _site/qcds-security-lab/app.js
           grep -F 'WORKED_EXAMPLE_EVIDENCE' _site/qcds-security-lab/engine.mjs
           test -s _site/qcds-security-lab/attack-vectors.mjs
-          test ! -e _site/qcds-security-lab/glasswing.html
+          test -s _site/qcds-security-lab/glasswing.html
+          grep -F 'The Syntract Vision' _site/qcds-security-lab/glasswing.html
           test ! -e _site/qcds-security-lab/glasswing.css
           test ! -e _site/qcds-security-lab/glasswing.js
           test -s _site/qcds-security-lab/glasswing.mjs
