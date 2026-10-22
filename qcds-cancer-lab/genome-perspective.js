@@ -70,8 +70,11 @@
     });
     matrix.append(header);
     all().forEach((person,profileIndex)=>{
+      const relation=result?.settings?.relation||"cooccurrence";
+      const fullMatch=selectedState!==null&&D.satisfies(selectedState,person,relation);
       const row=e("div","cohort-genome-row");
       row.classList.add(person.group==="cases"?"cohort-case":"cohort-control");
+      row.classList.toggle("is-full-match",fullMatch);
       row.append(e("span","cohort-person",person.id));
       const track=e("div","cohort-genome-track");
       track.setAttribute("aria-label",person.id+" synthetic genome locus axis");
@@ -82,15 +85,17 @@
         circle.type="button";circle.style.left=(100*loc.position).toFixed(1)+"%";
         circle.classList.toggle("has-variant",present);
         circle.classList.toggle("is-anchor",anchors.includes(i));
-        circle.classList.toggle("is-hit",hit&&present&&person.group==="cases");
-        circle.classList.toggle("is-control-hit",hit&&present&&person.group==="controls");
-        circle.classList.toggle("is-pattern-missing",hit&&!present&&result?.relation==="parity"&&D.satisfies(selectedState,person,"parity"));
+        circle.classList.toggle("is-hit",hit&&present&&fullMatch&&person.group==="cases");
+        circle.classList.toggle("is-control-hit",hit&&present&&fullMatch&&person.group==="controls");
+        circle.classList.toggle("is-partial-match",hit&&present&&!fullMatch);
+        circle.classList.toggle("is-pattern-missing",hit&&!present&&relation==="parity"&&fullMatch);
         circle.title=person.id+" · "+loc.label+": "+(present?"variant present":"variant absent")+". Click to toggle observation.";
         circle.setAttribute("aria-label",circle.title);
         circle.addEventListener("click",()=>toggleVariant(profileIndex,i));
         track.append(circle);
       });
-      row.append(track,e("span","cohort-genome-count",person.group==="cases"?"case":"control"));
+      row.append(track,e("span","cohort-genome-count",
+        selectedState===null?(person.group==="cases"?"case":"control"):(fullMatch?"matches":"partial")));
       holder.append(row);
       const matrixRow=e("div","cohort-matrix-row");
       matrixRow.classList.add(person.group==="cases"?"is-case":"is-control");
@@ -101,8 +106,10 @@
         cell.type="button";
         cell.classList.toggle("is-variant",present);
         cell.classList.toggle("is-anchor",anchors.includes(i));
-        cell.classList.toggle("is-highlight",present&&person.group==="cases"&&selectedState!==null&&(selectedState&(1<<i))!==0);
-        cell.classList.toggle("is-pattern-missing",!present&&selectedState!==null&&(selectedState&(1<<i))!==0&&result?.relation==="parity"&&D.satisfies(selectedState,person,"parity"));
+        const component=selectedState!==null&&(selectedState&(1<<i))!==0;
+        cell.classList.toggle("is-highlight",component&&present&&fullMatch&&person.group==="cases");
+        cell.classList.toggle("is-pattern-missing",component&&!present&&fullMatch&&relation==="parity");
+        cell.classList.toggle("is-partial-match",component&&present&&!fullMatch);
         cell.title="Toggle synthetic observation "+person.id+" / "+loc.label;
         cell.setAttribute("aria-label",person.id+" "+loc.label+": "+(present?"1":"0")+". Toggle.");
         cell.addEventListener("click",()=>toggleVariant(profileIndex,i));
