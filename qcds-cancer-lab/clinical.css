@@ -364,3 +364,79 @@ body.clinical-theme .research-warning { font-size:13px; background:#fcf6eb; colo
 @media(prefers-reduced-motion:reduce) {
   *,*:before,*:after { animation-duration:.01ms!important; scroll-behavior:auto!important; }
 }
+
+
+/* Actual QCDS conclusion comes first — technical trace remains unchanged below. */
+.qcds-conclusion[hidden] { display:none!important; }
+body.clinical-theme .results-running.completed {
+  display:block!important;
+  min-height:0;
+  text-align:left;
+  place-items:normal;
+  padding:23px 26px 24px;
+  border-bottom:1px solid #dce6ec;
+  background:#fff;
+}
+body.clinical-theme .results-running.completed>h3 {
+  font-size:15px;
+  line-height:1.45;
+  font-weight:700;
+  color:#466477;
+  margin:0 0 15px;
+}
+body.clinical-theme .qcds-conclusion {
+  display:block;
+  width:100%;
+  max-width:1150px;
+  margin:0;
+  padding:0;
+  text-align:left;
+}
+body.clinical-theme .qcds-conclusion-label {
+  color:#236b7c;
+  font-size:11px;
+  font-weight:780;
+  line-height:1.45;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+  margin:0 0 5px;
+}
+body.clinical-theme .qcds-conclusion h4 {
+  margin:0 0 11px;
+  color:#19384c;
+  font-size:clamp(21px,2.3vw,28px);
+  line-height:1.3;
+  font-weight:760;
+  letter-spacing:-.02em;
+}
+body.clinical-theme .qcds-conclusion .qcds-conclusion-lead {
+  font-size:clamp(16px,1.35vw,18px);
+  line-height:1.66;
+  color:#233f51;
+  margin:0 0 10px;
+  max-width:1000px;
+  font-weight:530;
+}
+body.clinical-theme .qcds-conclusion .qcds-conclusion-detail {
+  font-size:14px;
+  line-height:1.7;
+  color:#475e70;
+  margin:0 0 12px;
+  max-width:1070px;
+}
+body.clinical-theme .qcds-conclusion .qcds-conclusion-scope {
+  display:block;
+  padding-top:11px;
+  border-top:1px solid #e3eaee;
+  font-size:12px;
+  line-height:1.65;
+  color:#6b5c48;
+  margin:0;
+  max-width:1100px;
+}
+@media(max-width:540px) {
+  body.clinical-theme .results-running.completed { padding:18px 15px 21px; }
+  body.clinical-theme .qcds-conclusion h4 { font-size:21px; }
+  body.clinical-theme .qcds-conclusion .qcds-conclusion-lead { font-size:16px; }
+  body.clinical-theme .qcds-conclusion .qcds-conclusion-detail { font-size:13px; }
+}
