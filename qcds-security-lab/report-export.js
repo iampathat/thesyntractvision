@@ -44,55 +44,57 @@ export async function downloadSecurityPdf(model, project, options = {}) {
 // The system guide is universal; it does not read, export or modify saved cases.
 // Visual assets remain separate from editable explanations. Raster artwork is
 // converted to JPEG bytes in memory; no hidden encoded source or remote PDF service.
-async function jpegArtwork(relativePath, targetRatio=595/562) {
+// The approved Glasswing plates are PORTRAIT A4 artwork, including their
+// composited chapter typography. Never convert them to a landscape crop.
+const GUIDE_A4_RATIO = 595.28 / 841.89;
+async function jpegArtwork(relativePath,{ requirePortrait=true }={}) {
   let objectUrl;
   try {
     const response = await fetch(new URL(relativePath,import.meta.url),{cache:'no-store'});
-    if (!response.ok) return null;
-    const input=await response.blob();
-    objectUrl=URL.createObjectURL(input);
-    // Works for SVG fallback plates as well as JPEG, WebP and PNG in Safari.
+    if(!response.ok) return null;
+    objectUrl=URL.createObjectURL(await response.blob());
     const img=await new Promise((resolve,reject)=>{
-      const element=new Image();
-      element.onload=()=>resolve(element);
-      element.onerror=()=>reject(new Error('Guide artwork cannot be decoded'));
-      element.src=objectUrl;
+      const el=new Image();
+      el.onload=()=>resolve(el);
+      el.onerror=()=>reject(new Error('Illustration unavailable: '+relativePath));
+      el.src=objectUrl;
     });
-    const maxDimension=1200;
-    const width=Math.round(Math.min(maxDimension,img.naturalWidth,1200*targetRatio));
-    const height=Math.max(1,Math.round(width/targetRatio));
+    const ratio=img.naturalWidth/img.naturalHeight;
+    // Prevent landscape brand posters from masquerading as portrait book pages.
+    if(requirePortrait && (ratio<0.64 || ratio>0.79)) return null;
     const canvas=document.createElement('canvas');
-    canvas.width=width;canvas.height=height;
+    canvas.width=1055; canvas.height=1491;
     const g=canvas.getContext('2d',{alpha:false});
     if(!g) return null;
-    g.fillStyle='#071625';g.fillRect(0,0,width,height);
-    // Center-crop, never distort wings, grids or technical illustrations.
-    const cropW=Math.min(img.naturalWidth,img.naturalHeight*targetRatio);
-    const cropH=cropW/targetRatio;
-    const sx=(img.naturalWidth-cropW)/2,sy=(img.naturalHeight-cropH)/2;
-    g.drawImage(img,sx,sy,cropW,cropH,0,0,width,height);
-    const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.89));
+    g.fillStyle='#031421';
+    g.fillRect(0,0,canvas.width,canvas.height);
+    const scale=Math.min(canvas.width/img.naturalWidth,canvas.height/img.naturalHeight);
+    const w=img.naturalWidth*scale,h=img.naturalHeight*scale;
+    g.drawImage(img,(canvas.width-w)/2,(canvas.height-h)/2,w,h);
+    const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.93));
     return blob?new Uint8Array(await blob.arrayBuffer()):null;
-  } catch { return null; }
-  finally {if(objectUrl)URL.revokeObjectURL(objectUrl);}
+  } catch {return null}
+  finally {if(objectUrl)URL.revokeObjectURL(objectUrl)}
 }
 async function loadSystemGuidePlates() {
   const names=[
-    'qcds-the-guardian-network.jpg',
-    'qcds-dimensional-inference-guide.jpg',
-    'attack-vectors-across-the-system-landscape.jpg',
-    'the-seven-security-lenses.jpg',
-    'recursive-investigation-guide.jpg',
-    'quantum-execution-and-verification-guide.jpg'
+    'qcds-the-guardian-network',
+    'qcds-dimensional-inference-guide',
+    'attack-vectors-across-the-system-landscape',
+    'the-seven-security-lenses',
+    'recursive-investigation-guide',
+    'quantum-execution-and-verification-guide'
   ];
-  // Optional chapter artwork: the engine remains fully functional if a media
-  // asset is unavailable or not yet installed by this release.
-  const plateFiles=await Promise.all(names.map(async (name,i)=>
-    (await jpegArtwork('./assets/system-guide/'+name,i===0?595/491:595/562)) ||
-    (await jpegArtwork('./assets/system-guide/'+name.replace(/\.jpg$/,'.svg'),i===0?595/491:595/562))
+  const plates=await Promise.all(names.map(async name=>
+    (await jpegArtwork('./assets/system-guide/'+name+'.jpg')) ||
+    (await jpegArtwork('./assets/system-guide/'+name+'.svg'))
   ));
-  const fallback=await jpegArtwork('./glasswing-selected.webp',595/491) || plateFiles[0] || await jpegArtwork('./glasswing-approved.webp',595/491);
-  return {cover:fallback,chapters:plateFiles.slice(1)};
+  // Approved portrait chapter plate first. Landscape marketing material MUST
+  // NOT be used as a book cover, even in the fallback path.
+  const cover=plates[0] ||
+    (await jpegArtwork('./glasswing-mobile.webp')) ||
+    null;
+  return {cover,chapters:plates.slice(1)};
 }
 
 export async function downloadSystemGuidePdf() {
