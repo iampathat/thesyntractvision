@@ -10,7 +10,12 @@ test('offline cache serves navigations, versioned workers and PDFs without cross
   assert.ok(version,'Service worker declares an offline cache version');
   const handlers={},cache=new Map(),deleted=[];let network=true,claimed=false,skip=false;
   const paths=['index.html','quantum-worker.mjs','vendor/jspdf.umd.min.js'];
-  const storage={addAll:async requests=>{for(const request of requests)cache.set(request.url,new Response(request.url));},match:async key=>cache.get(key)?.clone()};
+  const storage={
+    addAll:async requests=>{for(const request of requests)cache.set(request.url,new Response(request.url));},
+    // Browser Cache.add() is used for optional assets from offline-assets.json.
+    add:async request=>{cache.set(request.url,new Response(request.url));},
+    match:async key=>cache.get(key)?.clone()
+  };
   const sandbox={URL,Request,Response,
     self:{location:{href:root+'sw.js'},addEventListener:(type,fn)=>handlers[type]=fn,clients:{claim:async()=>claimed=true},skipWaiting:()=>skip=true},
     caches:{open:async()=>storage,keys:async()=>['other-app','qcds-security-app-1.13.0',`qcds-security-app-${version}`],delete:async key=>deleted.push(key)},
