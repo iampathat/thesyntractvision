@@ -101,9 +101,9 @@ export function buildSystemGuideCatalog({
   const stable=editorialArchive
     .filter(entry=>/SYNTHESIS|COUNTERFACTUALS|DEEPENING|DIMENSIONAL EXECUTION|VERIFICATION|WORKED EXAMPLE|OTHER FRAMEWORKS|READING OUTPUT/.test(entry.tag))
     .map(entry=>({ ...entry,
-      lede: entry.lede.replace(/\\bfourteen\\b/gi,String(conditionDefs.length)).replace(/\\bseven\\b/gi,String(names.length)),
-      note: entry.note.replace(/\\bfourteen\\b/gi,String(conditionDefs.length)).replace(/\\bseven\\b/gi,String(names.length)),
-      cards: entry.cards.map(([key,value])=>[key,value.replace(/\\bfourteen\\b/gi,String(conditionDefs.length)).replace(/\\bseven\\b/gi,String(names.length))])
+      lede: entry.lede.replace(/\bfourteen\b/gi,String(conditionDefs.length)).replace(/\bseven\b/gi,String(names.length)),
+      note: entry.note.replace(/\bfourteen\b/gi,String(conditionDefs.length)).replace(/\bseven\b/gi,String(names.length)),
+      cards: entry.cards.map(([key,value])=>[key,value.replace(/\bfourteen\b/gi,String(conditionDefs.length)).replace(/\bseven\b/gi,String(names.length))])
     }));
   return [...overview,...register,...mechanismPages,...lensPages,...stable];
 }
