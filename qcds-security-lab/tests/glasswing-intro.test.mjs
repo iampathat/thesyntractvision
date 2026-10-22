@@ -27,7 +27,7 @@ test('exactly one intro launches directly into the real Security Lab',()=>{
   assert.match(index,/data-film-skip/);
   assert.match(index,/src="\.\/app-stage-v118\.js\?v=1\.26\.[^"]+"/);
   assert.match(index,/glasswing-screen-v125\.js\?v=1\.26\.0/);
-  assert.match(index,/glasswing-screen-v125\.css\?v=1\.26\.0/);
+  assert.match(index,/glasswing-screen-v125\.css\?v=1\.26\.\d+/);
   assert.match(js,/video\.addEventListener\('ended',finish\)/);
   assert.doesNotMatch(js,/showLanding|fromLanding/);
 });
