@@ -54,8 +54,8 @@
       panel.append(btn);
     });
     $("cohortAnchors").textContent=anchors.length
-      ?"Fixed Condition: "+locusNames(anchors)+". Other implicated loci remain unknown."
-      :"No fixed locus: QCDS can search for previously unspecified combinations.";
+      ?"Starting here: "+locusNames(anchors)+". Other possible parts remain open."
+      :"Nothing selected: QCDS is free to look across all ten example positions.";
   }
   function renderGenomes(){
     const holder=$("cohortGenomeTracks"),matrix=$("cohortDataMatrix");
@@ -152,9 +152,6 @@
     const dist=$("funnelDistribution"),notes=$("funnelDiagnostics");
     if(!local||!groups||!timeline||!dist||!notes)return;
     local.replaceChildren();groups.replaceChildren();timeline.replaceChildren();dist.replaceChildren();notes.replaceChildren();
-    $("funnelPassCount").textContent=String(result.rotations);
-    $("funnelInputCount").textContent=String(result.rotations*result.lanesPerPass);
-    $("funnelOutputCount").textContent=String(result.leaders.length);
     const pass=result.rounds[Math.min(selectedPass,result.rotations-1)];
     for(const [i,r] of result.rounds.entries()){
       const btn=e("button","funnel-pass-button","R"+(i+1));
@@ -183,13 +180,13 @@
     const top=result.ranked.slice(0,12);
     if(!top.length)dist.append(e("p","funnel-empty","The final oracle confirms no valid pattern. The folder does not invent a highlight."));
     for(const [i,item] of top.entries()){
-      const btn=e("button","funnel-prob-row");
-      btn.type="button";btn.classList.toggle("is-selected",selectedState===item.state);
+      const btn=e("div","funnel-prob-row");
+      btn.classList.toggle("is-selected",selectedState===item.state);
       btn.append(e("span","funnel-prob-name","#"+(i+1)+" · "+locusNames(item.loci)));
       const track=e("span","funnel-prob-track"),bar=e("i","");
       bar.style.width=Math.max(3,100*item.foldedProbability/(top[0].foldedProbability||1)).toFixed(1)+"%";
       track.append(bar);btn.append(track,e("b","",percent(item.foldedProbability)));
-      btn.addEventListener("click",()=>{selectedState=item.state;renderOutcome();renderGenomes();renderFunnel();});
+      // Visual probability bars only: candidate selection lives once, in the result panel.
       dist.append(btn);
     }
     const last=result.rounds.at(-1).alignment;
@@ -221,27 +218,42 @@
     target.append(e("p","cohort-audit-caveat","These checks rerun the standalone cohort oracle, not the complete rotating funnel. The noise selector above adds classical readout uncertainty, not real NISQ gate/decoherence noise. Neither proves NISQ robustness, freedom from bias or clinical validity."));
   }
   function renderOutcome(){
-    const headline=$("cohortOutcome"),detail=$("cohortOutcomeDetail"),alts=$("cohortAlternatives");
+    const headline=$("cohortOutcome"),detail=$("cohortOutcomeDetail"),alts=$("cohortAlternatives"),
+      quality=$("cohortQuality");
     alts.replaceChildren();
     if(!result.selected){
-      headline.textContent="No relation survives the complete-cohort truth gate.";
-      detail.textContent="Rotated 4-bit rooms and 4→1 distributions were computed, but no candidate meets the full Condition. No genomic highlight is invented.";
-      selectedState=null;return;
+      headline.textContent="No matching connection found with these settings.";
+      detail.textContent="None of the possible combinations passed the complete sample check. You can try a different starting point or change the example data.";
+      quality.dataset.status="unresolved";
+      quality.textContent="The model has no valid match. No DNA positions are highlighted; this does not rule anything out for real patients.";
+      selectedState=null;
+      return;
     }
     const item=result.ranked.find(x=>x.state===selectedState)||result.selected;
     selectedState=item.state;
-    headline.textContent=result.leaders.length===1
-      ?"One oracle-verified relation leads the rotating probability funnel."
-      :result.leaders.length+" candidate relations remain near the folded peak — not a unique solution.";
-    detail.textContent=locusNames(item.loci)+". Joint relation passes "+item.caseCount+"/"+dataset.cases.length+
-      " synthetic cases and "+item.controlCount+"/"+dataset.controls.length+" comparisons. Cohort contrast "+percent(item.contrast)+
-      ". Folded model-state mass "+percent(item.foldedProbability)+
-      ". This is synthetic inference; model-state probability is not biological confidence or a cancer-risk estimate.";
-    for(const alt of result.ranked.slice(0,16)){
+    const count=result.leaders.length;
+    headline.textContent=count===1
+      ?"QCDS highlights one leading possible connection."
+      :count+" possible connections remain near the top — there is no single answer.";
+    const relation=result.settings.relation==="parity"?"a shared combination of present (1) and absent (0) features":"variants that occur together";
+    detail.textContent="Highlighted positions: "+locusNames(item.loci)+". This is a search for "+
+      relation+". It fits "+item.caseCount+" of the 5 invented cancer examples and "+
+      item.controlCount+" of the 5 comparisons. The positions are linked by the model rules, not by a known cancer diagnosis.";
+    quality.dataset.status=result.stable?"stable":"unstable";
+    quality.textContent=(result.stable
+      ?"The probability pattern met the model's internal stability checks."
+      :"The rotating probabilities have NOT fully stabilized in the selected number of passes.")+
+      " "+result.rotations+" rotations were calculated. This is not a medically validated discovery.";
+    const allOptions=result.ranked.slice(0,16);
+    for(const alt of allOptions){
       const b=e("button","cohort-alt",locusNames(alt.loci));b.type="button";
+      b.setAttribute("aria-pressed",selectedState===alt.state?"true":"false");
       b.classList.toggle("is-selected",selectedState===alt.state);
-      b.addEventListener("click",()=>{selectedState=alt.state;renderOutcome();renderGenomes();renderFunnel();});alts.append(b);
+      b.addEventListener("click",()=>{selectedState=alt.state;renderOutcome();renderGenomes();renderFunnel();});
+      alts.append(b);
     }
+    const title=$("cohortAlternativeTitle");
+    if(title)title.textContent=result.ranked.length===1?"The model's selected candidate":"Compare other matching connections";
   }
   function readSettings(){
     return {
@@ -278,7 +290,11 @@
   }
   function initialize(){
     if(typeof document==="undefined"||!$("cohortCombinatorial"))return;
-    $("cohortRun").addEventListener("click",run);
+    $("cohortRun").addEventListener("click",()=>{
+      run();
+      const conclusion=$("cohortResultTitle");
+      if(conclusion && typeof conclusion.scrollIntoView==="function")conclusion.scrollIntoView({behavior:"smooth",block:"start"});
+    });
     $("cohortMinCases").addEventListener("change",run);
     $("cohortMaxControls").addEventListener("change",run);
     $("cohortRelation").addEventListener("change",run);
@@ -287,6 +303,15 @@
     $("cohortRebuild").addEventListener("click",()=>{try{regenerate(0)}catch(e){$("cohortError").textContent=e.message;}});
     $("cohortNextDataset").addEventListener("click",()=>{try{regenerate(1)}catch(e){$("cohortError").textContent=e.message;}});
     $("cohortClearAnchors").addEventListener("click",()=>{anchors=[];run();});
+    if(typeof document.querySelectorAll==="function"){
+      for(const link of document.querySelectorAll('a[href="#workbench"], a[data-open-details="funnelDeepDive"]')){
+        link.addEventListener("click",()=>{
+          const id=link.getAttribute("href")==="#workbench"?"legacyWorkbenchDetails":"funnelDeepDive";
+          const advanced=$(id);
+          if(advanced)advanced.open=true;
+        });
+      }
+    }
     run();
   }
   return {LOCI,N,generateProfiles:D.generateProfiles,evaluateOracle:D.evaluate,initialize};
