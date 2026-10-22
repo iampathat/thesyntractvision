@@ -7,7 +7,7 @@
   <title>QCDS Cancer Lab — Translational Oncology Research Workspace</title>
   <meta name="description" content="An inspectable, research-only QCDS oncology hypothesis workbench with model state definitions, molecular reference notes and traceable inference." />
   <link rel="stylesheet" href="./style.css?v=20261022-inference" />
-  <link rel="stylesheet" href="./clinical.css?v=20261022-inference" />
+  <link rel="stylesheet" href="./clinical.css?v=20261022-funnel" />
 </head>
 <body class="clinical-theme">
   <main class="shell">
@@ -49,8 +49,8 @@
     <section class="genome-perspective" id="genomePerspective" aria-labelledby="genomePerspectiveTitle">
       <div class="genome-perspective-head">
         <span class="genome-eyebrow">CROSS-GENOME CONDITION SEARCH · SYNTHETIC RESEARCH EXAMPLE</span>
-        <h2 id="genomePerspectiveTitle">Five genomes. Ten distant loci. Unknown relationships.</h2>
-        <p>A genomic relationship need not be a contiguous DNA string. This research model generates five synthetic cancer-labeled profiles and five comparisons without inserting a predetermined winning combination. It explores <strong>previously unspecified connections across distant loci</strong>; the strongest eligible pattern, if any, emerges from the specified cohort oracle and two Grover passes.</p>
+        <h2 id="genomePerspectiveTitle">Five genomes. Rotating logical rooms. Emerging relationships.</h2>
+        <p>A genomic relationship need not be a contiguous DNA string. This research model generates five synthetic cancer-labeled profiles and five comparisons without inserting a predetermined winning combination. It explores <strong>previously unspecified connections across distant loci</strong> using 16 rotating four-bit Grover rooms, four probability folds and one recursive bound distribution. Full-cohort verification determines whether a highlighted result is admissible.</p>
       </div>
       <div class="genome-stats">
         <div><small>SYNTHETIC COHORT</small><strong>5 + 5</strong><span>five labeled cases and five independent comparison profiles</span></div>
@@ -60,7 +60,7 @@
       <div id="cohortCombinatorial" class="cohort-lab">
         <div class="cohort-head">
           <h3>Explore multi-locus relationships <span class="genome-demo-marker">IDEALIZED QCDS / GROVER PROTOTYPE</span></h3>
-          <p>Optionally specify up to three starting loci, leaving the rest open. QCDS tests <strong>2–4-locus relationships</strong> within a 1,024-state representation, amplifies all combinations satisfying the cohort oracle, then refines by the strongest observed cohort contrast. The data generator does not contain a hardcoded answer mask. Change the seed, switch between co-occurrence and parity, swap the null model or edit individual synthetic observations to test whether a different relation emerges.</p>
+          <p>Optionally specify up to three starting loci, leaving the rest open. QCDS tests <strong>2–4-locus relationships</strong> through rotating 4-bit windows. Sixteen local Grover probability distributions flow into four folds and then one global distribution; later rotations are bound without pretending previous evidence is independent. The data generator does not contain a hardcoded answer mask. Change the seed, switch between co-occurrence and parity, swap the null model or edit individual synthetic observations to test whether a different relation emerges.</p>
         </div>
         <div class="cohort-controls">
           <div class="cohort-seed-panel">
@@ -100,9 +100,58 @@
                 <button id="cohortNextDataset" type="button">New synthetic cohort +</button>
               </div>
             </div>
-            <button id="cohortRun" type="button" class="cohort-run">Run two-stage Grover / oracle search</button>
+            <button id="cohortRun" type="button" class="cohort-run">Run rotating 16 → 4 → 1 QCDS</button>
           </div>
         </div>
+        <section class="funnel-panel" id="qcdsFunnel" aria-labelledby="funnelTitle">
+          <header class="funnel-header">
+            <small>QCDS · ROTATING PROBABILITY FUNNEL</small>
+            <h3 id="funnelTitle">Parallel bandwidth → four-to-one synthesis → logical binding</h3>
+            <p>Every local room evaluates <strong>16 actual quantum-ideal probabilities</strong> using Grover's tangent/threshold kernel. Their rotated joint distributions, not just their top matches, flow through the funnel. The browser <strong>emulates lanes sequentially</strong>; no physical NISQ processor is connected.</p>
+          </header>
+          <div class="funnel-controls">
+            <label for="funnelPasses">Rotational passes
+              <select id="funnelPasses">
+                <option value="3">Up to 3</option><option value="6" selected>Up to 6</option>
+                <option value="9">Up to 9</option><option value="12">Up to 12</option>
+              </select>
+            </label>
+            <label for="funnelNoise">Synthetic readout mixing (not hardware noise)
+              <select id="funnelNoise">
+                <option value="0" selected>Ideal · 0%</option><option value="8">8% mixture</option>
+                <option value="15">15% mixture</option><option value="25">25% mixture</option>
+              </select>
+            </label>
+            <div class="funnel-live-metrics">
+              <div><small>LANE EVALUATIONS</small><strong id="funnelInputCount">—</strong></div>
+              <div><small>ROTATIONS</small><strong id="funnelPassCount">—</strong></div>
+              <div><small>BOUND CANDIDATES</small><strong id="funnelOutputCount">—</strong></div>
+            </div>
+          </div>
+          <div class="funnel-flow" aria-label="16 independent logical rooms fold four to one, then four to one again">
+            <div><small>LOGICAL INPUT</small><strong>16 × 4-bit</strong><span>Rotated windows · each 16 states</span></div>
+            <b aria-hidden="true">→</b>
+            <div><small>FIRST FOLD</small><strong>4 × distribution</strong><span>Four groups, each four lanes</span></div>
+            <b aria-hidden="true">→</b>
+            <div><small>TRUTH-BOUND PARENT</small><strong>1 × 10D</strong><span>1024 encoded states + Parent Grover</span></div>
+          </div>
+          <div class="funnel-rotation-control">
+            <strong>Follow a real computed rotation</strong>
+            <div id="funnelTimeline" class="funnel-timeline" aria-label="Choose a computed rotation"></div>
+            <p id="funnelPassDescription"></p>
+          </div>
+          <div class="funnel-stage-caption"><span>01 / INPUT BANDWIDTH</span><strong>Sixteen rotated local Grover rooms</strong><small>Bar heights are exact 16-state simulated probabilities after oracle and readout mixing.</small></div>
+          <div class="funnel-lane-grid" id="funnelLaneGrid" aria-label="Sixteen independently computed Grover probability distributions"></div>
+          <div class="funnel-stage-caption"><span>02 / DIMENSION FOLDING</span><strong>Four 4→1 joint-probability syntheses</strong><small>Four local distributions per group are embedded and pooled into the candidate space.</small></div>
+          <div class="funnel-group-grid" id="funnelGroupGrid" aria-label="Four synthesized probability distributions"></div>
+          <div class="funnel-stage-caption"><span>03 / SYNTRACT BINDING</span><strong>One rotating parent distribution and independent truth check</strong><small>Bar widths compare folded probability across biologically admissible symbolic candidates.</small></div>
+          <div id="funnelDistribution" class="funnel-distribution" aria-label="Parent probability distribution of oracle-verified candidates"></div>
+          <details class="funnel-method">
+            <summary>What survives folding? Stability, correlation limits, verification</summary>
+            <div id="funnelDiagnostics" class="funnel-diagnostics"></div>
+          </details>
+        </section>
+
         <section class="cohort-result" aria-labelledby="cohortResultTitle">
           <div class="cohort-result-top">
             <span>QCDS MULTI-LOCUS OUTCOME</span>
@@ -131,7 +180,7 @@
         </details>
       </div>
       <div class="genome-perspective-foot">
-        <p><strong>Exactly what was computed:</strong> ten symbolic locus dimensions, 1,024 possible subset states, and candidate relationships of two to four loci. Generic case/control constraints and a selectable relation family form the first oracle; a predefined maximal-contrast refinement is the second. Both use the existing ideal Grover kernel, first-peak/tangent stopping, 0.999 threshold and maximum 40 iterations. Synthetic cohorts are generated from seed-dependent probabilities rather than an inserted answer signature. Noise, leave-one-out and label-swap tests examine internal sensitivity; none validates a causal cancer relationship.</p>
+        <p><strong>Exactly what was computed:</strong> ten symbolic locus dimensions, 1,024 possible selection states and verified relations of two to four loci. Sixteen rotating four-bit joint probability spaces are synthesized four-to-one and four-to-one again. Each local and parent Grover uses the existing first-tangent / 0.999-threshold stopping rule with at most 40 iterations. Whole-cohort relation oracles independently verify every highlighted candidate. Synthetic cohorts are generated from seed-dependent probabilities rather than an inserted answer signature. Readout-mixing and standalone cohort-oracle sensitivity tests examine internal behavior; none demonstrates actual NISQ tolerance or a causal cancer relationship.</p>
         <p><strong>What this does not prove:</strong> the app does not load five actual three-billion-base genomes, represent all real biological relationships, run 1,024 hardware-parallel quantum states, evaluate all combinations across billions of positions, or establish that classical computers cannot solve the task. Loading genomes into a quantum representation, building defensible gene-aware oracles, measurement/readout and independent validation remain open engineering and scientific work.</p>
       </div>
     </section>
@@ -331,7 +380,8 @@
   <script src="./inference-room.js?v=20261022-inference"></script>
   <script src="./qcds-conclusion.js?v=20261022-outcome"></script>
   <script src="./app.js?v=20261022-outcome"></script>
-  <script src="./genome-discovery.js?v=20261022-inference"></script>
-  <script src="./genome-perspective.js?v=20261022-inference"></script>
+  <script src="./genome-discovery.js?v=20261022-funnel"></script>
+  <script src="./genome-funnel.js?v=20261022-funnel"></script>
+  <script src="./genome-perspective.js?v=20261022-funnel"></script>
 </body>
 </html>
