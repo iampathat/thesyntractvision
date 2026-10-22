@@ -55,8 +55,10 @@ function heading(d,kicker,title,dek){
 }
 function hero(d,photo,chapter,title,sub,n){
  background(d);
- if(photo){try{d.addImage(photo,'JPEG',0,0,W,H)}catch{}}
- // Title and authorship are independent, real PDF text atop the illustration.
+ // Chapter artwork already contains its own editorial lettering. Treat it as
+ // a complete portrait A4 spread; adding opaque bars would cover the design.
+ if(photo){try{d.addImage(photo,'JPEG',0,0,W,H);return}catch{}}
+ // Text-only fallback for missing artwork.
  color(d,'setFillColor',navy);d.rect(0,0,W,133,'F');d.rect(0,H-123,W,123,'F');
  color(d,'setFillColor',gold);d.rect(M,21,40,2,'F');
  copy(d,'QCDS   /   THE SYNTRACT VISION   /   PROJECT GLASSWING',M,45,CW,8.3,gold,1.1,{bold:true});
@@ -91,7 +93,9 @@ function twoColRows(d,items,y,{max=items.length,rowH=70}={}){
 }
 function cover(d,art,model){
  background(d);
- if(art){try{d.addImage(art,'JPEG',0,185,W,505)}catch{}}
+ // A4 portrait artwork is a COMPLETE magazine cover, not a landscape
+ // banner to stretch into the middle of a portrait sheet.
+ if(art){try{d.addImage(art,'JPEG',0,0,W,H);return}catch{}}
  color(d,'setFillColor',navy);d.rect(0,0,W,187,'F');d.rect(0,H-144,W,144,'F');
  copy(d,'QCDS',M,91,CW,54,ink,1,{serif:true,bold:true});
  copy(d,'S E C U R I T Y   L A B',M,117,CW,15,gold,1,{serif:true,bold:true});
@@ -134,11 +138,11 @@ export function createVisualGlasswingPdf(jsPDF,snapshot,{artwork={},edition='4.0
  copy(d,'Study a target, derive conditions, form possible attack paths, challenge them through multiple perspectives and bind specific claims to evidence. A coherent route is not a confirmed vulnerability.',
  M+15,y+49,CW-30,9.8,ink,1.5);
  y+=113;
- twoColRows(d,[['Four QCDS phases','Condition Formation / Conditional Evolution / Recursive Inference / Truth-Alignment Verification.'],
+ y=twoColRows(d,[['Four QCDS phases','Condition Formation / Conditional Evolution / Recursive Inference / Truth-Alignment Verification.'],
   ['Security perspectives',model.lenses.map(x=>x.name).join(' / ')],
   ['Three fact states','1 = present; 0 = absent; ? = unresolved. Unknowns are maintained explicitly.'],
   ['Evidence contract','Every finding must identify its claim, route, conditions, test context and verification status.']],y,{rowH:105});
- y+=263;
+ y+=13;
  lineBullet(d,'How to read the publication',
   'The image spreads express the architecture. The intervening pages are readable explanations and live source-derived facts; they are not an exhaustive vulnerability catalog.',y);
  next('ILLUSTRATED PHASE');hero(d,artwork.dimensions,'01','Condition Formation',
@@ -180,11 +184,11 @@ export function createVisualGlasswingPdf(jsPDF,snapshot,{artwork={},edition='4.0
  next('SYNTHESIS');
  y=heading(d,'02B / SHARED UNDERLYING ROUTE','How multiple lenses converge',
  'The same route can receive several classifications without becoming several separate vulnerabilities.');
- twoColRows(d,[['One route','A proposed mechanism and path over a defined target.'],
+ y=twoColRows(d,[['One route','A proposed mechanism and path over a defined target.'],
   ['One evidence requirement','Observations, counter-tests and scoped context remain mandatory.'],
   ['Many lenses','Each active perspective highlights different kinds of failure.'],
   ['One investigation','The synthesis binds perspectives, controls and observations.']],y,{rowH:119});
- y+=262;
+ y+=13;
  lineBullet(d,'Counterfactual rotation','Remove one perspective or change a known condition to ?; examine which candidate routes lose support.',y);
  heroPage('03','Attack vectors across the system landscape','Paths, dependencies and exposure surfaces.','attack');
  next('VECTOR EXPLANATIONS');
