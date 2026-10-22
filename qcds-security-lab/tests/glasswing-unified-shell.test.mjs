@@ -33,7 +33,7 @@ test('header settings stays visible on mobile rather than rendering a blank rect
   assert.doesNotMatch(app,/gw-what-header|gw-guide-header/);
 });
 test('primary navigation is simple, advanced work is nested, and guide is independent',()=>{
-  const nav=app.slice(app.indexOf('<nav aria-label="Workspace">'),app.indexOf('</nav>',app.indexOf('<nav aria-label="Workspace">')));
+  const nav=app.slice(app.indexOf('<nav aria-label="Security Lab navigation">'),app.indexOf('</nav>',app.indexOf('<nav aria-label="Security Lab navigation">')));
   for(const text of ['Home','My investigations','Worked examples','CURRENT INVESTIGATION','Investigate','Results & explanation','Reports & PDF','Frameworks & QCDS tools']){
     assert.ok(nav.includes(text),text);
   }
@@ -59,4 +59,31 @@ test('dimension workbench is branded as Project Glasswing, not a second Q-star p
   assert.match(lab,/class="logic-brand-mark"/);
   assert.doesNotMatch(lab,/class="logic-brand">Q<span>★<\/span>/);
   assert.match(css,/#logical-lab \.logic-brand-mark/);
+});
+
+test('Home focuses on the active investigation instead of an intro advertisement',()=>{
+ const home=read('consumer-ui-stage-v118.js').split('export function homeView')[1].split('export function casesView')[0];
+ assert.match(home,/class="gw-home-page-title"/);
+ assert.match(home,/class="consumer-resume"/);
+ assert.ok(home.indexOf('gw-home-page-title')<home.indexOf('consumer-resume'));
+ assert.ok(home.indexOf('consumer-resume')<home.indexOf('gw-home-service-status'));
+ assert.doesNotMatch(home,/data-watch-intro|class="gw-lab-heading"/);
+ assert.doesNotMatch(home,/data-action="new"/);
+});
+test('Sidebar keeps all current-case actions visibly together and one New button',()=>{
+ const start=app.indexOf('<nav aria-label="Security Lab navigation">');
+ const end=app.indexOf('</nav>',start);
+ const nav=app.slice(start,end);
+ const first=nav.indexOf('id="gw-nav-workspace-title"');
+ const current=nav.indexOf('id="gw-nav-current-title"');
+ const reference=nav.indexOf('id="gw-nav-resources-title"');
+ assert.ok(first>0 && current>first && reference>current);
+ assert.ok(nav.indexOf('class="consumer-nav-case"')>current);
+ assert.ok(nav.indexOf("analysisLink('findings'")>current);
+ assert.ok(nav.indexOf("analysisLink('report'")>current);
+ assert.ok(nav.indexOf("analysisLink('report'")<reference);
+ assert.match(nav,/class="gw-nav-new" data-action="new"/);
+ assert.match(nav,/Goal to Proof/);
+ assert.doesNotMatch(nav,/Replay intro|data-watch-intro/);
+ assert.match(css,/@media\(hover:none\)/);
 });
