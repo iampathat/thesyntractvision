@@ -2,68 +2,124 @@
 <html lang="sv">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="robots" content="noindex">
   <meta name="theme-color" content="#071625">
-  <title>Uppdatera Project Glasswing · Security Lab</title>
+  <title>Uppdatera Security Lab · Project Glasswing</title>
   <style>
-    :root{color-scheme:dark}*{box-sizing:border-box}
-    body{margin:0;background:#071625;color:#edf9fc;
-      font:16px/1.6 system-ui,-apple-system,sans-serif;min-height:100dvh;
-      display:grid;place-items:center;padding:24px}
-    main{max-width:540px;width:100%;padding:32px;border:1px solid #466878;
-      border-radius:18px;background:#112838}
-    small{color:#f1cf91;letter-spacing:.12em}h1{font-size:clamp(26px,5vw,36px);line-height:1.15}
-    p{color:#c6dce5}button{border:0;border-radius:10px;background:#afeef5;color:#08212d;
-      font:700 16px system-ui;padding:16px 20px;cursor:pointer;width:100%}
-    button:disabled{opacity:.65;cursor:progress}
-    #result{min-height:50px}a{color:#a6e7f4}
+    :root{color-scheme:dark;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    *{box-sizing:border-box}
+    body{margin:0;background:#071625;color:#edf9fc;min-height:100dvh;display:grid;place-items:center;padding:24px;line-height:1.55}
+    main{max-width:580px;width:100%;padding:clamp(23px,5vw,38px);border:1px solid #466878;border-radius:18px;background:#112838}
+    .eyebrow{color:#eacb95;letter-spacing:.12em;font-size:12px;font-weight:700}
+    h1{font-size:clamp(27px,5vw,36px);line-height:1.15;margin:24px 0}
+    p{color:#c6dce5}
+    button,.app-link{border:0;border-radius:10px;background:#afeef5;color:#08212d;font:700 16px system-ui;padding:16px 20px;cursor:pointer;width:100%;display:block;text-decoration:none;text-align:center}
+    button:disabled{opacity:.7;cursor:progress}
+    .app-link{margin-top:16px;background:transparent;color:#b8edf5;border:1px solid #537989}
+    .app-link:hover,.app-link:focus-visible{background:#204252}
+    button:focus-visible,.app-link:focus-visible{outline:3px solid #eacb95;outline-offset:3px}
+    #result{min-height:46px;margin:18px 0;overflow-wrap:anywhere}
+    #result[data-state="warning"]{color:#ffe4ae}
+    #result[data-state="error"]{color:#ffb6b6}
+    small{color:#a4bfc9;font-size:12px;display:block;margin-top:18px}
   </style>
 </head>
 <body>
-<main>
-  <small>QCDS · THE SYNTRACT VISION · PROJECT GLASSWING</small>
-  <h1>Uppdatera Security Lab</h1>
-  <p>Byter gamla programfiler mot den publicerade versionen. Dina lokala
-    undersökningar, inställningar och sparade bevis behålls.</p>
-  <button id="refresh" type="button">Öppna uppdaterade Security Lab</button>
-  <p id="result" role="status" aria-live="polite">
-    Ingen ändring görs förrän du trycker på knappen.
-  </p>
-  <p><a href="./index.html?skip_intro=1#home">Tillbaka utan att uppdatera</a></p>
-</main>
-<script>
-  document.querySelector('#refresh').addEventListener('click',async()=>{
-    const btn=document.querySelector('#refresh');
-    const status=document.querySelector('#result');
-    btn.disabled=true;
-    status.textContent='Uppdaterar programfilerna …';
-    try{
-      if(!navigator.onLine)throw Error('Du behöver vara ansluten till internet.');
-      const root=new URL('./',location.href);
-      if('serviceWorker' in navigator){
-        const list=await navigator.serviceWorker.getRegistrations();
-        for(const registration of list){
-          if(registration.scope===root.href)await registration.unregister();
-        }
-      }
-      if('caches' in globalThis){
-        for(const name of await caches.keys()){
-          if(name.startsWith('qcds-security-app-'))await caches.delete(name);
-        }
-      }
-      // Never clear localStorage, sessionStorage, IndexedDB, cookies or user files.
-      const url=new URL('./index.html',root);
+  <main>
+    <div class="eyebrow">QCDS · THE SYNTRACT VISION · PROJECT GLASSWING</div>
+    <h1>Uppdatera Security Lab</h1>
+    <p>Byt gamla programfiler mot senaste publicerade versionen. Dina lokala undersökningar, inställningar och sparade bevis behålls.</p>
+    <button id="refresh" type="button">Uppdatera och öppna Security Lab</button>
+    <p id="result" role="status" aria-live="polite">Redo. Ingen ändring görs innan du trycker.</p>
+    <a id="openLab" class="app-link" href="./index.html?skip_intro=1#report">Öppna Security Lab direkt</a>
+    <small>Om uppdateringen inte kan slutföras får du ett meddelande och kan ändå öppna appen. Ingen återställning eller radering av dina ärenden görs.</small>
+  </main>
+  <script>
+  (() => {
+    'use strict';
+    const button=document.getElementById('refresh');
+    const result=document.getElementById('result');
+    const openLab=document.getElementById('openLab');
+    // Root-level independent mirror is outside the legacy service-worker scope.
+    const independent=location.pathname.endsWith('/glasswing-refresh.html');
+    const root=new URL(independent?'./qcds-security-lab/':'./',location.href);
+    const target=() => {
+      const url=new URL('index.html',root);
       url.searchParams.set('skip_intro','1');
       url.searchParams.set('glasswing_refresh',String(Date.now()));
       url.hash='report';
-      location.replace(url.href);
-    }catch(err){
-      status.textContent='Kunde inte uppdatera: '+(err?.message||String(err))+
-        '. Inga undersökningar raderades.';
-      btn.disabled=false;
-    }
-  });
-</script>
+      return url;
+    };
+    openLab.href=target().href;
+    const report=(message,state='')=>{result.textContent=message;result.dataset.state=state;};
+    const bounded=(promise,ms,label)=>new Promise((resolve,reject)=>{
+      let settled=false;
+      const timer=setTimeout(()=>{
+        if(settled)return;
+        settled=true;reject(new Error(label+' svarade inte i tid'));
+      },ms);
+      Promise.resolve(promise).then(
+        value=>{if(settled)return;settled=true;clearTimeout(timer);resolve(value);},
+        error=>{if(settled)return;settled=true;clearTimeout(timer);reject(error);}
+      );
+    });
+    const internetCheck=async()=>{
+      const controller=new AbortController();
+      try{
+        const response=await bounded(fetch(new URL('index.html?refresh_check='+Date.now(),root),{
+          cache:'no-store',signal:controller.signal
+        }),4200,'Den publicerade appen');
+        if(!response.ok)throw new Error('Appen svarade med HTTP '+response.status);
+      }finally{controller.abort();}
+    };
+    const removeOwnRegistration=async()=>{
+      if(!('serviceWorker' in navigator))return;
+      // getRegistration is narrower and avoids hanging on every unrelated SW.
+      const registration=await bounded(navigator.serviceWorker.getRegistration(root.href),3200,'Service worker');
+      if(registration?.scope===root.href){
+        await bounded(registration.unregister(),3200,'Avregistrering av appens service worker');
+      }
+    };
+    const removeOwnCaches=async()=>{
+      if(!('caches' in globalThis))return;
+      const names=await bounded(caches.keys(),3200,'Cachelistan');
+      // Delete only this app's program cache. Preserve all local cases and files.
+      const ours=names.filter(name=>name.startsWith('qcds-security-app-'));
+      for(const name of ours){
+        await bounded(caches.delete(name),3200,'Rensning av appens cache');
+      }
+    };
+    button.addEventListener('click',async()=>{
+      button.disabled=true;
+      report('Kontrollerar den publicerade versionen ...');
+      try{
+        await internetCheck();
+      }catch(error){
+        report('Kunde inte nå webbplatsen: '+(error?.message||String(error))+'. Dina undersökningar är kvar. Prova igen eller öppna appen direkt.','error');
+        button.disabled=false;
+        return;
+      }
+      const issues=[];
+      report('Uppdaterar programfilerna. Lokalt sparat arbete lämnas orört ...');
+      for(const [name,step] of [
+        ['Service worker',removeOwnRegistration],
+        ['Offline-cache',removeOwnCaches]
+      ]){
+        try{await step();}catch(error){issues.push(name+': '+(error?.message||String(error)));}
+      }
+      const next=target();
+      openLab.href=next.href;
+      if(issues.length){
+        report('Webbläsarens cache svarade inte helt: '+issues.join('; ')+'. Du kan öppna appen direkt nedan. Inga undersökningar raderades.','warning');
+        button.disabled=false;
+        openLab.focus();
+        return;
+      }
+      report('Klart! Öppnar nu den publicerade Security Lab-versionen ...');
+      location.assign(next.href);
+    });
+  })();
+  </script>
 </body>
 </html>
