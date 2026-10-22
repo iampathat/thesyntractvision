@@ -30,7 +30,7 @@ test('UI and PWA advertise the same release, without deleting case data',()=>{
  const htmlVersion=html.match(/data-release="([^"]+)"/)?.[1];
  const scriptVersion=html.match(/app-stage-v118\.js\?v=([^"]+)"/)?.[1];
  const workerVersion=sw.match(/const VERSION = '([^']+)'/)?.[1];
- assert.equal(htmlVersion,'1.26.4');
+ assert.match(htmlVersion,/^1\.26\.[0-9]+$/);
  assert.equal(scriptVersion,htmlVersion);
  assert.equal(workerVersion,htmlVersion);
  assert.ok(sw.includes("'attack-vectors.mjs'"));

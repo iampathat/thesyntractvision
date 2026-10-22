@@ -1,6 +1,6 @@
 // QCDS Security Lab — offline-first app cache with user-approved updates.
 // Copyright © 2026 Patrik Sundblom. R&D support: OpenAI / ChatGPT.
-const VERSION = '1.26.4';
+const VERSION = '1.26.5';
 const PREFIX = 'qcds-security-app-';
 const CACHE = PREFIX + VERSION;
 const root = new URL('./', self.location.href);
@@ -13,7 +13,7 @@ const ESSENTIAL = [
   'glasswing-screen-v125.js','app-stage-v118.js',
   'consumer-ui-stage-v118.js','app-install.js',
   'engine.mjs','attack-vectors.mjs','logical-lab.js','glasswing.mjs',
-  'report-export.js','system-guide-pdf.mjs','system-guide-editorial.mjs',
+  'report-export.js','system-guide-pdf.mjs','system-guide-editorial.mjs','system-guide-visual-v4.mjs',
   'vendor/report-fonts.mjs','vendor/jspdf.umd.min.js',
   'assets/system-guide/qcds-the-guardian-network.svg',
   'assets/system-guide/qcds-dimensional-inference-guide.svg',
