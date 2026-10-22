@@ -787,3 +787,11 @@ body.clinical-theme .workbench {margin-top:24px}
 .cohort-size-controls input {min-width:0}
 .cohort-stats strong {overflow-wrap:anywhere}
 @media(max-width:440px){.cohort-size-controls{grid-template-columns:minmax(0,1fr)}}
+
+
+.cohort-group-config {margin:17px 0 0;padding:15px 17px;border:1px solid #d6e6eb;
+  border-radius:9px;background:#f4f9fa}
+.cohort-group-config .cohort-size-note {margin-bottom:12px}
+.cohort-group-config .cohort-size-controls {max-width:650px;margin:0}
+.cohort-group-config input {width:100%;padding:11px 12px;font-size:16px}
+@media(max-width:600px){.cohort-group-config{padding:13px}}
