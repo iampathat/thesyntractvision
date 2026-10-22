@@ -44,7 +44,7 @@
     content.append(element("h2", "", item.name));
     content.append(element("p", "reference-intro", item.summary));
     if (kind === "oracle") {
-      const mask = override?.mask || item.mask || "????????";
+      const mask = override?.mask || root.CancerLabOracleState?.()[index] || item.mask || "????????";
       addField(content, "Current QCDS mask", mask);
       addField(content, "Formal positional constraints", maskDescription(mask));
       addField(content, "Critical mapping limitation", "These are fixed positional constraints. Sixteen input rotations move semantic dimensions through those positions. The pathway label does not preserve a one-to-one gene mapping during rotation. The biological context below is explanatory, not encoded into this mask.");
@@ -54,12 +54,12 @@
       addField(content, "Scientific area", item.type);
     }
     if (item.category) addField(content, "Classification", item.category);
-    addField(content, "Molecular and biological context", item.biology);
+    addField(content, kind === "method" ? "Implementation / model interpretation" : "Molecular and biological context", item.biology);
     addField(content, "Relevant genes / mechanisms (examples)", item.genes);
     addField(content, "Data or assays needed for clinical interpretation", item.evidence);
     addField(content, "Interpretation boundaries", item.limitations || item.caution);
     if (item.question) addField(content, "Question before making this a testable oracle", item.question);
-    if (kind === "method") addField(content, "Implementation-specific caveat", item.limitations);
+
     if (kind === "oracle") {
       const box = element("div", "reference-alert");
       box.append(element("strong", "", "Not a validated clinical rule"), element("p", "", "The name and legacy mask are independent illustrative objects. Editing this mask changes the simulation, not a proven causal model or biomarker interpretation. No patient-level evidence is loaded."));
