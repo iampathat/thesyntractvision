@@ -17,6 +17,7 @@
 
   let mask = Array(8).fill("?");
   let oracleRows = DEFAULT_ORACLES.map(o => ({ ...o, enabled: true }));
+  globalThis.CancerLabOracleState = () => oracleRows.map(o => o.mask);
 
   const $ = id => document.getElementById(id);
   const maskInput = $("maskInput");
