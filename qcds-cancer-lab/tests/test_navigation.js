@@ -108,7 +108,7 @@ const fakeDoc={
  readyState:"complete",
  createElement:t=>new Node(t),
  getElementById:id=>byId.get(id)||null,
- querySelector:selector=>shell.querySelector(selector),
+ querySelector:selector=>selector==="main.shell"?shell:shell.querySelector(selector),
  addEventListener:(name,fn)=>{(eventHandlers["doc:"+name] ||= []).push(fn)}
 };
 const fakeWindow={
