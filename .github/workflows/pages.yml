@@ -452,6 +452,13 @@ jobs:
           test -s _site/qcds-security-lab/glasswing-screen-v125.js
           test -s _site/qcds-security-lab/app-stage-v118.js
           test -s _site/qcds-security-lab/consumer-ui-stage-v118.js
+          # Assert guide assets exist in the actual deploy artifact.
+          test -s _site/qcds-security-lab/update-glasswing.html
+          test -s _site/qcds-security-lab/system-guide-editorial.mjs
+          test -s _site/qcds-security-lab/report-export.js
+          test -s _site/qcds-security-lab/assets/system-guide/qcds-the-guardian-network.svg
+          test -s _site/qcds-security-lab/assets/system-guide/the-seven-security-lenses.svg
+          test -s _site/qcds-security-lab/assets/system-guide/attack-vectors-across-the-system-landscape.svg
           # Retired entry URLs must share one redirect, not duplicate the real app.
           for name in enter.html glasswing-start.html glasswing-v120.html glasswing-v123.html glasswing-v124.html glasswing-v125.html; do
             test -s "_site/qcds-security-lab/$name"

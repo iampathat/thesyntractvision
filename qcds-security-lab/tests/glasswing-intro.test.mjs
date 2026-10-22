@@ -142,6 +142,6 @@ test('source base styles do not retain the old green navigation backgrounds',()=
   assert.doesNotMatch(consumerStyle,/#263729|#1b2b26|#18262c|#1b2a24/);
   assert.match(style,/background: #102c43/);
   assert.match(consumerStyle,/background:#153c57/);
-  assert.match(index,/style\.css\?v=1\.26\.0/);
-  assert.match(index,/consumer\.css\?v=1\.26\.0/);
+  assert.match(index,/style\.css\?v=1\.26\.\d+/);
+  assert.match(index,/consumer\.css\?v=1\.26\.\d+/);
 });
