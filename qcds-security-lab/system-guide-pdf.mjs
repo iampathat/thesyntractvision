@@ -114,6 +114,7 @@ export function createSystemGuidePdf(jsPDF,options={}){
   registerReportFonts(doc);
   cover(doc,options.artwork||null);
   const entries=buildSystemGuideCatalog(options.catalog||{});
+  if(entries[0]) entries[0].cards.unshift(['APPLICATION RELEASE',String(options.appRelease||'unknown')+' / Engine '+String(options.catalog?.engineVersion||VERSION)]);
   const chapterPlateSlots=new Map([
     ['CONDITION REGISTER / 1',0],
     ['ATTACK CATALOG / 1',1],
