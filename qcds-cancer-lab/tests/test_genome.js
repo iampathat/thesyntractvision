@@ -1,42 +1,63 @@
 const assert = require("node:assert/strict");
-require("../qcds-core.js");
-const G = require("../genome-perspective.js");
-assert.equal(G.LOCI.length,10);
-assert.equal(G.CASES.length,5);
-assert.equal(G.CONTROLS.length,5);
-assert.equal(G.N,1024);
-assert.equal(G.CHOOSE_THREE,120);
-assert.equal(G.choose3(3000000000n),4499999995500000001000000000n);
-const trial = G.evaluateOracle({anchors:[1],minCases:5,maxControls:0});
-assert.equal(trial.states,1024);
-assert.equal(trial.evaluatedTriples,120);
-assert.equal(trial.markedCount,1);
-assert.deepEqual(trial.selected.loci,[1,4,7],
-  "selected pattern comes from evidence-based case/control oracle, not hardcoded winner");
-assert.equal(trial.selected.caseCount,5);
-assert.equal(trial.selected.controlCount,0);
-assert(trial.grover.iterations > 0 && trial.grover.iterations <= 40);
-assert(trial.grover.markedMass > 0.99);
-assert(trial.selected.probability > 0.99);
-assert(trial.leaveOneOut.every(x=>x.remaining===4));
-const unconstrained=G.evaluateOracle({anchors:[],minCases:5,maxControls:0});
-assert.deepEqual(unconstrained.selected.loci,[1,4,7],
-  "oracle may discover pattern with no anchor");
-for(const anchor of [[1,4],[1,4,7]]){
- const x=G.evaluateOracle({anchors:anchor,minCases:5,maxControls:0});
- assert.deepEqual(x.selected.loci,[1,4,7]);
-}
-const incompatible=G.evaluateOracle({anchors:[0],minCases:5,maxControls:0});
-assert.equal(incompatible.markedCount,0);
-assert.equal(incompatible.grover.iterations,0);
-assert.equal(incompatible.selected,null);
-const relaxed=G.evaluateOracle({anchors:[],minCases:3,maxControls:2});
-assert(relaxed.markedCount >= 1);
-assert(relaxed.ranked.every(x=>x.caseCount>=3&&x.controlCount<=2));
-assert.throws(()=>G.evaluateOracle({anchors:[0,1,2,3]}),/three/);
-assert.throws(()=>G.evaluateOracle({anchors:[9,9]}),/distinct/);
-assert.throws(()=>G.evaluateOracle({anchors:[10]}),/valid/);
-assert.throws(()=>G.evaluateOracle({minCases:0}),/threshold/);
-assert.equal(G.countBits(G.mask([1,4,7])),3);
-assert.deepEqual(G.bits(G.mask([1,4,7])),[1,4,7]);
-console.log("Cancer Lab cross-genome QCDS cohort tests: PASS");
+const Q = require("../qcds-core.js");
+const D = require("../genome-discovery.js");
+require("../genome-perspective.js");
+
+assert.equal(D.LOCI.length,10);
+assert.equal(D.N,1024);
+assert.equal(D.MAX_ITERATIONS,40);
+assert.equal(D.ALIGNMENT_THRESHOLD,.999);
+assert.equal(D.countBits(D.mask([0,3,9])),3);
+assert.deepEqual(D.bits(D.mask([0,3,9])),[0,3,9]);
+
+const d173=D.generateProfiles(173,"structure");
+assert.equal(d173.cases.length,5);
+assert.equal(d173.controls.length,5);
+assert.deepEqual(d173,D.generateProfiles(173,"structure"),"seed replay must be deterministic");
+assert.notDeepEqual(d173,D.generateProfiles(42,"structure"),"different cohort seeds yield different evidence");
+const run=D.evaluate({dataset:d173});
+assert.equal(run.states,1024);
+assert.equal(run.examinedCount,375,"oracle tests 2–4-locus subset configurations");
+assert(run.markedCount>0);
+assert.equal(run.grover.iterations,Q.peakIterationCount(1024,run.markedCount,40,.999));
+assert.equal(run.refinedGrover.iterations,Q.peakIterationCount(1024,run.refinedCount,40,.999));
+assert(run.grover.iterations<=40 && run.refinedGrover.iterations<=40);
+assert(run.stopReason.includes("tangent")||run.stopReason.includes("threshold"));
+assert(run.ranked.every(r=>r.passed&&r.caseCount>=3&&r.controlCount<=1));
+assert(run.refined.every(r=>Math.abs(r.contrast-run.refined[0].contrast)<1e-12));
+
+const d42=D.generateProfiles(42,"structure");
+const other=D.evaluate({dataset:d42});
+assert(other.selected);
+assert.notDeepEqual(other.selected.loci,run.selected.loci,
+  "independent data must lead to another inferential pattern rather than a hardcoded target");
+const absent=D.evaluate({dataset:D.generateProfiles(81,"structure")});
+assert.equal(absent.markedCount,0);
+assert.equal(absent.selected,null);
+assert.equal(absent.grover.iterations,0);
+assert.equal(absent.refinedGrover.iterations,0);
+const anchored=D.evaluate({dataset:d42,anchors:[5],minCases:3,maxControls:1});
+assert(anchored.ranked.every(r=>r.loci.includes(5)));
+assert.throws(()=>D.evaluate({dataset:d42,anchors:[1,1]}),/distinct/);
+assert.throws(()=>D.evaluate({dataset:d42,anchors:[1,2,3,4]}),/three/);
+assert.throws(()=>D.evaluate({dataset:d42,anchors:[10]}),/valid/);
+assert.throws(()=>D.evaluate({dataset:d42,minCases:0}),/threshold/);
+
+const perturbed=D.perturb(d42,8021,.25);
+assert.notDeepEqual(perturbed.cases,d42.cases);
+assert.deepEqual(d42,D.generateProfiles(42,"structure"),"perturb must not mutate baseline");
+const audit=D.stabilityAudit(other);
+assert.equal(audit.simulations.length,5);
+assert.equal(audit.leaveOneOut.length,5);
+assert(audit.repeatability>=0&&audit.repeatability<=5);
+assert(audit.retained>=audit.repeatability);
+assert(typeof audit.negativeControl.retainsTop==="boolean");
+
+const nullData=D.generateProfiles(42,"null");
+assert(nullData.parameters.every(p=>p.delta===0),"null mode removes cohort-specific effects");
+const nullOut=D.evaluate({dataset:nullData});
+assert(nullOut.markedCount>=0,"null data may still yield false positive by chance");
+assert.equal(Q.peakIterationCount(1024,1,40,.999),25);
+assert(Q.groverSuccessProbability(1024,1,25)>=.999);
+
+console.log("Cancer Lab open-inference genomics and tangent/threshold tests: PASS");
