@@ -1,4 +1,4 @@
-# QCDS Cancer Lab — Recursive Engine — 128 → 8 → 1
+# QCDS Oncology Lab — Recursive Engine — 128 → 8 → 1
 
 **Theory and creation by Patrik Sundblom**
 
@@ -6,7 +6,9 @@ This directory contains the current QCDS cancer research engine. It is deliberat
 
 ## Live site — run it in the browser
 
-**QCDS Cancer Lab:** https://iampathat.github.io/thesyntractvision/qcds-cancer-lab/
+The new public URL is /qcds-oncology-lab/. The original /qcds-cancer-lab/ remains as a compatibility alias so existing links continue to work.
+
+**QCDS Oncology Lab:** https://iampathat.github.io/thesyntractvision/qcds-oncology-lab/
 
 The public surface is a runnable workbench. You can edit the 0/1/? Condition, enable or disable top-down cancer-oracle hypotheses, run the full 128 → 8 → 1 QCDS path, inspect all 128 per-lane Grover observations in the interactive inference space, select any recursive pass, inspect its eight full-distribution family binds, local and parent Grover depths, dimensional influence and the final Parent-Grover distribution.
 
@@ -55,7 +57,7 @@ multi-signal stability gate
 
 ### Rotation is bandwidth bias-cancellation
 
-The Cancer Lab rotates the **input**, not the oracle bank. The enabled oracle masks stay fixed in positional coordinates on every parallel lane. Sixteen unique rotations are used: eight forward cyclic rotations plus eight mirrored cyclic rotations. Across the full bank every semantic dimension visits every oracle position exactly twice.
+The Oncology Lab rotates the **input**, not the oracle bank. The enabled oracle masks stay fixed in positional coordinates on every parallel lane. Sixteen unique rotations are used: eight forward cyclic rotations plus eight mirrored cyclic rotations. Across the full bank every semantic dimension visits every oracle position exactly twice.
 
 That is deliberate bias resistance: position- or dimension-specific effects move as the same information passes through the same oracle system, while structure that survives the complete rotation bank remains available to the Syntract bind. True-null exclusion is a separate test: one semantic dimension is absent from each exclusion family. An oracle is never removed because a dimension was nulled; only the constraint landing on the absent position is unobserved in that lane.
 
@@ -203,7 +205,7 @@ Run `node qcds-cancer-lab/tests/test_core.js` to check numerical invariants and 
 
 ## Oncology research workspace — 22 October 2026
 
-The public Cancer Lab opens directly into an **oncology-oriented research workspace**, not a marketing landing page. Its styling, evidence disclosures and reference layer are designed for scientific review. This does not imply any clinical certification.
+The public Oncology Lab opens directly into an **oncology-oriented research workspace**, not a marketing landing page. Its styling, evidence disclosures and reference layer are designed for scientific review. This does not imply any clinical certification.
 
 ### Two distinct layers
 
@@ -251,7 +253,7 @@ All additions in this section are research documentation, **not assertions of cl
 
 ## Open cross-genome combinatorial inference — 22 October 2026
 
-The Cancer Lab genomics panel no longer performs contiguous DNA-string matching or searches for a planted three-position answer. It demonstrates a **hypothesis-open logical search over relations between positions** in multiple synthetic profiles. The 8D Cancer Lab workbench is separate from this 10D cohort demonstrator.
+The Oncology Lab genomics panel no longer performs contiguous DNA-string matching or searches for a planted three-position answer. It demonstrates a **hypothesis-open logical search over relations between positions** in multiple synthetic profiles. The 8D Oncology Lab workbench is separate from this 10D cohort demonstrator.
 
 ### Input width, candidate space and oracles
 
@@ -283,7 +285,7 @@ Theory and creation: **Patrik Sundblom**. Research and development support: **Op
 
 ## Rotating bandwidth funnel — 16 → 4 → 1 (October 22, 2026)
 
-The Cancer Lab synthetic cohort panel now runs a **numerical rotating probability funnel**, rather than labeling a two-stage Grover search as QCDS. This is a transparent, substrate-independent **reference implementation** of the architecture, not a quantum-hardware execution.
+The Oncology Lab synthetic cohort panel now runs a **numerical rotating probability funnel**, rather than labeling a two-stage Grover search as QCDS. This is a transparent, substrate-independent **reference implementation** of the architecture, not a quantum-hardware execution.
 
 **Actual data flow in each rotation**
 
