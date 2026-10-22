@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-"""QCDS Cancer Lab engine.
+"""QCDS Oncology Lab engine.
 
 This module is an orchestration layer around the canonical QCDS Fabric 4.2
 primitives already present in this repository. It deliberately does NOT carry
