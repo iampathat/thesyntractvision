@@ -15,6 +15,7 @@ class PDFStub{
   addPage(){this.page=++this.pages;} setPage(i){this.page=i;}
   getNumberOfPages(){return this.pages;}
   getTextWidth(v){return String(v).length*5.1;}
+  addFileToVFS(){} addFont(){}
   setFont(){}setFontSize(){}setFillColor(){}setTextColor(){}
   setDrawColor(){}setLineWidth(){}rect(){}line(){}roundedRect(){}circle(){}
   addImage(){}setProperties(){}
