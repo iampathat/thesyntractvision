@@ -21,7 +21,7 @@ const DESCRIPTIONS={
  'AI / GenAI':'Target-specific model context, untrusted data and AI-influenced behavior; not always applicable.',
  'Open Search':'Search beyond named framework labels by following entry points, assets, controls and consequences; not OSINT.'
 };
-const text=v=>String(v??'').replace(/[\u0000-\u001f]/g,' ').trim();
+const text=v=>String(v??'').replace(/[\u0000-\u001f]/g,' ').replace(/[\u2013\u2014]/g,' - ').replace(/\u2026/g,'...').replace(/\u2192/g,' -> ').replace(/[\u2018\u2019]/g,"'").replace(/[\u201c\u201d]/g,'"').trim();
 const ary=v=>Array.isArray(v)?v:[];
 const pad=n=>String(n).padStart(2,'0');
 const cut=(v,n=330)=>text(v).length>n?text(v).slice(0,n-1)+'…':text(v);
