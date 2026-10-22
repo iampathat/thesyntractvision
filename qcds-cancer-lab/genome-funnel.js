@@ -41,7 +41,9 @@
  function schedule(round,lane){
    // 210 unique four-locus windows sampled deterministically, without repetition
    // within one 16-lane round. Rotation changes BOTH mapped loci and logical order.
-   const window=CHOICES[(round*41+lane*13)%CHOICES.length];
+   // Coprime traversal: all 16 windows × up to 12 passes are distinct.
+   // This covers 192 of 210 four-locus windows at the 12-pass cap.
+   const window=CHOICES[((round*LANES+lane)*13)%CHOICES.length];
    const shift=(round+lane)%4;
    const rotated=window.slice(shift).concat(window.slice(0,shift));
    if((round+lane)%2)return rotated.reverse();
@@ -199,7 +201,8 @@
      qualifiedCount:eligible.length,rotations:rounds.length,lanesPerPass:LANES,
      groupsPerPass:GROUPS,laneWidth:LANE_WIDTH,localStates:LANE_STATES,
      rounds,distribution:bound,ranked,leaders,selected:highlighted,
-     parentGrover:parent,stable:stableCount>=2,
+     parentGrover:parent,stable:stableCount>=2&&eligible.length>0,
+     numericallyStable:stableCount>=2,
      entropyBits:entropy(bound),topk:topSet(bound),
      missingInformation:"Cross-window correlations beyond 4 loci are not guaranteed recoverable from the local joint distributions.",
      execution:"Classical exact amplitude simulation; lanes scheduled sequentially."
