@@ -13,7 +13,7 @@ const ESSENTIAL = [
   'glasswing-screen-v125.js','app-stage-v118.js',
   'consumer-ui-stage-v118.js','app-install.js',
   'engine.mjs','attack-vectors.mjs','logical-lab.js','glasswing.mjs',
-  'report-export.js','system-guide-pdf.mjs','system-guide-editorial.mjs',
+  'report-export.js','system-guide-pdf.mjs','system-guide-editorial.mjs','system-guide-visual-v4.mjs',
   'vendor/report-fonts.mjs','vendor/jspdf.umd.min.js',
   'assets/system-guide/qcds-the-guardian-network.svg',
   'assets/system-guide/qcds-dimensional-inference-guide.svg',
