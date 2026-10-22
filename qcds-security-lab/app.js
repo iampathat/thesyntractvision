@@ -403,7 +403,7 @@ function shell() {
       <div id="stale-slot">${staleNotice()}</div>
       <div id="view">${view()}</div>
       ${workflowContinuation()}
-      <footer class="main-footer"><span>QCDS Security Lab · Patrik Sundblom</span><a href="./privacy.html">Privacy</a><a href="#learn">About & license</a></footer>
+      <footer class="main-footer"><span>QCDS Security Lab · Patrik Sundblom</span><a href="../project-glasswing.html#top" aria-label="The Syntract Vision — Project Glasswing">Project Glasswing</a><a href="./privacy.html">Privacy</a><a href="#learn">About & license</a></footer>
     </main>
     ${investigating ? questionNavigation() : ""}
     ${consumerNav({route:state.route,question:state.question,icon,investigationHref})}
