@@ -434,7 +434,12 @@ jobs:
           grep -F 'WORKED_EXAMPLE_EVIDENCE' _site/qcds-security-lab/engine.mjs
           test -s _site/qcds-security-lab/attack-vectors.mjs
           test -s _site/qcds-security-lab/glasswing.html
+          test -s _site/qcds-security-lab/glasswing-selected.webp
+          test -s _site/qcds-security-lab/glasswing-mobile.webp
           grep -F 'The Syntract Vision' _site/qcds-security-lab/glasswing.html
+          grep -F 'media="(max-width: 920px) and (orientation: portrait)"' _site/qcds-security-lab/glasswing.html
+          grep -F 'glasswing-mobile.webp' _site/qcds-security-lab/glasswing.html
+          grep -F '../project-glasswing.html#top' _site/qcds-security-lab/app-stage-v118.js
           test ! -e _site/qcds-security-lab/glasswing.css
           test ! -e _site/qcds-security-lab/glasswing.js
           test -s _site/qcds-security-lab/glasswing.mjs
@@ -575,7 +580,9 @@ jobs:
           destination = Path('_site/project-glasswing.html')
           destination.write_text(mirror, encoding='utf-8')
           assert 'Project Glasswing' in mirror
-          assert 'qcds-security-lab/glasswing-approved.webp' in mirror
+          assert 'qcds-security-lab/glasswing-selected.webp' in mirror
+          assert 'qcds-security-lab/glasswing-mobile.webp' in mirror
+          assert '<picture' in mirror
           assert 'qcds-security-lab/index.html?skip_intro=1' in mirror
           print('Project Glasswing vision mirror verified outside application cache scope')
           PYGLASSWING
