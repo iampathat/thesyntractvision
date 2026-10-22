@@ -447,14 +447,15 @@ jobs:
           test -s _site/qcds-security-lab/glasswing-screen-v125.js
           test -s _site/qcds-security-lab/app-stage-v118.js
           test -s _site/qcds-security-lab/consumer-ui-stage-v118.js
-          for name in index.html enter.html glasswing-start.html glasswing-v120.html glasswing-v123.html glasswing-v124.html glasswing-v125.html; do
+          # Retired entry URLs must share one redirect, not duplicate the real app.
+          for name in enter.html glasswing-start.html glasswing-v120.html glasswing-v123.html glasswing-v124.html glasswing-v125.html; do
             test -s "_site/qcds-security-lab/$name"
-            cmp _site/qcds-security-lab/index.html "_site/qcds-security-lab/$name"
+            cmp _site/qcds-security-lab/enter.html "_site/qcds-security-lab/$name"
           done
-          grep -F 'data-release="1.25.0"' _site/qcds-security-lab/index.html
-          grep -F 'id="gw-landing"' _site/qcds-security-lab/index.html
-          grep -F 'data-enter-lab' _site/qcds-security-lab/index.html
-          grep -F 'data-watch-intro' _site/qcds-security-lab/index.html
+          grep -F 'location.replace(target.href)' _site/qcds-security-lab/enter.html
+          grep -F 'data-release="1.26.0"' _site/qcds-security-lab/index.html
+          grep -F 'id="gw-film"' _site/qcds-security-lab/index.html
+          grep -F 'data-film-skip' _site/qcds-security-lab/index.html
           grep -F 'glasswing-flight-v125.mp4' _site/qcds-security-lab/index.html
           grep -F 'object-fit:contain' _site/qcds-security-lab/glasswing-screen-v125.css
           grep -F 'video.play()' _site/qcds-security-lab/glasswing-screen-v125.js
@@ -471,7 +472,7 @@ jobs:
           assert b'moov' in data, 'Glasswing MP4 metadata missing'
           print('REAL MOVING GLASSWING EAGLE VERIFIED',len(data))
           PYMOVIE
-          grep -F "const VERSION = '1.25.0'" _site/qcds-security-lab/sw.js
+          grep -F "const VERSION = '1.26.0'" _site/qcds-security-lab/sw.js
           node --check _site/qcds-security-lab/glasswing-screen-v125.js
           node --check _site/qcds-security-lab/app-stage-v118.js
           node --check _site/qcds-security-lab/consumer-ui-stage-v118.js
