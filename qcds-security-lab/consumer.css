@@ -264,3 +264,39 @@
  .glasswing-brand-label{font-size:21px}
  .glasswing-brand .brand-sub{font-size:9px}
 }
+
+/* Glasswing v1.26.4: guide and update must stay discoverable in the real
+   desktop workspace shown in the app, not behind a mobile-only hamburger. */
+.sidebar nav button.gw-nav-guide {
+  width:100%; display:flex; align-items:center; gap:11px; min-height:54px;
+  border:1px solid #45616a; background:#142d34; color:#d6f6ef;
+  text-align:left; border-radius:8px; padding:10px 13px;
+  font:inherit; cursor:pointer; white-space:normal;
+}
+.sidebar nav button.gw-nav-guide:hover,
+.sidebar nav button.gw-nav-guide:focus-visible {
+  background:#1b414a; border-color:#84dddf;
+}
+.sidebar nav .gw-nav-guide .icon {flex:0 0 auto; color:#9deaf0}
+.sidebar nav .gw-nav-guide .nav-copy {min-width:0}
+.sidebar nav .gw-nav-guide .nav-copy b {display:block;font-size:13px}
+.sidebar nav .gw-nav-guide .nav-copy em {display:block;font-size:11px;color:#afd1cb;font-style:normal;margin-top:3px}
+.topbar .top-actions {gap:8px; min-width:0}
+.topbar .top-actions .gw-guide-header {border-color:#50949c;color:#cef8f9}
+.topbar .top-actions .gw-settings-header {border-color:#647582}
+.gw-guide-export-panel {margin:16px 0 20px;padding:23px 26px;border:1px solid #4d8790}
+.gw-guide-export-panel h2 {margin:9px 0;color:#e9f9fb}
+.gw-guide-export-panel p {max-width:68ch;line-height:1.55}
+.gw-guide-export-panel .button {margin-top:8px;white-space:normal}
+@media(max-width:950px) {
+  .topbar .top-actions .save-status {display:none}
+  .topbar .top-actions .gw-settings-header span,
+  .topbar .top-actions .gw-guide-header span {display:none}
+  .topbar .top-actions .gw-settings-header,
+  .topbar .top-actions .gw-guide-header {min-width:42px;padding:7px 10px}
+}
+@media(max-width:560px){
+  .topbar .top-actions .gw-what-header {display:none}
+  .topbar .top-actions {gap:5px}
+  .gw-guide-export-panel {padding:17px 16px}
+}
