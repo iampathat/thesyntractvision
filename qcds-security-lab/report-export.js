@@ -44,34 +44,37 @@ export async function downloadSecurityPdf(model, project, options = {}) {
 // The system guide is universal; it does not read, export or modify saved cases.
 // Visual assets remain separate from editable explanations. Raster artwork is
 // converted to JPEG bytes in memory; no hidden encoded source or remote PDF service.
-async function jpegArtwork(relativePath) {
+async function jpegArtwork(relativePath, targetRatio=595/562) {
+  let objectUrl;
   try {
-    const response=await fetch(new URL(relativePath,import.meta.url),{cache:'no-store'});
+    const response = await fetch(new URL(relativePath,import.meta.url),{cache:'no-store'});
     if (!response.ok) return null;
-    const original=await response.blob();
-    let source;
-    if (typeof createImageBitmap === 'function') {
-      source=await createImageBitmap(original);
-    } else {
-      const url=URL.createObjectURL(original);
-      try {
-        source=await new Promise((resolve,reject)=>{
-          const image=new Image();
-          image.onload=()=>resolve(image);
-          image.onerror=()=>reject(new Error('Artwork decode failed'));
-          image.src=url;
-        });
-      } finally { URL.revokeObjectURL(url); }
-    }
+    const input=await response.blob();
+    objectUrl=URL.createObjectURL(input);
+    // Works for SVG fallback plates as well as JPEG, WebP and PNG in Safari.
+    const img=await new Promise((resolve,reject)=>{
+      const element=new Image();
+      element.onload=()=>resolve(element);
+      element.onerror=()=>reject(new Error('Guide artwork cannot be decoded'));
+      element.src=objectUrl;
+    });
+    const maxDimension=1200;
+    const width=Math.round(Math.min(maxDimension,img.naturalWidth,1200*targetRatio));
+    const height=Math.max(1,Math.round(width/targetRatio));
     const canvas=document.createElement('canvas');
-    const ratio=Math.min(1,1024/Math.max(source.width,source.height));
-    canvas.width=Math.max(1,Math.round(source.width*ratio));
-    canvas.height=Math.max(1,Math.round(source.height*ratio));
-    canvas.getContext('2d').drawImage(source,0,0,canvas.width,canvas.height);
-    source.close?.();
-    const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.86));
+    canvas.width=width;canvas.height=height;
+    const g=canvas.getContext('2d',{alpha:false});
+    if(!g) return null;
+    g.fillStyle='#071625';g.fillRect(0,0,width,height);
+    // Center-crop, never distort wings, grids or technical illustrations.
+    const cropW=Math.min(img.naturalWidth,img.naturalHeight*targetRatio);
+    const cropH=cropW/targetRatio;
+    const sx=(img.naturalWidth-cropW)/2,sy=(img.naturalHeight-cropH)/2;
+    g.drawImage(img,sx,sy,cropW,cropH,0,0,width,height);
+    const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',0.89));
     return blob?new Uint8Array(await blob.arrayBuffer()):null;
   } catch { return null; }
+  finally {if(objectUrl)URL.revokeObjectURL(objectUrl);}
 }
 async function loadSystemGuidePlates() {
   const names=[
@@ -84,11 +87,11 @@ async function loadSystemGuidePlates() {
   ];
   // Optional chapter artwork: the engine remains fully functional if a media
   // asset is unavailable or not yet installed by this release.
-  const plateFiles=await Promise.all(names.map(async name=>
-    (await jpegArtwork('./assets/system-guide/'+name)) ||
-    (await jpegArtwork('./assets/system-guide/'+name.replace(/\.jpg$/,'.svg')))
+  const plateFiles=await Promise.all(names.map(async (name,i)=>
+    (await jpegArtwork('./assets/system-guide/'+name,i===0?595/491:595/562)) ||
+    (await jpegArtwork('./assets/system-guide/'+name.replace(/\.jpg$/,'.svg'),i===0?595/491:595/562))
   ));
-  const fallback=plateFiles[0]||await jpegArtwork('./glasswing-approved.webp');
+  const fallback=plateFiles[0]||await jpegArtwork('./glasswing-approved.webp',595/491);
   return {cover:fallback,chapters:plateFiles.slice(1)};
 }
 
