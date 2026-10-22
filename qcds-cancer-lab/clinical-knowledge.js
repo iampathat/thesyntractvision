@@ -1,4 +1,4 @@
-/* Cancer Lab oncology reference.
+/* Oncology Lab oncology reference.
  * Public reference material for research orientation, not diagnostic logic.
  * All masks are synthetic, fixed-position QCDS examples, NOT clinical classifiers.
  * © 2026 Patrik Sundblom — R&D support OpenAI / ChatGPT.
