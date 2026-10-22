@@ -42,16 +42,16 @@
     </header>
     <section class="research-strip" aria-label="Research scope">
       <div><small>START HERE</small><strong>DNA relationships</strong></div>
-      <div><small>MAIN EXAMPLE</small><strong>10 DNA positions · 10 profiles</strong></div>
+      <div><small>ADJUSTABLE GROUP SIZE</small><strong id="cohortHeaderCount">Example: 5 + 5 profiles</strong></div>
       <div><small>SEPARATE RESEARCH TOOL</small><strong>Original 8-bit method lab</strong></div>
       <div><small>RESEARCH STATUS</small><strong>Synthetic data · not clinical</strong></div>
     </section>
-    <div class="research-scope"><strong>What is actually analyzed?</strong> Ten invented 0/1 DNA-position labels from ten fictional profiles — <strong>not</strong> ten sequenced human genomes. All 375 allowed position combinations are also checked by an ordinary CPU oracle. Nothing on this page is a patient finding or a medical test. The separate eight-bit laboratory below uses illustrative rules, not real gene assays. <button class="text-link" data-explain="provenance">Model and evidence explained ↗</button></div>
+    <div class="research-scope"><strong>What is actually analyzed?</strong> Ten invented 0/1 DNA-position labels from an adjustable number of fictional profiles — <strong>not</strong> ten sequenced human genomes. All 375 allowed position combinations are also checked by an ordinary CPU oracle. Nothing on this page is a patient finding or a medical test. The separate eight-bit laboratory below uses illustrative rules, not real gene assays. <button class="text-link" data-explain="provenance">Model and evidence explained ↗</button></div>
     <section class="genome-perspective" id="genomePerspective" aria-labelledby="genomePerspectiveTitle">
       <div class="genome-perspective-head">
         <span class="genome-eyebrow">CROSS-GENOME CONDITION SEARCH · SYNTHETIC RESEARCH EXAMPLE</span>
         <h2 id="genomePerspectiveTitle">What if several people share a DNA pattern nobody thought to look for?</h2>
-        <p>Imagine comparing five people with the same cancer with five others. A connection might involve several distant parts of their DNA, not one matching sequence. <strong>QCDS looks for combinations that fit the chosen rules</strong> and lights up the positions involved. Here we test the idea using <strong>invented data</strong>, not actual human genomes.</p>
+        <p>Imagine comparing any number of people sharing a cancer diagnosis with a comparison group of your choosing. A connection might involve several distant parts of their DNA, not one matching sequence. <strong>QCDS looks for combinations that fit the chosen rules</strong> and lights up the positions involved. Here we test the idea using <strong>invented data</strong>, not actual human genomes.</p>
         <div class="genome-quickstart" aria-label="How to use this example">
           <div><b>1</b><span><strong>Start with the example</strong><small>It has already been calculated for you.</small></span></div>
           <div><b>2</b><span><strong>See what lights up</strong><small>Look at the result and the ten DNA tracks.</small></span></div>
@@ -59,8 +59,8 @@
         </div>
       </div>
       <div class="genome-stats">
-        <div><small>SYNTHETIC COHORT</small><strong>5 + 5</strong><span>five fictional cases and five fictional comparison profiles</span></div>
-        <div><small>POSITIONAL DIMENSIONS</small><strong>10</strong><span>distributed across chromosomes; 1,024 candidate subset states</span></div>
+        <div><small>YOUR SAMPLE SIZE</small><strong id="cohortStatsPeople">5 + 5</strong><span id="cohortStatsPeopleLabel">fictional cases + fictional comparisons · adjustable</span></div>
+        <div><small>SMALL EMULATION</small><strong>10 loci</strong><span>1,024 subset states · illustrative width, not a QCDS limit</span></div>
         <div><small>ACTUALLY CHECKED HERE</small><strong>375</strong><span>2–4-position candidate combinations · classically evaluated</span></div>
       </div>
       <div id="cohortCombinatorial" class="cohort-lab">
@@ -88,17 +88,22 @@
                 <option value="parity">Odd-parity joint pattern (mixed 0/1)</option>
               </select>
             </label>
-            <label>Of the five cancer-labeled examples, how many must show this pattern?
-              <select id="cohortMinCases" aria-label="Minimum number of case profiles carrying combination">
-                <option value="5">At least 5 / 5</option><option value="4">At least 4 / 5</option><option value="3" selected>At least 3 / 5</option>
-              </select>
+            <label>Minimum cases showing the whole pattern
+              <select id="cohortMinCases" aria-label="Minimum case profiles carrying this combination"><option value="3">3 of 5</option></select>
             </label>
-            <label>Of the five comparisons, how many may show the pattern?
-              <select id="cohortMaxControls" aria-label="Maximum number of comparator profiles carrying combination">
-                <option value="0">At most 0 / 5</option><option value="1" selected>At most 1 / 5</option><option value="2">At most 2 / 5</option>
-              </select>
+            <label>Maximum comparisons showing the whole pattern
+              <select id="cohortMaxControls" aria-label="Maximum comparison profiles carrying this combination"><option value="1">1 of 5</option></select>
             </label>
             <div class="cohort-data-settings">
+              <p class="cohort-size-note"><strong>Choose the size of your example.</strong> Five was just one illustration, not a requirement of QCDS. This browser model still uses ten symbolic loci regardless of group size.</p>
+              <div class="cohort-size-controls">
+                <label for="cohortCaseCount">People in the cancer-labeled group
+                  <input id="cohortCaseCount" type="number" min="2" max="30" step="1" value="5" />
+                </label>
+                <label for="cohortControlCount">People in the comparison group
+                  <input id="cohortControlCount" type="number" min="2" max="30" step="1" value="5" />
+                </label>
+              </div>
               <label for="cohortDataSeed">Example-data seed (reproducible) <input id="cohortDataSeed" type="number" min="1" max="1000000" value="173" step="1" /></label>
               <label for="cohortDataMode">How to generate sample data
                 <select id="cohortDataMode">
@@ -137,7 +142,7 @@
         </section>
         <div class="cohort-visual-head">
           <h3>Where do those DNA positions light up?</h3>
-          <p>Each line is one <strong>invented person</strong>: C01–C05 represent the cancer group; K01–K05 are comparisons. L01–L10 are example positions, not real genes. <strong>Green</strong> marks DNA positions in the selected pattern, while <strong>gold</strong> shows a starting location you chose. Green means the person matches the complete selected pattern; pale blue means only part of the pattern is present. A dotted gold marker can indicate an absent (0) feature in a parity relationship. These are schematic positions, not real DNA coordinates.</p>
+          <p>Each line is one <strong>invented person</strong>. C-prefixed profiles represent the case group and K-prefixed profiles represent comparisons; their counts follow your settings. L01–L10 are example positions, not real genes. <strong>Green</strong> marks DNA positions in the selected pattern, while <strong>gold</strong> shows a starting location you chose. Green means the person matches the complete selected pattern; pale blue means only part of the pattern is present. A dotted gold marker can indicate an absent (0) feature in a parity relationship. These are schematic positions, not real DNA coordinates.</p>
         </div>
         <div class="cohort-legend">
           <span><i class="legend-cohort-anchor"></i> Specified Condition</span>
@@ -148,7 +153,7 @@
         </div>
         <div id="cohortGenomeTracks" class="cohort-tracks" aria-label="Computed highlighted locus positions across individual genomes"></div>
         <details class="cohort-matrix-details">
-          <summary>Change the example DNA data <small>Advanced: edit each 0/1 observation for ten invented people</small></summary>
+          <summary>Change the example DNA data <small>Advanced: edit all 0/1 observations for the selected groups</small></summary>
           <div id="cohortDataMatrix" class="cohort-data-matrix" aria-label="Synthetic 0/1 variants for every case and comparator"></div>
         </details>
         <details class="funnel-walkthrough" id="funnelDeepDive">
