@@ -188,6 +188,86 @@
       retained:simulations.filter(x=>x.retainsTop).length
     };
   }
-  return {LOCI,N,MAX_ITERATIONS,ALIGNMENT_THRESHOLD,randomSource,generateProfiles,
+
+  // Exact conditional randomization check over all C(10,5)=252 case-label assignments.
+  // Compares the selected result with the MOST extreme qualifying association
+  // under each shuffled labeling, explicitly accounting for searching hundreds
+  // of loci combinations. It is a synthetic-data diagnostic, not validation.
+  function permutationAudit(options={}){
+    const dataset=options.dataset;
+    checkProfiles(dataset);
+    if(dataset.cases.length!==5||dataset.controls.length!==5)
+      throw Error("Exact permutation calibration currently requires 5 cases and 5 comparisons.");
+    const anchors=options.anchors||[];
+    if(!Array.isArray(anchors)||new Set(anchors).size!==anchors.length||
+       anchors.some(i=>!Number.isInteger(i)||i<0||i>=LOCI.length))
+       throw Error("Invalid permutation anchor Condition.");
+    const must=mask(anchors);
+    const relation=options.relation||"cooccurrence";
+    const minCases=options.minCases===undefined?3:Number(options.minCases);
+    const maxControls=options.maxControls===undefined?1:Number(options.maxControls);
+    const minSize=options.minSize===undefined?2:Number(options.minSize);
+    const maxSize=options.maxSize===undefined?4:Number(options.maxSize);
+    if(!["cooccurrence","parity"].includes(relation))throw Error("Unsupported relation oracle.");
+    if(!Number.isInteger(minCases)||minCases<1||minCases>5||
+       !Number.isInteger(maxControls)||maxControls<0||maxControls>5||
+       !Number.isInteger(minSize)||!Number.isInteger(maxSize)||minSize<2||maxSize>5||minSize>maxSize)
+       throw Error("Invalid permutation search constraints.");
+    const people=[...dataset.cases,...dataset.controls];
+    const candidates=[];
+    for(let state=1;state<N;state++){
+      const size=countBits(state);
+      if(size<minSize||size>maxSize||(state&must)!==must)continue;
+      let positive=0;
+      people.forEach((person,index)=>{
+        if(satisfies(state,person,relation))positive|=1<<index;
+      });
+      candidates.push({state,positive,total:countBits(positive)});
+    }
+    const observed=options.selectedState;
+    const observedCaseMask=(1<<dataset.cases.length)-1;
+    const observedDatum=observed==null?null:assess(observed,dataset,relation);
+    if(observed!=null && (!Number.isInteger(observed)||observed<0||observed>=N ||
+       !candidates.some(c=>c.state===observed)))
+       throw Error("Selected state is not a valid candidate under the Condition.");
+    const threshold=observedDatum?.contrast;
+    let assignments=0,asExtreme=0,maxObserved=-1,obsQualified=0;
+    const FULL=(1<<10)-1;
+    const bestForCases=(caseMask)=>{
+      let best=-1;
+      for(const candidate of candidates){
+        const cases=countBits(candidate.positive&caseMask);
+        const controls=candidate.total-cases;
+        if(cases<minCases||controls>maxControls)continue;
+        const contrast=(cases-controls)/5;
+        if(contrast>0 && contrast>best)best=contrast;
+      }
+      return best;
+    };
+    maxObserved=bestForCases(observedCaseMask);
+    obsQualified=candidates.filter(c=>{
+      const cases=countBits(c.positive&observedCaseMask);
+      const controls=c.total-cases;
+      return cases>=minCases&&controls<=maxControls&&cases>controls;
+    }).length;
+    // Combination masks: 10 bits with exactly 5 selected cases.
+    const nullMax=[];
+    for(let caseMask=0;caseMask<=FULL;caseMask++){
+      if(countBits(caseMask)!==5)continue;
+      const max=bestForCases(caseMask);
+      nullMax.push(max);assignments++;
+      if(threshold!==undefined && max>=threshold-1e-12)asExtreme++;
+    }
+    const passed=observed!==undefined&&observed!==null&&
+      observedDatum.caseCount>=minCases&&observedDatum.controlCount<=maxControls&&observedDatum.contrast>0;
+    return {assignments,validCandidates:candidates.length,observedQualified:obsQualified,
+      selectedContrast:threshold??null,observedMaximumContrast:maxObserved,
+      tailAssignments:passed?asExtreme:null,
+      familywiseFraction:passed?asExtreme/assignments:null,
+      nullAnyFraction:nullMax.filter(v=>v>0).length/assignments,
+      method:"Exact label permutations across all eligible 2–4-locus candidates; conditional on these ten synthetic observations and the chosen oracle family."
+    };
+  }
+  return {LOCI,N,MAX_ITERATIONS,ALIGNMENT_THRESHOLD,randomSource,generateProfiles,permutationAudit,
     bits,mask,countBits,satisfies,coverage,assess,evaluate,perturb,stabilityAudit};
 });
