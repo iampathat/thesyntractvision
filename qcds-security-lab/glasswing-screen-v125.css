@@ -598,3 +598,34 @@ body.glasswing-visual .gw-settings-trigger:hover {background:#205170}
  body.glasswing-visual #app .gw-settings-trigger,
  .gw-settings-dialog {display:none!important}
 }
+
+/* Project Glasswing / protect the real desktop workspace against horizontal overflow. */
+body.glasswing-visual #app,
+body.glasswing-visual #app .app-body,
+body.glasswing-visual #app main,
+body.glasswing-visual #app #view { min-width:0; max-width:100%; }
+body.glasswing-visual #app .app-body { width:calc(100% - 242px); }
+body.glasswing-visual #app main > *,
+body.glasswing-visual #view > *,
+body.glasswing-visual #view .panel,
+body.glasswing-visual #view article,
+body.glasswing-visual #view section,
+body.glasswing-visual #view .comparison-readout { max-width:100%; min-width:0; }
+body.glasswing-visual #view p,
+body.glasswing-visual #view h1,
+body.glasswing-visual #view h2,
+body.glasswing-visual #view h3,
+body.glasswing-visual #view small,
+body.glasswing-visual #view .mono {overflow-wrap:anywhere;text-wrap:pretty;}
+body.glasswing-visual #view .comparison-readout,
+body.glasswing-visual #view .perspective-grid {
+ display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));
+ gap:14px;background:transparent;
+}
+body.glasswing-visual #view .comparison-readout > *,
+body.glasswing-visual #view .perspective-grid > * {min-width:0;}
+body.glasswing-visual #view .panel {overflow:hidden;border:1px solid #35627b;background:#0b2338;}
+body.glasswing-visual #view .panel p {max-width:75ch;line-height:1.6;}
+body.glasswing-visual #view .page-heading h1 {font-size:clamp(27px,3vw,42px);line-height:1.14;}
+body.glasswing-visual #view .eyebrow {line-height:1.6;}
+@media(max-width:820px){body.glasswing-visual #app .app-body{width:100%;margin-left:0;}}
