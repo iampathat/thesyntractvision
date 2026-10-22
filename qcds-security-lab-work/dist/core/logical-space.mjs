@@ -2,7 +2,7 @@ import { groverPlan } from "./grover-policy.mjs";
 // QCDS by Patrik Sundblom. Assistant contributor: ChatGPT (OpenAI).
 // Commercial license: LICENSE.md. Symbolic classical reference, no QPU calls.
 export const ABSENT = "ABSENT";
-export const LOGICAL_VERSION = "1.0.0";
+export const LOGICAL_VERSION = "1.1.0";
 const SYMBOLS = new Set(["0", "1", "?", ABSENT]);
 const tri = (v) => (v === true ? "1" : v === false ? "0" : v == null ? "?" : v);
 const pow2 = (n) => 1n << BigInt(n);
@@ -149,7 +149,7 @@ export function amplify(marked, total, maxIterations = 40) {
     totalStates: n.toString(),
     iterations: best.iteration,
     iterationBudget: cap,
-    alignment: { threshold: plan.threshold, reached: plan.reached, reason: plan.reason, bestWithinBudget: plan.best },
+    alignment: { threshold: plan.threshold, reached: plan.reached, reason: plan.reason, bestObserved: plan.best, evaluatedIterations: plan.evaluatedIterations, stopping: plan.stopping },
     initialProbability: fraction,
     probability: best.probability,
     lift: fraction ? best.probability / fraction : 0,

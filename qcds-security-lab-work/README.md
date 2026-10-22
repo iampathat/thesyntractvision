@@ -2,9 +2,9 @@
 
 Created by Patrik Sundblom — with OpenAI / ChatGPT as research & development support.
 
-A separate Work branch of QCDS Security Lab / Project Glasswing. Version 1.0.0.
+A separate Work branch of QCDS Security Lab / Project Glasswing. Version 1.1.0.
 
-The interface and original articulated SVG bird are new. The QCDS engine, attack-vector model, symbolic logical space, Grover policy and gate simulators are retained from `iampathat/thesyntractvision/qcds-security-lab` at commit `2aec85e0fb12655b26f0807dcc4c5d9f4eef3042` (engine 1.14.1). Relative module imports are normalized; inference semantics are preserved.
+The interface and original articulated SVG bird are new. The QCDS engine, attack-vector model, symbolic logical space, Grover policy and gate simulators are retained from `iampathat/thesyntractvision/qcds-security-lab` at commit `2aec85e0fb12655b26f0807dcc4c5d9f4eef3042` (engine 1.14.1). Relative module imports are normalized; Boolean inference semantics are preserved. Work 1.1 adds an adaptive Grover stopping policy to the retained analytical and gate simulators.
 
 ## Run
 
@@ -19,12 +19,16 @@ Open `http://localhost:8080`. Projects live in a dedicated browser-local workspa
 ## Experience
 
 - A separate Glasswing welcome scene with an original vector bird: shoulder, hand, feathers, head, tail, claws, node pulses and a defensive ground field. Pause, replay and reduced-motion support.
-- A responsive Swedish workspace: Overview, System & conditions, Attack paths, Logical space, Evidence & actions.
-- Five example systems and independent custom investigations. Example starters contain no prefilled test evidence.
+- A guided Swedish investigation: Goal → Route → Control → Counter-test → Evidence. Examples are the first workspace screen; technical dashboards live under Further exploration.
+- Five complete, loadable examples with Swedish explanations and clearly labelled synthetic worked observations/actions. The invoice example intentionally keeps its unresolved condition and has no test observation. Custom investigations start without observations.
 - Real model results in the candidate map and metrics; worker-based calculations keep the interface responsive.
-- Explicit what-if dimension changes, true coordinate exclusion, parallel/sequential/hybrid modes, orientation checks and ideal Grover with a 40-iteration cap.
+- Explicit what-if dimension changes, true coordinate exclusion, parallel/sequential/hybrid modes, orientation checks and ideal Grover with automatic stopping and a 40-iteration ceiling.
 - Ideal statevector and noisy density-matrix comparison, 4096 shots, deterministic seed 173; JSON exports retain the exact run.
 - Scope-bound reported observations and action ownership. Reports render as an A4 print/PDF document through the browser print dialog.
+
+## Adaptive Grover
+
+The planner stops at 95% oracle mass, or after three steps with no material improvement over its checkpoint (0.1% relative gain). It retains the earliest best observed state and records the explored steps separately from the selected iteration. Constant predicates stop at zero. This is a performance heuristic: unitary Grover oscillates, and a later, better peak may be skipped. Noisy-backend selection uses the same stop rule on the simulated noisy distribution; a manually specified comparison iteration remains explicit. The plotted trace ends when the search stops. No speedup figure is claimed.
 
 ## Validation
 

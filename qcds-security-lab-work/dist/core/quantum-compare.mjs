@@ -1,6 +1,6 @@
 // QCDS by Patrik Sundblom. Contributor: ChatGPT (OpenAI). See LICENSE.md.
 // Gate-by-gate CPU simulation. No QPU calls and no device-calibration claim.
-import { groverPlan, DEFAULT_ALIGNMENT, NUMERICAL_TOLERANCE } from "./grover-policy.mjs";
+import { groverPlan, groverProbability, improvementMonitor, DEFAULT_ALIGNMENT, NUMERICAL_TOLERANCE } from "./grover-policy.mjs";
 export const QUANTUM_VERSION = "1.1.0";
 export const LIMITS = Object.freeze({
   qubits: 8,
@@ -482,17 +482,19 @@ export function compareExecution(run, raw = {}) {
     : target > densityCap ? 'The requested density-matrix run exceeds the browser work budget. Lower the iteration count or use a smaller explicitly scoped oracle.' : null;
   const referenceMs = clock() - start;
   const ideal = new Statevector(n), density = noisyReason ? null : new DensityMatrix(n), trace = [];
-  let idealMs = 0, noisyMs = 0, chosen;
+  let idealMs = 0, noisyMs = 0, chosen, stopReason;
+  const monitor = improvementMonitor({threshold});
   function apply(batch) {
     let t = clock(); batch.forEach(g => ideal.apply(g)); idealMs += clock() - t;
     if (density) { t = clock(); batch.forEach(g => {density.apply(g); density.depolarize(g.qubits, g.name === 'cx' ? noise.two : noise.single);}); noisyMs += clock() - t; }
   }
   function record(iteration) {
     const p = ideal.probabilities(), q = density ? readoutChannel(density.probabilities(), n, noise.readout) : null;
-    const row = {iteration, reference: requested.trace[iteration].probability, ideal: probabilityMass(p,circuit.marked), noisy: q ? probabilityMass(q,circuit.marked) : null};
+    const row = {iteration, reference: groverProbability(circuit.markedCount, width, iteration), ideal: probabilityMass(p,circuit.marked), noisy: q ? probabilityMass(q,circuit.marked) : null};
     trace.push(row);
     if (manual || selection === 'ideal' || !chosen || row.noisy > chosen.row.noisy + 1e-12) chosen = {row,p,q};
-    return !manual && selection === 'noisy' && row.noisy + NUMERICAL_TOLERANCE >= threshold;
+    if (!manual && selection === 'noisy') stopReason = monitor(row.noisy);
+    return !!stopReason;
   }
   apply(circuit.preparation);
   let reached = record(0);
@@ -510,14 +512,14 @@ export function compareExecution(run, raw = {}) {
   }
   const reachedFor = value => value !== null && value + NUMERICAL_TOLERANCE >= threshold;
   const selectedValue = selection === 'noisy' && q ? selected.noisy : selected.ideal;
-  const reason = constant ? plan.reason : manual ? 'fixed_iterations' : reachedFor(selectedValue) ? 'threshold_reached' : effectiveCap < requested.cap ? 'resource_limit' : 'threshold_not_reached';
+  const reason = constant ? plan.reason : manual ? 'fixed_iterations' : reachedFor(selectedValue) ? 'threshold_reached' : stopReason || (selection === 'ideal' ? plan.reason : effectiveCap < requested.cap ? 'resource_limit' : 'iteration_limit');
   const alignment = {
     threshold, backend: selection, reached: reachedFor(selectedValue), idealReached: reachedFor(selected.ideal), noisyReached: q ? reachedFor(selected.noisy) : null,
     reason, selectedIteration: iterations, executedIterations: trace.at(-1).iteration,
     maxIterations: requested.cap, effectiveCap,
     executedGateCount: circuit.preparation.length + trace.at(-1).iteration * cycle.length,
     densityWork: density ? (circuit.preparation.length + trace.at(-1).iteration * cycle.length) * width * width : 0,
-    referenceBestWithinBudget: requested.best,
+    referenceBestObserved: requested.best,
     meaning: 'Oracle alignment means calculated accepted-subspace mass reaches the selected threshold. It is not Syntract evidence binding or real-world verification.',
   };
   const distribution = p.map((probability,i) => ({bits:n ? i.toString(2).padStart(n,'0') : 'empty',marked:circuit.marked[i],ideal:probability,noisy:q?.[i]??null,idealCount:idealCounts[i],noisyCount:noisyCounts?.[i]??null}));
@@ -533,7 +535,7 @@ export function compareExecution(run, raw = {}) {
   return {
     schema:'qcds-security-lab/quantum-comparison-v1',version:QUANTUM_VERSION,generatedAt:new Date().toISOString(),bindingKey:run.bindingKey,system:run.system,vectorId:run.focus.id,
     substrate:'CPU statevector + density-matrix simulation; no QPU job',
-    circuit:{...circuit,gates,metrics:circuitMetrics(gates,n),iterations,iterationSelection:manual ? 'User-selected iteration; identical for every backend' : `Earliest ${selection} result reaching ${(threshold*100).toFixed(1)}%, otherwise the earliest best within ${effectiveCap} iterations. Both circuits below use that same selected iteration.`},
+    circuit:{...circuit,gates,metrics:circuitMetrics(gates,n),iterations,iterationSelection:manual ? 'User-selected iteration; identical for every backend' : `Earliest ${selection} result reaching ${(threshold*100).toFixed(1)}%, otherwise the earliest best before the improvement stop or ${effectiveCap}-iteration ceiling. Both circuits below use that same selected iteration.`},
     alignment,discovery,
     reference:{fullMaskStates:circuit.fullMaskStates,fullMarkedStates:circuit.fullMarkedStates,initialProbability:plan.initialProbability,expectedProbability:selected.reference,runtimeMs:referenceMs},
     ideal:{probability:selected.ideal,maxReferenceError,runtimeMs:idealMs,sample:sampled(idealCounts)},

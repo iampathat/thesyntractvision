@@ -1,3 +1,4 @@
+import {groverProbability} from '../dist/core/grover-policy.mjs';
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -82,7 +83,7 @@ test("finite symbolic Grover matches a dense 8-bit amplitude simulation", () => 
   const run = amplify(1n, 256n, 40);
   for (let t = 0; t <= 40; t++) {
     assert.ok(
-      Math.abs(amplitudes[173] ** 2 - run.trace[t].probability) < 1e-12,
+      Math.abs(amplitudes[173] ** 2 - groverProbability(1n,256n,t)) < 1e-12,
     );
     amplitudes[173] *= -1;
     const mean = amplitudes.reduce((a, b) => a + b, 0) / 256;
@@ -92,7 +93,9 @@ test("finite symbolic Grover matches a dense 8-bit amplitude simulation", () => 
   assert.equal(run.alignment.reached, true);
   assert.ok(run.probability >= 0.95);
   assert.ok(run.trace[10].probability < 0.95);
-  assert.ok(run.alignment.bestWithinBudget.probability > 0.9999);
+  assert.equal(run.trace.at(-1).iteration, 11);
+  assert.equal(run.alignment.evaluatedIterations, 11);
+  assert.ok(run.alignment.bestObserved.probability >= 0.95);
   assert.equal(run.distribution.marked.count, "1");
   assert.equal(run.distribution.unmarked.count, "255");
   assert.equal(amplify(0n, 4n).probability, 0);
