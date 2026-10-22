@@ -795,3 +795,138 @@ body.clinical-theme .workbench {margin-top:24px}
 .cohort-group-config .cohort-size-controls {max-width:650px;margin:0}
 .cohort-group-config input {width:100%;padding:11px 12px;font-size:16px}
 @media(max-width:600px){.cohort-group-config{padding:13px}}
+
+
+/* === Oncology Lab v3: six-view workspace — no page-long mixed workflow. === */
+body.clinical-theme .onco-workspace {display:none}
+body.clinical-theme .onco-router-ready>.clinical-header .clinical-nav {display:none!important}
+body.clinical-theme .onco-router-ready .onco-workspace {
+  display:grid;grid-template-columns:258px minmax(0,1fr);
+  align-items:start;gap:24px;padding-top:20px;
+}
+.onco-router-ready .onco-view[hidden] {display:none!important}
+.onco-sidebar {
+  min-width:0;position:sticky;top:16px;max-height:calc(100dvh - 30px);
+  overflow-y:auto;display:grid;align-content:start;gap:5px;
+  background:#fff;border:1px solid #d5e1e7;border-radius:12px;padding:13px;
+  box-shadow:0 5px 20px rgba(24,67,84,.045)
+}
+.onco-nav-heading {display:grid;gap:2px;padding:10px 13px 14px;border-bottom:1px solid #e1e9ee;margin-bottom:6px}
+.onco-nav-heading strong {font-size:12px;letter-spacing:.11em;color:#286279}
+.onco-nav-heading span {font-size:12px;color:#6b8290}
+.onco-nav-divider {font-size:10px;font-weight:790;letter-spacing:.07em;color:#778b99;margin:16px 10px 8px;line-height:1.4}
+body.clinical-theme .onco-nav-button {
+  width:100%;min-width:0;text-align:left;display:flex;align-items:center;gap:11px;
+  cursor:pointer;background:transparent;border:1px solid transparent;border-radius:9px;
+  padding:10px 11px;transition:background-color .15s,border-color .15s;color:#36586e;
+}
+body.clinical-theme .onco-nav-button:hover {background:#f0f7f8;border-color:#d9e8ec}
+body.clinical-theme .onco-nav-button.is-active {
+  background:#e4f3f4;border-color:#afd1d6;color:#12586b;
+  box-shadow:inset 3px 0 0 #228b94
+}
+.onco-nav-number {display:grid;place-items:center;font-size:13px;font-weight:800;
+  flex:0 0 31px;height:31px;border-radius:9px;background:#edf3f5;color:#5d7e8c}
+.onco-nav-button.is-active .onco-nav-number {background:#1d7889;color:#fff}
+.onco-nav-copy {display:grid;gap:2px;min-width:0}
+.onco-nav-copy strong {font-size:13px;font-weight:760;color:inherit;line-height:1.35}
+.onco-nav-copy small {font-size:10px;color:#768c9a;line-height:1.48;font-weight:450}
+.onco-content {min-width:0;min-height:65vh}
+.onco-page-mast {padding:4px 4px 15px;border-bottom:1px solid #d4e1e7;margin-bottom:17px}
+.onco-breadcrumb {display:flex;align-items:center;gap:9px;font-size:10px;letter-spacing:.07em;font-weight:760;color:#6e8795}
+.onco-breadcrumb span {color:#a0b2bb;font-size:15px}
+.onco-breadcrumb strong {letter-spacing:0;color:#297083;font-size:11px}
+.onco-page-mast h2 {margin:9px 0 4px!important;color:#193c52!important;
+  font-size:clamp(22px,2.4vw,30px)!important;line-height:1.23!important;letter-spacing:-.025em}
+.onco-page-mast p {margin:0;font-size:13px;color:#617a8a;line-height:1.6}
+.onco-view {min-width:0;animation:onco-enter .18s ease-out}
+@keyframes onco-enter {from{opacity:.5;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.onco-view{animation:none}}
+.onco-welcome {background:#fff;border:1px solid #d5e3e9;border-radius:10px;padding:18px 20px;
+  color:#365568;line-height:1.68;font-size:14px}
+.onco-welcome>strong {font-size:17px;color:#21495d;display:block;margin-bottom:6px}
+.onco-welcome p {margin:0 0 8px}
+.onco-welcome p:last-child {margin-bottom:0}
+.onco-welcome p:last-child {font-size:12px;color:#775d43}
+.onco-action-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin:15px 0 20px}
+body.clinical-theme .onco-action-card {appearance:none;cursor:pointer;
+  display:grid;gap:8px;text-align:left;align-content:start;min-width:0;
+  padding:18px 15px;background:#eef7f8;border:1px solid #c9e1e6;border-radius:10px;color:#285569}
+.onco-action-card>span {display:grid;place-items:center;width:31px;height:31px;
+  border-radius:9px;background:#1b7181;color:#fff;font-size:12px;font-weight:820}
+.onco-action-card strong {font-size:15px;color:#21495f}
+.onco-action-card small {font-size:12px;color:#607b8d;line-height:1.55}
+.onco-action-card em {font-style:normal;font-size:12px;font-weight:770;color:#197085;align-self:end;margin-top:5px}
+body.clinical-theme .onco-action-card:hover {border-color:#70afbf;background:#e4f3f4}
+.onco-router-ready .onco-view[data-onco-view="home"] .genome-perspective {
+  padding:17px!important;margin:16px 0 0!important;
+  border:1px solid #d9e7ed;background:#fff;border-radius:10px
+}
+.onco-router-ready .onco-view[data-onco-view="home"] .genome-perspective-head>h2 {font-size:clamp(19px,2vw,25px)!important}
+.onco-router-ready .onco-view[data-onco-view="home"] .genome-quickstart {display:none!important}
+.onco-router-ready .onco-view[data-onco-view="home"] .genome-stats {grid-template-columns:repeat(3,minmax(0,1fr))}
+.onco-router-ready .onco-view[data-onco-view="home"] .genome-perspective-foot {margin-top:14px}
+.onco-router-ready .onco-view[data-onco-view="setup"]>.cohort-lab {
+  padding:0!important;margin:0!important;border:0!important;background:transparent!important
+}
+.onco-router-ready .onco-view[data-onco-view="setup"]>.cohort-lab .cohort-head {
+  background:#fff;border:1px solid #dce7ec;border-radius:9px;padding:17px;margin-bottom:11px
+}
+.onco-router-ready .onco-view[data-onco-view="setup"] .cohort-controls {grid-template-columns:minmax(0,1fr)}
+.onco-router-ready .onco-view[data-onco-view="setup"] .cohort-locus-list {max-width:780px}
+.onco-router-ready .onco-view[data-onco-view="findings"] .cohort-result {margin:0 0 18px}
+.onco-router-ready .onco-view[data-onco-view="engine"] .funnel-walkthrough {border:0;background:transparent;margin:0}
+.onco-router-ready .onco-view[data-onco-view="engine"] #funnelDeepDive>summary {display:none!important}
+.onco-router-ready .onco-view[data-onco-view="engine"] .funnel-walkthrough-body {padding:0}
+.onco-router-ready .onco-view[data-onco-view="engine"] .genome-funnel-panel {padding:18px;background:#fff}
+.onco-router-ready .onco-view[data-onco-view="legacy"] #legacyWorkbenchDetails>summary {display:none!important}
+.onco-router-ready .onco-view[data-onco-view="legacy"] .legacy-lab-details {border:0;background:transparent}
+.onco-router-ready .onco-view[data-onco-view="legacy"] .legacy-workbench-body {padding:0}
+.onco-router-ready .onco-view[data-onco-view="legacy"] .workbench {padding:0 0 18px}
+.onco-router-ready .onco-view[data-onco-view="legacy"] .section-head {background:#fff;
+  border:1px solid #dbe6ec;border-radius:9px;padding:15px}
+.onco-router-ready .onco-view[data-onco-view="knowledge"] .reference-hub {margin:0 0 16px}
+.onco-library-links {display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;
+  padding:13px;background:#eef5f7;border:1px solid #d5e5eb;border-radius:8px;margin:0 0 16px}
+.onco-library-links strong {margin-right:auto;color:#2d5b6d;font-size:12px}
+.onco-library-links a {font-size:12px;text-decoration:none;font-weight:720}
+.onco-step-footer {display:flex;gap:10px;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;margin:18px 0 8px;padding:14px 0;border-top:1px solid #dce7eb}
+body.clinical-theme .onco-next,body.clinical-theme .onco-secondary {
+  cursor:pointer;padding:11px 17px;border-radius:8px;font-weight:750;font-size:13px}
+body.clinical-theme .onco-next {background:#1d7080;border:1px solid #165a69;color:#fff}
+body.clinical-theme .onco-next:hover {background:#155867}
+body.clinical-theme .onco-secondary {background:#fff;border:1px solid #c9dae2;color:#285c70}
+body.clinical-theme .onco-secondary:hover {background:#edf5f7}
+@media (max-width:1120px){
+ body.clinical-theme .onco-router-ready .onco-workspace {grid-template-columns:215px minmax(0,1fr);gap:15px}
+ .onco-action-grid {grid-template-columns:1fr}
+ .onco-action-card {grid-template-columns:35px 1fr;align-items:center}
+ .onco-action-card strong,.onco-action-card small,.onco-action-card em {grid-column:2}
+ .onco-action-card>span {grid-row:1 / 5}
+}
+@media (max-width:760px){
+ body.clinical-theme .shell {width:calc(100% - 22px)}
+ body.clinical-theme .onco-router-ready .onco-workspace {grid-template-columns:minmax(0,1fr);gap:9px;padding-top:9px}
+ .onco-sidebar {position:sticky;top:0;z-index:20;max-height:none;overflow-x:auto;overflow-y:hidden;
+   border-radius:10px;display:flex;align-items:stretch;gap:5px;padding:7px;
+   scrollbar-width:thin;box-shadow:0 4px 16px rgba(20,60,80,.09)}
+ .onco-nav-heading,.onco-nav-divider {display:none!important}
+ body.clinical-theme .onco-nav-button {width:auto;min-width:111px;max-width:180px;flex:0 0 auto;
+   padding:8px 10px;gap:7px;box-shadow:none!important}
+ .onco-nav-number {width:24px;height:24px;flex-basis:24px;font-size:11px}
+ .onco-nav-copy strong {font-size:11px;white-space:nowrap}
+ .onco-nav-copy small {display:none}
+ .onco-content {min-height:72vh}
+ .onco-page-mast {margin-bottom:11px}
+ .onco-page-mast h2 {font-size:23px!important}
+ .onco-view[data-onco-view="home"] .genome-stats {grid-template-columns:1fr!important}
+ .onco-view[data-onco-view="engine"] .genome-funnel-panel {padding:9px!important}
+ .onco-workspace .cohort-genome-row {gap:5px}
+}
+@media (max-width:400px){
+ .onco-action-grid {gap:7px}
+ .onco-welcome {padding:13px}
+ .onco-router-ready .onco-view[data-onco-view="home"] .genome-perspective {padding:10px!important}
+ .onco-step-footer>button {width:100%}
+}
