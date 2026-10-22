@@ -249,18 +249,30 @@ For scientific validation in a later research system, separately specify tumor s
 All additions in this section are research documentation, **not assertions of clinical efficacy**.
 
 
-## Genome-wide perspective and three-hit sequence demonstration — 22 October 2026
+## Multi-person genomic combinatorial research model — 22 October 2026
 
-The clinical research workspace now includes a **genome perspective** designed to communicate why 8 symbolic bits are not the intended biological scale of QCDS:
+The genomics illustration now shows **distributed combinations across separate loci**, not repeated copies of a contiguous sequence. This conveys the broader QCDS architecture: a Condition defines candidate relations; an oracle evaluates admissibility; Grover amplifies marked configuration states; an output highlights all selected loci across participant profiles.
 
-- One haploid human genome contains approximately **3 billion DNA base pairs** across 23 chromosomes. Human chromosome types comprise chr1–chr22, X and Y (24 distinct labels; an individual haploid complement contains X *or* Y, not both). See [NHGRI: Human Genomic Variation](https://www.genome.gov/about-genomics/educational-resources/fact-sheets/human-genomic-variation).
-- Choosing any three positions from a hypothetical 3,000,000,000-position reference gives **4,499,999,995,500,000,001,000,000,000** distinct unordered triples, approximately **4.5 × 10²⁷**. This is only a mathematical illustration of combinatorial hypothesis spaces. It is *not* the size of the input DNA itself, the number of actual QCDS states evaluated or a quantum-resource claim.
-- A separate, honest **synthetic exact-match demonstration** generates 24 chromosome-*labeled* fragments, each exactly **8,192 bases**, totaling **196,608 synthetic DNA bases**. These fragment labels do not describe an actual haploid individual's chromosomes or authentic human reference coordinates.
-- Three fixed occurrences of the demonstration DNA motif **GATTACAGTCGA** are placed in the synthetic fragments labeled chr3 (position 1,846), chr13 (4,104) and chr17 (6,553), using 1-based within-fragment positions. The built-in normal CPU exact-sequence matcher re-scans all synthetic fragments; regression tests independently check that the same motif actually occurs at precisely these three positions and nowhere else.
-- Users can enter another **6–18-base A/C/G/T motif**, run the real exact sequence search, inspect hit counts for all fragments, and click each match to examine its actual surrounding generated bases. The search is forward-strand and counts overlapping matches. It is NOT an implementation of QCDS on genome data.
-- An independent note names PIK3CA on chromosome 3, BRCA2 on chromosome 13, and BRCA1 on chromosome 17 with scientific sources. These **real gene annotations are NOT the artificial positions/motifs in the synthetic demonstration**.
-- The eight-bit QCDS runtime is kept unchanged. The whole-genome inference **goal** is separate: an indexed actual reference and patient data with provenance, independently validated biological predicates/oracles, encoding and resource accounting across substrate types, a measured parallel/multidimensional execution plan, and external validation of highlighted discoveries.
+### Worked mechanism with reproducible synthetic profiles
 
-Core operational distinction: *QCDS is designed to formulate a very large condition space, apply constraints, amplify candidates and return a few meaningful matches. The current browser engine has not yet demonstrated a search over a complete genome or 10²⁷ candidate combinations.* Do not confuse a theoretical possibility-space size with achieved throughput, readout or accuracy.
+- Ten **symbolic variant loci** are distributed schematically over chromosome labels 1, 3, 5, 7, 9, 11, 13, 15, 17, X. They are *not* actual genomic coordinates or variants assigned to those chromosomes.
+- Five **synthetic cases** stand for people with the same hypothetical cancer cohort label, and five **synthetic controls** provide comparison values. These are fixtures for testing; no real humans or clinical data are represented.
+- For ten possible loci, QCDS's existing exact idealized Grover kernel is run over N = 2^10 = 1,024 candidate *subset states*. There are **120 possible 3-locus subsets**, checked by a cohort oracle. This is a mathematical subset encoding; it does not represent all possible states of actual genomic DNA.
+- Oracle predicates are explicit and editable: select 0–3 required **anchor loci**, minimum cases with **all three** variants, and maximum controls with all three. Each proposed triple is checked as a whole. The default is 5/5 cases and 0/5 comparators.
+- Only qualifying triples become Grover-marked candidates. The engine uses its dynamic first-peak/threshold Grover iteration selector, bounded by 40, and reports state count, candidate count, marked count, iterations, and probability mass from the kernel.
+- The standard fixture returns **one qualified triple L02 (chr3), L05 (chr9), L08 (chr15)**, shared by all five synthetic cases and absent as a *complete triple* from the five controls. Grover uses **25** amplification iterations and yields approximately **99.946% marked probability mass** for this single marked subset, conditional on the synthetic oracle.
+- User selections are *not* a display decoration: requiring L01 (chr1) with the strict cohort condition produces zero marked patterns. When different thresholds admit multiple triples, the UI states that there is no unique solution and allows each candidate to be inspected.
+- The selected multi-locus pattern is highlighted at three separated positions **on each synthetic person's schematic genome track** and in the underlying 10 × 10 profile-feature matrix. Individual variant markers do not imply cancer causality. Controls may carry one or two selected variants without satisfying the full combination.
+- A leave-one-case-out check reports whether the discovered triple remains shared in each group of four remaining synthetic cases. This is internal consistency only, not independent biological validation.
 
-Implementation: \`genome-perspective.js\` (UI plus self-contained pure synthetic motif matcher), \`tests/test_genome.js\` (exact-match and combinatorial regression checks), and the \`#genomePerspective\` section in \`index.html\`.
+### Critical substrate distinction
+
+The demonstrator reuses QCDSCore.runGrover, an **ordinary JavaScript classical simulation of ideal Grover amplitudes** over 1,024 states. Although its states represent alternatives in a quantum algorithm, the JavaScript loop computes amplitudes on a classical processor. It **does not** physically execute 1,024 computations simultaneously, offer quantum speedup, or establish that a classical algorithm cannot solve this small combinatorial problem.
+
+Extrapolating to **five complete human genomes** (roughly 3 billion bases each for haploid reference scale), or to enormous cross-genomic multi-locus spaces, would require real multi-sample variant/sequence data, provenance and consent, semantic feature encoding, efficient data access, defensible cross-patient biological oracles, substrate resource measurements, a valid readout/verification strategy, and a comparison against optimized classical computational genomics methods. Whole-genome association and all possible genomic combinations are not demonstrated here. Mathematical combinations such as choose(3 billion, 3) ≈ 4.5 × 10²⁷ describe a hypothetical possibility space, **not a measured QCDS search**.
+
+The eight-bit clinical workbench elsewhere on the same page is a separate existing 128→8→1 model. The ten-locus panel is a cohort-combination Grover-adapter proof of mechanism; it is **not yet the full recursive four-phase genomics pipeline**.
+
+Source and tests: genome-perspective.js, tests/test_genome.js, qcds-core.js. The old motif-scanning demonstration has been replaced, not merely repainted.
+
+**Theory and creation:** Patrik Sundblom. **Research and development support:** OpenAI / ChatGPT.
