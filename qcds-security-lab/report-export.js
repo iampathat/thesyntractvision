@@ -97,9 +97,9 @@ async function loadSystemGuidePlates() {
 
 export async function downloadSystemGuidePdf() {
   // Fetch all registry definitions from the same modules as the current Lab.
-  const [jsPDF, { createEditorialSystemGuidePdf }, core, vectors] = await Promise.all([
+  const [jsPDF, { createVisualGlasswingPdf }, core, vectors] = await Promise.all([
     pdfEngine(),
-    import("./system-guide-editorial.mjs?v=3.0.0"),
+    import("./system-guide-visual-v4.mjs?v=4.0.0"),
     import("./engine.mjs"),
     import("./attack-vectors.mjs"),
   ]);
@@ -117,7 +117,7 @@ export async function downloadSystemGuidePdf() {
     targets: vectors.TARGETS,
     generatedAt: new Date().toISOString().slice(0,10),
   };
-  const {doc,summary} = createEditorialSystemGuidePdf(jsPDF,snapshot,{
+  const {doc,summary} = createVisualGlasswingPdf(jsPDF,snapshot,{
     artwork: {
       guardian: media.cover,
       dimensions: media.chapters[0],
@@ -126,7 +126,7 @@ export async function downloadSystemGuidePdf() {
       recursive: media.chapters[3],
       execution: media.chapters[4],
     },
-    edition: "3.0.0",
+    edition: "4.0.0",
   });
   await saveDeviceFile(doc.output("blob"),"QCDS-Project-Glasswing-Security-Lab-System-Guide.pdf","application/pdf");
   return summary;
