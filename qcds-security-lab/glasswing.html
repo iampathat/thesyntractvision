@@ -101,6 +101,18 @@
     @media(max-width:900px){.main-nav a:not(.nav-cta){display:none}.header-inner{gap:12px}.hero-inner{padding-top:57px}.scene-tag{display:none}.section-head{grid-template-columns:1fr;gap:15px}.principles{grid-template-columns:repeat(2,minmax(0,1fr))}.principle:nth-child(3){border-left:0;border-top:1px solid var(--line)}.principle:nth-child(4){border-top:1px solid var(--line)}.threat-layout{grid-template-columns:1fr}.manifesto-inner{grid-template-columns:1fr;gap:25px}}
     @media(max-width:640px){body{font-size:15px}.header-inner{padding:11px 16px}.brand-symbol{width:35px;height:35px;font-size:23px}.brand-words strong{font-size:10px}.brand-words small{font-size:8px}.nav-cta{padding:10px 12px;font-size:11px!important}.hero-inner{padding:48px 14px 43px}.eyebrow{font-size:9px;letter-spacing:.18em}.eyebrow:before,.eyebrow:after{width:13px;margin-inline:7px}.hero-lead{margin-top:21px;padding:0 7px}.scene{margin-top:28px;min-height:220px;aspect-ratio:1.28;border-radius:7px}.scene-stamp{bottom:11px;left:12px;font-size:8px}.scene-status{bottom:12px;right:11px;font-size:8px}.scene-overlay{transform:scale(1.1)}.eagle{transform:scale(1.08);animation:none}.chapter-switch{gap:7px}.chapter-switch button{flex:1 1 auto;min-width:95px;padding:9px 10px;font-size:11px}.scene-description{min-height:85px;padding:0 5px}.hero-action{flex-direction:column;gap:11px}.hero-action .button-primary{width:100%;max-width:340px}.section{padding:72px 20px}.chapter-grid{grid-template-columns:1fr}.chapter-card{min-height:unset;padding:24px}.card-index{margin-bottom:28px}.principles{grid-template-columns:1fr}.principle{min-height:unset}.principle+.principle{border-left:0;border-top:1px solid var(--line)}.manifesto-inner{padding:75px 20px}.manifesto h2{font-size:48px}footer{padding:35px 20px;grid-template-columns:1fr}.footer-links{justify-content:flex-start}}
     @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{animation:none!important;transition:none!important}}
+
+    /* Glasswing vision still · no svg rig, no wing animation, no film and no visual stage controls. */
+    .glasswing-still{aspect-ratio:1672 / 941;min-height:0;margin-top:34px;display:block;overflow:hidden;background:#061725;border-color:rgba(157,231,239,.25);box-shadow:0 23px 77px #0006,0 0 0 1px #113b4a inset}
+    .glasswing-still:before,.glasswing-still:after{display:none}
+    .glasswing-still .eagle{display:block;position:static;inset:auto;width:100%;height:auto;aspect-ratio:1672 / 941;object-fit:contain;filter:none!important;transform:none!important;animation:none!important}
+    .glasswing-still .still-caption{position:absolute;inset:auto 0 0;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:22px 30px 17px;background:linear-gradient(transparent,rgba(3,14,24,.94));font:700 11px/1.4 ui-monospace,Consolas,monospace;letter-spacing:.19em;color:#ddf8ff;text-align:left}
+    .glasswing-still .still-caption span{font-weight:500;font-size:10px;color:#9acee0;letter-spacing:.13em}
+    .still-legend{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px 25px;padding:18px 2px 6px;color:#c2dce1;font:600 11px/1.5 ui-monospace,Consolas,monospace;letter-spacing:.04em;text-align:left}
+    .still-legend span{display:flex;gap:9px;align-items:center}
+    .legend-dot{display:inline-block;flex:0 0 8px;width:8px;height:8px;border-radius:50%}
+    .legend-dot.asset{background:#9de5ff;box-shadow:0 0 13px #9de5ff4f}.legend-dot.mesh{background:#e5c37e;box-shadow:0 0 13px #dfbd7155}.legend-dot.threat{background:#f38a77;box-shadow:0 0 13px #f38a774f}
+    @media(max-width:640px){.glasswing-still{min-height:0;aspect-ratio:1672/941;margin-top:22px}.glasswing-still .eagle{transform:none!important;animation:none!important}.glasswing-still .still-caption{padding:14px 12px;font-size:9px}.glasswing-still .still-caption span{display:none}.still-legend{display:grid;gap:9px;padding:15px 6px;font-size:10px}}
   </style>
 </head>
 <body>
@@ -123,34 +135,15 @@
         <h1 id="hero-heading"><span>The Syntract Vision</span><em>Project Glasswing</em></h1>
         <p class="hero-lead">What we build can be extraordinary. What we depend on can be fragile. <strong>Glasswing is the idea that we must understand the structures holding our world together before we can truly protect them.</strong></p>
 
-        <figure class="scene" id="glasswing-scene" data-mode="threats" aria-label="Animated crystalline eagle: fragile wings representing systems and information, protected by a luminous QCDS network as attack vectors approach from outside.">
-          <img class="eagle" src="./glasswing-rig-v121.svg" width="1200" height="650" alt="An eagle with translucent glass-like wings and an internal web of connected luminous nodes.">
-          <svg class="scene-overlay" viewBox="0 0 1200 650" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-            <defs><radialGradient id="g-glow"><stop stop-color="#c4fcff" stop-opacity=".95"/><stop offset=".45" stop-color="#61dded" stop-opacity=".23"/><stop offset="1" stop-color="#61dded" stop-opacity="0"/></radialGradient></defs>
-            <ellipse class="orbital" cx="600" cy="317" rx="530" ry="249"/>
-            <ellipse class="orbital" cx="600" cy="317" rx="450" ry="214" transform="rotate(12 600 317)"/>
-            <path class="shield" d="M95 336 C120 98 391 48 600 55 C830 45 1086 128 1105 342 C1069 532 866 595 600 594 C324 584 131 520 95 336Z"/>
-            <path class="shield2" d="M124 326 C170 114 421 82 600 88 C834 80 1028 133 1075 327 C1020 527 836 557 600 550 C355 554 160 484 124 326Z"/>
-            <g>
-              <path class="mesh-line" d="M600 357L446 275L321 202L172 130 M600 357L754 275L879 202L1028 130 M446 275L336 339L242 302 M754 275L864 339L958 302 M600 357L478 394L404 349 M600 357L722 394L796 349"/>
-              <circle class="mesh-point" cx="600" cy="357" r="12"/><circle class="mesh-point" cx="446" cy="275" r="7"/><circle class="mesh-point" cx="754" cy="275" r="7"/><circle class="mesh-point" cx="321" cy="202" r="6"/><circle class="mesh-point" cx="879" cy="202" r="6"/><circle class="mesh-point" cx="336" cy="339" r="6"/><circle class="mesh-point" cx="864" cy="339" r="6"/><circle class="mesh-point" cx="172" cy="130" r="6"/><circle class="mesh-point" cx="1028" cy="130" r="6"/>
-            </g>
-            <path class="attack a1" d="M6 205 C55 221 87 245 111 277"/><path class="attack a2" d="M1189 156 C1144 183 1118 224 1084 275"/><path class="attack a3" d="M1120 650 C1102 590 1037 521 998 503"/><path class="attack a4" d="M14 576 C66 540 107 501 157 488"/>
-            <circle class="intercept" cx="112" cy="277" r="7"/><circle class="intercept" cx="1084" cy="275" r="7"/><circle class="intercept" cx="998" cy="503" r="7"/><circle class="intercept" cx="157" cy="488" r="7"/>
-            <circle cx="600" cy="357" r="64" fill="url(#g-glow)" opacity=".16"/>
-          </svg>
-          <div class="scene-tag tag-a"><small>01 / PROTECTED</small><strong>Fragile information & systems</strong></div>
-          <div class="scene-tag tag-b"><small>02 / CONNECTED</small><strong>Conditions · nodes · inference</strong></div>
-          <div class="scene-tag tag-c"><small>03 / APPROACHING</small><strong>Attack vectors & unknowns</strong></div>
-          <span class="scene-stamp">GLASSWING / LIVING MODEL</span>
-          <span class="scene-status"><i class="status-dot" aria-hidden="true"></i> CONCEPT VISUALIZATION</span>
+        <figure class="scene glasswing-still" id="glasswing-scene" aria-label="Project Glasswing static concept illustration">
+          <img class="eagle" src="./glasswing-approved.webp?v=glasswing-still-20261022" width="1672" height="941" alt="A detailed crystalline cyber eagle. Its glass-like wings and connected luminous structures evoke the information and systems Project Glasswing seeks to understand and protect.">
+          <figcaption class="still-caption">PROJECT GLASSWING <span>THE SYNTRACT VISION / CONCEPT ART</span></figcaption>
         </figure>
-        <div class="chapter-switch" role="group" aria-label="Explore Project Glasswing's three layers">
-          <button type="button" data-stage="wings" aria-pressed="false">01 · Fragile wings</button>
-          <button type="button" data-stage="network" aria-pressed="false">02 · Protective network</button>
-          <button type="button" data-stage="threats" aria-pressed="true">03 · Incoming threats</button>
+        <div class="still-legend" aria-label="The meaning of the glass-wing illustration">
+          <span><i class="legend-dot asset"></i> 01 / FRAGILE INFORMATION &amp; SYSTEMS</span>
+          <span><i class="legend-dot mesh"></i> 02 / CONNECTED QCDS INFERENCE</span>
+          <span><i class="legend-dot threat"></i> 03 / ATTACK VECTORS &amp; UNKNOWN CONDITIONS</span>
         </div>
-        <p class="scene-description" id="stage-description" role="status" aria-live="polite"><strong>The threats.</strong> Attack vectors approach from many directions. The network represents investigation, testing and evidence—not a magical shield that makes risk disappear.</p>
         <div class="hero-action">
           <a class="button-primary" href="#the-wings">Explore the vision <span aria-hidden="true">↓</span></a>
           <a class="quiet-link" href="./index.html?skip_intro=1">Experience QCDS Security Lab ↗</a>
@@ -242,30 +235,6 @@
     </div>
     <nav class="footer-links" aria-label="Further reading"><a href="./index.html?skip_intro=1">Security Lab</a><a href="./GLASSWING.md">Glasswing methods</a><a href="https://syntract.org/">Syntract.org</a><a href="https://zenodo.org/records/15455541">Original QCDS publication</a></nav>
   </footer>
-  <script>
-    (() => {
-      'use strict';
-      const scene = document.getElementById('glasswing-scene');
-      const description = document.getElementById('stage-description');
-      const buttons = [...document.querySelectorAll('[data-stage]')];
-      const stages = {
-        wings: ['The wings.', 'Information, systems and trust are essential—and vulnerable. The glass wings show how a small hidden fracture can threaten a much larger structure.'],
-        network: ['The network.', 'Connected QCDS conditions, Oracles, recursive challenges and evidence illuminate dependencies. The glow represents reasoning, not a literal force field.'],
-        threats: ['The threats.', 'Attack vectors approach from many directions. The network represents investigation, testing and evidence—not a magical shield that makes risk disappear.']
-      };
-      for (const button of buttons) {
-        button.addEventListener('click', () => {
-          const stage = button.dataset.stage;
-          if (!Object.prototype.hasOwnProperty.call(stages, stage)) return;
-          scene.dataset.mode = stage;
-          buttons.forEach(b => b.setAttribute('aria-pressed', String(b === button)));
-          description.replaceChildren();
-          const strong = document.createElement('strong');
-          strong.textContent = stages[stage][0] + ' ';
-          description.append(strong, document.createTextNode(stages[stage][1]));
-        });
-      }
-    })();
-  </script>
+
 </body>
 </html>
