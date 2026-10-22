@@ -1,4 +1,4 @@
-/* Cancer Lab clinical research workspace, 2026-10-22.
+/* Oncology Lab clinical research workspace, 2026-10-22.
    Restrained oncology-oriented UI, legible at desktop and phone widths.
    Copyright (c) 2026 Patrik Sundblom. All Rights Reserved. */
 :root {
@@ -688,7 +688,7 @@ body.clinical-theme .qcds-conclusion .qcds-conclusion-scope {
 @media(max-width:425px) {.funnel-lane-grid {grid-template-columns:1fr}.funnel-prob-row {grid-template-columns:minmax(0,1fr) 50px;gap:8px}.funnel-prob-track {grid-column:1/-1;grid-row:2}.funnel-live-metrics {grid-template-columns:repeat(3,minmax(0,1fr));min-width:0}.funnel-live-metrics strong {font-size:17px}}
 
 
-/* Cancer Lab 2026-10-22 — progressive layperson flow without changing algorithms.
+/* Oncology Lab 2026-10-22 — progressive layperson flow without changing algorithms.
    Scope new funnel selectors to avoid styling the separate legacy 8-bit funnel. */
 .genome-quickstart {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:20px 0 4px}
 .genome-quickstart>div {display:flex;align-items:flex-start;gap:12px;min-width:0;border:1px solid #d8e7ed;border-radius:9px;padding:14px;background:#f4f9fa}
