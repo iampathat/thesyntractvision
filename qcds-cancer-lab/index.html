@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#050816" />
   <title>QCDS Cancer Lab — Recursive Inference</title>
   <meta name="description" content="Run the QCDS Cancer Lab recursive 128→8→1 inference engine in your browser." />
-  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./style.css?v=20261022-inference" />
 </head>
 <body>
   <div class="plasma plasma-a"></div><div class="plasma plasma-b"></div><div class="grid"></div>
@@ -33,7 +33,7 @@
       </div>
 
       <div class="hero-copy">
-        <div class="eyebrow">QCDS CANCER LAB · LIVE RECURSIVE INFERENCE ENGINE</div>
+        <div class="eyebrow">QCDS CANCER LAB · THE SYNTRACT VISION · INFERENCE OBSERVATORY</div>
         <h1><span>QCDS</span> Cancer Lab<br><em>From open possibility space to coherent inference.</em></h1>
         <div class="hero-spec">QUANTUM-READY · CONSTRAINT-DRIVEN · DYNAMIC · PARALLEL / SEQUENTIAL · SUBSTRATE-INDEPENDENT</div>
         <p class="lede">Set the Condition, keep one fixed oracle bank, rotate the semantic input through sixteen balanced views, run 128 QCDS lanes, funnel 128 → 8 → 1, execute Parent Grover, and recursively return the surviving structure. No target answer is hard-coded.</p>
@@ -72,7 +72,7 @@
       <article class="bandwidth">
         <div class="mini">INTELLIGENCE BANDWIDTH</div>
         <strong>Not simply “more qubits”.</strong>
-        <p>Representation × live alternatives × parallel perspectives × recursive depth.</p>
+        <p>Representation × live alternatives × independent logical entrances × recursive depth. The current browser implementation evaluates the 128 lanes sequentially; this is logical breadth, not a measured physical speedup.</p>
       </article>
     </section>
 
@@ -94,8 +94,8 @@
     <section id="workbench" class="workbench">
       <div class="section-head">
         <span>LIVE QCDS WORKBENCH</span>
-        <h2>Run the Cancer Syntract · inspect every stage.</h2>
-        <p class="section-copy">This is the experiment surface—not a list of source files. The browser port uses the same QCDS primitives as the reference engine: true dimension nulling, exact bounded Grover, full-distribution Rotational Syntract Bind, fresh Parent Grover, recursive oracle return and the multi-signal stability gate.</p>
+        <h2>Run the Cancer Syntract · see the logic emerge.</h2>
+        <p class="section-copy">Watch all 128 logical entrances, inspect actual Grover mass and iterations, follow the 128 → 8 → 1 funnel and compare successive recursive passes. Every plotted measurement comes from the inference engine; no decorative probability is substituted for a result.</p>
       </div>
 
       <div class="bench-grid">
@@ -139,6 +139,46 @@
           <div class="run-state" id="runState">Ready. No target state is supplied to the engine.</div>
         </section>
       </div>
+
+      <section class="inference-room" aria-labelledby="spaceTitle">
+        <div class="room-head">
+          <div>
+            <span class="room-kicker">SYNTRACT · LIVE INFERENCE SPACE</span>
+            <h3 id="spaceTitle">128 logical entrances. One recursive search.</h3>
+            <p>Eight true-null families × sixteen balanced rotations. Every glowing cell represents a computed local Grover distribution, never a vote for a cancer diagnosis. Select a cell or a recursive pass to inspect what actually happened.</p>
+          </div>
+          <div class="room-counter">
+            <label for="spaceCycle">INSPECT PASS</label>
+            <select id="spaceCycle" disabled aria-label="Select completed recursive pass"></select>
+            <output id="spaceProgress" aria-live="polite">NO COMPUTATION YET</output>
+          </div>
+        </div>
+        <div class="room-layout">
+          <div class="matrix-panel">
+            <div class="matrix-scroll">
+              <div id="laneMatrix" class="lane-matrix" role="group" aria-label="Grover observations by excluded dimension and rotation"></div>
+            </div>
+            <div class="matrix-legend"><span><i class="legend-pending"></i> Uncomputed</span><span><i class="legend-measured"></i> Calculated (brightness = marked mass)</span><span><i class="legend-selected"></i> Selected lane</span></div>
+            <div class="lane-readout">
+              <strong id="laneLabel">LANE 01 / FAMILY 1</strong>
+              <p id="laneDetails">This lane has not been computed yet. Run QCDS to inspect real oracle measurements.</p>
+            </div>
+          </div>
+          <div class="funnel-panel">
+            <div class="funnel-header"><span>128 → 8 → 1</span><strong>From breadth to coherence</strong></div>
+            <p class="funnel-explain">Sixteen rotated distributions form each exclusion family. The eight families are bound as full distributions; a new Parent Grover then explores that resulting structure.</p>
+            <div id="familySummary" class="family-summary" aria-label="Eight bound family distributions"></div>
+            <div class="parent-readout"><strong>PARENT GROVER</strong><p id="parentSummary">Parent Grover will be calculated after all eight family distributions are bound.</p></div>
+            <div class="stability-readout"><strong>TRUTH-ALIGNMENT CHECK</strong><p id="stabilitySummary">Stability requires multiple independent signals across recursive cycles.</p></div>
+          </div>
+        </div>
+        <div class="room-foot">
+          <span><b>Rotation</b> changes which semantic input is seen by fixed oracle positions.</span>
+          <span><b>True-null</b> omits a dimension for a sensitivity test.</span>
+          <span><b>Grover</b> amplifies oracle-marked states, not guaranteed truths.</span>
+          <span><b>Bandwidth</b> here means logical search breadth; the browser does not run 128 hardware tasks simultaneously.</span>
+        </div>
+      </section>
 
       <section class="results" id="results" aria-live="polite">
         <div class="results-running" id="resultsRunning" hidden>
@@ -217,7 +257,8 @@
       <div>Experimental research build · © 2026 Patrik Sundblom · <a href="./LICENSE.md">Commercial license notice</a></div>
     </footer>
   </main>
-  <script src="./qcds-core.js"></script>
-  <script src="./app.js"></script>
+  <script src="./qcds-core.js?v=20261022-inference"></script>
+  <script src="./inference-room.js?v=20261022-inference"></script>
+  <script src="./app.js?v=20261022-inference"></script>
 </body>
 </html>
