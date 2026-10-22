@@ -1,239 +1,215 @@
-/* QCDS Cancer Lab — cross-person, multi-locus combinatorial prototype.
- * Ten synthetic loci across five cases plus five independent comparator profiles.
- * The 2^10 subset-state oracle is evaluated and amplified by the shared QCDS
- * ideal Grover kernel. No DNA reference is loaded and no genomic-scale speedup
- * is claimed. Theory and creation by Patrik Sundblom.
+/* Multi-person distributed-locus QCDS research demonstrator UI.
+ * This is not sequence matching. Computational results come from the
+ * reproducible 10D cohort oracle, ideal Grover and perturbation checks.
+ * © 2026 Patrik Sundblom · OpenAI / ChatGPT R&D support.
  */
 (function(root,factory){
-  const api=factory(root.QCDSCore);
-  if(typeof module!=="undefined" && module.exports) module.exports=api;
+  const api=factory(root.CancerGenomeDiscovery);
+  if(typeof module!=="undefined"&&module.exports)module.exports=api;
   root.CancerGenomePerspective=api;
-  if(typeof document!=="undefined") api.initialize();
-})(typeof globalThis!=="undefined"?globalThis:this,function(Q){
+  if(typeof document!=="undefined")api.initialize();
+})(typeof globalThis!=="undefined"?globalThis:this,function(D){
   "use strict";
-  const LOCI=[
-    {chr:"1",label:"L01",position:.035},
-    {chr:"3",label:"L02",position:.145},
-    {chr:"5",label:"L03",position:.235},
-    {chr:"7",label:"L04",position:.345},
-    {chr:"9",label:"L05",position:.438},
-    {chr:"11",label:"L06",position:.548},
-    {chr:"13",label:"L07",position:.648},
-    {chr:"15",label:"L08",position:.758},
-    {chr:"17",label:"L09",position:.849},
-    {chr:"X",label:"L10",position:.950}
-  ];
-  const CASES=[
-    {id:"C01",variants:[0,1,2,4,7]},
-    {id:"C02",variants:[1,3,4,5,7]},
-    {id:"C03",variants:[1,4,6,7,8]},
-    {id:"C04",variants:[0,1,4,7,9]},
-    {id:"C05",variants:[1,2,4,6,7]}
-  ];
-  const CONTROLS=[
-    {id:"K01",variants:[0,1,2,5]},
-    {id:"K02",variants:[2,3,4,9]},
-    {id:"K03",variants:[0,5,6,7]},
-    {id:"K04",variants:[1,4,6,8]},
-    {id:"K05",variants:[3,4,7,9]}
-  ];
-  const N=1 << LOCI.length;
-  const CHOOSE_THREE=120;
-  const GENOME_BASES=3000000000n;
-  const ALL=Object.freeze([...CASES.map(p=>({...p,group:"cases"})),...CONTROLS.map(p=>({...p,group:"controls"}))]);
-  let seeds=[1];
-  let search=null;
-  let activeState=null;
+  if(!D)throw Error("CancerGenomeDiscovery must load first.");
+  const LOCI=D.LOCI,N=D.N;
+  let dataset=D.generateProfiles(173,"structure");
+  let anchors=[];
+  let result=null,audit=null,selectedState=null;
   const $=id=>document.getElementById(id);
-  function element(tag,cls,text){
-    const el=document.createElement(tag);
-    if(cls) el.className=cls;
-    if(text!==undefined) el.textContent=String(text);
-    return el;
+  function e(tag,cls,value){
+    const node=document.createElement(tag);
+    if(cls)node.className=cls;
+    if(value!==undefined)node.textContent=String(value);
+    return node;
   }
-  function bits(state){
-    return LOCI.map((_,i)=>(state&(1<<i))!==0?i:-1).filter(i=>i>=0);
+  function locusNames(indices){
+    return indices.map(i=>LOCI[i].label+" (chr"+LOCI[i].chr+")").join(" · ");
   }
-  function mask(indices){
-    return indices.reduce((sum,i)=>sum|(1<<i),0);
-  }
-  function countBits(v){
-    let count=0;
-    while(v){v&=v-1;count++;}
-    return count;
-  }
-  function coverage(state,profiles){
-    return profiles.reduce((sum,profile)=>sum+(bits(state).every(i=>profile.variants.includes(i))?1:0),0);
-  }
-  function evaluateOracle(options={}){
-    if(!Q || typeof Q.runGrover!=="function")throw Error("QCDS Grover core is required for multi-locus evaluation.");
-    const anchors=options.anchors===undefined?[1]:options.anchors;
-    const minCases=options.minCases===undefined?5:Number(options.minCases);
-    const maxControls=options.maxControls===undefined?0:Number(options.maxControls);
-    if(!Array.isArray(anchors)||anchors.length>3||new Set(anchors).size!==anchors.length||anchors.some(i=>!Number.isInteger(i)||i<0||i>=LOCI.length))throw Error("Choose up to three distinct valid locus anchors.");
-    if(!Number.isInteger(minCases)||minCases<1||minCases>5||!Number.isInteger(maxControls)||maxControls<0||maxControls>5)throw Error("Invalid cohort thresholds.");
-    const must=mask(anchors);
-    const marked=[];
-    const evaluated=[];
-    for(let state=0;state<N;state++){
-      if(countBits(state)!==3)continue;
-      const caseCount=coverage(state,CASES);
-      const controlCount=coverage(state,CONTROLS);
-      const passed=(state&must)===must&&caseCount>=minCases&&controlCount<=maxControls;
-      evaluated.push({state,loci:bits(state),caseCount,controlCount,passed});
-      if(passed)marked.push(state);
-    }
-    const grover=Q.runGrover(N,marked,40);
-    const ranked=evaluated.filter(x=>x.passed).map(x=>({...x,probability:grover.probabilities[x.state]}))
-      .sort((a,b)=>b.probability-a.probability||b.caseCount-a.caseCount||a.controlCount-b.controlCount||a.state-b.state);
-    const best=ranked[0]||null;
-    const leaveOneOut=best?CASES.map(p=>({excluded:p.id,remaining:coverage(best.state,CASES.filter(x=>x.id!==p.id))})):null;
-    return {anchors:anchors.slice(),minCases,maxControls,states:N,evaluatedTriples:evaluated.length,
-      markedCount:marked.length,grover,ranked,selected:best,leaveOneOut};
-  }
-  function choose3(n){const v=BigInt(n);return v*(v-1n)*(v-2n)/6n;}
-  function formatPct(v){return (v*100).toFixed(2)+"%";}
-  function lociString(selected){
-    return selected.map(i=>LOCI[i].label+" (chr"+LOCI[i].chr+")").join(" · ");
+  function all(){return [...dataset.cases,...dataset.controls];}
+  function percent(p){return (100*p).toFixed(2)+"%";}
+  function toggleAnchor(i){
+    if(anchors.includes(i))anchors=anchors.filter(x=>x!==i);
+    else if(anchors.length<3)anchors=[...anchors,i].sort((a,b)=>a-b);
+    else{$("cohortError").textContent="Max three anchors. Remove one or clear the Condition.";return;}
+    $("cohortError").textContent="";
+    run();
   }
   function renderSelectors(){
-    const select=$("cohortLoci");if(!select)return;
-    select.replaceChildren();
-    LOCI.forEach((locus,i)=>{
-      const btn=element("button","cohort-locus");
-      btn.type="button";
-      const on=seeds.includes(i);
-      btn.classList.toggle("is-anchor",on);
-      btn.setAttribute("aria-pressed",on?"true":"false");
-      btn.setAttribute("aria-label",locus.label+", chromosome "+locus.chr+". "+(on?"Selected":"Not selected")+" as required anchor");
-      btn.append(element("strong","",locus.label),element("small","","chr"+locus.chr));
-      btn.addEventListener("click",()=>{
-        if(seeds.includes(i))seeds=seeds.filter(k=>k!==i);
-        else if(seeds.length<3)seeds=seeds.concat(i).sort((a,b)=>a-b);
-        else {const msg=$("cohortError");if(msg)msg.textContent="Select no more than three anchor loci. Deselect one before adding another.";return;}
-        const msg=$("cohortError");if(msg)msg.textContent="";
-        run();
-      });
-      select.append(btn);
-    });
-    const label=$("cohortAnchors");
-    if(label)label.textContent=seeds.length?"Required anchors: "+lociString(seeds):"No fixed anchor: all three-locus patterns are eligible for the cohort oracle.";
-  }
-  function renderTracks(){
-    const holder=$("cohortGenomeTracks");
-    if(!holder)return;
-    holder.replaceChildren();
-    ALL.forEach(p=>{
-      const row=element("div","cohort-genome-row");
-      row.classList.add(p.group==="cases"?"cohort-case":"cohort-control");
-      const label=element("span","cohort-person",p.id);
-      label.title=p.group==="cases"?"Synthetic cancer case":"Synthetic comparator";
-      const track=element("div","cohort-genome-track");
-      track.setAttribute("aria-label",p.id+" schematic whole-genome coordinate axis with 10 synthetic variant sites");
-      LOCI.forEach((l,i)=>{
-        const btn=element("button","cohort-site");
-        btn.type="button";
-        btn.style.left=(l.position*100).toFixed(1)+"%";
-        const variant=p.variants.includes(i);
-        btn.classList.toggle("has-variant",variant);
-        btn.classList.toggle("is-anchor",seeds.includes(i));
-        btn.classList.toggle("is-hit",Boolean(activeState && (activeState&(1<<i)) && variant && p.group==="cases"));
-        btn.classList.toggle("is-control-hit",Boolean(activeState && (activeState&(1<<i)) && variant && p.group==="controls"));
-        btn.title=p.id+" · "+l.label+" (chr"+l.chr+") · "+(variant?"variant 1":"variant 0");
-        btn.setAttribute("aria-label",btn.title);
-        btn.addEventListener("click",()=>{seeds=seeds.includes(i)?seeds.filter(x=>x!==i):seeds.length<3?[...seeds,i].sort((a,b)=>a-b):seeds;run();});
-        track.append(btn);
-      });
-      const count=element("span","cohort-genome-count",p.group==="cases"?"case":"control");
-      row.append(label,track,count);
-      holder.append(row);
-    });
-    const matrix=$("cohortDataMatrix");
-    if(!matrix)return;
-    matrix.replaceChildren();
-    const head=element("div","cohort-matrix-header");
-    head.append(element("span","","Profile"));
+    const panel=$("cohortLoci");
+    panel.replaceChildren();
     LOCI.forEach((loc,i)=>{
-      const btn=element("button","cohort-matrix-name",loc.label);
-      btn.type="button";btn.title="Select "+loc.label+" chr"+loc.chr;
-      btn.classList.toggle("is-anchor",seeds.includes(i));
-      btn.addEventListener("click",()=>{if(seeds.includes(i))seeds=seeds.filter(x=>x!==i);else if(seeds.length<3)seeds.push(i);run();});
-      head.append(btn);
+      const btn=e("button","cohort-locus");
+      btn.type="button";
+      btn.classList.toggle("is-anchor",anchors.includes(i));
+      btn.setAttribute("aria-pressed",anchors.includes(i)?"true":"false");
+      btn.setAttribute("aria-label","Anchor locus "+loc.label+" chromosome "+loc.chr);
+      btn.append(e("strong","",loc.label),e("small","","chr"+loc.chr));
+      btn.addEventListener("click",()=>toggleAnchor(i));
+      panel.append(btn);
     });
-    matrix.append(head);
-    ALL.forEach(p=>{
-      const row=element("div","cohort-matrix-row");
-      row.classList.add(p.group==="cases"?"is-case":"is-control");
-      row.append(element("span","",p.id));
+    $("cohortAnchors").textContent=anchors.length
+      ?"Fixed Condition: "+locusNames(anchors)+". Other implicated loci remain unknown."
+      :"No fixed locus: QCDS can search for previously unspecified combinations.";
+  }
+  function renderGenomes(){
+    const holder=$("cohortGenomeTracks"),matrix=$("cohortDataMatrix");
+    holder.replaceChildren();matrix.replaceChildren();
+    const header=e("div","cohort-matrix-header");
+    header.append(e("span","","Profile"));
+    LOCI.forEach((loc,i)=>{
+      const b=e("button","cohort-matrix-name",loc.label);
+      b.type="button";b.title="Set "+loc.label+" as a starting anchor";
+      b.classList.toggle("is-anchor",anchors.includes(i));
+      b.addEventListener("click",()=>toggleAnchor(i));header.append(b);
+    });
+    matrix.append(header);
+    all().forEach((person,profileIndex)=>{
+      const row=e("div","cohort-genome-row");
+      row.classList.add(person.group==="cases"?"cohort-case":"cohort-control");
+      row.append(e("span","cohort-person",person.id));
+      const track=e("div","cohort-genome-track");
+      track.setAttribute("aria-label",person.id+" synthetic genome locus axis");
       LOCI.forEach((loc,i)=>{
-        const bit=p.variants.includes(i)?"1":"0";
-        const cell=element("span","cohort-bit",bit);
-        cell.classList.toggle("is-variant",bit==="1");
-        cell.classList.toggle("is-highlight",Boolean(activeState && (activeState&(1<<i)) && p.group==="cases" && bit==="1"));
-        cell.classList.toggle("is-anchor",seeds.includes(i));
-        cell.title=p.id+" / "+loc.label+": synthetic variant "+bit;
-        row.append(cell);
+        const present=person.variants.includes(i);
+        const hit=selectedState!==null&&(selectedState&(1<<i))!==0;
+        const circle=e("button","cohort-site");
+        circle.type="button";circle.style.left=(100*loc.position).toFixed(1)+"%";
+        circle.classList.toggle("has-variant",present);
+        circle.classList.toggle("is-anchor",anchors.includes(i));
+        circle.classList.toggle("is-hit",hit&&present&&person.group==="cases");
+        circle.classList.toggle("is-control-hit",hit&&present&&person.group==="controls");
+        circle.title=person.id+" · "+loc.label+": "+(present?"variant present":"variant absent")+". Click to toggle observation.";
+        circle.setAttribute("aria-label",circle.title);
+        circle.addEventListener("click",()=>toggleVariant(profileIndex,i));
+        track.append(circle);
       });
-      matrix.append(row);
+      row.append(track,e("span","cohort-genome-count",person.group==="cases"?"case":"control"));
+      holder.append(row);
+      const matrixRow=e("div","cohort-matrix-row");
+      matrixRow.classList.add(person.group==="cases"?"is-case":"is-control");
+      matrixRow.append(e("span","",person.id));
+      LOCI.forEach((loc,i)=>{
+        const present=person.variants.includes(i);
+        const cell=e("button","cohort-bit",present?"1":"0");
+        cell.type="button";
+        cell.classList.toggle("is-variant",present);
+        cell.classList.toggle("is-anchor",anchors.includes(i));
+        cell.classList.toggle("is-highlight",present&&person.group==="cases"&&selectedState!==null&&(selectedState&(1<<i))!==0);
+        cell.title="Toggle synthetic observation "+person.id+" / "+loc.label;
+        cell.setAttribute("aria-label",person.id+" "+loc.label+": "+(present?"1":"0")+". Toggle.");
+        cell.addEventListener("click",()=>toggleVariant(profileIndex,i));
+        matrixRow.append(cell);
+      });
+      matrix.append(matrixRow);
     });
   }
-  function renderResults(){
-    const out=$("cohortOutcome"),detail=$("cohortOutcomeDetail"),metrics=$("cohortGroverStats"),alts=$("cohortAlternatives");
-    if(!search||!out||!detail||!metrics||!alts)return;
-    const q=search;
-    metrics.replaceChildren();
-    [
-      ["Encoded logical states","1,024"],
-      ["Three-locus candidate subsets",q.evaluatedTriples.toLocaleString("en-US")],
-      ["Oracle-marked subsets",q.markedCount],
-      ["Grover iterations (m)",q.grover.iterations],
-      ["Marked-state probability mass",formatPct(q.grover.markedMass)]
-    ].forEach(([name,value])=>{
-      const card=element("div","cohort-stat");
-      card.append(element("small","",name),element("strong","",value));
-      metrics.append(card);
+  function toggleVariant(profileIndex,locusIndex){
+    const target=profileIndex<dataset.cases.length?dataset.cases[profileIndex]:dataset.controls[profileIndex-dataset.cases.length];
+    if(target.variants.includes(locusIndex))target.variants=target.variants.filter(i=>i!==locusIndex);
+    else target.variants=[...target.variants,locusIndex].sort((a,b)=>a-b);
+    run();
+  }
+  function showStats(){
+    const panel=$("cohortGroverStats");
+    panel.replaceChildren();
+    const stats=[
+      ["Input breadth",all().length+" profiles × 10 loci"],
+      ["Candidate space","1,024 subsets"],
+      ["2–4-locus subsets tested",result.examinedCount.toLocaleString("en-US")],
+      ["First oracle marks",result.markedCount],
+      ["Grover 1 iterations",result.grover.iterations],
+      ["Grover 1 marked mass",percent(result.grover.markedMass)],
+      ["Grover stop",result.stopReason],
+      ["Second-stage candidates",result.refinedCount],
+      ["Grover 2 iterations",result.refinedGrover.iterations],
+      ["Grover 2 marked mass",percent(result.refinedGrover.markedMass)]
+    ];
+    stats.forEach(([label,value])=>{
+      const box=e("div","cohort-stat");
+      box.append(e("small","",label),e("strong","",value));
+      panel.append(box);
     });
+  }
+  function renderAudit(){
+    const target=$("cohortAudit");
+    if(!target)return;
+    target.replaceChildren();
+    target.append(e("h4","","Perturbation / bias checks · synthetic model"));
+    const items=[
+      ["8% independent bit flips",audit.repeatability+"/5 runs retain the same first-ranked pattern; "+audit.retained+"/5 still include it among eligible candidates"],
+      ["Leave-one-case-out",audit.leaveOneOut.filter(x=>x.retainsTop).length+"/"+audit.leaveOneOut.length+" trials retain the original pattern"],
+      ["Reversed cohort labels",audit.negativeControl.markedCount+" eligible patterns; original result retained: "+(audit.negativeControl.retainsTop?"yes":"no")]
+    ];
+    for(const [key,value] of items){
+      const row=e("div","cohort-audit-row");
+      row.append(e("strong","",key),e("span","",value));target.append(row);
+    }
+    target.append(e("p","cohort-audit-caveat","These are robustness probes, not proof of NISQ noise tolerance, freedom from bias, statistical significance or clinical validity."));
+  }
+  function renderOutcome(){
+    const headline=$("cohortOutcome"),detail=$("cohortOutcomeDetail"),alts=$("cohortAlternatives");
     alts.replaceChildren();
-    if(!q.markedCount){
-      out.textContent="No compatible three-locus signature satisfies the chosen cohort conditions.";
-      detail.textContent="Nothing is highlighted as a QCDS candidate. Adjust the required anchors or evidence thresholds. This synthetic absence is not biological evidence.";
-      activeState=null;
+    if(!result.markedCount){
+      headline.textContent="No relationship meets the current Condition and cohort thresholds.";
+      detail.textContent="No locus is amplified as a valid answer. Try modifying synthetic data, constraints or minimum cohort support. Absence is an admissible inference outcome.";
+      selectedState=null;
     }else{
-      const pick=q.ranked.find(x=>x.state===activeState)||q.ranked[0];
-      activeState=pick.state;
-      out.textContent=q.markedCount===1
-        ?"One three-locus combination satisfies the current oracle."
-        :q.markedCount+" combinations satisfy the oracle; no unique signature is established.";
-      const loo=q.leaveOneOut && q.selected?.state===pick.state
-        ?q.leaveOneOut.every(x=>x.remaining===4)
-        :CASES.every(p=>coverage(pick.state,CASES.filter(k=>k.id!==p.id))>=q.minCases-1);
-      detail.textContent=lociString(pick.loci)+". Co-occurrence: "+pick.caseCount+"/5 synthetic cases and "+pick.controlCount+
-        "/5 synthetic comparators. Model probability per marked subset: "+formatPct(pick.probability)+
-        ". "+(loo?"The pattern persists in a leave-one-case-out check. ":"")+
-        "These synthetic variants were constructed for demonstration; this result does not identify a real cancer driver.";
-      q.ranked.slice(0,16).forEach(item=>{
-        const btn=element("button","cohort-alt",lociString(item.loci));
+      const selected=result.ranked.find(x=>x.state===selectedState)||result.selected;
+      selectedState=selected.state;
+      headline.textContent=result.refinedCount===1
+        ?"One previously unspecified relation is strongest under the declared oracle."
+        :result.refinedCount+" equally strong relations survive refinement; no unique answer.";
+      detail.textContent=locusNames(selected.loci)+". Combination co-occurs in "+selected.caseCount+"/"+dataset.cases.length+
+        " synthetic cases versus "+selected.controlCount+"/"+dataset.controls.length+
+        " synthetic comparators. Difference: "+percent(selected.contrast)+
+        ". Grover amplitudes quantify oracle-marked states, not biological confidence or causal discovery.";
+      result.ranked.slice(0,20).forEach(x=>{
+        const btn=e("button","cohort-alt",locusNames(x.loci));
         btn.type="button";
-        btn.classList.toggle("is-selected",item.state===activeState);
-        btn.title="View candidate "+lociString(item.loci);
-        btn.addEventListener("click",()=>{activeState=item.state;renderResults();renderTracks();});
+        btn.classList.toggle("is-selected",x.state===selectedState);
+        btn.addEventListener("click",()=>{selectedState=x.state;renderOutcome();renderGenomes();});
         alts.append(btn);
       });
     }
   }
+  function readSettings(){
+    return {
+      dataset,
+      anchors:anchors.slice(),
+      minCases:Number($("cohortMinCases").value),
+      maxControls:Number($("cohortMaxControls").value),
+      minSize:2,
+      maxSize:4
+    };
+  }
   function run(){
-    const min=Number($("cohortMinCases")?.value||5);
-    const max=Number($("cohortMaxControls")?.value||0);
-    search=evaluateOracle({anchors:seeds,minCases:min,maxControls:max});
-    activeState=search.selected?.state||null;
-    renderSelectors();renderResults();renderTracks();
+    try{
+      result=D.evaluate(readSettings());
+      selectedState=result.selected?.state??null;
+      audit=D.stabilityAudit(result);
+      $("cohortError").textContent="";
+      renderSelectors();showStats();renderOutcome();renderGenomes();renderAudit();
+    }catch(error){$("cohortError").textContent=error.message;}
+  }
+  function regenerate(delta=0){
+    const seedInput=$("cohortDataSeed");
+    const seed=Number(seedInput.value)+delta;
+    const mode=$("cohortDataMode").value;
+    dataset=D.generateProfiles(seed,mode);
+    seedInput.value=String(seed);
+    anchors=[];
+    selectedState=null;
+    run();
   }
   function initialize(){
-    if(typeof document==="undefined" || !$("cohortCombinatorial"))return;
+    if(typeof document==="undefined"||!$("cohortCombinatorial"))return;
     $("cohortRun").addEventListener("click",run);
     $("cohortMinCases").addEventListener("change",run);
     $("cohortMaxControls").addEventListener("change",run);
+    $("cohortRebuild").addEventListener("click",()=>{try{regenerate(0)}catch(e){$("cohortError").textContent=e.message;}});
+    $("cohortNextDataset").addEventListener("click",()=>{try{regenerate(1)}catch(e){$("cohortError").textContent=e.message;}});
+    $("cohortClearAnchors").addEventListener("click",()=>{anchors=[];run();});
     run();
   }
-  return {LOCI,CASES,CONTROLS,N,CHOOSE_THREE,GENOME_BASES,choose3,bits,mask,countBits,coverage,evaluateOracle,initialize};
+  return {LOCI,N,generateProfiles:D.generateProfiles,evaluateOracle:D.evaluate,initialize};
 });
