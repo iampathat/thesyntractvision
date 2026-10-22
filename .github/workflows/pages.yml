@@ -319,7 +319,7 @@ jobs:
           test -s _site/qcds-cancer-lab/tests/test_clinical.js
           grep -F 'Oncology Lab' _site/qcds-cancer-lab/index.html
           grep -F 'Oncology Lab' _site/qcds-oncology-lab/index.html
-          grep -F 'Oncology research' _site/qcds-cancer-lab/index.html
+          grep -F 'QCDS research' _site/qcds-cancer-lab/index.html
           grep -F '128 → 8 → 1' _site/qcds-cancer-lab/index.html
           grep -F 'data-ref-tab="oracles"' _site/qcds-cancer-lab/index.html
           grep -F 'id="clinicalOverlay"' _site/qcds-cancer-lab/index.html
