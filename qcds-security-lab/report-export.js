@@ -91,7 +91,7 @@ async function loadSystemGuidePlates() {
     (await jpegArtwork('./assets/system-guide/'+name,i===0?595/491:595/562)) ||
     (await jpegArtwork('./assets/system-guide/'+name.replace(/\.jpg$/,'.svg'),i===0?595/491:595/562))
   ));
-  const fallback=plateFiles[0]||await jpegArtwork('./glasswing-approved.webp',595/491);
+  const fallback=await jpegArtwork('./glasswing-selected.webp',595/491) || plateFiles[0] || await jpegArtwork('./glasswing-approved.webp',595/491);
   return {cover:fallback,chapters:plateFiles.slice(1)};
 }
 
