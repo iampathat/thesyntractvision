@@ -1,4 +1,4 @@
-/* QCDS / Cancer Lab — rotating 4→1→1 probability funnel.
+/* QCDS / Oncology Lab — rotating 4→1→1 probability funnel.
  * Exact, substrate-independent REFERENCE MODEL, executed sequentially in JS.
  * 16 local 4-bit Grover lanes => four joint-factor folds => one bound
  * 10-dimensional probability distribution; rotated passes; condition check.
