@@ -1,4 +1,4 @@
-/* QCDS Cancer Lab: small, reproducible, hypothesis-open 10-locus cohort engine.
+/* QCDS Oncology Lab: small, reproducible, hypothesis-open 10-locus cohort engine.
    Classical simulation of ideal Grover amplitudes; no quantum-hardware run.
    No predefined winning locus IDs or planted answer sequence.
    © 2026 Patrik Sundblom. Research and development support: OpenAI / ChatGPT.
