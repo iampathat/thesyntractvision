@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#071625">
+  <title>Uppdatera Project Glasswing · Security Lab</title>
+  <style>
+    :root{color-scheme:dark}*{box-sizing:border-box}
+    body{margin:0;background:#071625;color:#edf9fc;
+      font:16px/1.6 system-ui,-apple-system,sans-serif;min-height:100dvh;
+      display:grid;place-items:center;padding:24px}
+    main{max-width:540px;width:100%;padding:32px;border:1px solid #466878;
+      border-radius:18px;background:#112838}
+    small{color:#f1cf91;letter-spacing:.12em}h1{font-size:clamp(26px,5vw,36px);line-height:1.15}
+    p{color:#c6dce5}button{border:0;border-radius:10px;background:#afeef5;color:#08212d;
+      font:700 16px system-ui;padding:16px 20px;cursor:pointer;width:100%}
+    button:disabled{opacity:.65;cursor:progress}
+    #result{min-height:50px}a{color:#a6e7f4}
+  </style>
+</head>
+<body>
+<main>
+  <small>QCDS · THE SYNTRACT VISION · PROJECT GLASSWING</small>
+  <h1>Uppdatera Security Lab</h1>
+  <p>Byter gamla programfiler mot den publicerade versionen. Dina lokala
+    undersökningar, inställningar och sparade bevis behålls.</p>
+  <button id="refresh" type="button">Öppna uppdaterade Security Lab</button>
+  <p id="result" role="status" aria-live="polite">
+    Ingen ändring görs förrän du trycker på knappen.
+  </p>
+  <p><a href="./index.html?skip_intro=1#home">Tillbaka utan att uppdatera</a></p>
+</main>
+<script>
+  document.querySelector('#refresh').addEventListener('click',async()=>{
+    const btn=document.querySelector('#refresh');
+    const status=document.querySelector('#result');
+    btn.disabled=true;
+    status.textContent='Uppdaterar programfilerna …';
+    try{
+      if(!navigator.onLine)throw Error('Du behöver vara ansluten till internet.');
+      const root=new URL('./',location.href);
+      if('serviceWorker' in navigator){
+        const list=await navigator.serviceWorker.getRegistrations();
+        for(const registration of list){
+          if(registration.scope===root.href)await registration.unregister();
+        }
+      }
+      if('caches' in globalThis){
+        for(const name of await caches.keys()){
+          if(name.startsWith('qcds-security-app-'))await caches.delete(name);
+        }
+      }
+      // Never clear localStorage, sessionStorage, IndexedDB, cookies or user files.
+      const url=new URL('./index.html',root);
+      url.searchParams.set('skip_intro','1');
+      url.searchParams.set('glasswing_refresh',String(Date.now()));
+      url.hash='report';
+      location.replace(url.href);
+    }catch(err){
+      status.textContent='Kunde inte uppdatera: '+(err?.message||String(err))+
+        '. Inga undersökningar raderades.';
+      btn.disabled=false;
+    }
+  });
+</script>
+</body>
+</html>
