@@ -13,10 +13,10 @@ import {
 } from "./engine.mjs?v=1.14.1";
 import { createLogicalLab, researchLaunch } from "./logical-lab.js?v=1.14.1";
 import { runGlasswing } from "./glasswing.mjs?v=1.14.1";
-import { downloadSecurityPdf, downloadSystemGuidePdf } from "./report-export.js?v=1.2.0";
+import { downloadSecurityPdf, downloadSystemGuidePdf } from "./report-export.js?v=1.26.4";
 import { WORKSPACE_KEY, restoreWorkspace, writeWorkspace, mergeWorkspace, copyAsOwnProject, STARTERS, isCaseId } from "./workspace.mjs?v=1.0.1";
 import { homeView, casesView, newCaseMarkup, consumerNav } from "./consumer-ui-stage-v118.js?v=1.26.0";
-import { initAppInstall, refreshAppStatus } from "./app-install.js?v=1.26.0";
+import { initAppInstall, refreshAppStatus } from "./app-install.js?v=1.26.4";
 import { saveDeviceFile, initNativeApp } from "./device-files.js?v=1.0.0";
 // Author: Patrik Sundblom. Assisted by ChatGPT. Commercial license: LICENSE.md.
 const $ = (s) => document.querySelector(s);
@@ -375,6 +375,7 @@ function shell() {
     <nav aria-label="Workspace">
       <a href="#home" ${state.route==='home'?'aria-current="page"':''}>${icon('grid')}<span class="nav-copy"><b>Home</b><em>Your next step, in one place</em></span></a>
       <a href="#cases" ${state.route==='cases'?'aria-current="page"':''}>${icon('shield')}<span class="nav-copy"><b>My investigations</b><em>Saved cases and backups</em></span></a>
+      <button type="button" class="gw-nav-guide" data-action="system-guide-pdf">${icon('book')}<span class="nav-copy"><b>Glasswing guide (PDF)</b><em>How the system works</em></span></button>
       <div class="nav-section-label">CURRENT INVESTIGATION</div>
       <div class="consumer-nav-case"><b>${esc(project().input.name)}</b><small>${project().example?'Practice case · synthetic evidence':'Your system · saved locally'}</small></div>
       <div class="nav-flow">${stepLinks}</div>
@@ -394,7 +395,7 @@ function shell() {
   </aside>
   ${state.mobile ? '<button class="menu-backdrop" data-action="close-menu" aria-label="Close navigation backdrop"></button>' : ""}
   <div class="app-body" ${state.mobile ? "inert" : ""}>
-    <header class="topbar"><div class="breadcrumb"><button class="icon-button mobile-toggle" data-action="menu" aria-controls="site-nav" aria-label="Open navigation" aria-expanded="${state.mobile}">${icon("menu")}</button><b>${investigating ? "Q★ Security" : esc(ROUTES.find((r) => r[0] === state.route)?.[1])}</b></div><div class="top-actions"><span id="save-status" class="save-status">${state.storage ? "Saved on this device" : "Not saved · export your work"}</span><button class="button small plain-button" data-system-explanation>${icon("book")} What is this?</button></div></header>
+    <header class="topbar"><div class="breadcrumb"><button class="icon-button mobile-toggle" data-action="menu" aria-controls="site-nav" aria-label="Open navigation" aria-expanded="${state.mobile}">${icon("menu")}</button><b>${investigating ? "Q★ Security" : esc(ROUTES.find((r) => r[0] === state.route)?.[1])}</b></div><div class="top-actions"><span id="save-status" class="save-status">${state.storage ? "Saved on this device" : "Not saved · export your work"}</span><button class="button small plain-button gw-guide-header" data-action="system-guide-pdf">${icon("download")} <span>Glasswing PDF</span></button><button type="button" class="button small plain-button gw-settings-header" data-app-settings aria-haspopup="dialog">${icon("system")} <span>Settings / Refresh</span></button><button class="button small plain-button gw-what-header" data-system-explanation>${icon("book")} What is this?</button></div></header>
     ${investigating ? questionPosition() : ""}
     <main id="main" tabindex="-1">
       ${state.route === "investigate" ? (state.question === 1 && project().example ? casePicker() : "") : !["examples", "learn", "home", "cases"].includes(state.route) ? casePicker() : ""}
@@ -1488,7 +1489,7 @@ function traceView() {
 }
 function reportView() {
   const m = state.model, disabled = stale() ? 'disabled' : '';
-  return header('REPORTS / READY TO SHARE', 'Turn the investigation into a clear decision.', 'A designed A4 report with vector charts, security sectors, attack paths, controls and scoped evidence.') + conclusionReadiness() + `
+  return header('REPORTS / READY TO SHARE', 'Turn the investigation into a clear decision.', 'A designed A4 report with vector charts, security sectors, attack paths, controls and scoped evidence.') + `<section class="panel gw-guide-export-panel"><span class="eyebrow">QCDS / THE SYNTRACT VISION / PROJECT GLASSWING</span><h2>Glasswing System Guide</h2><p>Illustrated documentation about dimensions, every active security perspective, attack routes, recursion and evidence. Updated from this release of the QCDS engine. No investigation is required.</p><button type="button" class="button primary" data-action="system-guide-pdf">${icon('download')} Generate the System Guide PDF</button><p class="small muted">Independent of your case report. Generated locally on this device.</p></section>` + conclusionReadiness() + `
     <div class="report-studio">
       <section class="report-cover-preview"><span class="report-stamp">Q★ / SECURITY LAB / REPORT EDITION</span><h2>SECURITY<br>ASSESSMENT</h2><h3>${esc(m.input.name)}</h3><p>${esc(m.input.attackerGoal || 'Understand the paths. Challenge the controls. Follow the evidence.')}</p>
         <svg viewBox="0 0 500 160" role="img" aria-label="The report follows input, boundaries, protected assets and evidence"><g fill="none" stroke="#39676d"><path d="M50 80 180 20 320 20 450 80 320 140 180 140Z M50 80H450 M180 20 320 140 M320 20 180 140 M180 20V140 M320 20V140"/></g><g fill="#bceb52"><circle cx="50" cy="80" r="7"/><circle cx="450" cy="80" r="7"/></g><g fill="#53d4d0"><circle cx="180" cy="20" r="5"/><circle cx="320" cy="20" r="5"/><circle cx="320" cy="140" r="5"/><circle cx="180" cy="140" r="5"/></g><g fill="#c4dce1" font-size="12" font-family="sans-serif" text-anchor="middle"><text x="65" y="111">INPUT</text><text x="250" y="76">TRUST BOUNDARIES</text><text x="432" y="111">EVIDENCE</text></g></svg>
@@ -1936,7 +1937,7 @@ document.addEventListener("click", async (e) => {
       try {
         notify("Generating the illustrated System Guide PDF...");
         const summary = await downloadSystemGuidePdf();
-        notify(`System Guide ready · ${summary.pages} pages · ${summary.frameworks} security perspectives.`);
+        notify(`Glasswing guide downloaded · ${summary.pages} pages · ${summary.lenses} security perspectives.`);
       } catch (error) {
         notify(error.message || "System Guide PDF export failed. Please retry.", "warning");
       }
