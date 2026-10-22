@@ -279,3 +279,27 @@ The intended much larger system needs whole-genome data across persons, a scalab
 Implementation: [genome-discovery.js](genome-discovery.js) is the parameterized cohort generator and QCDS oracle/assessment layer; [genome-perspective.js](genome-perspective.js) is the UI adapter; [tests/test_genome.js](tests/test_genome.js) covers different seeds, absence of a known answer, tangent/threshold behavior, parity, zero-solution cases and the perturbation audit. Code contains no secret target mask or prefilled winning locus IDs.
 
 Theory and creation: **Patrik Sundblom**. Research and development support: **OpenAI / ChatGPT**.
+
+
+## Rotating bandwidth funnel — 16 → 4 → 1 (October 22, 2026)
+
+The Cancer Lab synthetic cohort panel now runs a **numerical rotating probability funnel**, rather than labeling a two-stage Grover search as QCDS. This is a transparent, substrate-independent **reference implementation** of the architecture, not a quantum-hardware execution.
+
+**Actual data flow in each rotation**
+
+1. **High-bandwidth Condition formation:** ten synthetic locus dimensions across five cases and five comparators (100 synthetic 0/1 observations). A Condition may select zero to three anchors; the oracle tests joint presence or odd-parity interactions with case/control thresholds.
+2. **Sixteen small four-bit logical rooms:** 16 lanes are assigned different deterministic windows from the 210 four-locus windows; mapped locus positions and order rotate. Every lane performs a genuine 16-state local oracle search using QCDSCore.runGrover with the existing first-tangent/peak, 0.999 alignment threshold, and no more than 40 Grover iterations.
+3. **Four 4→1 probability syntheses:** each four-lane group passes **all 16 local probabilities** as joint factors into an embedded 1024-state candidate representation by a normalized logarithmic opinion pool. No winner-only reduction.
+4. **One 4→1 global bind:** a second log opinion pool binds four 1024-state group distributions into one normalized 10D distribution. Joint correlations present within each small four-locus factor can affect global ranking. Four-locus factors alone do **not** guarantee recovery of arbitrary higher-order ten-locus correlations.
+5. **Rotation synthesis:** each completed rotation gives a fresh probability distribution from different dimension projections. Rotation outputs enter an equal-weight running log opinion pool; earlier results are NOT multiplied again as independent evidence. Convergence needs two successive transitions with total-variation distance <= 0.025, top-eight Jaccard >= 0.70 and entropy difference <= 0.08 bits, after at least three rotations. A user chooses a cap of 3, 6, 9 or 12 passes. Failure to converge is explicitly reported.
+6. **Truth-alignment and Parent Grover:** every proposed 2–4-locus candidate is independently checked against the complete case/control matrix and the original Condition. The leading verified candidates within 80% of the leading folded probability are collectively amplified using QCDSCore.runGrover(1024, ..., 40). If multiple candidates survive, the UI says so. Zero verified outcomes are permitted. Only verified candidates produce genome highlights.
+
+**Inspectable user interface:** sixteen computed sixteen-bin local probability visualizations per chosen rotation; four actual folded group distributions with entropy; live rotational pass selection; full-cohort-truth-gated probability ranking and selectable genome highlights; Parent Grover probability mass and iterations; editable source matrices and Condition; stability diagnostics, information loss caveat and noise-proxy selector.
+
+**NISQ and bias limits:** A selectable 0, 8, 15 or 25% uniform mixture models *synthetic readout uncertainty* at the local probability level. This is a classical proxy, NOT a quantum-device error model (gates, coupling, relaxation, correlated noise, readout errors). Separate five-trial input bit-flip, leave-one-case-out and case/control-label inversion reports are based on a standalone full-cohort oracle, not full funnel reruns. None proves hardware NISQ resilience, immunity to bias, biological causality or a quantum advantage.
+
+**Resource accounting:** The browser evaluates the sixteen four-bit searches **sequentially in software** on each rotation, not in quantum-hardware parallel. Four group folds and one final bind work over the 1,024-state representation. This is a finite model, not unbounded intelligence or a measured ability to search five complete genomes. Probability folding and rotation cannot automatically recover correlations discarded by marginalization. Further genomics research needs actual patient/genome data and ethically sourced provenance, scalable semantic encoding, oracles, quantum/noisy or classical backends, resource measurement, classical baselines and independent validation.
+
+**Files:** genome-funnel.js, genome-discovery.js, genome-perspective.js, and tests/test_funnel.js. Text source is directly inspectable; no encoded script payloads.
+
+**Theory and creation:** Patrik Sundblom. **R&D support:** OpenAI / ChatGPT.
