@@ -521,3 +521,81 @@ body.clinical-theme .qcds-conclusion .qcds-conclusion-scope {
   .genome-search-fields {flex-direction:column}
   .genome-search-fields input {width:100%}
 }
+
+
+/* 10-locus multi-person combinatorial QCDS prototype — replace motif scan UX. */
+.cohort-lab { margin-top:10px; }
+.cohort-head h3,.cohort-visual-head h3 {color:#20495d;font-size:19px;margin:0 0 8px;line-height:1.34}
+.cohort-head p,.cohort-visual-head p {margin:0;font-size:13px;line-height:1.66;color:#536d80;max-width:1100px}
+.cohort-controls {display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,.8fr);gap:12px;margin:19px 0 14px}
+.cohort-seed-panel,.cohort-oracle-panel {border:1px solid #dce7ec;background:#f9fbfc;border-radius:9px;padding:17px;min-width:0}
+.cohort-seed-panel>strong,.cohort-oracle-panel>strong {display:block;margin-bottom:11px;font-size:13px;color:#20495c}
+.cohort-locus-list {display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px}
+.cohort-locus {appearance:none;display:grid;gap:2px;align-content:center;justify-items:center;
+  min-width:0;padding:9px 2px;border:1px solid #c4d8e1;border-radius:7px;background:#f2f7f9;color:#385b70;cursor:pointer}
+.cohort-locus strong {font-size:12px;font-weight:800}
+.cohort-locus small {font-size:10px;color:#647e90}
+.cohort-locus.is-anchor {background:#fbf1d9;border-color:#b68736;color:#694917;box-shadow:inset 0 0 0 1px #e2c997}
+.cohort-locus.is-anchor small {color:#806133}
+.cohort-locus:hover {border-color:#488a93}
+.cohort-selection {font-size:12px;line-height:1.55;color:#537187;margin:11px 0 0}
+.cohort-error {color:#a14a3b;font-size:12px;margin:5px 0 0}
+.cohort-oracle-panel label {display:grid;gap:6px;color:#4a6273;font-size:12px;margin:0 0 11px}
+.cohort-oracle-panel select {width:100%;background:#fff;border:1px solid #bfd3dc;color:#294c63;padding:9px;border-radius:6px;font-size:13px}
+.cohort-run {appearance:none;cursor:pointer;border:1px solid #165c6b;border-radius:7px;background:#1c687a;color:#fff;padding:11px 14px;font-weight:730;font-size:13px;width:100%}
+.cohort-run:hover {background:#14536b}
+.cohort-result {border:1px solid #c7dee5;border-radius:9px;padding:20px;background:#f0f7f8;margin:14px 0 20px}
+.cohort-result-top>span {font-size:11px;color:#27778b;letter-spacing:.09em;font-weight:800}
+.cohort-result-top h3 {font-size:19px;color:#285266;margin:4px 0 10px}
+.cohort-outcome {font-size:20px;line-height:1.43;font-weight:730;color:#18556c;margin:0 0 8px}
+.cohort-outcome-detail {font-size:14px;line-height:1.7;color:#476476;margin:0 0 14px}
+.cohort-grover-stats {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.cohort-stat {display:grid;gap:5px;padding:12px;background:#fff;border:1px solid #d5e5ea;border-radius:7px;min-width:0}
+.cohort-stat small {font-size:11px;line-height:1.4;color:#657d8e}
+.cohort-stat strong {font-size:18px;font-weight:770;line-height:1.25;color:#28596b;overflow-wrap:anywhere}
+.cohort-alternatives {display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.cohort-alt {appearance:none;cursor:pointer;border:1px solid #c9dbe2;border-radius:6px;background:#fff;color:#31586c;padding:8px 10px;font-size:12px}
+.cohort-alt.is-selected {background:#daefed;color:#15584e;border-color:#79ada6}
+.cohort-visual-head {margin:18px 0 13px}
+.cohort-legend {display:flex;gap:12px 20px;flex-wrap:wrap;font-size:12px;color:#5d7789;margin:10px 0 13px}
+.cohort-legend>span {display:flex;align-items:center;gap:6px}
+.cohort-legend i {width:11px;height:11px;display:inline-block;border-radius:50%;border:1px solid #becfd8}
+.cohort-legend .legend-cohort-anchor {background:#dba951;border-color:#ad7927}
+.cohort-legend .legend-cohort-hit {background:#289c89;border-color:#13715f;box-shadow:0 0 7px #73c9b2}
+.cohort-legend .legend-cohort-variant {background:#7199a8}
+.cohort-legend .legend-cohort-off {background:#ecf2f5}
+.cohort-tracks {display:grid;gap:6px;padding:17px 16px;border:1px solid #d9e6ec;border-radius:8px;background:#fafcfd}
+.cohort-genome-row {display:grid;grid-template-columns:52px minmax(0,1fr) 52px;gap:12px;align-items:center;min-width:0;min-height:31px}
+.cohort-genome-row.cohort-case .cohort-person {font-weight:770;color:#174c63}
+.cohort-genome-row.cohort-control .cohort-person {color:#7a8997}
+.cohort-person {font:730 12px/1.3 ui-monospace,SFMono-Regular,monospace}
+.cohort-genome-count {font-size:10px;color:#6d8495;text-align:right}
+.cohort-genome-track {position:relative;height:10px;background:linear-gradient(90deg,#d6e4ea,#adc5d2,#d6e4ea);border-radius:8px;box-shadow:inset 0 0 0 1px rgba(71,120,146,.19)}
+.cohort-genome-row.cohort-control .cohort-genome-track {background:#e7edef}
+.cohort-site {display:block;position:absolute;top:50%;transform:translate(-50%,-50%);padding:0;width:12px;height:12px;border-radius:50%;background:#f4f8f9;border:1px solid #b5c5cf;cursor:pointer;z-index:1}
+.cohort-site.has-variant {background:#7896a5;border-color:#50788d}
+.cohort-site.is-anchor {background:#dbaa4a;border:2px solid #9c7127;z-index:2}
+.cohort-site.is-hit {background:#15957b;width:18px;height:18px;border:3px solid #f8fffd;box-shadow:0 0 0 2px #2e9a83,0 0 12px #48b49e;z-index:3}
+.cohort-site.is-control-hit {background:#799f9d;border:1px dashed #2f7371;width:14px;height:14px}
+.cohort-site:hover {z-index:4;box-shadow:0 0 0 3px #e7be72}
+.cohort-matrix-details {margin-top:13px;border:1px solid #dbe6ed;border-radius:8px;background:#fff}
+.cohort-matrix-details summary {padding:13px 16px;font-size:13px;color:#235a70;font-weight:700;cursor:pointer}
+.cohort-data-matrix {padding:0 13px 14px;overflow-x:auto}
+.cohort-matrix-header,.cohort-matrix-row {display:grid;grid-template-columns:70px repeat(10,minmax(34px,1fr));gap:5px;align-items:center;min-width:480px;margin:4px 0}
+.cohort-matrix-header {border-bottom:1px solid #dfe9ee;padding-bottom:6px}
+.cohort-matrix-header>span,.cohort-matrix-row>span:first-child {font-size:11px;color:#4f6a7d;font-weight:720}
+.cohort-matrix-name {font-size:10px;font-weight:720;color:#527289;background:#edf4f6;border:1px solid #d2e2e9;padding:6px 0;border-radius:4px;cursor:pointer}
+.cohort-matrix-name.is-anchor {background:#f4e6c8;color:#855d28;border-color:#dbb46e}
+.cohort-bit {text-align:center;font:700 12px/1.4 ui-monospace,SFMono-Regular,monospace;color:#8da0ae;background:#edf3f6;border-radius:4px;padding:5px 0}
+.cohort-bit.is-variant {background:#c3d9e1;color:#28566b}
+.cohort-bit.is-anchor {box-shadow:inset 0 0 0 2px #dfb566}
+.cohort-bit.is-highlight {background:#caeee5;color:#156853;box-shadow:inset 0 0 0 2px #49a791}
+@media(max-width:1080px) {.cohort-controls {grid-template-columns:1fr}.cohort-grover-stats {grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:650px) {
+ .cohort-locus-list {grid-template-columns:repeat(5,minmax(0,1fr))}
+ .cohort-grover-stats {grid-template-columns:repeat(2,minmax(0,1fr))}
+ .cohort-outcome {font-size:18px}
+ .cohort-genome-row {grid-template-columns:40px minmax(0,1fr) 38px;gap:7px}
+ .cohort-tracks {padding:13px 9px}
+ .cohort-site {width:10px;height:10px}
+}
