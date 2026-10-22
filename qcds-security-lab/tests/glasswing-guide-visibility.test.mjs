@@ -1,0 +1,41 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const read=(name)=>readFileSync(new URL('../'+name,import.meta.url),'utf8');
+const app=read('app-stage-v118.js');
+const html=read('index.html');
+const css=read('consumer.css');
+const sw=read('sw.js');
+const exportJs=read('report-export.js');
+test('Glasswing guide is directly accessible in the actual desktop workspace',()=>{
+ const sidebar=app.indexOf('class="gw-nav-guide" data-action="system-guide-pdf"');
+ const cases=app.indexOf('<b>My investigations</b>');
+ const steps=app.indexOf('CURRENT INVESTIGATION');
+ assert.ok(cases>0 && sidebar>cases && sidebar<steps,'Guide should appear just under My investigations');
+ assert.match(app,/class="button small plain-button gw-guide-header" data-action="system-guide-pdf"/);
+ assert.match(app,/class="button small plain-button gw-settings-header" data-app-settings/);
+ assert.match(app,/class="gw-settings-trigger" data-app-settings/);
+ assert.match(css,/\.sidebar nav button\.gw-nav-guide/);
+});
+test('My report offers the independent system guide first',()=>{
+ const report=app.slice(app.indexOf('function reportView()'),app.indexOf('function learnView()'));
+ assert.ok(report.indexOf('gw-guide-export-panel')<report.indexOf('conclusionReadiness()'));
+ assert.match(report,/No investigation is required/);
+ assert.match(report,/Generate the System Guide PDF/);
+ assert.match(app,/case "system-guide-pdf":/);
+ assert.match(exportJs,/export async function downloadSystemGuidePdf\(\)/);
+ assert.match(app,/summary\.lenses\} security perspectives/);
+});
+test('UI and PWA advertise the same release, without deleting case data',()=>{
+ const htmlVersion=html.match(/data-release="([^"]+)"/)?.[1];
+ const scriptVersion=html.match(/app-stage-v118\.js\?v=([^"]+)"/)?.[1];
+ const workerVersion=sw.match(/const VERSION = '([^']+)'/)?.[1];
+ assert.equal(htmlVersion,'1.26.4');
+ assert.equal(scriptVersion,htmlVersion);
+ assert.equal(workerVersion,htmlVersion);
+ assert.ok(sw.includes("'attack-vectors.mjs'"));
+ const settings=read('app-install.js');
+ assert.ok(settings.includes('data-app-refresh'));
+ assert.ok(settings.includes('No data changed'));
+ assert.ok(settings.includes('Do not touch localStorage, sessionStorage, indexedDB or user files.'));
+});
