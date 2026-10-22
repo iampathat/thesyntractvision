@@ -614,3 +614,303 @@ body.glasswing-visual #app .consumer-home .gw-home-service-status button {
   body.glasswing-visual #app .consumer-home .gw-home-page-title p {font-size:13px}
   body.glasswing-visual #app .consumer-home .consumer-resume {padding:19px 16px}
 }
+
+/* v1.27.2 — Inference comparison: editorial cards and mobile-first metrics.
+   Scoped to this route: no changes to analyses, the quantum workbench or reports. */
+body.glasswing-visual.comparison-mode #app .topbar {
+  background:#071d30!important;
+  background-color:#071d30!important;
+  isolation:isolate;
+  box-shadow:0 6px 18px #020e1a88;
+  border-bottom-color:#34647d;
+}
+body.glasswing-visual.comparison-mode #app .app-body > main {min-width:0}
+body.glasswing-visual.comparison-mode #app #view {min-width:0;overflow:visible}
+body.glasswing-visual.comparison-mode #app #view .page-heading {
+  display:block;
+  max-width:76ch;
+  margin:10px 0 22px;
+  padding:0;
+}
+body.glasswing-visual.comparison-mode #app #view .page-heading h1 {
+  max-width:23ch;
+  font-size:clamp(27px,3.1vw,42px);
+  line-height:1.12;
+  margin:4px 0 9px;
+  letter-spacing:-.035em;
+}
+body.glasswing-visual.comparison-mode #app #view .page-heading p {
+  font-size:clamp(14px,1.35vw,17px);
+  line-height:1.48;
+  margin:0;
+  color:#adcad8;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-context {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:19px 22px;
+  margin-bottom:16px;
+  background:#102b40;
+  border:1px solid #3d6880;
+  overflow:hidden;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-context > div {min-width:0;flex:1 1 auto}
+body.glasswing-visual.comparison-mode #app #view .glasswing-context .eyebrow {
+  display:block;margin:0 0 7px;font-size:10px;color:#89d6eb;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-context h2 {
+  margin:0;
+  font-size:clamp(17px,2.2vw,22px);
+  line-height:1.25;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-context p {
+  margin:6px 0 0;
+  font-size:13px;
+  color:#aec6d4;
+  line-height:1.48;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-context .button {
+  flex:0 0 auto;
+  max-width:100%;
+  white-space:normal;
+  font-size:12px;
+  min-height:39px;
+  padding:10px 14px;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-note {
+  margin:0 0 19px;
+  padding:12px 15px;
+  border:1px solid #3b6279;
+  border-left:3px solid #91dcee;
+  border-radius:9px;
+  background:#092338;
+  color:#b2ccd9;
+  font-size:12px;
+  line-height:1.55;
+  max-width:100%;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-note b {
+  color:#e1f3f9;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-tracks {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  align-items:start;
+  gap:16px;
+  margin:0 0 23px;
+}
+body.glasswing-visual.comparison-mode #app #view article.glasswing-track {
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  padding:21px;
+  margin:0;
+  background:#102a3e;
+  border:1px solid #3e6e83;
+  border-radius:15px;
+  box-shadow:none;
+  overflow:hidden;
+}
+body.glasswing-visual.comparison-mode #app #view article.glasswing-qcds {
+  grid-column:1/-1;
+  background:linear-gradient(125deg,#123348,#0e293e);
+  border-color:#65a9b9;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-track-heading {
+  display:block;min-width:0;
+  margin:0 0 12px;
+  padding:0;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-track-heading .eyebrow {
+  display:block;
+  color:#8dd9ed;
+  font-size:10px;
+  margin:0 0 8px;
+  letter-spacing:.12em;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-track-heading h2 {
+  margin:0;
+  font-size:clamp(21px,2.2vw,28px);
+  line-height:1.17;
+  color:#edfaff;
+  letter-spacing:-.025em;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-track-explainer {
+  color:#afc9d7;
+  margin:0 0 18px;
+  max-width:75ch;
+  line-height:1.52;
+  font-size:clamp(13px,1.15vw,15px);
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-metrics {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  padding:0;
+  margin:0 0 15px;
+  min-width:0;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-metric {
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  min-height:76px;
+  padding:12px 13px 10px;
+  border:1px solid #345d74;
+  border-radius:9px;
+  background:#0a2235;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-metric-primary {
+  min-height:83px;
+  background:#11384d;
+  border-color:#46819b;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-metric dt {
+  order:2;
+  margin:4px 0 0;
+  color:#acc6d4;
+  font-size:11px;
+  line-height:1.27;
+  overflow-wrap:normal;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-metric dd {
+  order:1;
+  margin:0;
+  color:#edfaff;
+  font-size:clamp(23px,2.5vw,31px);
+  line-height:1.1;
+  font-weight:680;
+  font-variant-numeric:tabular-nums;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-metric-primary dd {color:#8de6f7}
+body.glasswing-visual.comparison-mode #app #view .glasswing-details {
+  margin:0;
+  padding:0;
+  border-top:1px solid #36586a;
+  background:transparent;
+  min-width:0;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-details + .glasswing-details {border-top:1px solid #36586a}
+body.glasswing-visual.comparison-mode #app #view .glasswing-details summary {
+  padding:13px 3px;
+  margin:0;
+  font-size:12px;
+  line-height:1.4;
+  font-weight:600;
+  color:#aee7f3;
+  cursor:pointer;
+  list-style:revert;
+  overflow-wrap:anywhere;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-details :is(ol,ul){
+  margin:2px 0 15px;
+  padding-left:22px;
+  font-size:12px;
+  line-height:1.6;
+  color:#b7d1dc;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-details li {margin:0 0 7px;padding-left:2px}
+body.glasswing-visual.comparison-mode #app #view .glasswing-method {
+  padding:22px;
+  margin-top:10px;
+  border-color:#3b6e82;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-method .panel-header{
+  padding:0 0 15px;
+  align-items:flex-start;
+  flex-wrap:wrap;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-method .glasswing-facts {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));
+  gap:9px;
+  padding:0;
+  margin:8px 0 19px;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-method .glasswing-facts > span {
+  min-width:0;
+  padding:13px;
+  border-radius:9px;
+  background:#092338;
+  border:1px solid #355f74;
+  font-size:12px;
+  line-height:1.45;
+  color:#b8d1dc;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-method .glasswing-facts b {
+  display:block;
+  margin-bottom:4px;
+  color:#8de7fa;
+  font-size:23px;
+  line-height:1.17;
+  overflow-wrap:anywhere;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-method > p {
+  font-size:13px;
+  line-height:1.55;
+  max-width:70ch;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-actions {
+  display:flex;flex-wrap:wrap;gap:9px;margin-top:16px;
+}
+body.glasswing-visual.comparison-mode #app #view .glasswing-actions .button {
+  min-width:0;
+  flex:0 1 auto;
+  padding:10px 14px;
+  min-height:42px;
+  white-space:normal;
+  text-align:center;
+}
+@media(max-width:860px){
+  body.glasswing-visual.comparison-mode #app #view .glasswing-tracks {grid-template-columns:minmax(0,1fr)}
+  body.glasswing-visual.comparison-mode #app #view article.glasswing-qcds {grid-column:auto}
+}
+@media(max-width:560px){
+  body.glasswing-visual.comparison-mode #app .topbar {
+    height:56px!important;
+    min-height:56px!important;
+  }
+  body.glasswing-visual.comparison-mode #app .app-body > main {
+    padding-top:18px!important;
+    padding-bottom:calc(133px + env(safe-area-inset-bottom,0px))!important;
+  }
+  body.glasswing-visual.comparison-mode #app #view .page-heading {margin:0 0 17px}
+  body.glasswing-visual.comparison-mode #app #view .page-heading .eyebrow {font-size:9px}
+  body.glasswing-visual.comparison-mode #app #view .page-heading h1 {font-size:clamp(27px,8vw,33px)}
+  body.glasswing-visual.comparison-mode #app #view .page-heading p {font-size:14px}
+  body.glasswing-visual.comparison-mode #app #view .glasswing-context {
+    display:block;
+    padding:15px 16px;
+    margin:0 0 13px;
+  }
+  body.glasswing-visual.comparison-mode #app #view .glasswing-context p {font-size:12px}
+  body.glasswing-visual.comparison-mode #app #view .glasswing-context .button {
+    margin-top:12px;
+    width:100%;
+    justify-content:center;
+  }
+  body.glasswing-visual.comparison-mode #app #view .glasswing-note {
+    padding:11px 13px;
+    font-size:11px;
+    margin-bottom:14px;
+  }
+  body.glasswing-visual.comparison-mode #app #view .glasswing-tracks {gap:12px}
+  body.glasswing-visual.comparison-mode #app #view article.glasswing-track {padding:16px}
+  body.glasswing-visual.comparison-mode #app #view .glasswing-track-heading {margin-bottom:9px}
+  body.glasswing-visual.comparison-mode #app #view .glasswing-track-heading h2 {font-size:22px}
+  body.glasswing-visual.comparison-mode #app #view .glasswing-track-explainer {font-size:13px;line-height:1.46;margin-bottom:13px}
+  body.glasswing-visual.comparison-mode #app #view .glasswing-metrics {gap:7px;margin-bottom:12px}
+  body.glasswing-visual.comparison-mode #app #view .glasswing-metric {padding:11px;min-height:74px}
+  body.glasswing-visual.comparison-mode #app #view .glasswing-metric dd {font-size:24px}
+  body.glasswing-visual.comparison-mode #app #view .glasswing-metric dt {font-size:10.5px}
+  body.glasswing-visual.comparison-mode #app #view .glasswing-method {padding:16px}
+  body.glasswing-visual.comparison-mode #app #view .glasswing-method .panel-header h2 {font-size:20px}
+  body.glasswing-visual.comparison-mode #app #view .glasswing-method .glasswing-facts {grid-template-columns:repeat(2,minmax(0,1fr))}
+  body.glasswing-visual.comparison-mode #app #view .glasswing-actions {flex-direction:column}
+  body.glasswing-visual.comparison-mode #app #view .glasswing-actions .button{width:100%;justify-content:center}
+  /* The regular bottom navigation remains available, but never covers the cards. */
+  body.glasswing-visual.comparison-mode #app .consumer-bottom-nav {min-height:58px!important}
+  body.glasswing-visual.comparison-mode #app .consumer-bottom-nav a {min-height:45px}
+}

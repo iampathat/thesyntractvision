@@ -7,13 +7,13 @@ const read=name=>readFileSync(new URL('../'+name,import.meta.url),'utf8');
 const html=read('index.html'), app=read('app-stage-v118.js'), css=read('glasswing-unified-shell-v127.css');
 const worker=read('sw.js'), intro=read('glasswing-screen-v125.js'), lab=read('logical-lab.js'), install=read('app-install.js');
 test('one authoritative visual layer loads AFTER all inherited styles',()=>{
-  const last=html.indexOf('glasswing-unified-shell-v127.css?v=1.27.1');
+  const last=html.indexOf('glasswing-unified-shell-v127.css?v=1.27.2');
   const prior=html.indexOf('glasswing-screen-v125.css');
   assert.ok(prior>0&&last>prior);
   assert.match(worker,/glasswing-unified-shell-v127\.css/);
-  assert.match(html,/data-release="1\.27\.1"/);
-  assert.match(worker,/const VERSION = '1\.27\.1'/);
-  assert.match(html,/app-stage-v118\.js\?v=1\.27\.1/);
+  assert.match(html,/data-release="1\.27\.2"/);
+  assert.match(worker,/const VERSION = '1\.27\.2'/);
+  assert.match(html,/app-stage-v118\.js\?v=1\.27\.2/);
 });
 test('desktop and Fold/mobile have explicit non-overflowing widths',()=>{
   assert.match(css,/margin-left:242px!important/);
