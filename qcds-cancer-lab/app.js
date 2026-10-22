@@ -6,12 +6,13 @@
 
   const DIMENSIONS = CORE.DIMENSIONS;
   const ROOM = globalThis.QCDSInferenceRoom;
+  const CLINICAL = globalThis.CancerLabClinicalUI;
   const DEFAULT_ORACLES = [
-    { name: "DNA repair", mask: "11??0???", provenance: "legacy cancer hypothesis" },
-    { name: "PI3K axis", mask: "??1?1???", provenance: "legacy cancer hypothesis" },
-    { name: "Receptor axis", mask: "???111??", provenance: "legacy cancer hypothesis" },
-    { name: "HR + broad", mask: "1??1????", provenance: "legacy cancer hypothesis" },
-    { name: "PI3K + HR", mask: "??11????", provenance: "legacy cancer hypothesis" }
+    { name: "DNA repair", mask: "11??0???", provenance: "Illustrative · unvalidated mask" },
+    { name: "PI3K axis", mask: "??1?1???", provenance: "Illustrative · unvalidated mask" },
+    { name: "Receptor axis", mask: "???111??", provenance: "Illustrative · unvalidated mask" },
+    { name: "HR + broad", mask: "1??1????", provenance: "Illustrative · unvalidated mask" },
+    { name: "PI3K + HR", mask: "??11????", provenance: "Illustrative · unvalidated mask" }
   ];
 
   let mask = Array(8).fill("?");
@@ -66,13 +67,9 @@
     stateCount.textContent = (2 ** u).toLocaleString("en-US");
     modeText.textContent = u === 0 ? "COMPLETE" : "OPEN";
 
-    maskViz.innerHTML = "";
-    const bars = Math.min(16, Math.max(4, 2 ** Math.min(u, 4)));
-    for (let i = 0; i < bars; i++) {
-      const s = document.createElement("span");
-      s.style.setProperty("--h", (24 + ((i * 31 + u * 17) % 58)) + "%");
-      maskViz.appendChild(s);
-    }
+    // No fabricated decorative probability bars: the analysis panels show only computed data.
+    maskViz.replaceChildren();
+    CLINICAL?.renderDimensionReference(mask);
   }
 
   function renderOracles() {
@@ -89,11 +86,13 @@
           <strong>${o.name}</strong>
           <small>${o.provenance}</small>
         </div>
-        <input class="oracle-mask" value="${o.mask}" maxlength="8" spellcheck="false" aria-label="${o.name} mask">
+        <input class="oracle-mask" value="${o.mask}" maxlength="8" spellcheck="false" aria-label="${o.name} positional mask">
+        <button type="button" class="explain-button oracle-help" aria-label="Scientific and QCDS explanation for ${o.name}" title="Mechanism, genes, assays and actual mask mapping">?</button>
       `;
 
       const checkbox = row.querySelector('input[type="checkbox"]');
       const maskField = row.querySelector(".oracle-mask");
+      row.querySelector(".oracle-help").addEventListener("click", () => CLINICAL?.open("oracle", index, {mask: oracleRows[index].mask}));
 
       checkbox.addEventListener("change", e => {
         oracleRows[index].enabled = e.target.checked;
@@ -137,13 +136,13 @@
 
     box.innerHTML = "";
     const p1 = document.createElement("p");
+    const status = last.stability?.stable ? "The internal convergence gate passed." : "The internal convergence gate was not satisfied.";
     p1.textContent = result.finalResolved
-      ? `QCDS ran ${first.laneCount} Grover lanes in the first cycle: sixteen unique balanced rotations moved the same semantic input through one fixed oracle bank, while eight true-null families tested each dimension separately. Those 128 full lane distributions were bound into eight rotational families, then into one Syntract, and a fresh Parent Grover was executed over the bound structures. After ${result.cycles.length} recursive cycle${result.cycles.length === 1 ? "" : "s"}, Parent Grover separated a leading state: ${result.finalState}. The bound logic ${result.finalLogic} shows which dimensions stayed fixed and which ${unresolved} dimension${unresolved === 1 ? "" : "s"} remain unresolved as ?.`
-      : `QCDS completed ${result.cycles.length} recursive cycle${result.cycles.length === 1 ? "" : "s"}, but Parent Grover did not yet create a discriminating amplification. That is an unresolved result, not a winning state. The bound logic remains ${result.finalLogic}; ${unresolved} dimension${unresolved === 1 ? "" : "s"} are still open as ?. The next useful step is stronger evidence or more selective top-down oracles, not pretending one equal-height bar won.`;
+      ? `The engine executed ${first.laneCount} symbolic seven-bit Grover searches per recursive pass (16 position rotations × 8 feature exclusions), combined the complete distributions into eight families and then a Parent-Grover distribution. Following ${result.cycles.length} pass(es), the algorithm amplified state ${result.finalState}, with inferred constraint mask ${result.finalLogic} (${unresolved} unresolved dimensions). ${status}`
+      : `The engine completed ${result.cycles.length} recursive pass(es) but no discriminating Parent-Grover amplification was observed. The derived mask remains ${result.finalLogic} with ${unresolved} unresolved dimensions. This is an unresolved computational result. ${status}`;
 
     const p2 = document.createElement("p");
-    p2.textContent =
-      `The influence bars are a sensitivity check, not a vote: they show how much the bound distribution changes when each semantic dimension is truly absent. In this run, ${strongest || "no single dimension"} changed it the most. The displayed probability (${formatP(result.finalProbability)}) is the Parent-Grover probability inside this QCDS run—not a medical probability or treatment confidence. What matters is whether the same structure survives new evidence, oracle changes and recursive return.`;
+    p2.textContent = `The most sensitive excluded features were ${strongest || "not differentiated"}. These scores measure total-variation differences under feature exclusion; they do not establish causal biology. Parent-state probability ${formatP(result.finalProbability)} is a modeled distribution conditional on the current synthetic masks, not an estimated likelihood of malignancy, DNA repair deficiency or therapeutic response. No patient observations or independent molecular truth labels were evaluated.`;
 
     box.append(p1, p2);
   }
@@ -154,7 +153,7 @@
     resultsRunning.style.display = "grid";
     orb.classList.remove("spin");
     resultsRunning.querySelector("h3").textContent = "QCDS complete.";
-    resultsRunning.querySelector("p").textContent = "The Q has stopped because the recursive QCDS run is finished. The result is shown below.";
+    resultsRunning.querySelector("p").textContent = "The simulation completed and its computed trace is available for inspection below.";
 
     resultsEmpty.hidden = true;
     resultsEmpty.style.display = "none";
@@ -203,7 +202,7 @@
     const maxP = Math.max(...topStates.map(([, p]) => p), 1e-12);
     topStates.forEach(([state, p], i) => {
       const col = document.createElement("div");
-      col.className = "dist-col" + (!unresolvedParent && i === 0 ? " winner" : "");
+      col.className = "dist-col" + (!unresolvedParent && i === 0 ? " highlighted" : "");
       col.innerHTML = `
         <div class="dist-value">${(p * 100).toFixed(2)}%</div>
         <div class="dist-bar" style="height:${Math.max(5, (p / maxP) * 100).toFixed(1)}%"></div>
@@ -296,6 +295,7 @@
 
   runButton.addEventListener("click", execute);
 
+  CLINICAL?.initialize();
   ROOM?.initialize();
   renderDimensions();
   renderMask();
