@@ -119,6 +119,11 @@
     const grover=Q.runGrover(N,marked,MAX_ITERATIONS);
     const ranked=examined.filter(x=>x.passed).map(x=>({...x,probability:grover.probabilities[x.state]}))
       .sort((a,b)=>b.contrast-a.contrast||a.controlCount-b.controlCount||b.caseCount-a.caseCount||a.size-b.size||a.state-b.state);
+    // Predefined second stage: retain ALL maximal-contrast patterns.
+    // No gene IDs, winning locus mask or external known answer enter this criterion.
+    const bestContrast=ranked.length?ranked[0].contrast:-1;
+    const refined=ranked.filter(x=>Math.abs(x.contrast-bestContrast)<1e-12);
+    const refinedGrover=Q.runGrover(N,refined.map(x=>x.state),MAX_ITERATIONS);
     const theta=marked.length&&marked.length<N?Math.asin(Math.sqrt(marked.length/N)):0;
     const m=grover.iterations;
     const massAtNext=theta?Q.groverSuccessProbability(N,marked.length,m+1):0;
@@ -133,7 +138,7 @@
     return {
       dataset,anchors:anchors.slice(),minCases,maxControls,minSize,maxSize,
       states:N,examinedCount:examined.length,markedCount:marked.length,
-      ranked,selected:ranked[0]||null,grover,stopReason,threshold:ALIGNMENT_THRESHOLD,
+      ranked,refined,selected:refined[0]||null,grover,refinedGrover,refinedCount:refined.length,stopReason,threshold:ALIGNMENT_THRESHOLD,
       ratio:marked.length/N,theta
     };
   }
