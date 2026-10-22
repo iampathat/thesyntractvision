@@ -294,6 +294,8 @@ jobs:
           test -s _site/qcds-cancer-lab/inference-room.js
           test -s _site/qcds-cancer-lab/clinical-knowledge.js
           test -s _site/qcds-cancer-lab/clinical-ui.js
+          test -s _site/qcds-cancer-lab/qcds-conclusion.js
+          test -s _site/qcds-cancer-lab/tests/test_conclusion.js
           test -s _site/qcds-cancer-lab/LICENSE.md
           test -s _site/qcds-cancer-lab/README.md
           test -s _site/qcds-cancer-lab/engine.py
@@ -322,9 +324,11 @@ jobs:
           node --check _site/qcds-cancer-lab/app.js
           node --check _site/qcds-cancer-lab/clinical-knowledge.js
           node --check _site/qcds-cancer-lab/clinical-ui.js
+          node --check _site/qcds-cancer-lab/qcds-conclusion.js
           node --check _site/qcds-cancer-lab/inference-room.js
           node _site/qcds-cancer-lab/tests/test_core.js
           node _site/qcds-cancer-lab/tests/test_clinical.js
+          node _site/qcds-cancer-lab/tests/test_conclusion.js
           PYTHONPATH=qcds_fabric_4_2/src python qcds-cancer-lab/tests/test_engine.py
 
       - name: Build isolated Cally.One Pages surface from tribute
