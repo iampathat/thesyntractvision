@@ -6,7 +6,7 @@
   "use strict";
   const K = root.CancerLabKnowledge;
   const Q = root.QCDSCore;
-  if (!K || !Q) throw new Error("Cancer Lab knowledge or core failed to load");
+  if (!K || !Q) throw new Error("Oncology Lab knowledge or core failed to load");
   const $ = id => document.getElementById(id);
   const element = (tag, className, value) => {
     const e = document.createElement(tag);
@@ -83,7 +83,7 @@
       section.appendChild(ul);
       content.appendChild(section);
     } else {
-      addField(content, "Reference status", "Algorithm explanation derived from the current Cancer Lab QCDS implementation; no external clinical validation is claimed.");
+      addField(content, "Reference status", "Algorithm explanation derived from the current Oncology Lab QCDS implementation; no external clinical validation is claimed.");
     }
     $("clinicalOverlay").hidden = false;
     document.body.classList.add("clinical-open");
