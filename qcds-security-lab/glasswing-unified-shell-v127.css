@@ -914,3 +914,102 @@ body.glasswing-visual.comparison-mode #app #view .glasswing-actions .button {
   body.glasswing-visual.comparison-mode #app .consumer-bottom-nav {min-height:58px!important}
   body.glasswing-visual.comparison-mode #app .consumer-bottom-nav a {min-height:45px}
 }
+
+/* v1.27.3: true transparent vector Glasswing identity.
+   This supersedes the old circular, object-fit:cover WebP badge. */
+body.glasswing-visual .glasswing-emblem {
+  display:block;
+  width:100%;
+  height:100%;
+  max-width:100%;
+  fill:none;
+  overflow:visible;
+  background:none!important;
+  border:0!important;
+  box-shadow:none!important;
+  filter:drop-shadow(0 0 5px #42d6fa4d);
+  flex-shrink:0;
+}
+body.glasswing-visual #app .sidebar .brand.glasswing-brand .glasswing-brand-mark {
+  display:flex!important;
+  align-items:center;
+  justify-content:center;
+  width:92px!important;
+  height:62px!important;
+  flex:0 0 92px!important;
+  padding:0!important;
+  overflow:visible!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+body.glasswing-visual #app .sidebar .brand.glasswing-brand .glasswing-brand-mark .gw-sidebar-emblem {
+  width:92px!important;height:62px!important;
+  object-fit:initial!important;
+  background:transparent!important;
+  filter:drop-shadow(0 0 5px #4bdfff5c);
+}
+body.glasswing-visual #app .sidebar .brand.glasswing-brand {
+  gap:10px;min-width:0;
+}
+body.glasswing-visual #app .sidebar .brand.glasswing-brand .glasswing-brand-label {
+  min-width:0;flex:1;
+}
+body.glasswing-visual #logical-lab svg.logic-brand-mark {
+  display:block!important;
+  width:65px;height:48px;
+  flex:0 0 65px;
+  min-width:0;
+  background:transparent;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  padding:0;
+  filter:drop-shadow(0 0 5px #44cefa5a);
+}
+body.glasswing-visual .logic-launch .logic-launch-mark {
+  display:flex;align-items:center;justify-content:center;
+  width:98px;min-width:98px;
+  height:72px;
+  flex:0 0 98px;
+  color:inherit;
+  background:none;
+  border:0;
+}
+body.glasswing-visual .logic-launch .logic-launch-mark .gw-launch-emblem {
+  display:block;
+  width:98px;height:72px;
+}
+body.glasswing-visual #app .consumer-empty .gw-empty-mark {
+  display:block;
+  width:108px;
+  height:72px;
+  max-width:100%;
+  margin:0 auto 16px;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+@media(max-width:1024px){
+ body.glasswing-visual #app .sidebar .brand.glasswing-brand .glasswing-brand-mark {
+   width:85px!important;
+   height:58px!important;
+   flex-basis:85px!important;
+ }
+ body.glasswing-visual #app .sidebar .brand.glasswing-brand .glasswing-brand-mark .gw-sidebar-emblem {
+   width:85px!important;height:58px!important;
+ }
+}
+@media(max-width:560px){
+ body.glasswing-visual #logical-lab svg.logic-brand-mark {
+   width:46px!important;height:34px!important;flex-basis:46px!important;
+ }
+ body.glasswing-visual .logic-launch .logic-launch-mark {
+   width:73px;min-width:73px;flex-basis:73px;height:55px;
+ }
+ body.glasswing-visual .logic-launch .logic-launch-mark .gw-launch-emblem {
+   width:73px;height:55px;
+ }
+}
