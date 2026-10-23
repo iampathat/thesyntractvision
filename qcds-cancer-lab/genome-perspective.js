@@ -21,6 +21,20 @@
   let dataset=D.generateProfiles(173,"structure");
   let anchors=[];
   let result=null,audit=null,selectedState=null,selectedPass=0;
+  let exampleId=null,exampleChanged=false;
+  const subscribers=new Set();
+  function notify(){
+    const snap=getSnapshot();
+    for(const cb of subscribers){try{cb(snap)}catch(e){if(typeof console!=="undefined")console.error("Oncology Lab example update",e)}}
+  }
+  function changed(){if(exampleId)exampleChanged=true;}
+  function getSnapshot(){return {dataset,anchors:anchors.slice(),result,audit,selectedState,exampleId,exampleChanged};}
+  function subscribe(callback){
+    if(typeof callback!=="function")throw Error("A function is required.");
+    subscribers.add(callback);
+    if(result)callback(getSnapshot());
+    return ()=>subscribers.delete(callback);
+  }
   const $=id=>document.getElementById(id);
   function e(tag,cls,value){
     const node=document.createElement(tag);
@@ -34,6 +48,7 @@
   function all(){return [...dataset.cases,...dataset.controls];}
   function percent(p){return (100*p).toFixed(2)+"%";}
   function toggleAnchor(i){
+    changed();
     if(anchors.includes(i))anchors=anchors.filter(x=>x!==i);
     else if(anchors.length<3)anchors=[...anchors,i].sort((a,b)=>a-b);
     else{$("cohortError").textContent="Max three anchors. Remove one or clear the Condition.";return;}
@@ -119,6 +134,7 @@
     });
   }
   function toggleVariant(profileIndex,locusIndex){
+    changed();
     const target=profileIndex<dataset.cases.length?dataset.cases[profileIndex]:dataset.controls[profileIndex-dataset.cases.length];
     if(target.variants.includes(locusIndex))target.variants=target.variants.filter(i=>i!==locusIndex);
     else target.variants=[...target.variants,locusIndex].sort((a,b)=>a-b);
@@ -307,6 +323,7 @@
       audit=D.stabilityAudit(D.evaluate(readSettings()));
       $("cohortError").textContent="";
       renderSelectors();showStats();renderOutcome();renderGenomes();renderFunnel();renderAudit();
+      notify();
     }catch(error){$("cohortError").textContent=error.message;}
   }
   // The cohort is a user-chosen research input, never a fixed property of QCDS.
@@ -346,12 +363,56 @@
       throw Error("Choose between 2 and 30 fictional profiles in each group for this browser example.");
     const previousCases=dataset.cases.length,previousControls=dataset.controls.length;
     const next=D.generateProfiles(seed,mode,caseCount,controlCount);
+    changed();
     dataset=next;
     populateThresholds(previousCases,previousControls);
     seedInput.value=String(seed);
     anchors=[];
     selectedState=null;
     run();
+  }
+  // Load only declarative input conditions. Every result is recalculated by
+  // the SAME production genome funnel; no answer mask is part of a preset.
+  function loadExample(config){
+    if(!config||!["structure","null"].includes(config.mode))throw Error("Unknown tutorial example.");
+    const {seed,mode,caseCount,controlCount}=config;
+    const c=Number(caseCount),k=Number(controlCount);
+    if(!Number.isInteger(c)||!Number.isInteger(k)||c<2||k<2||c>30||k>30)
+      throw Error("The guided browser examples support 2–30 synthetic profiles per group.");
+    const generated=D.generateProfiles(Number(seed),mode,c,k);
+    const minCases=Number(config.minCases),maxControls=Number(config.maxControls);
+    if(!Number.isInteger(minCases)||minCases<1||minCases>c||
+       !Number.isInteger(maxControls)||maxControls<0||maxControls>k)
+       throw Error("Example cohort thresholds do not match its sample size.");
+    const relation=config.relation||"cooccurrence";
+    if(!["cooccurrence","parity"].includes(relation))throw Error("Unknown example relation oracle.");
+    const chosen=config.anchors||[];
+    if(!Array.isArray(chosen)||chosen.length>3||new Set(chosen).size!==chosen.length||
+       chosen.some(n=>!Number.isInteger(n)||n<0||n>=10))
+       throw Error("Example contains invalid starting anchors.");
+    const passes=Number(config.maxPasses||6);
+    if(![3,6,9,12].includes(passes))throw Error("Invalid tutorial rotation count.");
+    const readoutNoise=Number(config.readoutNoise||0);
+    if(![0,.08,.15,.25].includes(readoutNoise))throw Error("Invalid tutorial noise parameter.");
+    const formerCases=dataset.cases.length,formerControls=dataset.controls.length;
+    dataset=generated;
+    anchors=chosen.slice();
+    $("cohortCaseCount").value=String(c);
+    $("cohortControlCount").value=String(k);
+    $("cohortDataSeed").value=String(seed);
+    $("cohortDataMode").value=mode;
+    $("cohortRelation").value=relation;
+    $("funnelPasses").value=String(passes);
+    $("funnelNoise").value=String(Math.round(readoutNoise*100));
+    populateThresholds(formerCases,formerControls);
+    $("cohortMinCases").value=String(minCases);
+    $("cohortMaxControls").value=String(maxControls);
+    exampleId=config.id||null;
+    exampleChanged=false;
+    selectedState=null;
+    run();
+    if(!result)throw Error("Guided example failed to compute.");
+    return getSnapshot();
   }
   function initialize(){
     if(typeof document==="undefined"||!$("cohortCombinatorial"))return;
@@ -363,14 +424,14 @@
     populateThresholds(dataset.cases.length,dataset.controls.length);
     $("cohortCaseCount").addEventListener("change",()=>{try{regenerate(0)}catch(e){$("cohortError").textContent=e.message;}});
     $("cohortControlCount").addEventListener("change",()=>{try{regenerate(0)}catch(e){$("cohortError").textContent=e.message;}});
-    $("cohortMinCases").addEventListener("change",run);
-    $("cohortMaxControls").addEventListener("change",run);
-    $("cohortRelation").addEventListener("change",run);
-    $("funnelNoise").addEventListener("change",run);
-    $("funnelPasses").addEventListener("change",run);
+    $("cohortMinCases").addEventListener("change",()=>{changed();run();});
+    $("cohortMaxControls").addEventListener("change",()=>{changed();run();});
+    $("cohortRelation").addEventListener("change",()=>{changed();run();});
+    $("funnelNoise").addEventListener("change",()=>{changed();run();});
+    $("funnelPasses").addEventListener("change",()=>{changed();run();});
     $("cohortRebuild").addEventListener("click",()=>{try{regenerate(0)}catch(e){$("cohortError").textContent=e.message;}});
     $("cohortNextDataset").addEventListener("click",()=>{try{regenerate(1)}catch(e){$("cohortError").textContent=e.message;}});
-    $("cohortClearAnchors").addEventListener("click",()=>{anchors=[];run();});
+    $("cohortClearAnchors").addEventListener("click",()=>{changed();anchors=[];run();});
     if(typeof document.querySelectorAll==="function"){
       for(const link of document.querySelectorAll('a[href="#workbench"], a[data-open-details="funnelDeepDive"]')){
         link.addEventListener("click",()=>{
@@ -382,5 +443,6 @@
     }
     run();
   }
-  return {LOCI,N,generateProfiles:D.generateProfiles,evaluateOracle:D.evaluate,initialize};
+  return {LOCI,N,generateProfiles:D.generateProfiles,evaluateOracle:D.evaluate,initialize,
+    loadExample,getSnapshot,subscribe};
 });
