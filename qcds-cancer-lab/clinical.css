@@ -772,7 +772,7 @@ body.clinical-theme .workbench {margin-top:24px}
   margin:0 0 14px;padding:13px 15px;border-radius:7px;border:1px solid #ecd6a9;
   background:#fff9eb;color:#654d30;font-size:13px;line-height:1.68;
 }
-.cohort-evidence::before {content:"HOW STRONG IS THAT CONNECTION?";display:block;
+.cohort-evidence::before {content:"HUR STARKT ÄR SAMBANDET?";display:block;
   margin-bottom:5px;font-weight:800;letter-spacing:.06em;font-size:10px;color:#87662b}
 .cohort-evidence[data-status="unvalidated"]{background:#f2f7f8;border-color:#cfe0e6;color:#466477}
 .cohort-evidence[data-status="unvalidated"]::before{color:#36697b}
