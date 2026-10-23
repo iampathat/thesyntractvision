@@ -7,29 +7,27 @@
   <title>QCDS Oncology Lab — Explore computed relationships in synthetic DNA</title>
   <meta name="description" content="Explore how QCDS rotates small logical rooms into computed probabilistic patterns across fictional DNA profiles. Research simulation only; no patient data or clinical validation." />
   <link rel="stylesheet" href="./style.css?v=20261022-inference" />
-  <link rel="stylesheet" href="./clinical.css?v=20261023-guided-examples" />
+  <link rel="stylesheet" href="./clinical.css?v=20261023-compact-header" />
 </head>
 <body class="clinical-theme">
   <main class="shell">
     <header class="clinical-header">
       <div class="clinical-brand">
-        <svg class="syntract-logo" viewBox="0 0 138 106" role="img" aria-label="Q star — The Syntract Vision">
+        <svg class="syntract-logo" viewBox="0 0 64 64" role="img" aria-label="QCDS — The Syntract Vision">
           <defs>
-            <linearGradient id="qg" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="#e9fbff"/>
-              <stop offset=".45" stop-color="#7eeeff"/>
-              <stop offset="1" stop-color="#907cff"/>
+            <linearGradient id="oncoLogoGradient" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#148e9c"/>
+              <stop offset="1" stop-color="#5074ad"/>
             </linearGradient>
-            <filter id="glow"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
           </defs>
-          <circle cx="49" cy="45" r="30" fill="none" stroke="url(#qg)" stroke-width="8"/>
-          <path d="M68 66 L94 92" fill="none" stroke="url(#qg)" stroke-width="9" stroke-linecap="round"/>
-          <g transform="translate(101 25)" filter="url(#glow)">
-            <path d="M0 -17 C2 -7 4 -3 15 0 C4 3 2 7 0 17 C-2 7 -4 3 -15 0 C-4 -3 -2 -7 0 -17Z" fill="#ffd66b"/>
-            <path d="M0 -10 L0 10 M-10 0 L10 0" stroke="#fff4bc" stroke-width="2.2" stroke-linecap="round"/>
-          </g>
+          <circle cx="26.5" cy="27" r="17.5" fill="none" stroke="url(#oncoLogoGradient)" stroke-width="6"/>
+          <path d="M39 40 L51 52" fill="none" stroke="#456eaa" stroke-width="6" stroke-linecap="round"/>
+          <path d="M49 4 L51.8 11.6 L59.5 14.3 L51.8 17 L49 24.7 L46.2 17 L38.5 14.3 L46.2 11.6 Z" fill="#e6b24d"/>
         </svg>
-        <div><span class="brand-pretitle">QCDS / THE SYNTRACT VISION</span><h1>Oncology Lab <span>· QCDS research</span></h1><p>Exploratory computational hypothesis workspace</p></div>
+        <div class="clinical-brand-copy">
+          <span class="brand-pretitle">QCDS / THE SYNTRACT VISION</span>
+          <h1 class="clinical-brand-title">Oncology Lab</h1>
+        </div>
       </div>
       <nav class="clinical-nav" aria-label="Primary">
         <a href="#genomePerspective">Explore DNA</a>
