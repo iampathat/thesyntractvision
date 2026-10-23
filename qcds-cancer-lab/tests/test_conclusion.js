@@ -16,23 +16,23 @@ function run(inputMask) {
 
 const open = SUMMARY.summarize(run("????????"), CORE.DIMENSIONS);
 assert.equal(open.category, "unresolved");
-assert(open.title.includes("No discriminating solution"));
-assert(open.lead.includes("256 compatible model states remain"));
+assert(open.title.includes("ingen särskiljande lösning"));
+assert(open.lead.includes("256 förenliga modelltillstånd återstår"));
 assert(open.detail.includes("????????"));
 assert(!open.lead.includes("one identified solution"));
-assert(open.scope.includes("not a validated finding"));
+assert(open.scope.includes("inte ett validerat fynd"));
 
 const partial = SUMMARY.summarize(run("1?11????"), CORE.DIMENSIONS);
 assert.equal(partial.category, "unresolved");
-assert(partial.lead.includes("32 compatible model states remain"));
+assert(partial.lead.includes("32 förenliga modelltillstånd återstår"));
 assert(partial.detail.includes("1?11????"));
 assert(partial.detail.includes("DNA repair"));
-assert(partial.detail.includes("did not fix any additional dimensions"));
+assert(partial.detail.includes("bestämde inga fler dimensioner"));
 
 const preset = SUMMARY.summarize(run("01101001"), CORE.DIMENSIONS);
 assert.equal(preset.category, "condition_only");
 assert(preset.lead.includes("01101001"));
-assert(preset.lead.includes("not discovered a new state"));
+assert(preset.lead.includes("varken upptäckt ett nytt tillstånd"));
 
 const synthetic = {
   inputMask: "1???????", finalLogic: "1010????",
@@ -41,16 +41,16 @@ const synthetic = {
 };
 const chosen = SUMMARY.summarize(synthetic, CORE.DIMENSIONS);
 assert.equal(chosen.category, "candidate");
-assert(chosen.title.includes("one amplified model candidate"));
+assert(chosen.title.includes("en förstärkt modellkandidat"));
 assert(chosen.lead.includes("10100101"));
 assert(chosen.lead.includes("82.00%"));
 assert(chosen.detail.includes("DNA repair = 0"));
 assert(chosen.detail.includes("Growth signal = 1"));
-assert(chosen.detail.includes("The internal numerical stability criteria were met"));
+assert(chosen.detail.includes("De interna numeriska stabilitetsvillkoren uppfylldes"));
 
 synthetic.cycles[0].parent.markedCanonical = [173,174];
 const group = SUMMARY.summarize(synthetic, CORE.DIMENSIONS);
 assert.equal(group.category, "multiple");
-assert(group.title.includes("not a unique solution"));
+assert(group.title.includes("ingen unik lösning"));
 
 console.log("Cancer Lab QCDS result-conclusion tests: PASS");
