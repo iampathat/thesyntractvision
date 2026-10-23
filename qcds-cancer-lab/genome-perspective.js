@@ -18,7 +18,7 @@
   "use strict";
   if(!D||!F)throw Error("Genomdelen och den roterande QCDS-tratten måste vara laddade.");
   const LOCI=D.LOCI,N=D.N;
-  let dataset=D.generateProfils(173,"structure");
+  let dataset=D.generateProfiles(173,"structure");
   let anchors=[];
   let result=null,audit=null,selectedState=null,selectedPass=0;
   let exampleId=null,exampleChanged=false;
@@ -88,7 +88,7 @@
       const relation=result?.settings?.relation||"cooccurrence";
       const fullMatch=selectedState!==null&&D.satisfies(selectedState,person,relation);
       const row=e("div","cohort-genome-row");
-      row.classList.add(person.group==="cases"?"cohort-fall":"cohort-jämförelse");
+      row.classList.add(person.group==="cases"?"cohort-case":"cohort-control");
       row.classList.toggle("is-full-match",fullMatch);
       row.append(e("span","cohort-person",person.id));
       const track=e("div","cohort-genome-track");
@@ -101,8 +101,8 @@
         circle.classList.toggle("has-variant",present);
         circle.classList.toggle("is-anchor",anchors.includes(i));
         circle.classList.toggle("is-hit",hit&&present&&fullMatch&&person.group==="cases");
-        circle.classList.toggle("is-jämförelse-hit",hit&&present&&fullMatch&&person.group==="controls");
-        circle.classList.toggle("is-delvis-match",hit&&present&&!fullMatch);
+        circle.classList.toggle("is-control-hit",hit&&present&&fullMatch&&person.group==="controls");
+        circle.classList.toggle("is-partial-match",hit&&present&&!fullMatch);
         circle.classList.toggle("is-pattern-missing",hit&&!present&&relation==="parity"&&fullMatch);
         circle.title=person.id+" · "+loc.label+": "+(present?"varianten finns":"varianten saknas")+". Tryck för att ändra observationen.";
         circle.setAttribute("aria-label",circle.title);
@@ -113,7 +113,7 @@
         selectedState===null?(person.group==="cases"?"fall":"jämförelse"):(fullMatch?"matchar":"delvis")));
       holder.append(row);
       const matrixRow=e("div","cohort-matrix-row");
-      matrixRow.classList.add(person.group==="cases"?"is-fall":"is-jämförelse");
+      matrixRow.classList.add(person.group==="cases"?"is-case":"is-control");
       matrixRow.append(e("span","",person.id));
       LOCI.forEach((loc,i)=>{
         const present=person.variants.includes(i);
@@ -124,7 +124,7 @@
         const component=selectedState!==null&&(selectedState&(1<<i))!==0;
         cell.classList.toggle("is-highlight",component&&present&&fullMatch&&person.group==="cases");
         cell.classList.toggle("is-pattern-missing",component&&!present&&fullMatch&&relation==="parity");
-        cell.classList.toggle("is-delvis-match",component&&present&&!fullMatch);
+        cell.classList.toggle("is-partial-match",component&&present&&!fullMatch);
         cell.title="Ändra syntetisk observation "+person.id+" / "+loc.label;
         cell.setAttribute("aria-label",person.id+" "+loc.label+": "+(present?"1":"0")+". Tryck för att ändra.");
         cell.addEventListener("click",()=>toggleVariant(profileIndex,i));
@@ -330,10 +330,10 @@
   // Refresh available counts, preserving each old threshold as a fraction
   // av its prior group size if the sample size changes.
   function populateThresholds(previousCases,previousControls){
-    const falls=dataset.cases.length,jämförelses=dataset.controls.length;
+    const cases=dataset.cases.length,controls=dataset.controls.length;
     for(const [id,n,oldN,minMode] of [
-      ["cohortMinCases",falls,previousCases,true],
-      ["cohortMaxControls",jämförelses,previousControls,false]
+      ["cohortMinCases",cases,previousCases,true],
+      ["cohortMaxControls",controls,previousControls,false]
     ]){
       const el=$(id);
       const old=Number(el.value);
@@ -348,21 +348,21 @@
       }
       el.value=String(chosen);
     }
-    if($("cohortStatsPeople"))$("cohortStatsPeople").textContent=falls+" + "+jämförelses;
+    if($("cohortStatsPeople"))$("cohortStatsPeople").textContent=cases+" + "+controls;
     if($("cohortStatsPeopleLabel"))
-      $("cohortStatsPeopleLabel").textContent="fictional falls + fictional jämförelser · adjustable example";
-    if($("cohortHeaderCount"))$("cohortHeaderCount").textContent=falls+" falls + "+jämförelses+" jämförelser";
+      $("cohortStatsPeopleLabel").textContent="fiktiva fall + fiktiva jämförelser · ändringsbart exempel";
+    if($("cohortHeaderCount"))$("cohortHeaderCount").textContent=cases+" fall + "+controls+" jämförelser";
   }
   function regenerate(delta=0){
     const seedInput=$("cohortDataSeed");
     const seed=Number(seedInput.value)+delta;
     const mode=$("cohortDataMode").value;
-    const fallCount=Number($("cohortCaseCount").value),jämförelseCount=Number($("cohortControlCount").value);
-    if(!Number.isInteger(fallCount)||!Number.isInteger(jämförelseCount)||
-       fallCount<2||jämförelseCount<2||fallCount>30||jämförelseCount>30)
+    const caseCount=Number($("cohortCaseCount").value),controlCount=Number($("cohortControlCount").value);
+    if(!Number.isInteger(caseCount)||!Number.isInteger(controlCount)||
+       caseCount<2||controlCount<2||caseCount>30||controlCount>30)
       throw Error("Välj mellan 2 och 30 påhittade profiler per grupp i detta webbläsarexempel.");
     const previousCases=dataset.cases.length,previousControls=dataset.controls.length;
-    const next=D.generateProfils(seed,mode,fallCount,jämförelseCount);
+    const next=D.generateProfiles(seed,mode,caseCount,controlCount);
     changed();
     dataset=next;
     populateThresholds(previousCases,previousControls);
@@ -375,11 +375,11 @@
   // the SAME production genome funnel; no answer mask is part av a preset.
   function loadExample(config){
     if(!config||!["structure","null"].includes(config.mode))throw Error("Okänt handledningsexempel.");
-    const {seed,mode,fallCount,jämförelseCount}=config;
-    const c=Number(fallCount),k=Number(jämförelseCount);
+    const {seed,mode,caseCount,controlCount}=config;
+    const c=Number(caseCount),k=Number(controlCount);
     if(!Number.isInteger(c)||!Number.isInteger(k)||c<2||k<2||c>30||k>30)
       throw Error("De guidade exemplen stöder 2–30 syntetiska profiler per grupp.");
-    const generated=D.generateProfils(Number(seed),mode,c,k);
+    const generated=D.generateProfiles(Number(seed),mode,c,k);
     const minCases=Number(config.minCases),maxControls=Number(config.maxControls);
     if(!Number.isInteger(minCases)||minCases<1||minCases>c||
        !Number.isInteger(maxControls)||maxControls<0||maxControls>k)
@@ -443,6 +443,6 @@
     }
     run();
   }
-  return {LOCI,N,generateProfils:D.generateProfils,evaluateOracle:D.evaluate,initialize,
+  return {LOCI,N,generateProfiles:D.generateProfiles,evaluateOracle:D.evaluate,initialize,
     loadExample,getSnapshot,subscribe};
 });
