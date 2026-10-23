@@ -296,7 +296,7 @@
       const b=e("button","cohort-alt",locusNames(alt.loci));b.type="button";
       b.setAttribute("aria-pressed",selectedState===alt.state?"true":"false");
       b.classList.toggle("is-selected",selectedState===alt.state);
-      b.addEventListener("click",()=>{selectedState=alt.state;renderOutcome();renderGenomes();renderFunnel();});
+      b.addEventListener("click",()=>{selectedState=alt.state;renderOutcome();renderGenomes();renderFunnel();notify();});
       alts.append(b);
     }
     const title=$("cohortAlternativeTitle");
