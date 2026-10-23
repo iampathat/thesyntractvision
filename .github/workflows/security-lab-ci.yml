@@ -1,0 +1,46 @@
+name: Security Lab — independent checks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "qcds-security-lab/**"
+      - ".github/workflows/security-lab-ci.yml"
+  pull_request:
+    paths:
+      - "qcds-security-lab/**"
+      - ".github/workflows/security-lab-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-lab-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  security-validation:
+    name: Project Glasswing · engine, PDF, UI and offline package
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: qcds-security-lab
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install Security Lab dependencies
+        run: npm ci --ignore-scripts
+      - name: Validate inference engine, GUI and document generation
+        run: npm test
+      - name: Build publishable Security Lab package
+        run: node scripts/build-web.mjs --out "${{ runner.temp }}/qcds-security-lab"
+      - name: Verify packaged app includes Glasswing's offline assets
+        run: |
+          test -s "${{ runner.temp }}/qcds-security-lab/index.html"
+          test -s "${{ runner.temp }}/qcds-security-lab/glasswing-emblem.mjs"
+          test -s "${{ runner.temp }}/qcds-security-lab/offline-assets.json"
+          test -s "${{ runner.temp }}/qcds-security-lab/sw.js"
