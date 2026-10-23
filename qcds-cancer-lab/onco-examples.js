@@ -110,7 +110,7 @@ function initialize(){
       "Det prövar ett blandat 0/1-mönster med udda antal närvarande varianter. Ingen specifik vinnarkombination är inmatad.":
       "Det prövar samförekomst på olika DNA-positioner. Vilka positioner som väljs är inte förutbestämt.");
   explainRow(sr,4,"Vad händer när du kör?",
-    "Fjorton? Nej: 16 små fyrdimensionsrum beräknas per rotation. Fyra grupper blir ett sammanbundet resultat.");
+    "Sexton små fyrdimensionsrum beräknas per rotation. Fyra grupper blir ett sammanbundet resultat.");
   setupPanel.append(sr);
   aside(setupPanel,"Tryck på den vanliga knappen ”Hitta DNA-samband” nedanför för att gå till Resultat. "+diff);
 
