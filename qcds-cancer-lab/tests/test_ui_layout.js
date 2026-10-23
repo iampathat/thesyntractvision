@@ -28,7 +28,7 @@ assert(at('id="cohortGroverStats"')>at('id="cohortChecks"'),"full numerical stat
 assert(/<details[^>]*id="funnelDeepDive"/.test(html),"funnel must remain accessible in the collapsed technical view");
 assert(/<details[^>]*id="cohortAdvancedSettings"/.test(html),"input options remain accessible");
 assert(/<details[^>]*id="legacyWorkbenchDetails"/.test(html),"legacy 8-bit engine remains accessible");
-assert(html.includes("invented data")&&html.includes("not</strong> ten sequenced human genomes")&&html.includes("medical test"),"prominent synthetic-data guardrail");
+assert(html.includes("påhittade data")&&html.includes("inte</strong> tio sekvenserade mänskliga genom")&&html.includes("medicinskt test"),"prominent synthetic-data guardrail");
 assert(!html.includes("8 symbolic dimensions</strong></div>"),"top summary must not mislabel main genomics tool");
 assert(html.includes('genome-funnel.js?v='),"the numerical funnel remains loaded");
 assert(at('src="./genome-discovery.js')<at('src="./genome-funnel.js'),"correct engine loading order");
