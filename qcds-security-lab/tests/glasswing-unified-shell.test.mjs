@@ -7,13 +7,13 @@ const read=name=>readFileSync(new URL('../'+name,import.meta.url),'utf8');
 const html=read('index.html'), app=read('app-stage-v118.js'), css=read('glasswing-unified-shell-v127.css');
 const worker=read('sw.js'), intro=read('glasswing-screen-v125.js'), lab=read('logical-lab.js'), install=read('app-install.js');
 test('one authoritative visual layer loads AFTER all inherited styles',()=>{
-  const last=html.indexOf('glasswing-unified-shell-v127.css?v=1.27.2');
+  const last=html.indexOf('glasswing-unified-shell-v127.css?v=1.27.3');
   const prior=html.indexOf('glasswing-screen-v125.css');
   assert.ok(prior>0&&last>prior);
   assert.match(worker,/glasswing-unified-shell-v127\.css/);
-  assert.match(html,/data-release="1\.27\.2"/);
-  assert.match(worker,/const VERSION = '1\.27\.2'/);
-  assert.match(html,/app-stage-v118\.js\?v=1\.27\.2/);
+  assert.match(html,/data-release="1\.27\.3"/);
+  assert.match(worker,/const VERSION = '1\.27\.3'/);
+  assert.match(html,/app-stage-v118\.js\?v=1\.27\.3/);
 });
 test('desktop and Fold/mobile have explicit non-overflowing widths',()=>{
   assert.match(css,/margin-left:242px!important/);
@@ -56,7 +56,7 @@ test('intro plays only by first entry or request; update cannot strand it over a
   assert.doesNotMatch(install,/localStorage\.clear|indexedDB\.deleteDatabase/);
 });
 test('dimension workbench is branded as Project Glasswing, not a second Q-star product',()=>{
-  assert.match(lab,/class="logic-brand-mark"/);
+  assert.match(lab,/glasswingEmblem\('logic-brand-mark'\)/);
   assert.doesNotMatch(lab,/class="logic-brand">Q<span>★<\/span>/);
   assert.match(css,/#logical-lab \.logic-brand-mark/);
 });

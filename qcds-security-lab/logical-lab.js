@@ -1,4 +1,5 @@
 import { saveDeviceFile } from "./device-files.js?v=1.0.0";
+import { glasswingEmblem } from './glasswing-emblem.mjs?v=1.27.3';
 // QCDS by Patrik Sundblom. Assisted by ChatGPT (OpenAI). LICENSE.md.
 import {
   normalizeResearch,
@@ -22,7 +23,7 @@ const percent = (p) => `${(p * 100).toFixed(2)}%`;
 const validStates = ["ACTIVE", "CONDITIONAL"];
 
 export function researchLaunch(system, compact = false) {
-  return `<section class="logic-launch ${compact ? "compact-launch" : "panel"}"><div class="logic-launch-mark" aria-hidden="true">Q<span>★</span></div><div><span class="eyebrow">DIMENSIONAL INFERENCE · LIVE</span><h2>Change an assumption. Follow the consequences.</h2><p>Walk the logical space of ${esc(system)}. Challenge a control, rotate the dimensions and see which paths still have a basis.</p></div><button class="button primary" data-open-logical>Run dimensional inference <span aria-hidden="true">↗</span></button></section>`;
+  return `<section class="logic-launch ${compact ? "compact-launch" : "panel"}"><div class="logic-launch-mark" aria-hidden="true">${glasswingEmblem('gw-launch-emblem')}</div><div><span class="eyebrow">DIMENSIONAL INFERENCE · LIVE</span><h2>Change an assumption. Follow the consequences.</h2><p>Walk the logical space of ${esc(system)}. Challenge a control, rotate the dimensions and see which paths still have a basis.</p></div><button class="button primary" data-open-logical>Run dimensional inference <span aria-hidden="true">↗</span></button></section>`;
 }
 
 export function createLogicalLab({
@@ -85,7 +86,7 @@ export function createLogicalLab({
   }
   function shell() {
     const vector = focused();
-    dialog.innerHTML = `<header class="logic-header"><img class="logic-brand-mark" src="./glasswing-mark.webp?v=1.18.0" alt="Project Glasswing" width="54" height="54"><div><span class="eyebrow">QCDS DIMENSION ENGINE</span><h2 id="logical-title">${esc(model.input.name)}</h2><p>Same system · return to your current lab step</p></div><button class="button" data-logic="close" aria-label="Close dimensional investigation">Back to lab <span aria-hidden="true">×</span></button></header><div class="logic-scroll"><section class="logic-focus"><div><span class="eyebrow">THE CLAIM UNDER INVESTIGATION</span><h3>Which assumptions keep this path alive?</h3><p>QCDS carries the same claim through conditions, oracles, recursive challenges and evidence.</p></div><label>Attack vector<select id="logic-vector">${listVectors()
+    dialog.innerHTML = `<header class="logic-header">${glasswingEmblem('logic-brand-mark')}<div><span class="eyebrow">QCDS DIMENSION ENGINE</span><h2 id="logical-title">${esc(model.input.name)}</h2><p>Same system · return to your current lab step</p></div><button class="button" data-logic="close" aria-label="Close dimensional investigation">Back to lab <span aria-hidden="true">×</span></button></header><div class="logic-scroll"><section class="logic-focus"><div><span class="eyebrow">THE CLAIM UNDER INVESTIGATION</span><h3>Which assumptions keep this path alive?</h3><p>QCDS carries the same claim through conditions, oracles, recursive challenges and evidence.</p></div><label>Attack vector<select id="logic-vector">${listVectors()
       .map(
         (v) =>
           `<option value="${v.id}" ${v.id === config.focus ? "selected" : ""}>${v.id} · ${v.title} · ${v.variantLabel} · ${v.targetLabel}</option>`,

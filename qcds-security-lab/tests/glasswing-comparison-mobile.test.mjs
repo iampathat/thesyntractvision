@@ -44,8 +44,8 @@ test('Honest comparison caveat remains visible and explicit',()=>{
  assert.match(comparison,/more candidate paths do not prove vulnerability/);
 });
 test('Published HTML and service worker force updated design bundle',()=>{
- assert.match(html,/data-release="1\.27\.2"/);
- assert.match(html,/glasswing-unified-shell-v127\.css\?v=1\.27\.2/);
- assert.match(html,/app-stage-v118\.js\?v=1\.27\.2/);
- assert.match(sw,/const VERSION = '1\.27\.2'/);
+ assert.match(html,/data-release="1\.27\.3"/);
+ assert.match(html,/glasswing-unified-shell-v127\.css\?v=1\.27\.3/);
+ assert.match(html,/app-stage-v118\.js\?v=1\.27\.3/);
+ assert.match(sw,/const VERSION = '1\.27\.3'/);
 });
