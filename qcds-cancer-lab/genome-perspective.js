@@ -162,11 +162,35 @@
       card.append(e("small","",label),e("strong","",value));panel.append(card);
     }
   }
-  function miniBars(values,cls){
-    const el=e("div",cls),max=Math.max(1e-12,...values);
+  // Present all computed probabilities, without changing any oracle result.
+  // Equal-rank bins summarize the complete positive-support distribution, rather
+  // than rendering only its twelve highest (possibly tied) states.
+  function rankedDistributionBins(probabilities,count=15){
+    const ranked=probabilities.filter(p=>p>0).slice().sort((a,b)=>b-a);
+    if(!ranked.length)return [];
+    const n=Math.min(count,ranked.length),bins=[];
+    for(let i=0;i<n;i++){
+      const start=Math.floor(i*ranked.length/n),end=Math.floor((i+1)*ranked.length/n);
+      const group=ranked.slice(start,end);
+      bins.push({start:start+1,end,count:group.length,
+        mean:group.reduce((a,b)=>a+b,0)/group.length,
+        mass:group.reduce((a,b)=>a+b,0),
+        max:group[0],min:group.at(-1)});
+    }
+    return bins;
+  }
+  function miniBars(values,cls,scale=1,tooltips=[]){
+    const el=e("div",cls);
+    el.setAttribute("role","img");
+    el.setAttribute("aria-label",cls==="funnel-fold-spark"?
+      "Medelsannolikhet för hela den rangordnade fördelningen i likstora grupper; samma skala i alla fyra diagram":
+      "Sannolikheten för alla sexton lokala tillstånd på en skala från noll till hundra procent");
     values.forEach((p,i)=>{
-      const bar=e("i","");bar.style.height=Math.max(3,100*p/max).toFixed(1)+"%";
-      bar.title="Index "+i+": "+percent(p);el.append(bar);
+      const bar=e("i","");
+      // Fixed, explicit y-axis: never rescale a flat 6.25% lane or each folded group to 100%.
+      bar.style.height=Math.max(0,Math.min(100,100*p/scale)).toFixed(2)+"%";
+      bar.title=tooltips[i]||"Tillstånd "+i+": "+percent(p);
+      el.append(bar);
     });
     return el;
   }
@@ -185,33 +209,72 @@
     $("funnelPassDescription").textContent="Rotation "+pass.index+"/"+result.rotations+
       " · 16 separata fyrpositionsfördelningar · 4 grupper med 4 rum · 1 sammanbunden tiodimensionell fördelning. Entropi: "+
       pass.alignment.boundEntropyBits.toFixed(3)+" bits.";
+    const markedLanes=pass.lanes.filter(l=>l.marks>0).length;
+    local.append(e("p","funnel-reading-note",markedLanes+" av 16 lokala rum har minst en orakelträff. "+
+      (markedLanes===0?"Inget rum kan förstärka något i denna rotation.":
+       "Övriga rum lämnar bara en jämn grundfördelning och ger ingen egen urvalssignal.")));
     for(const lane of pass.lanes){
       const card=e("article","funnel-lane-card");
       card.append(e("strong","","L"+String(lane.index+1).padStart(2,"0")+" · "+lane.window.map(i=>LOCI[i].label).join(" / ")));
-      card.append(miniBars(lane.likelihood,"funnel-lane-spark"));
-      card.append(e("small","","16 tillstånd · M="+lane.marks+" · Grover m="+lane.iterations+" · massa "+percent(lane.markedMass)));
+      if(lane.marks===0){
+        card.classList.add("funnel-lane-neutral");
+        card.append(e("div","funnel-lane-nohit","Ingen lokal träff · 16 lika sannolika tillstånd (6,25 % var)"));
+      }else{
+        card.classList.add("funnel-lane-active");
+        card.append(miniBars(lane.likelihood,"funnel-lane-spark",1,
+          lane.likelihood.map((p,i)=>"Tillstånd "+i+": "+percent(p)+" av alla 16 tillstånd")));
+      }
+      card.append(e("small","",lane.marks===0?
+        "M=0 · Grover m=0 · ingen förstärkning":
+        "M="+lane.marks+" · Grover m="+lane.iterations+" · markerad massa "+percent(lane.markedMass)+
+        " · staplarnas skala 0–100 %"));
       local.append(card);
     }
-    for(const g of pass.groups){
+    // Show ALL candidate probabilities: equally sized bins by probability rank.
+    // A shared vertical axis allows F1–F4 to be compared meaningfully.
+    const bins=pass.groups.map(g=>rankedDistributionBins(g.posterior));
+    const sharedScale=Math.max(1e-12,...bins.flatMap(group=>group.map(b=>b.mean)));
+    groups.append(e("p","funnel-reading-note",
+      "Hela kandidatfördelningen visas i "+bins[0].length+" ranggrupper ("+
+      bins[0].map(b=>b.count).join("/")+" kandidater). Gemensam skala: 0–"+
+      percent(sharedScale)+" i medelsannolikhet per kandidat. Ordningen är högst till lägst."));
+    for(const [j,g] of pass.groups.entries()){
       const card=e("article","funnel-fold-card");
       card.append(e("strong","","F"+(g.index+1)+" · L"+g.memberIndices.map(i=>i+1).join(", L")));
-      const vals=g.posterior.filter(p=>p>0).sort((a,b)=>b-a).slice(0,12);
-      card.append(miniBars(vals,"funnel-fold-spark"));
-      card.append(e("small","","Gemensam tiodimensionell fördelning · entropi "+g.entropyBits.toFixed(3)+" bits"));
+      const groupBins=bins[j];
+      card.append(miniBars(groupBins.map(b=>b.mean),"funnel-fold-spark",sharedScale,
+        groupBins.map(b=>"Rang "+b.start+"–"+b.end+": medel "+percent(b.mean)+
+          " per kandidat; tillsammans "+percent(b.mass))));
+      const topProbability=Math.max(...g.posterior);
+      const spread=Math.round(2**g.entropyBits);
+      card.append(e("small","","Entropi "+g.entropyBits.toFixed(3)+" bitar · motsvarar ungefär "+
+        spread+" jämnt fördelade kandidater · högsta enskilda "+percent(topProbability)));
       groups.append(card);
     }
     const top=result.ranked.slice(0,12);
+    dist.append(e("p","funnel-reading-note",
+      "FÖRE överordnad Grover: sannolikheten är kandidatens andel av hela fördelningen över "+
+      result.domainCount+" tillåtna tillstånd. Stapeln har en absolut skala 0–100 %."+
+      " Kandidaterna godkänns genom klassisk kontroll av samtliga "+
+      result.evaluatedCount+" kombinationer mot samma syntetiska data; tratten rangordnar sedan dem."));
     if(!top.length)dist.append(e("p","funnel-empty","Inget mönster uppfyller det slutliga oraklet. Tratten hittar inte på en markering."));
     for(const [i,item] of top.entries()){
       const btn=e("div","funnel-prob-row");
       btn.classList.toggle("is-selected",selectedState===item.state);
       btn.append(e("span","funnel-prob-name","#"+(i+1)+" · "+locusNames(item.loci)));
       const track=e("span","funnel-prob-track"),bar=e("i","");
-      bar.style.width=Math.max(3,100*item.foldedProbability/(top[0].foldedProbability||1)).toFixed(1)+"%";
+      bar.style.width=(100*item.foldedProbability).toFixed(4)+"%";
+      track.setAttribute("role","img");
+      track.setAttribute("aria-label","Absolut sannolikhet "+percent(item.foldedProbability)+" av hela den sammanbundna fördelningen");
       track.append(bar);btn.append(track,e("b","",percent(item.foldedProbability)));
-      // Visual probability bars only: candidate selection lives once, in the result panel.
+      // A visually short bar is intended: this is NOT a normalized top-rank bar.
       dist.append(btn);
     }
+    if(top.length)dist.append(e("p","funnel-parent-note",
+      "EFTER överordnad Grover: den markerade kandidatgruppens beräknade massa är "+
+      percent(result.parentGrover.markedMass)+
+      ". Detta är en annan fördelning och får inte förväxlas med "+percent(top[0].foldedProbability)+
+      " före förstärkning – ingetdera är sannolikheten för cancer."));
     const last=result.rounds.at(-1).alignment;
     const messages=[
       ["Bevarade sannolikheter","Alla 16 sannolikheter från varje fyrbitarsrum förs vidare, inte bara det högst rankade tillståndet."],
@@ -443,6 +506,6 @@
     }
     run();
   }
-  return {LOCI,N,generateProfiles:D.generateProfiles,evaluateOracle:D.evaluate,initialize,
+  return {LOCI,N,rankedDistributionBins,generateProfiles:D.generateProfiles,evaluateOracle:D.evaluate,initialize,
     loadExample,getSnapshot,subscribe};
 });
