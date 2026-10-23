@@ -11,6 +11,7 @@ import {
   validateProject,
   markdown,
 } from "./engine.mjs?v=1.14.1";
+import { glasswingEmblem } from "./glasswing-emblem.mjs?v=1.27.3";
 import { createLogicalLab, researchLaunch } from "./logical-lab.js?v=1.27.0";
 import { runGlasswing } from "./glasswing.mjs?v=1.14.1";
 import { downloadSecurityPdf, downloadSystemGuidePdf } from "./report-export.js?v=1.26.6";
@@ -370,7 +371,7 @@ function shell() {
     ? `<div class="nav-example-loaded"><span>WORKED EXAMPLE LOADED</span><b>${esc(project().input.name)}</b><small>One case · every screen below</small><a href="#examples">Choose another example →</a></div>`
     : `<a class="nav-example-picker" href="#examples">${icon("play")}<span class="nav-copy"><b>Worked examples</b><em>Load a finished case through the whole lab</em></span></a>`;
   return `<aside id="site-nav" ${state.mobile ? 'role="dialog" aria-modal="true" aria-label="Navigation"' : ""} class="sidebar ${state.mobile ? "open" : ""}">
-    <a class="brand glasswing-brand" href="#home" aria-label="QCDS Security Lab home"><span class="glasswing-brand-mark"><img src="./glasswing-mark.webp?v=1.18.0" alt="" width="160" height="76"></span><span class="glasswing-brand-label">QCDS<span class="brand-sub">SECURITY LAB</span></span></a>
+    <a class="brand glasswing-brand" href="#home" aria-label="QCDS Security Lab home"><span class="glasswing-brand-mark">${glasswingEmblem('gw-sidebar-emblem')}</span><span class="glasswing-brand-label">QCDS<span class="brand-sub">SECURITY LAB</span></span></a>
     <div class="workspace-label">MENU <button class="icon-button menu-close" data-action="close-menu" aria-label="Close navigation">${icon("close")}</button></div>
     <nav aria-label="Security Lab navigation">
       <section class="gw-nav-section" aria-labelledby="gw-nav-workspace-title">
