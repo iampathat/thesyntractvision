@@ -21,7 +21,7 @@
     if (!/^[01?]{8}$/.test(mask)) return "Ogiltig mask. Ange exakt åtta tecken med värdena 0 / 1 / ?.";
     const bindings = [];
     for (let i = 0; i < mask.length; i++) {
-      if (mask[i] !== "?") bindings.push("P" + (i + 1) + " = " + mask[i] + " (oroterade indata: " + Q.DIMENSIONS[i] + ")");
+      if (mask[i] !== "?") bindings.push("P" + (i + 1) + " = " + mask[i] + " (oroterade indata: " + K.dimensions[i]?.name || Q.DIMENSIONS[i] + ")");
     }
     return bindings.length ? bindings.join("; ") : "Alla åtta orakelpositioner är öppna. Ingen position är låst.";
   }
