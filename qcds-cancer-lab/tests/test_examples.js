@@ -98,7 +98,7 @@ assert(pages.engine.children[0].children.length>3);
 assert(elements.cohortEvidence.textContent.includes("399"));
 const earlier=pages.findings.children[0].children.map(x=>x.textContent).join(" ");
 elements.cohortMinCases.value="8";
-for(const cb of elements.cohortMinCases.events.change||[])cb();
+if(elements.cohortMinCases.events.change)elements.cohortMinCases.events.change();
 snap=api.getSnapshot();
 assert.equal(snap.exampleChanged,true);
 assert(pages.setup.children[0].children.length>3);
