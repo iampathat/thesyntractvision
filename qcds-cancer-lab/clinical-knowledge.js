@@ -57,26 +57,26 @@
 };
   const dimensions=[
   {
-    "name": "Mutation load",
-    "type": "Genomic burden",
-    "summary": "Burden and pattern of somatic alterations in tumor material; not simply ‘a mutation is present’.",
-    "biology": "Tumor mutational burden (TMB) is commonly measured as somatic variants per megabase of examined DNA, subject to assay definition, filtering and sample quality. Mutation signatures and individual drivers are distinct from total burden.",
-    "genes": "No single defining gene. Context-dependent examples: POLE, POLD1 and DNA mismatch-repair genes MLH1, MSH2, MSH6, PMS2.",
-    "evidence": "Validated sequencing assay, variant calling method, specimen quality, tumor purity, units, and tumor-type-specific interpretation.",
-    "caution": "This demo has no raw sequence, assay cutoff or TMB calibration. Assigning 1/0 cannot establish high/low TMB or imply sensitivity to immunotherapy.",
+    "name": "Mutationsbörda",
+    "type": "Genomisk mutationsbelastning",
+    "summary": "Mängden och mönstret av somatiska förändringar i en tumör; inte bara om en mutation finns eller saknas.",
+    "biology": "Tumörmutationsbörda (TMB) anges ofta som antalet somatiska varianter per megabas undersökt DNA. Resultatet påverkas av mätmetod, filtrering och provkvalitet. Mutationssignaturer och enskilda drivande förändringar skiljer sig från den totala bördan.",
+    "genes": "Ingen enskild gen definierar detta. Exempel beroende på sammanhang: POLE, POLD1 och reparationsgenerna MLH1, MSH2, MSH6 och PMS2.",
+    "evidence": "Validerad sekvenseringsmetod, metod för variantbestämning, provkvalitet, tumörandel, enheter och tolkning för aktuell tumörtyp.",
+    "caution": "Exemplet saknar råsekvens, gränsvärde och TMB-kalibrering. Ett symboliskt 1/0 visar inte hög eller låg TMB och säger inget säkert om effekt av immunterapi.",
     "sourceKeys": [
       "biomarkers",
       "mmr"
     ]
   },
   {
-    "name": "DNA repair",
-    "type": "DNA damage response",
-    "summary": "Ability of a defined DNA repair pathway to repair specified classes of damage.",
-    "biology": "Multiple repair systems exist. Homologous recombination repair (HRR), mismatch repair (MMR), nucleotide-excision repair and others cannot be collapsed into one clinically equivalent axis without a stated construct.",
-    "genes": "BRCA1, BRCA2, PALB2, RAD51C/RAD51D (HRR examples); MLH1, MSH2, MSH6 and PMS2 (MMR examples).",
-    "evidence": "Tumor and/or germline variant annotation, copy-number/second-hit status, HRD or MMR assay where appropriate, and tumor-context interpretation.",
-    "caution": "A BRCA variant, an HRD score and functional HRR deficiency are different pieces of evidence. This binary state is not a molecular diagnosis.",
+    "name": "DNA-reparation",
+    "type": "Svar på DNA-skador",
+    "summary": "Förmågan hos en definierad reparationsmekanism att åtgärda särskilda slags DNA-skador.",
+    "biology": "Det finns flera skilda DNA-reparationssystem. Homolog rekombinationsreparation (HRR), felparningsreparation (MMR) och nukleotidexcision kan inte behandlas som en enda kliniskt likvärdig egenskap utan en uttrycklig definition.",
+    "genes": "Exempel inom HRR: BRCA1, BRCA2, PALB2, RAD51C och RAD51D. Exempel inom MMR: MLH1, MSH2, MSH6 och PMS2.",
+    "evidence": "Tolkade tumör- och/eller ärftliga varianter, kopietal och eventuell andra träff, relevanta HRD- eller MMR-analyser samt tumörspecifik kontext.",
+    "caution": "En BRCA-variant, ett HRD-värde och verkligt nedsatt HRR-funktion är olika slags evidens. Den symboliska biten är ingen molekylär diagnos.",
     "sourceKeys": [
       "brca",
       "hrr",
@@ -84,13 +84,13 @@
     ]
   },
   {
-    "name": "Growth signal",
-    "type": "Oncogenic signaling",
-    "summary": "Downstream proliferative signaling from receptor and intracellular signaling networks.",
-    "biology": "EGFR/HER2, RAS–RAF–MEK–ERK and PI3K–AKT–mTOR are related but distinguishable mechanisms; alterations are highly context and variant specific.",
-    "genes": "EGFR, ERBB2 (HER2), KRAS, NRAS, BRAF, PIK3CA, AKT1, PTEN, MTOR.",
-    "evidence": "Gene and variant context, amplification/copy number, expression, phosphoprotein measurements and pathway functional evidence when available.",
-    "caution": "Expression or mutation does not alone quantify pathway activity, drug dependence or treatment selection.",
+    "name": "Tillväxtsignalering",
+    "type": "Onkogen signalering",
+    "summary": "Signaler som driver celldelning via receptorer och intracellulära nätverk.",
+    "biology": "EGFR/HER2, RAS–RAF–MEK–ERK och PI3K–AKT–mTOR hänger samman men är skilda mekanismer. Förändringarnas betydelse beror på variant, tumörtyp och biologiskt sammanhang.",
+    "genes": "EGFR, ERBB2 (HER2), KRAS, NRAS, BRAF, PIK3CA, AKT1, PTEN och MTOR.",
+    "evidence": "Gen och variant, genamplifiering eller kopietal, uttryck, fosfoproteiner och funktionella mätningar av signalvägen där sådana finns.",
+    "caution": "Uttryck eller mutation räcker inte för att kvantifiera signalvägens aktivitet, läkemedelsberoende eller behandlingsval.",
     "sourceKeys": [
       "egfr",
       "her2",
@@ -98,39 +98,39 @@
     ]
   },
   {
-    "name": "Apoptosis escape",
-    "type": "Cell-death regulation",
-    "summary": "Reduced susceptibility to regulated cell death (apoptosis) in a defined biological context.",
-    "biology": "The balance of pro- and anti-apoptotic signaling depends on TP53 regulation, BCL-2 family proteins and upstream stress or receptor signaling. Assays are not interchangeable.",
-    "genes": "TP53, BCL2, BCL2L1, MCL1, BAX, BAK1 and CASP genes are illustrative pathway participants.",
-    "evidence": "Tumor genotype, relevant protein activity, functional apoptosis assays, context and perturbation response.",
-    "caution": "No apoptotic phenotype was measured here; 0 or 1 represents a symbolic modeling assumption only.",
+    "name": "Undvikande av apoptos",
+    "type": "Reglering av celldöd",
+    "summary": "Minskad känslighet för reglerad celldöd (apoptos) i ett bestämt biologiskt sammanhang.",
+    "biology": "Balansen mellan pro- och antiapoptotiska signaler beror bland annat på TP53, BCL-2-proteiner, cellstress och receptorsignalering. Olika mätmetoder är inte utbytbara.",
+    "genes": "Exempel på deltagande gener: TP53, BCL2, BCL2L1, MCL1, BAX, BAK1 och CASP-gener.",
+    "evidence": "Tumörens genotyp, relevant proteinaktivitet, funktionella apoptostester, biologiskt sammanhang och svar på påverkan.",
+    "caution": "Ingen apoptotisk egenskap har mätts här. 0 eller 1 är enbart ett antagande i den symboliska modellen.",
     "sourceKeys": [
       "apoptosis",
       "biomarkers"
     ]
   },
   {
-    "name": "Immune evasion",
-    "type": "Tumor–immune interface",
-    "summary": "Mechanisms reducing immune recognition, infiltration, activation or effector response.",
-    "biology": "PD-1/PD-L1 checkpoint interaction is one mechanism among antigen-presentation changes, immunosuppressive signaling and microenvironmental effects.",
-    "genes": "CD274 (PD-L1), PDCD1 (PD-1), B2M and HLA class I loci are mechanistic examples, not a mandatory clinical panel.",
-    "evidence": "Tumor-type-appropriate immunohistochemistry and scoring, immune context, sequencing, and tumor microenvironment measurements.",
-    "caution": "PD-L1 level does not equal a full immune-evasion state, and its meaning differs by tumor and assay.",
+    "name": "Immunflykt",
+    "type": "Samspel mellan tumör och immunförsvar",
+    "summary": "Mekanismer som minskar immunförsvarets förmåga att upptäcka, nå eller angripa en tumör.",
+    "biology": "PD-1/PD-L1-systemet är en mekanism bland flera. Även antigenpresentation, immundämpande signaler och tumörens mikromiljö spelar roll.",
+    "genes": "Exempel: CD274 (PD-L1), PDCD1 (PD-1), B2M och HLA klass I. Detta är ingen obligatorisk klinisk genpanel.",
+    "evidence": "Tumöranpassad immunhistokemi och poängsättning, immunologiskt sammanhang, sekvensering och mätningar av tumörens mikromiljö.",
+    "caution": "PD-L1-nivån beskriver inte ensam immunflykt. Tolkningen varierar mellan tumörer och metoder.",
     "sourceKeys": [
       "pdl1",
       "biomarkers"
     ]
   },
   {
-    "name": "Target engagement",
-    "type": "Pharmacology / pharmacodynamics",
-    "summary": "Whether an intervention reaches and engages a specific molecular target in the relevant compartment.",
-    "biology": "An actionable gene alteration, drug exposure, target occupancy and measurable pathway inhibition are four distinct concepts.",
-    "genes": "Depends on the intervention. Examples of targets include EGFR, HER2, PI3K or PARP; these are not one equivalent measurement.",
-    "evidence": "Assay of exposure, occupancy or suitable pharmacodynamic marker, time since dose, target and tissue context.",
-    "caution": "No drug, dose, concentration or pharmacodynamic assay is entered in this demo. A 1 does not demonstrate drug effect.",
+    "name": "Målbindning",
+    "type": "Farmakologi / farmakodynamik",
+    "summary": "Om en åtgärd når fram till och binder sitt avsedda molekylära mål i rätt vävnad eller cellfack.",
+    "biology": "En behandlingsbar genförändring, exponering för ett läkemedel, bindning till målet och mätbar hämning av en signalväg är fyra olika saker.",
+    "genes": "Beror på åtgärden. Exempel på mål: EGFR, HER2, PI3K och PARP; de är inte ett enda likvärdigt mätvärde.",
+    "evidence": "Mätning av exponering, målbindning eller lämplig farmakodynamisk markör, tid sedan dosering samt vävnads- och målkontext.",
+    "caution": "Inga läkemedel, doser, koncentrationer eller farmakodynamiska tester finns i exemplet. En etta bevisar ingen läkemedelseffekt.",
     "sourceKeys": [
       "biomarkers",
       "egfr",
@@ -138,26 +138,26 @@
     ]
   },
   {
-    "name": "Resistance",
-    "type": "Treatment response / adaptation",
-    "summary": "Failure of response from the outset or loss of benefit after an earlier response, for a specified therapy.",
-    "biology": "Resistance may involve on-target changes, alternative signaling, phenotypic adaptation or immune mechanisms. Definitions depend on treatment modality and disease context.",
-    "genes": "Examples only: EGFR or downstream RAS/PI3K pathway alterations; mechanisms differ substantially by drug and tumor.",
-    "evidence": "Drug/regimen and timeline, serial assessment, relevant biopsy or ctDNA where clinically indicated and properly interpreted.",
-    "caution": "Without a treatment, time course and response criterion, a binary ‘resistance’ dimension cannot be interpreted clinically.",
+    "name": "Behandlingsresistens",
+    "type": "Behandlingssvar / anpassning",
+    "summary": "Uteblivet svar från början eller förlorad effekt efter ett tidigare svar på en bestämd behandling.",
+    "biology": "Resistens kan bero på förändringar i målmolekylen, alternativa signalvägar, cellanpassning eller immunologiska mekanismer. Definitionen beror på behandling och sjukdom.",
+    "genes": "Bara exempel: EGFR och förändringar nedströms i RAS/PI3K-system. Mekanismerna skiljer sig mellan läkemedel och tumörtyper.",
+    "evidence": "Behandling och tidslinje, upprepade utvärderingar samt relevanta biopsier eller ctDNA där sådana är motiverade och rätt tolkade.",
+    "caution": "Utan behandling, tidsförlopp och fastställda svarskriterier kan en binär resistensdimension inte tolkas kliniskt.",
     "sourceKeys": [
       "sitc",
       "biomarkers"
     ]
   },
   {
-    "name": "Cell process",
-    "type": "Composite biological state",
-    "summary": "A broad placeholder for cell-cycle, metabolism, stress, chromatin and phenotype programs.",
-    "biology": "Cell process is not one defined pathway. It spans distinct mechanisms whose readouts, causal relationships and timescales vary.",
-    "genes": "Examples depend on what is modeled: CDK4/6, RB1, CCND1, MYC, MTOR, HIF1A and other pathway members.",
-    "evidence": "Specify a particular process, assay, sampling time and rule mapping assay evidence into the model.",
-    "caution": "A clinically interpretable implementation must split this heterogeneous placeholder into separately operationalized dimensions.",
+    "name": "Cellprocesser",
+    "type": "Sammansatt biologiskt tillstånd",
+    "summary": "En bred platshållare för cellcykel, ämnesomsättning, stress, kromatin och andra cellprogram.",
+    "biology": "Cellprocess är inte en enda definierad signalväg. Begreppet täcker skilda mekanismer med olika mätningar, orsakssamband och tidsskalor.",
+    "genes": "Beror på vald process. Exempel: CDK4/6, RB1, CCND1, MYC, MTOR och HIF1A.",
+    "evidence": "Ange exakt process, mätmetod, provtidpunkt och hur mätresultatet översätts till modellens regler.",
+    "caution": "För en kliniskt begriplig modell måste denna breda platshållare delas upp i separat definierade dimensioner.",
     "sourceKeys": [
       "biomarkers",
       "pi3kr"
