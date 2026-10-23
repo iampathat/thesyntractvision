@@ -6,6 +6,7 @@
 (function (root) {
   "use strict";
   const CORE = root.QCDSCore;
+  const NAMES = root.CancerLabKnowledge?.dimensions?.map(d=>d.name) || CORE.DIMENSIONS;
   const byId = id => document.getElementById(id);
   const cellMatrix = [];
   const liveCycles = new Map();
@@ -19,7 +20,7 @@
   function text(id, value) { if (byId(id)) byId(id).textContent = value; }
   function rotationLabel(bank) {
     const r = bank % 16;
-    return r < 8 ? "Forward +" + r : "Mirrored +" + (r - 8);
+    return r < 8 ? "Framåt +" + r : "Spegelvänt +" + (r - 8);
   }
   function make(tag, cls, value) {
     const el = document.createElement(tag);
@@ -33,8 +34,8 @@
     return observations.find(v => v.excludedIndex === row && v.bankIndex === col);
   }
   function describeLane(lane) {
-    if (!lane) return "This lane has not been computed in the selected pass.";
-    return `Rotation ${rotationLabel(lane.rotation)} · true-null: ${CORE.DIMENSIONS[lane.excludedIndex]} · N=${lane.stateCount}, M=${lane.markedCount} · Grover m=${lane.groverIterations} · marked mass ${percent(lane.markedMass)} · highest individual P ${percent(lane.topProbability)} · entropy ${lane.entropyBits.toFixed(3)} bits. These are local oracle measurements, not biological probabilities.`;
+    if (!lane) return "Detta logiska rum har inte beräknats i det valda passet.";
+    return `Rotation ${rotationLabel(lane.rotation)} · utesluten dimension: ${NAMES[lane.excludedIndex]} · N=${lane.stateCount}, M=${lane.markedCount} · Grover m=${lane.groverIterations} · markerad massa ${percent(lane.markedMass)} · högsta enskilda sannolikhet ${percent(lane.topProbability)} · entropi ${lane.entropyBits.toFixed(3)} bitar. Detta är lokala orakelmått, inte biologiska sannolikheter.`;
   }
   function selectCell(row, col) {
     selected = { excludedIndex: row, bankIndex: col };
@@ -42,7 +43,7 @@
       cellMatrix[r][c].classList.toggle("selected", r === row && c === col);
     }
     const lane = observationAt(visibleCycle, row, col);
-    text("laneLabel", `LANE ${String(col + 1).padStart(2, "0")} / FAMILY ${row + 1}`);
+    text("laneLabel", `RUM ${String(col + 1).padStart(2, "0")} / FAMILJ ${row + 1}`);
     text("laneDetails", describeLane(lane));
   }
   function renderHeatmap() {
@@ -51,8 +52,8 @@
       const lane = observationAt(visibleCycle, row, col);
       button.classList.toggle("computed", Boolean(lane));
       button.style.setProperty("--intensity", lane ? Math.min(.90, .16 + lane.markedMass * .74).toFixed(3) : ".04");
-      button.title = lane ? describeLane(lane) : "Awaiting computation";
-      button.setAttribute("aria-label", `${CORE.DIMENSIONS[row]} excluded, rotation ${col + 1}: ${lane ? percent(lane.markedMass) + " marked mass" : "not computed"}`);
+      button.title = lane ? describeLane(lane) : "Inväntar beräkning";
+      button.setAttribute("aria-label", `${NAMES[row]} utesluten, rotation ${col + 1}: ${lane ? percent(lane.markedMass) + " markerad massa" : "inte beräknad"}`);
     }
     selectCell(selected.excludedIndex, selected.bankIndex);
   }
@@ -61,8 +62,8 @@
     if (!holder) return;
     holder.replaceChildren();
     if (!cycle) {
-      text("parentSummary", "Parent Grover will be calculated after all eight family distributions are bound.");
-      text("stabilitySummary", "Stability requires multiple independent signals across recursive cycles.");
+      text("parentSummary", "Överordnad Grover beräknas när alla åtta familjefördelningar har bundits samman.");
+      text("stabilitySummary", "Stabilitet kräver flera samstämmiga signaler genom rekursiva cykler.");
       return;
     }
     const topPeaks = cycle.familyDistributions.map(distribution => Math.max(...distribution));
@@ -71,7 +72,7 @@
       const top = distribution.reduce((best, value, j) => value > distribution[best] ? j : best, 0);
       const p = distribution[top];
       const row = make("div", "family-row");
-      const name = make("span", "", CORE.DIMENSIONS[i]);
+      const name = make("span", "", NAMES[i]);
       const track = make("div", "family-track");
       const fill = make("i");
       fill.style.width = Math.max(2, p / scalePeak * 100).toFixed(2) + "%";
@@ -80,29 +81,29 @@
       holder.appendChild(row);
     });
     const g = cycle.parent.grover;
-    text("parentSummary", `8 family distributions → 1 bound Syntract → fresh Parent Grover: N=${g.stateCount}, M=${g.markedCount}, m=${g.iterations}. Marked mass ${percent(g.markedMass)}; ${cycle.parent.resolved ? "amplified candidate" : "unresolved / no discriminating amplification"}.`);
+    text("parentSummary", `8 familjefördelningar → 1 sammanbunden Syntract → ny överordnad Grover: N=${g.stateCount}, M=${g.markedCount}, m=${g.iterations}. Markerad massa ${percent(g.markedMass)}; ${cycle.parent.resolved ? "förstärkt kandidat" : "olöst / ingen särskiljande förstärkning"}.`);
     const s = cycle.stability;
     text("stabilitySummary", s?.stable
-      ? "Recursive stability gate passed (distribution, entropy, top state, top-k and dimension influence). Not medical validation."
-      : "Stability gate not passed: " + ((s?.reasons || []).join("; ") || "more recursive evidence required") + ".");
+      ? "De rekursiva stabilitetsvillkoren uppfylldes (fördelning, entropi, toppresultat, topp-k och dimensionspåverkan). Det är ingen medicinsk validering."
+      : "Stabilitetsvillkoren uppfylldes inte: " + ((s?.reasons || []).join("; ") || "ytterligare rekursiv information behövs") + ".");
   }
   function showCycle(index) {
     visibleCycle = Number(index) || 0;
     renderHeatmap();
     drawFunnel(finishedCycles[visibleCycle]);
     text("spaceProgress", finishedCycles.length
-      ? `PASS ${visibleCycle + 1} / ${finishedCycles.length} · 128 OF 128 LOGICAL LANES INSPECTABLE`
-      : "NO COMPUTATION YET");
+      ? `PASS ${visibleCycle + 1} / ${finishedCycles.length} · 128 AV 128 LOGISKA RUM KAN GRANSKAS`
+      : "ÄNNU INGEN BERÄKNING");
   }
   function initialize() {
     const board = byId("laneMatrix");
     if (!board) return;
     board.replaceChildren();
-    const corner = make("div", "matrix-corner", "NULL ↓  / ROTATION →");
+    const corner = make("div", "matrix-corner", "UTESLUTNING ↓ / ROTATION →");
     board.appendChild(corner);
     for (let col = 0; col < 16; col++) board.appendChild(make("div", "matrix-axis", String(col + 1).padStart(2, "0")));
     for (let row = 0; row < 8; row++) {
-      board.appendChild(make("div", "matrix-dimension", `${row + 1}. ${CORE.DIMENSIONS[row]}`));
+      board.appendChild(make("div", "matrix-dimension", `${row + 1}. ${NAMES[row]}`));
       cellMatrix[row] = [];
       for (let col = 0; col < 16; col++) {
         const button = make("button", "lane-cell");
@@ -123,7 +124,7 @@
     visibleCycle = 0;
     const selector = byId("spaceCycle");
     if (selector) { selector.replaceChildren(); selector.disabled = true; }
-    text("spaceProgress", "0 / 128 LOGICAL LANES COMPUTED");
+    text("spaceProgress", "0 / 128 LOGISKA RUM BERÄKNADE");
     drawFunnel(null);
     renderHeatmap();
   }
@@ -133,7 +134,7 @@
     liveCycles.set(info.cycle, existing);
     visibleCycle = info.cycle;
     const total = info.lanesDone;
-    text("spaceProgress", `PASS ${info.cycle + 1} · ${total} / 128 LOGICAL LANES COMPUTED`);
+    text("spaceProgress", `PASS ${info.cycle + 1} · ${total} / 128 LOGISKA RUM BERÄKNADE`);
     renderHeatmap();
   }
   function finish(result) {
