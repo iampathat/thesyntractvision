@@ -56,7 +56,7 @@ test('intro plays only by first entry or request; update cannot strand it over a
   assert.doesNotMatch(install,/localStorage\.clear|indexedDB\.deleteDatabase/);
 });
 test('dimension workbench is branded as Project Glasswing, not a second Q-star product',()=>{
-  assert.match(lab,/class="logic-brand-mark"/);
+  assert.match(lab,/glasswingEmblem\('logic-brand-mark'\)/);
   assert.doesNotMatch(lab,/class="logic-brand">Q<span>★<\/span>/);
   assert.match(css,/#logical-lab \.logic-brand-mark/);
 });
