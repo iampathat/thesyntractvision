@@ -335,7 +335,7 @@ jobs:
           grep -F 'data-ref-tab="oracles"' _site/qcds-cancer-lab/index.html
           grep -F 'id="clinicalOverlay"' _site/qcds-cancer-lab/index.html
           grep -F 'id="runButton"' _site/qcds-cancer-lab/index.html
-          grep -F 'Research-only computational demonstration.' _site/qcds-cancer-lab/index.html
+          grep -F 'Endast beräkningsbaserad forskningsdemonstration.' _site/qcds-cancer-lab/index.html
           grep -F 'PARALLEL_LANES = ROTATION_BANKS * LANES_PER_BANK' _site/qcds-cancer-lab/qcds-core.js
           grep -F 'function runGrover' _site/qcds-cancer-lab/qcds-core.js
           grep -F 'function parentGrover' _site/qcds-cancer-lab/qcds-core.js
