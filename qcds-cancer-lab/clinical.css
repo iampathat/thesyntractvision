@@ -1060,3 +1060,52 @@ body.clinical-theme .clinical-brand h1.clinical-brand-title {
   body.clinical-theme .brand-pretitle {font-size:9px;letter-spacing:.04em}
   body.clinical-theme .clinical-brand h1.clinical-brand-title {font-size:23px}
 }
+
+
+/* 2026-10-23 probability audit: do not make uniform/no-hit inputs look like
+   full amplitude, or normalize four different folded histograms independently. */
+body.clinical-theme .funnel-reading-note {
+  grid-column:1/-1; margin:2px 0 8px;
+  color:#315e6a; font-size:12px; line-height:1.58;
+  padding:10px 13px; border:1px solid #d4e6e9;
+  border-radius:8px; background:#f3f8f8;
+}
+body.clinical-theme .funnel-lane-neutral {background:#f8fafb;border-color:#e1e8eb}
+body.clinical-theme .funnel-lane-active {
+  border-color:#8ac5c7;background:#f6fcfc;
+}
+body.clinical-theme .funnel-lane-nohit {
+  display:flex; align-items:center; justify-content:center;
+  min-height:56px; padding:9px 13px; margin:7px 0 5px;
+  border-radius:6px; border:1px dashed #cbdadd;
+  background:#eff4f5; color:#647d85; text-align:center;
+  font-size:11px; line-height:1.5;
+}
+body.clinical-theme .funnel-lane-spark,
+body.clinical-theme .funnel-fold-spark {
+  background:repeating-linear-gradient(to top,
+    rgba(73,112,128,.11) 0,rgba(73,112,128,.11) 1px,
+    transparent 1px,transparent 12px);
+}
+body.clinical-theme .funnel-lane-spark i {background:#1d8296}
+body.clinical-theme .funnel-fold-spark i {background:#438b84}
+body.clinical-theme .funnel-distribution > .funnel-reading-note {
+  margin:0 0 6px;
+}
+body.clinical-theme .funnel-prob-track {
+  height:12px; border:1px solid #bacfd3; background:#e9f1f2;
+}
+body.clinical-theme .funnel-prob-track i {
+  background:#2f968c; min-width:1px;
+}
+body.clinical-theme .funnel-parent-note {
+  margin:9px 0 0; padding:11px 13px;
+  border-left:3px solid #3b8d81; border-radius:5px;
+  background:#eaf5f2; color:#345a5a;
+  font-size:12px; line-height:1.6;
+}
+@media(max-width:500px){
+  body.clinical-theme .funnel-reading-note {font-size:11px;padding:9px 10px}
+  body.clinical-theme .funnel-lane-nohit {min-height:40px}
+  body.clinical-theme .funnel-parent-note {font-size:11px}
+}
