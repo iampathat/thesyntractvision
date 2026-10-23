@@ -25,7 +25,7 @@
   const subscribers=new Set();
   function notify(){
     const snap=getSnapshot();
-    for(const cb av subscribers){try{cb(snap)}catch(e){if(typeof console!=="undefined")console.error("Oncology Lab: uppdatering av exempel",e)}}
+    for(const cb of subscribers){try{cb(snap)}catch(e){if(typeof console!=="undefined")console.error("Oncology Lab: uppdatering av exempel",e)}}
   }
   function changed(){if(exampleId)exampleChanged=true;}
   function getSnapshot(){return {dataset,anchors:anchors.slice(),result,audit,selectedState,exampleId,exampleChanged};}
@@ -45,7 +45,7 @@
   function locusNames(indices){
     return indices.map(i=>LOCI[i].label+" (kromosom "+LOCI[i].chr+")").join(" · ");
   }
-  function all(){return [...dataset.falls,...dataset.jämförelses];}
+  function all(){return [...dataset.cases,...dataset.controls];}
   function percent(p){return (100*p).toFixed(2)+"%";}
   function toggleAnchor(i){
     changed();
@@ -88,7 +88,7 @@
       const relation=result?.settings?.relation||"cooccurrence";
       const fullMatch=selectedState!==null&&D.satisfies(selectedState,person,relation);
       const row=e("div","cohort-genome-row");
-      row.classList.add(person.group==="falls"?"cohort-fall":"cohort-jämförelse");
+      row.classList.add(person.group==="cases"?"cohort-fall":"cohort-jämförelse");
       row.classList.toggle("is-full-match",fullMatch);
       row.append(e("span","cohort-person",person.id));
       const track=e("div","cohort-genome-track");
@@ -100,8 +100,8 @@
         circle.type="button";circle.style.left=(100*loc.position).toFixed(1)+"%";
         circle.classList.toggle("has-variant",present);
         circle.classList.toggle("is-anchor",anchors.includes(i));
-        circle.classList.toggle("is-hit",hit&&present&&fullMatch&&person.group==="falls");
-        circle.classList.toggle("is-jämförelse-hit",hit&&present&&fullMatch&&person.group==="jämförelses");
+        circle.classList.toggle("is-hit",hit&&present&&fullMatch&&person.group==="cases");
+        circle.classList.toggle("is-jämförelse-hit",hit&&present&&fullMatch&&person.group==="controls");
         circle.classList.toggle("is-delvis-match",hit&&present&&!fullMatch);
         circle.classList.toggle("is-pattern-missing",hit&&!present&&relation==="parity"&&fullMatch);
         circle.title=person.id+" · "+loc.label+": "+(present?"varianten finns":"varianten saknas")+". Tryck för att ändra observationen.";
@@ -110,10 +110,10 @@
         track.append(circle);
       });
       row.append(track,e("span","cohort-genome-count",
-        selectedState===null?(person.group==="falls"?"fall":"jämförelse"):(fullMatch?"matchar":"delvis")));
+        selectedState===null?(person.group==="cases"?"fall":"jämförelse"):(fullMatch?"matchar":"delvis")));
       holder.append(row);
       const matrixRow=e("div","cohort-matrix-row");
-      matrixRow.classList.add(person.group==="falls"?"is-fall":"is-jämförelse");
+      matrixRow.classList.add(person.group==="cases"?"is-fall":"is-jämförelse");
       matrixRow.append(e("span","",person.id));
       LOCI.forEach((loc,i)=>{
         const present=person.variants.includes(i);
@@ -122,7 +122,7 @@
         cell.classList.toggle("is-variant",present);
         cell.classList.toggle("is-anchor",anchors.includes(i));
         const component=selectedState!==null&&(selectedState&(1<<i))!==0;
-        cell.classList.toggle("is-highlight",component&&present&&fullMatch&&person.group==="falls");
+        cell.classList.toggle("is-highlight",component&&present&&fullMatch&&person.group==="cases");
         cell.classList.toggle("is-pattern-missing",component&&!present&&fullMatch&&relation==="parity");
         cell.classList.toggle("is-delvis-match",component&&present&&!fullMatch);
         cell.title="Ändra syntetisk observation "+person.id+" / "+loc.label;
@@ -135,7 +135,7 @@
   }
   function toggleVariant(profileIndex,locusIndex){
     changed();
-    const target=profileIndex<dataset.falls.length?dataset.falls[profileIndex]:dataset.jämförelses[profileIndex-dataset.falls.length];
+    const target=profileIndex<dataset.cases.length?dataset.cases[profileIndex]:dataset.controls[profileIndex-dataset.cases.length];
     if(target.variants.includes(locusIndex))target.variants=target.variants.filter(i=>i!==locusIndex);
     else target.variants=[...target.variants,locusIndex].sort((a,b)=>a-b);
     run();
@@ -157,7 +157,7 @@
       ["Sammanbunden entropi",result.entropyBits.toFixed(3)+" bits"],
       ["Konvergens efter rotation",result.stable?"Ja":"Inte påvisad"]
     ];
-    for(const [label,value] av metrics){
+    for(const [label,value] of metrics){
       const card=e("div","cohort-stat");
       card.append(e("small","",label),e("strong","",value));panel.append(card);
     }
@@ -176,7 +176,7 @@
     if(!local||!groups||!timeline||!dist||!notes)return;
     local.replaceChildren();groups.replaceChildren();timeline.replaceChildren();dist.replaceChildren();notes.replaceChildren();
     const pass=result.rounds[Math.min(selectedPass,result.rotations-1)];
-    for(const [i,r] av result.rounds.entries()){
+    for(const [i,r] of result.rounds.entries()){
       const btn=e("button","funnel-pass-button","R"+(i+1));
       btn.type="button";btn.classList.toggle("is-selected",r.index===pass.index);
       btn.addEventListener("click",()=>{selectedPass=i;renderFunnel();});
@@ -185,14 +185,14 @@
     $("funnelPassDescription").textContent="Rotation "+pass.index+"/"+result.rotations+
       " · 16 separata fyrpositionsfördelningar · 4 grupper med 4 rum · 1 sammanbunden tiodimensionell fördelning. Entropi: "+
       pass.alignment.boundEntropyBits.toFixed(3)+" bits.";
-    for(const lane av pass.lanes){
+    for(const lane of pass.lanes){
       const card=e("article","funnel-lane-card");
       card.append(e("strong","","L"+String(lane.index+1).padStart(2,"0")+" · "+lane.window.map(i=>LOCI[i].label).join(" / ")));
       card.append(miniBars(lane.likelihood,"funnel-lane-spark"));
       card.append(e("small","","16 tillstånd · M="+lane.marks+" · Grover m="+lane.iterations+" · massa "+percent(lane.markedMass)));
       local.append(card);
     }
-    for(const g av pass.groups){
+    for(const g of pass.groups){
       const card=e("article","funnel-fold-card");
       card.append(e("strong","","F"+(g.index+1)+" · L"+g.memberIndices.map(i=>i+1).join(", L")));
       const vals=g.posterior.filter(p=>p>0).sort((a,b)=>b-a).slice(0,12);
@@ -202,7 +202,7 @@
     }
     const top=result.ranked.slice(0,12);
     if(!top.length)dist.append(e("p","funnel-empty","Inget mönster uppfyller det slutliga oraklet. Tratten hittar inte på en markering."));
-    for(const [i,item] av top.entries()){
+    for(const [i,item] of top.entries()){
       const btn=e("div","funnel-prob-row");
       btn.classList.toggle("is-selected",selectedState===item.state);
       btn.append(e("span","funnel-prob-name","#"+(i+1)+" · "+locusNames(item.loci)));
@@ -222,7 +222,7 @@
       ["Samstämmighet i samma data","Kandidaterna kontrolleras mot SAMMA syntetiska observationer som användes för sökningen. Det är ingen oberoende biologisk verifiering."],
       ["Informationsgräns","Korrelationer som sträcker sig över flera fyrpositionsfönster går inte alltid att återskapa efter sammanbindningen."]
     ];
-    for(const [title,desc] av messages){const row=e("p","funnel-diagnostic");row.append(e("strong","",title+": "),e("span","",desc));notes.append(row);}
+    for(const [title,desc] of messages){const row=e("p","funnel-diagnostic");row.append(e("strong","",title+": "),e("span","",desc));notes.append(row);}
   }
   function renderAudit(){
     const target=$("cohortAudit");
@@ -233,13 +233,13 @@
     const leaveOneText=usableLeaveOneOut.length
       ?usableLeaveOneOut.filter(x=>x.retainsTop).length+"/"+usableLeaveOneOut.length+
           " körningar med ett fall uteslutet innehåller fortfarande referenskandidaten"
-      :"Not available: removing one fall would leave fewer than two profiles.";
+      :"Kan inte utföras: om ett fall utesluts återstår färre än två profiler.";
     const items=[
       ["8 % oberoende bitvändningar",audit.repeatability+"/5 körningar behåller samma topprankade mönster; "+audit.retained+"/5 har det kvar bland de godkända kandidaterna"],
-      ["Leave-one-fall-out",leaveOneText],
+      ["Uteslut ett fall i taget",leaveOneText],
       ["Ombytta gruppetiketter",audit.negativeControl.markedCount+" godkända mönster; ursprungsresultatet kvar: "+(audit.negativeControl.retainsTop?"ja":"nej")]
     ];
-    for(const [key,value] av items){
+    for(const [key,value] of items){
       const row=e("div","cohort-audit-row");
       row.append(e("strong","",key),e("span","",value));target.append(row);
     }
@@ -268,31 +268,31 @@
       :count+" möjliga samband ligger nära toppen – inget entydigt svar har fastställts.";
     const relation=result.settings.relation==="parity"?"en gemensam kombination av närvarande (1) och frånvarande (0) egenskaper":"varianter som förekommer tillsammans";
     detail.textContent="Markerade positioner: "+locusNames(item.loci)+". Sökningen gäller "+
-      relation+". Mönstret uppfylls av "+item.fallCount+" av "+dataset.falls.length+" invented falls and "+
-      item.jämförelseCount+" av "+dataset.jämförelses.length+" jämförelser. Detta är modellsamband, inte en cancerdiagnos.";
+      relation+". Mönstret uppfylls av "+item.caseCount+" av "+dataset.cases.length+" påhittade fall och "+
+      item.controlCount+" av "+dataset.controls.length+" jämförelser. Detta är modellsamband, inte en cancerdiagnos.";
     quality.dataset.status=result.stable?"stable":"unstable";
     quality.textContent=(result.stable
       ?"Sannolikhetsmönstret uppfyllde modellens interna stabilitetsvillkor."
-      :"The rotating probabilities have NOT fully stabilized in the selected number av passes.")+
+      :"Sannolikheterna har INTE stabiliserats inom det valda antalet pass.")+
       " "+result.rotations+" rotationer beräknades. Stabilitet är inte samma sak som biologisk sanning.";
     if(evidence){
       const nullCheck=D.permutationAudit({...readSettings(),selectedState:item.state});
       const pct=(100*nullCheck.familywiseFraction).toFixed(1)+"%";
       evidence.dataset.status=nullCheck.familywiseFraction>.05?"weak":"unvalidated";
-      const groupDescription=dataset.falls.length+" falls and "+dataset.jämförelses.length+" jämförelser";
+      const groupDescription=dataset.cases.length+" fall och "+dataset.controls.length+" jämförelser";
       const samplingText=nullCheck.method==="exact"
-        ?"Vi kontrollerade alla "+nullCheck.assignments+" possible ways av reassigning "+groupDescription+"."
-        :"Vi provade "+nullCheck.assignments+" reproducible random reassignments av "+groupDescription+
+        ?"Vi kontrollerade alla "+nullCheck.assignments+" möjliga sätt att omfördela "+groupDescription+"."
+        :"Vi provade "+nullCheck.assignments+" reproducerbara slumpmässiga omfördelningar av "+groupDescription+
           "; detta är en UPPSKATTNING från ett urval gruppetiketter, inte en uttömmande genomgång.";
       const proportionText=nullCheck.method==="exact"
-        ?nullCheck.tailAssignments+" av those groupings ("+pct+")"
-        :nullCheck.tailAssignments+" av those sampled groupings (corrected estimate "+pct+")";
+        ?nullCheck.tailAssignments+" av dessa omfördelningar ("+pct+")"
+        :nullCheck.tailAssignments+" av de slumpmässiga omfördelningarna (korrigerad uppskattning "+pct+")";
       evidence.textContent="Hur starkt är stödet för gruppskillnaden? "+samplingText+" "+
         proportionText+" gav minst ett godkänt mönster med en minst lika stor gruppskillnad. "+
         "Vi undersökte "+nullCheck.validCandidates+" kandidatkombinationer. Kontrollen tar inte hänsyn till att sökregler kan ändras efter att resultaten setts, och är ingen medicinsk evidens.";
     }
     const allOptions=result.ranked.slice(0,16);
-    for(const alt av allOptions){
+    for(const alt of allOptions){
       const b=e("button","cohort-alt",locusNames(alt.loci));b.type="button";
       b.setAttribute("aria-pressed",selectedState===alt.state?"true":"false");
       b.classList.toggle("is-selected",selectedState===alt.state);
@@ -330,8 +330,8 @@
   // Refresh available counts, preserving each old threshold as a fraction
   // av its prior group size if the sample size changes.
   function populateThresholds(previousCases,previousControls){
-    const falls=dataset.falls.length,jämförelses=dataset.jämförelses.length;
-    for(const [id,n,oldN,minMode] av [
+    const falls=dataset.cases.length,jämförelses=dataset.controls.length;
+    for(const [id,n,oldN,minMode] of [
       ["cohortMinCases",falls,previousCases,true],
       ["cohortMaxControls",jämförelses,previousControls,false]
     ]){
@@ -361,7 +361,7 @@
     if(!Number.isInteger(fallCount)||!Number.isInteger(jämförelseCount)||
        fallCount<2||jämförelseCount<2||fallCount>30||jämförelseCount>30)
       throw Error("Välj mellan 2 och 30 påhittade profiler per grupp i detta webbläsarexempel.");
-    const previousCases=dataset.falls.length,previousControls=dataset.jämförelses.length;
+    const previousCases=dataset.cases.length,previousControls=dataset.controls.length;
     const next=D.generateProfils(seed,mode,fallCount,jämförelseCount);
     changed();
     dataset=next;
@@ -394,7 +394,7 @@
     if(![3,6,9,12].includes(passes))throw Error("Ogiltigt antal rotationer i exemplet.");
     const readoutNoise=Number(config.readoutNoise||0);
     if(![0,.08,.15,.25].includes(readoutNoise))throw Error("Ogiltig brusinställning i exemplet.");
-    const formerCases=dataset.falls.length,formerControls=dataset.jämförelses.length;
+    const formerCases=dataset.cases.length,formerControls=dataset.controls.length;
     dataset=generated;
     anchors=chosen.slice();
     $("cohortCaseCount").value=String(c);
@@ -421,7 +421,7 @@
       const conclusion=$("cohortResultTitle");
       if(conclusion && typeof conclusion.scrollIntoView==="function")conclusion.scrollIntoView({behavior:"smooth",block:"start"});
     });
-    populateThresholds(dataset.falls.length,dataset.jämförelses.length);
+    populateThresholds(dataset.cases.length,dataset.controls.length);
     $("cohortCaseCount").addEventListener("change",()=>{try{regenerate(0)}catch(e){$("cohortError").textContent=e.message;}});
     $("cohortControlCount").addEventListener("change",()=>{try{regenerate(0)}catch(e){$("cohortError").textContent=e.message;}});
     $("cohortMinCases").addEventListener("change",()=>{changed();run();});
@@ -433,7 +433,7 @@
     $("cohortNextDataset").addEventListener("click",()=>{try{regenerate(1)}catch(e){$("cohortError").textContent=e.message;}});
     $("cohortClearAnchors").addEventListener("click",()=>{changed();anchors=[];run();});
     if(typeof document.querySelectorAll==="function"){
-      for(const link av document.querySelectorAll('a[href="#workbench"], a[data-open-details="funnelDeepDive"]')){
+      for(const link of document.querySelectorAll('a[href="#workbench"], a[data-open-details="funnelDeepDive"]')){
         link.addEventListener("click",()=>{
           const id=link.getAttribute("href")==="#workbench"?"legacyWorkbenchDetails":"funnelDeepDive";
           const advanced=$(id);
