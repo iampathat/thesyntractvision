@@ -25,7 +25,7 @@
 
   function validateMask(mask) {
     if (typeof mask !== "string" || mask.length !== 8 || !/^[01?]{8}$/.test(mask)) {
-      throw new Error("Mask must contain exactly eight 0 / 1 / ? symbols.");
+      throw new Error("Masken måste innehålla exakt åtta tecken med värdena 0 / 1 / ?.");
     }
     return mask;
   }
@@ -47,15 +47,15 @@
   }
 
   function groverSuccessProbability(stateCount, markedCount, iterations) {
-    if (!(stateCount > 0)) throw new Error("stateCount must be positive");
-    if (!(markedCount > 0 && markedCount <= stateCount)) throw new Error("markedCount must satisfy 1 <= M <= N");
+    if (!(stateCount > 0)) throw new Error("Antalet tillstånd måste vara positivt");
+    if (!(markedCount > 0 && markedCount <= stateCount)) throw new Error("Antalet markerade tillstånd måste uppfylla 1 <= M <= N");
     const theta = Math.asin(Math.sqrt(markedCount / stateCount));
     return Math.sin((2 * iterations + 1) * theta) ** 2;
   }
 
   function peakIterationCount(stateCount, markedCount, maxIterations = MAX_GROVER_ITERS, alignmentThreshold = 0.999) {
     if (markedCount === 0 || markedCount === stateCount) return 0;
-    if (!(alignmentThreshold > 0 && alignmentThreshold <= 1)) throw new Error("alignmentThreshold must lie in (0,1]");
+    if (!(alignmentThreshold > 0 && alignmentThreshold <= 1)) throw new Error("Tröskelvärdet för samstämmighet måste ligga i intervallet (0,1]");
 
     let prev = groverSuccessProbability(stateCount, markedCount, 0);
     if (prev >= alignmentThreshold) return 0;
@@ -88,10 +88,10 @@
 
   function runGrover(stateCount, markedIterable, maxIterations = MAX_GROVER_ITERS) {
     if (stateCount <= 0 || (stateCount & (stateCount - 1)) !== 0) {
-      throw new Error("stateCount must be a positive power of two");
+      throw new Error("Antalet tillstånd måste vara en positiv tvåpotens");
     }
     const marked = new Set(markedIterable);
-    for (const s of marked) if (s < 0 || s >= stateCount) throw new Error("marked state outside state space");
+    for (const s of marked) if (s < 0 || s >= stateCount) throw new Error("Markerat tillstånd ligger utanför tillståndsrummet");
 
     if (marked.size === 0) {
       const probabilities = Array(stateCount).fill(1 / stateCount);
@@ -223,7 +223,7 @@
   }
 
   function liftLaneDistribution(view, probabilities) {
-    if (probabilities.length !== view.stateCount) throw new Error("lane distribution does not match view state space");
+    if (probabilities.length !== view.stateCount) throw new Error("Fördelningen för det logiska rummet motsvarar inte vyns tillståndsrum");
     const out = Array(256).fill(0);
     for (let localState = 0; localState < view.stateCount; localState++) {
       const { semanticAssignment } = decodeLocal(view, localState);
@@ -237,9 +237,9 @@
   }
 
   function logOpinionPool(distributions, epsilon = EPSILON) {
-    if (!distributions.length) throw new Error("Need distributions to Syntract-bind");
+    if (!distributions.length) throw new Error("Fördelningar saknas för Syntract-sammanbindning");
     const width = distributions[0].length;
-    if (distributions.some(d => d.length !== width)) throw new Error("Syntract bind requires shared support");
+    if (distributions.some(d => d.length !== width)) throw new Error("Syntract-sammanbindning kräver gemensamt stöd");
     const logScores = Array(width).fill(0);
     for (const d of distributions) {
       for (let i = 0; i < width; i++) logScores[i] += Math.log(Math.max(d[i], epsilon));
@@ -254,12 +254,12 @@
   function conditionOnInput(distribution, inputMask) {
     const out = distribution.map((p, state) => stateMatchesMask(state, inputMask) ? p : 0);
     const z = out.reduce((a, b) => a + b, 0);
-    if (z <= 0) throw new Error("QCDS bind produced no support compatible with the input Condition.");
+    if (z <= 0) throw new Error("QCDS-sammanbindningen gav inget stöd förenligt med indatavillkoret.");
     return out.map(p => p / z);
   }
 
   function totalVariation(a, b) {
-    if (a.length !== b.length) throw new Error("TVD support mismatch");
+    if (a.length !== b.length) throw new Error("TVD-fördelningarnas stöd skiljer sig åt");
     let sum = 0;
     for (let i = 0; i < a.length; i++) sum += Math.abs(a[i] - b[i]);
     return 0.5 * sum;
@@ -283,7 +283,7 @@
       .filter(s => boundDistribution[s] > 0 && stateMatchesMask(s, inputMask))
       .sort((a, b) => boundDistribution[b] - boundDistribution[a]);
 
-    if (!ranked.length) throw new Error("No compatible Parent-Grover candidates.");
+    if (!ranked.length) throw new Error("Inga förenliga kandidater för överordnad Grover.");
 
     const scores = ranked.map(s => boundDistribution[s]);
     const parentN = nextPowerOfTwo(ranked.length);
@@ -471,7 +471,7 @@
     for (const bits of Object.keys(finalDistribution)) {
       let state = 0;
       for (let i = 0; i < 8; i++) state |= Number(bits[i]) << i;
-      if (!stateMatchesMask(state, inputMask)) throw new Error("QCDS invariant failed: output violated input Condition.");
+      if (!stateMatchesMask(state, inputMask)) throw new Error("QCDS-invarianten bröts: utdata uppfyllde inte indatavillkoret.");
     }
 
     return {
