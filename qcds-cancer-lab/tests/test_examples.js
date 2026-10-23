@@ -108,7 +108,7 @@ snap=api.getSnapshot();
 assert.equal(snap.exampleId,"null-control");
 assert.equal(snap.result.qualifiedCount,0);
 assert.equal(snap.result.selected,null);
-assert(elements.cohortOutcome.textContent.startsWith("No matching connection"));
+assert(elements.cohortOutcome.textContent.startsWith("Inget samband uppfyller"));
 assert(pages.findings.children[0].children.length>2);
 assert.equal(routes.at(-1),"setup");
 console.log("Oncology Lab loaded guided examples and explanations: PASS");
