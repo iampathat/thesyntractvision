@@ -7,51 +7,51 @@
   "use strict";
   const sources={
   "biomarkers": {
-    "label": "NCI · Biomarker testing for cancer treatment",
+    "label": "NCI · Biomarkörtester vid cancerbehandling",
     "url": "https://www.cancer.gov/about-cancer/treatment/types/biomarker-testing-cancer-treatment"
   },
   "brca": {
-    "label": "NCI · BRCA gene changes and testing",
+    "label": "NCI · BRCA-genförändringar och tester",
     "url": "https://www.cancer.gov/about-cancer/causes-prevention/genetics/brca-fact-sheet"
   },
   "hrr": {
-    "label": "NCI · Homologous recombination repair pathway",
+    "label": "NCI · Reparationsväg för homolog rekombination",
     "url": "https://www.cancer.gov/publications/dictionaries/cancer-terms/def/homologous-recombination-repair-pathway"
   },
   "mmr": {
-    "label": "NCI · Mismatch repair deficiency",
+    "label": "NCI · Bristande DNA-felparningsreparation",
     "url": "https://www.cancer.gov/publications/dictionaries/cancer-terms/def/mismatch-repair-deficiency"
   },
   "pi3k": {
-    "label": "Janku et al. · PI3K pathway in cancer · Nat Rev Clin Oncol (2018)",
+    "label": "Janku m.fl. · PI3K-signalering vid cancer · Nat Rev Clin Oncol (2018)",
     "url": "https://www.nature.com/articles/nrclinonc.2018.28"
   },
   "pi3kr": {
-    "label": "PI3K/AKT/mTOR pathway review · Molecular Cancer (2023)",
+    "label": "Översikt av signalvägen PI3K/AKT/mTOR · Molecular Cancer (2023)",
     "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10436543/"
   },
   "egfr": {
-    "label": "NCI · EGFR gene",
+    "label": "NCI · EGFR-genen",
     "url": "https://www.cancer.gov/publications/dictionaries/cancer-terms/def/egfr-gene"
   },
   "her2": {
-    "label": "NCI · HER2 protein",
+    "label": "NCI · HER2-proteinet",
     "url": "https://www.cancer.gov/publications/dictionaries/cancer-terms/def/her2"
   },
   "htest": {
-    "label": "NCI · HER2 testing",
+    "label": "NCI · HER2-tester",
     "url": "https://www.cancer.gov/publications/dictionaries/cancer-terms/def/her2-test"
   },
   "pdl1": {
-    "label": "NCI · PD-L1 and immune checkpoint biology",
+    "label": "NCI · PD-L1 och immunologiska kontrollpunkter",
     "url": "https://www.cancer.gov/publications/dictionaries/cancer-terms/def/pd-l1"
   },
   "apoptosis": {
-    "label": "NCI · Apoptosis",
+    "label": "NCI · Apoptos",
     "url": "https://www.cancer.gov/publications/dictionaries/cancer-terms/def/apoptosis"
   },
   "sitc": {
-    "label": "SITC · PD-(L)1 resistance consensus review (2024)",
+    "label": "SITC · Översikt av resistens mot PD-(L)1-behandling (2024)",
     "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11261685/"
   }
 };
@@ -256,96 +256,96 @@
   const methods=[
   {
     "id": "state",
-    "name": "0 / 1 / ? · Logical condition",
-    "category": "Model semantics",
-    "summary": "In this prototype, 0 and 1 fix a bit; ? leaves it unresolved. These values are NOT clinical result categories.",
-    "biology": "A cancer feature needs an explicit operational definition, assay, threshold, specimen and tumor context before an encoded bit could be interpreted as absent/present or low/high. Without that mapping, bits are only symbolic constraints.",
-    "limitations": "1 is not automatically pathogenic, activated or favorable; 0 is not automatically wild type, inactive or negative. ? is not a third measured biological result.",
+    "name": "0 / 1 / ? · Logiskt villkor",
+    "category": "Modellens betydelse",
+    "summary": "I prototypen låser 0 och 1 en bit, medan ? lämnar den öppen. Dessa värden är INTE kategorier för kliniska provsvar.",
+    "biology": "En egenskap vid cancer måste ha en exakt definition, mätmetod, gränsvärde, provtyp och tumörkontext innan en bit kan tolkas som frånvarande/närvarande eller låg/hög. Utan en sådan koppling är bitarna bara symboliska villkor.",
+    "limitations": "1 betyder inte automatiskt sjukdomsframkallande, aktiverad eller gynnsam; 0 betyder inte automatiskt normaltyp, inaktiv eller negativ. ? är inget tredje uppmätt biologiskt resultat.",
     "sourceKeys": [
       "biomarkers"
     ]
   },
   {
     "id": "mask",
-    "name": "Oracle masks / fixed positions",
-    "category": "Model semantics",
-    "summary": "An eight-symbol pattern constraints positions; ? is a wildcard.",
-    "biology": "The present engine evaluates OR across enabled oracle masks. It rotates the semantic input across a fixed positional oracle bank. As a result, an oracle named after a pathway does not retain a fixed semantic gene mapping in every rotation. Each rule must be separately mapped and validated for clinical meaning.",
-    "limitations": "The example masks are synthetic hypotheses; the code does not infer gene-variant pathogenicity or clinical actionability.",
+    "name": "Orakelmasker / fasta positioner",
+    "category": "Modellens betydelse",
+    "summary": "Ett åttateckensmönster ställer positionsvillkor; ? är ett jokertecken.",
+    "biology": "Motorn kombinerar aktiva orakelmasker med logiskt ELLER. Semantiska indata roteras över en bank med fasta positionsorakel. Ett orakel som fått namn efter en signalväg behåller därför inte samma genspecifika betydelse vid varje rotation. Varje regel måste kopplas till en mätbar biologisk innebörd och valideras separat.",
+    "limitations": "Exempelmaskerna är syntetiska hypoteser. Koden bedömer inte automatiskt genvarianters sjukdomsbetydelse eller kliniska handlingsbarhet.",
     "sourceKeys": [
       "biomarkers"
     ]
   },
   {
     "id": "null",
-    "name": "True-null exclusion",
-    "category": "Sensitivity analysis",
-    "summary": "A named dimension is absent from a lane; it is not assigned an unknown clinical status.",
-    "biology": "Each of the eight exclusion families removes one semantic dimension at a time, repeats all sixteen balanced rotations and measures how distributions change. This is an internal ablation test.",
-    "limitations": "A large effect shows sensitivity to model structure, not clinical importance or biomarker validation.",
+    "name": "Uteslutning av en dimension",
+    "category": "Känslighetsanalys",
+    "summary": "En namngiven dimension tas bort från ett logiskt rum; det betyder inte att den får okänd klinisk status.",
+    "biology": "Var och en av de åtta familjerna utesluter en semantisk dimension i taget. Sexton balanserade rotationer upprepas, och fördelningarnas förändring mäts. Detta är en intern uteslutningsanalys.",
+    "limitations": "En stor förändring visar modellkänslighet, inte klinisk betydelse eller validering av en biomarkör.",
     "sourceKeys": []
   },
   {
     "id": "rotation",
-    "name": "Rotation · 16 balanced views",
-    "category": "Algorithm",
-    "summary": "Eight forward and eight mirrored position mappings cycle the semantic input across fixed oracle positions.",
-    "biology": "Each semantic dimension visits each fixed oracle position twice. The bank checks positional bias and alternative logical perspectives, rather than proving a biological mechanism.",
-    "limitations": "Positional balance does not substitute for external calibration, biological independence or prospective clinical validation.",
+    "name": "Rotation · 16 balanserade perspektiv",
+    "category": "Algoritm",
+    "summary": "Åtta framåtriktade och åtta spegelvända positionskopplingar för indata genom oraklets fasta positioner.",
+    "biology": "Varje semantisk dimension besöker varje fast orakelposition två gånger. Banken testar positionssnedvridning och olika logiska perspektiv, inte en biologisk mekanism.",
+    "limitations": "Balanserade positioner ersätter inte extern kalibrering, biologiskt oberoende eller prospektiv klinisk validering.",
     "sourceKeys": []
   },
   {
     "id": "lanes",
-    "name": "128 logical entrances / 8 families",
-    "category": "Algorithm",
-    "summary": "16 rotations × 8 true-null exclusions = 128 independently defined local search spaces.",
-    "biology": "Each local 7-bit lane has N=128 states; the browser evaluates lanes sequentially while yielding UI updates. Sixteen lane distributions per exclusion family are bound before 8→1 synthesis.",
-    "limitations": "This is logical breadth, not 128 simultaneously executing hardware threads or evidence of a quantum speedup.",
+    "name": "128 logiska ingångar / 8 familjer",
+    "category": "Algoritm",
+    "summary": "16 rotationer × 8 uteslutna dimensioner = 128 separat definierade lokala sökrum.",
+    "biology": "Varje lokalt sjubitarsrum har N=128 tillstånd. Webbläsaren beräknar rummen sekventiellt och uppdaterar gränssnittet under tiden. Sexton fördelningar per uteslutningsfamilj binds innan 8→1-syntesen.",
+    "limitations": "Detta är logisk bredd, inte 128 samtidiga hårdvarutrådar och inget bevis för kvantmässig hastighetsvinst.",
     "sourceKeys": []
   },
   {
     "id": "grover",
-    "name": "Grover iterations, N, M, marked mass",
-    "category": "Algorithm",
-    "summary": "Amplitude amplification increases the measurement probability of states selected by the current oracle.",
-    "biology": "N is the local state count, M the number of oracle-marked states, and m the number of bounded amplification iterations. A success or marked-mass probability is conditional on the constructed model and oracle.",
-    "limitations": "A 99% marked mass is not a 99% probability of cancer, a driver mutation or treatment response.",
+    "name": "Grover-iterationer, N, M och markerad massa",
+    "category": "Algoritm",
+    "summary": "Amplitudförstärkning ökar sannolikheten att mäta tillstånd som markerats av det aktuella oraklet.",
+    "biology": "N är antalet lokala tillstånd, M antalet orakelmarkerade tillstånd och m antalet förstärkningsiterationer. Sannolikheten för markerad massa gäller den konstruerade modellen och oraklet.",
+    "limitations": "99 % markerad massa innebär inte 99 % sannolikhet för cancer, drivande mutation eller behandlingssvar.",
     "sourceKeys": []
   },
   {
     "id": "syntract",
-    "name": "Syntract 128→8→1 binding",
-    "category": "Algorithm",
-    "summary": "Full normalized lane distributions are combined by a logarithmic pooling operator.",
-    "biology": "The binding retains distributions, not just winning votes. Eight family distributions are rebound to the input Condition; Parent Grover then explores the candidate structure.",
-    "limitations": "Coherence is a property of the defined inference system. It is not independent confirmation of an oncologic mechanism.",
+    "name": "Syntract-sammanbindning 128→8→1",
+    "category": "Algoritm",
+    "summary": "Fullständiga normaliserade fördelningar från logiska rum kombineras med en logaritmisk sammanbindningsoperator.",
+    "biology": "Sammanbindningen bevarar fördelningarna, inte bara vinnarröster. Åtta familjefördelningar knyts tillbaka till indatavillkoret, varefter överordnad Grover söker vidare i kandidatstrukturen.",
+    "limitations": "Koherens är en egenskap hos det definierade inferenssystemet, inte en oberoende bekräftelse på en onkologisk mekanism.",
     "sourceKeys": []
   },
   {
     "id": "parent",
-    "name": "Parent Grover / recursive return",
-    "category": "Algorithm",
-    "summary": "A new amplification step runs after the eight-family bind and returns selected canonical states as subsequent constraints.",
-    "biology": "A parent probability belongs to a model-specific distribution. Recursive feedback can alter subsequent eligible states and should be audited for selection bias and dependence.",
-    "limitations": "A leading state, even if amplified, cannot be labeled biomarker-positive or verified without external evidence.",
+    "name": "Överordnad Grover / rekursiv återföring",
+    "category": "Algoritm",
+    "summary": "Ett nytt förstärkningssteg utförs efter sammanbindningen av de åtta familjerna och återför utvalda tillstånd som nya villkor.",
+    "biology": "Sannolikheten på huvudnivån tillhör en modellspecifik fördelning. Rekursiv återkoppling kan ändra vilka tillstånd som återstår och behöver granskas för urvalssnedvridning och beroenden.",
+    "limitations": "Ett ledande tillstånd är inte en positiv eller verifierad biomarkör utan extern evidens, även om det förstärkts.",
     "sourceKeys": []
   },
   {
     "id": "stability",
-    "name": "Stability / Truth alignment",
-    "category": "Algorithm audit",
-    "summary": "Internal consistency across cycles is checked using multiple numerical indicators.",
-    "biology": "The current gate inspects distribution drift (TVD), entropy, leading state, top-k Jaccard and dimensional influence. Consistency is one necessary audit property, not evidence of clinical validity.",
-    "limitations": "‘Stable’ is NOT a clinical validity certification; noisy or incorrect rules can also converge stably.",
+    "name": "Stabilitet / sanningsinriktning",
+    "category": "Granskning av algoritmen",
+    "summary": "Intern samstämmighet mellan cykler granskas med flera numeriska indikatorer.",
+    "biology": "Kontrollen granskar fördelningsförändring (TVD), entropi, ledande tillstånd, topp-k-Jaccard och dimensionernas påverkan. Samstämmighet är ett nödvändigt granskningsmått, inte ett bevis på klinisk giltighet.",
+    "limitations": "'Stabil' är INTE en klinisk giltighetscertifiering. Även felaktiga eller brusiga regler kan stabiliseras.",
     "sourceKeys": []
   },
   {
     "id": "provenance",
-    "name": "Provenance / validation status",
-    "category": "Research governance",
-    "summary": "Distinguish curated biological context from unvalidated modeling assumptions and from measured engine output.",
-    "biology": "A model-ready clinical feature needs analyte definition, assay method, specimen, analytical validation, evidence classification and intended tumor/decision context.",
-    "limitations": "These five built-in oracle masks are legacy demo templates. The page does not contain patient-level datasets, molecular annotations, external validation or an approved clinical interpretation pipeline.",
+    "name": "Källursprung / valideringsstatus",
+    "category": "Forskningsstyrning",
+    "summary": "Skilj mellan granskad biologisk bakgrund, oprövade modellantaganden och faktiskt uppmätta motorresultat.",
+    "biology": "En modellklar klinisk egenskap behöver en definition av analyten, provmetoden, provmaterialet, analytisk validering, evidensklass och tänkt tumör- och beslutsområde.",
+    "limitations": "De fem inbyggda orakelmaskerna är äldre demomallar. Sidan innehåller inga patientdataset, molekylära annoteringar, extern validering eller godkänt system för klinisk tolkning.",
     "sourceKeys": [
       "biomarkers"
     ]
