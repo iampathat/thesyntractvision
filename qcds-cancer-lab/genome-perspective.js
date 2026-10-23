@@ -16,21 +16,21 @@
   if(typeof document!=="undefined")api.initialize();
 })(typeof globalThis!=="undefined"?globalThis:this,function(D,F){
   "use strict";
-  if(!D||!F)throw Error("Cancer Genome Discovery and rotating QCDS funnel are required.");
+  if(!D||!F)throw Error("Genomdelen och den roterande QCDS-tratten måste vara laddade.");
   const LOCI=D.LOCI,N=D.N;
-  let dataset=D.generateProfiles(173,"structure");
+  let dataset=D.generateProfils(173,"structure");
   let anchors=[];
   let result=null,audit=null,selectedState=null,selectedPass=0;
   let exampleId=null,exampleChanged=false;
   const subscribers=new Set();
   function notify(){
     const snap=getSnapshot();
-    for(const cb of subscribers){try{cb(snap)}catch(e){if(typeof console!=="undefined")console.error("Oncology Lab example update",e)}}
+    for(const cb av subscribers){try{cb(snap)}catch(e){if(typeof console!=="undefined")console.error("Oncology Lab: uppdatering av exempel",e)}}
   }
   function changed(){if(exampleId)exampleChanged=true;}
   function getSnapshot(){return {dataset,anchors:anchors.slice(),result,audit,selectedState,exampleId,exampleChanged};}
   function subscribe(callback){
-    if(typeof callback!=="function")throw Error("A function is required.");
+    if(typeof callback!=="function")throw Error("En funktion krävs.");
     subscribers.add(callback);
     if(result)callback(getSnapshot());
     return ()=>subscribers.delete(callback);
@@ -43,15 +43,15 @@
     return node;
   }
   function locusNames(indices){
-    return indices.map(i=>LOCI[i].label+" (chr"+LOCI[i].chr+")").join(" · ");
+    return indices.map(i=>LOCI[i].label+" (kromosom "+LOCI[i].chr+")").join(" · ");
   }
-  function all(){return [...dataset.cases,...dataset.controls];}
+  function all(){return [...dataset.falls,...dataset.jämförelses];}
   function percent(p){return (100*p).toFixed(2)+"%";}
   function toggleAnchor(i){
     changed();
     if(anchors.includes(i))anchors=anchors.filter(x=>x!==i);
     else if(anchors.length<3)anchors=[...anchors,i].sort((a,b)=>a-b);
-    else{$("cohortError").textContent="Max three anchors. Remove one or clear the Condition.";return;}
+    else{$("cohortError").textContent="Högst tre startpositioner kan väljas. Ta bort en position eller rensa villkoret.";return;}
     $("cohortError").textContent="";
     run();
   }
@@ -63,23 +63,23 @@
       btn.type="button";
       btn.classList.toggle("is-anchor",anchors.includes(i));
       btn.setAttribute("aria-pressed",anchors.includes(i)?"true":"false");
-      btn.setAttribute("aria-label","Anchor locus "+loc.label+" chromosome "+loc.chr);
+      btn.setAttribute("aria-label","Startposition "+loc.label+" kromosom "+loc.chr);
       btn.append(e("strong","",loc.label),e("small","","chr"+loc.chr));
       btn.addEventListener("click",()=>toggleAnchor(i));
       panel.append(btn);
     });
     $("cohortAnchors").textContent=anchors.length
-      ?"Starting here: "+locusNames(anchors)+". Other possible parts remain open."
-      :"Nothing selected: QCDS is free to look across all ten example positions.";
+      ?"Startpositioner: "+locusNames(anchors)+". Övriga positioner är fortfarande öppna."
+      :"Inget valt: QCDS söker fritt bland exemplets tio positioner.";
   }
   function renderGenomes(){
     const holder=$("cohortGenomeTracks"),matrix=$("cohortDataMatrix");
     holder.replaceChildren();matrix.replaceChildren();
     const header=e("div","cohort-matrix-header");
-    header.append(e("span","","Profile"));
+    header.append(e("span","","Profil"));
     LOCI.forEach((loc,i)=>{
       const b=e("button","cohort-matrix-name",loc.label);
-      b.type="button";b.title="Set "+loc.label+" as a starting anchor";
+      b.type="button";b.title="Välj "+loc.label+" som startposition";
       b.classList.toggle("is-anchor",anchors.includes(i));
       b.addEventListener("click",()=>toggleAnchor(i));header.append(b);
     });
@@ -88,11 +88,11 @@
       const relation=result?.settings?.relation||"cooccurrence";
       const fullMatch=selectedState!==null&&D.satisfies(selectedState,person,relation);
       const row=e("div","cohort-genome-row");
-      row.classList.add(person.group==="cases"?"cohort-case":"cohort-control");
+      row.classList.add(person.group==="falls"?"cohort-fall":"cohort-jämförelse");
       row.classList.toggle("is-full-match",fullMatch);
       row.append(e("span","cohort-person",person.id));
       const track=e("div","cohort-genome-track");
-      track.setAttribute("aria-label",person.id+" synthetic genome locus axis");
+      track.setAttribute("aria-label",person.id+" · schematisk genomaxel");
       LOCI.forEach((loc,i)=>{
         const present=person.variants.includes(i);
         const hit=selectedState!==null&&(selectedState&(1<<i))!==0;
@@ -100,20 +100,20 @@
         circle.type="button";circle.style.left=(100*loc.position).toFixed(1)+"%";
         circle.classList.toggle("has-variant",present);
         circle.classList.toggle("is-anchor",anchors.includes(i));
-        circle.classList.toggle("is-hit",hit&&present&&fullMatch&&person.group==="cases");
-        circle.classList.toggle("is-control-hit",hit&&present&&fullMatch&&person.group==="controls");
-        circle.classList.toggle("is-partial-match",hit&&present&&!fullMatch);
+        circle.classList.toggle("is-hit",hit&&present&&fullMatch&&person.group==="falls");
+        circle.classList.toggle("is-jämförelse-hit",hit&&present&&fullMatch&&person.group==="jämförelses");
+        circle.classList.toggle("is-delvis-match",hit&&present&&!fullMatch);
         circle.classList.toggle("is-pattern-missing",hit&&!present&&relation==="parity"&&fullMatch);
-        circle.title=person.id+" · "+loc.label+": "+(present?"variant present":"variant absent")+". Click to toggle observation.";
+        circle.title=person.id+" · "+loc.label+": "+(present?"varianten finns":"varianten saknas")+". Tryck för att ändra observationen.";
         circle.setAttribute("aria-label",circle.title);
         circle.addEventListener("click",()=>toggleVariant(profileIndex,i));
         track.append(circle);
       });
       row.append(track,e("span","cohort-genome-count",
-        selectedState===null?(person.group==="cases"?"case":"control"):(fullMatch?"matches":"partial")));
+        selectedState===null?(person.group==="falls"?"fall":"jämförelse"):(fullMatch?"matchar":"delvis")));
       holder.append(row);
       const matrixRow=e("div","cohort-matrix-row");
-      matrixRow.classList.add(person.group==="cases"?"is-case":"is-control");
+      matrixRow.classList.add(person.group==="falls"?"is-fall":"is-jämförelse");
       matrixRow.append(e("span","",person.id));
       LOCI.forEach((loc,i)=>{
         const present=person.variants.includes(i);
@@ -122,11 +122,11 @@
         cell.classList.toggle("is-variant",present);
         cell.classList.toggle("is-anchor",anchors.includes(i));
         const component=selectedState!==null&&(selectedState&(1<<i))!==0;
-        cell.classList.toggle("is-highlight",component&&present&&fullMatch&&person.group==="cases");
+        cell.classList.toggle("is-highlight",component&&present&&fullMatch&&person.group==="falls");
         cell.classList.toggle("is-pattern-missing",component&&!present&&fullMatch&&relation==="parity");
-        cell.classList.toggle("is-partial-match",component&&present&&!fullMatch);
-        cell.title="Toggle synthetic observation "+person.id+" / "+loc.label;
-        cell.setAttribute("aria-label",person.id+" "+loc.label+": "+(present?"1":"0")+". Toggle.");
+        cell.classList.toggle("is-delvis-match",component&&present&&!fullMatch);
+        cell.title="Ändra syntetisk observation "+person.id+" / "+loc.label;
+        cell.setAttribute("aria-label",person.id+" "+loc.label+": "+(present?"1":"0")+". Tryck för att ändra.");
         cell.addEventListener("click",()=>toggleVariant(profileIndex,i));
         matrixRow.append(cell);
       });
@@ -135,7 +135,7 @@
   }
   function toggleVariant(profileIndex,locusIndex){
     changed();
-    const target=profileIndex<dataset.cases.length?dataset.cases[profileIndex]:dataset.controls[profileIndex-dataset.cases.length];
+    const target=profileIndex<dataset.falls.length?dataset.falls[profileIndex]:dataset.jämförelses[profileIndex-dataset.falls.length];
     if(target.variants.includes(locusIndex))target.variants=target.variants.filter(i=>i!==locusIndex);
     else target.variants=[...target.variants,locusIndex].sort((a,b)=>a-b);
     run();
@@ -144,20 +144,20 @@
     const panel=$("cohortGroverStats");panel.replaceChildren();
     const iters=result.rounds.flatMap(r=>r.lanes.map(l=>l.iterations));
     const metrics=[
-      ["Input",all().length+" fictional profiles × "+LOCI.length+" loci"],
-      ["Small logical room","4 bits / 16 states"],
-      ["Funnel bandwidth","16 → 4 → 1"],
-      ["Local Grover searches",String(iters.length)],
-      ["Rotation passes",String(result.rotations)],
-      ["Active local amplifications",iters.filter(v=>v>0).length+"/"+iters.length],
-      ["Candidate subsets",String(result.evaluatedCount)],
-      ["Passed full-sample rules",String(result.qualifiedCount)],
-      ["Parent Grover m",String(result.parentGrover.iterations)],
-      ["Parent marked mass",percent(result.parentGrover.markedMass)],
-      ["Composite entropy",result.entropyBits.toFixed(3)+" bits"],
-      ["Rotational convergence",result.stable?"Yes":"Not demonstrated"]
+      ["Indata",all().length+" fiktiva profiler × "+LOCI.length+" positioner"],
+      ["Litet logiskt rum","4 bitar / 16 tillstånd"],
+      ["Trattens bandbredd","16 → 4 → 1"],
+      ["Lokala Grover-sökningar",String(iters.length)],
+      ["Rotationspass",String(result.rotations)],
+      ["Aktiva lokala förstärkningar",iters.filter(v=>v>0).length+"/"+iters.length],
+      ["Kandidatdelmängder",String(result.evaluatedCount)],
+      ["Godkända av hela gruppens regler",String(result.qualifiedCount)],
+      ["Överordnad Grover: m",String(result.parentGrover.iterations)],
+      ["Överordnad markerad massa",percent(result.parentGrover.markedMass)],
+      ["Sammanbunden entropi",result.entropyBits.toFixed(3)+" bits"],
+      ["Konvergens efter rotation",result.stable?"Ja":"Inte påvisad"]
     ];
-    for(const [label,value] of metrics){
+    for(const [label,value] av metrics){
       const card=e("div","cohort-stat");
       card.append(e("small","",label),e("strong","",value));panel.append(card);
     }
@@ -176,33 +176,33 @@
     if(!local||!groups||!timeline||!dist||!notes)return;
     local.replaceChildren();groups.replaceChildren();timeline.replaceChildren();dist.replaceChildren();notes.replaceChildren();
     const pass=result.rounds[Math.min(selectedPass,result.rotations-1)];
-    for(const [i,r] of result.rounds.entries()){
+    for(const [i,r] av result.rounds.entries()){
       const btn=e("button","funnel-pass-button","R"+(i+1));
       btn.type="button";btn.classList.toggle("is-selected",r.index===pass.index);
       btn.addEventListener("click",()=>{selectedPass=i;renderFunnel();});
       timeline.append(btn);
     }
     $("funnelPassDescription").textContent="Rotation "+pass.index+"/"+result.rotations+
-      " · 16 independent four-locus probability distributions · 4 groups of 4 · 1 bound 10D distribution. Entropy "+
+      " · 16 separata fyrpositionsfördelningar · 4 grupper med 4 rum · 1 sammanbunden tiodimensionell fördelning. Entropi: "+
       pass.alignment.boundEntropyBits.toFixed(3)+" bits.";
-    for(const lane of pass.lanes){
+    for(const lane av pass.lanes){
       const card=e("article","funnel-lane-card");
       card.append(e("strong","","L"+String(lane.index+1).padStart(2,"0")+" · "+lane.window.map(i=>LOCI[i].label).join(" / ")));
       card.append(miniBars(lane.likelihood,"funnel-lane-spark"));
-      card.append(e("small","","16 states · M="+lane.marks+" · Grover m="+lane.iterations+" · mass "+percent(lane.markedMass)));
+      card.append(e("small","","16 tillstånd · M="+lane.marks+" · Grover m="+lane.iterations+" · massa "+percent(lane.markedMass)));
       local.append(card);
     }
-    for(const g of pass.groups){
+    for(const g av pass.groups){
       const card=e("article","funnel-fold-card");
       card.append(e("strong","","F"+(g.index+1)+" · L"+g.memberIndices.map(i=>i+1).join(", L")));
       const vals=g.posterior.filter(p=>p>0).sort((a,b)=>b-a).slice(0,12);
       card.append(miniBars(vals,"funnel-fold-spark"));
-      card.append(e("small","","Joint 10D distribution · entropy "+g.entropyBits.toFixed(3)+" bits"));
+      card.append(e("small","","Gemensam tiodimensionell fördelning · entropi "+g.entropyBits.toFixed(3)+" bits"));
       groups.append(card);
     }
     const top=result.ranked.slice(0,12);
-    if(!top.length)dist.append(e("p","funnel-empty","The final oracle confirms no valid pattern. The folder does not invent a highlight."));
-    for(const [i,item] of top.entries()){
+    if(!top.length)dist.append(e("p","funnel-empty","Inget mönster uppfyller det slutliga oraklet. Tratten hittar inte på en markering."));
+    for(const [i,item] av top.entries()){
       const btn=e("div","funnel-prob-row");
       btn.classList.toggle("is-selected",selectedState===item.state);
       btn.append(e("span","funnel-prob-name","#"+(i+1)+" · "+locusNames(item.loci)));
@@ -214,48 +214,48 @@
     }
     const last=result.rounds.at(-1).alignment;
     const messages=[
-      ["Probability retention","All 16 probabilities from each four-bit Grover room pass into its fold, not just the winning index."],
-      ["Rotation synthesis","The 4→1 bind retains each group's probability distribution; rotation passes are equally pooled without double-counting them as independent evidence."],
-      ["Convergence","TVD "+(last.deltaTvd===null?"—":last.deltaTvd.toFixed(4))+
+      ["Bevarade sannolikheter","Alla 16 sannolikheter från varje fyrbitarsrum förs vidare, inte bara det högst rankade tillståndet."],
+      ["Syntes mellan rotationer","4→1-sammanbindningen bevarar gruppernas fördelningar. Rotationspassen vägs lika utan att räknas flera gånger som oberoende evidens."],
+      ["Konvergens","TVD "+(last.deltaTvd===null?"—":last.deltaTvd.toFixed(4))+
        " · top-k Jaccard "+(last.topkJaccard===null?"—":last.topkJaccard.toFixed(2))+
-       " · "+(result.stable?"stable":"not stable under pass cap")],
-      ["Full-sample consistency","Candidate highlights are checked against the SAME synthetic observations used in discovery; this is not independent biological verification."],
-      ["Information bound","Correlations spanning more than one four-locus projection need not be recoverable after folding."]
+       " · "+(result.stable?"stabil":"inte stabil inom vald gräns")],
+      ["Samstämmighet i samma data","Kandidaterna kontrolleras mot SAMMA syntetiska observationer som användes för sökningen. Det är ingen oberoende biologisk verifiering."],
+      ["Informationsgräns","Korrelationer som sträcker sig över flera fyrpositionsfönster går inte alltid att återskapa efter sammanbindningen."]
     ];
-    for(const [title,desc] of messages){const row=e("p","funnel-diagnostic");row.append(e("strong","",title+": "),e("span","",desc));notes.append(row);}
+    for(const [title,desc] av messages){const row=e("p","funnel-diagnostic");row.append(e("strong","",title+": "),e("span","",desc));notes.append(row);}
   }
   function renderAudit(){
     const target=$("cohortAudit");
     if(!target)return;
     target.replaceChildren();
-    target.append(e("h4","","Separate cohort-oracle sensitivity · synthetic model"));
+    target.append(e("h4","","Separata känslighetskontroller för grupporaklet · syntetisk modell"));
     const usableLeaveOneOut=audit.leaveOneOut.filter(x=>!x.skipped);
     const leaveOneText=usableLeaveOneOut.length
       ?usableLeaveOneOut.filter(x=>x.retainsTop).length+"/"+usableLeaveOneOut.length+
-          " leave-one-out runs still include the reference candidate"
-      :"Not available: removing one case would leave fewer than two profiles.";
+          " körningar med ett fall uteslutet innehåller fortfarande referenskandidaten"
+      :"Not available: removing one fall would leave fewer than two profiles.";
     const items=[
-      ["8% independent bit flips",audit.repeatability+"/5 runs retain the same first-ranked pattern; "+audit.retained+"/5 still include it among eligible candidates"],
-      ["Leave-one-case-out",leaveOneText],
-      ["Reversed cohort labels",audit.negativeControl.markedCount+" eligible patterns; original result retained: "+(audit.negativeControl.retainsTop?"yes":"no")]
+      ["8 % oberoende bitvändningar",audit.repeatability+"/5 körningar behåller samma topprankade mönster; "+audit.retained+"/5 har det kvar bland de godkända kandidaterna"],
+      ["Leave-one-fall-out",leaveOneText],
+      ["Ombytta gruppetiketter",audit.negativeControl.markedCount+" godkända mönster; ursprungsresultatet kvar: "+(audit.negativeControl.retainsTop?"ja":"nej")]
     ];
-    for(const [key,value] of items){
+    for(const [key,value] av items){
       const row=e("div","cohort-audit-row");
       row.append(e("strong","",key),e("span","",value));target.append(row);
     }
-    target.append(e("p","cohort-audit-caveat","These checks rerun the standalone cohort oracle, not the complete rotating funnel. The noise selector above adds classical readout uncertainty, not real NISQ gate/decoherence noise. Neither proves NISQ robustness, freedom from bias or clinical validity."));
+    target.append(e("p","cohort-audit-caveat","Kontrollerna kör det fristående grupporaklet, inte hela den roterande tratten. Brusinställningen lägger till klassisk avläsningsosäkerhet, inte verkligt NISQ-brus från grindar eller dekoherens. Inget av detta bevisar brustålighet, avsaknad av snedvridning eller klinisk giltighet."));
   }
   function renderOutcome(){
     const headline=$("cohortOutcome"),detail=$("cohortOutcomeDetail"),alts=$("cohortAlternatives"),
       quality=$("cohortQuality"),evidence=$("cohortEvidence");
     alts.replaceChildren();
     if(!result.selected){
-      headline.textContent="No matching connection found with these settings.";
-      detail.textContent="None of the possible combinations passed the complete sample check. You can try a different starting point or change the example data.";
+      headline.textContent="Inget samband uppfyller de valda villkoren.";
+      detail.textContent="Ingen av kombinationerna klarade kontrollen mot hela exempelgruppen. Prova en annan startposition eller ändra exempeldata.";
       if($("cohortCandidatesPanel"))$("cohortCandidatesPanel").hidden=true;
       quality.dataset.status="unresolved";
-      quality.textContent="The model has no valid match. No DNA positions are highlighted; this does not rule anything out for real patients.";
-      if(evidence)evidence.textContent="No candidate met the preset rules in these invented observations. This is a model result, not a conclusion about any real person.";
+      quality.textContent="Modellen har ingen giltig träff. Inga DNA-positioner markeras. Det säger inget om verkliga patienter.";
+      if(evidence)evidence.textContent="Ingen kandidat uppfyllde reglerna i de påhittade observationerna. Detta är ett modellresultat, inte en slutsats om en verklig person.";
       selectedState=null;
       return;
     }
@@ -264,35 +264,35 @@
     selectedState=item.state;
     const count=result.leaders.length;
     headline.textContent=count===1
-      ?"QCDS highlights one leading possible connection."
-      :count+" possible connections remain near the top — there is no single answer.";
-    const relation=result.settings.relation==="parity"?"a shared combination of present (1) and absent (0) features":"variants that occur together";
-    detail.textContent="Highlighted positions: "+locusNames(item.loci)+". This is a search for "+
-      relation+". It fits "+item.caseCount+" of "+dataset.cases.length+" invented cases and "+
-      item.controlCount+" of "+dataset.controls.length+" comparisons. These are model relationships, not a cancer diagnosis.";
+      ?"QCDS markerar ett ledande möjligt samband."
+      :count+" möjliga samband ligger nära toppen – inget entydigt svar har fastställts.";
+    const relation=result.settings.relation==="parity"?"en gemensam kombination av närvarande (1) och frånvarande (0) egenskaper":"varianter som förekommer tillsammans";
+    detail.textContent="Markerade positioner: "+locusNames(item.loci)+". Sökningen gäller "+
+      relation+". Mönstret uppfylls av "+item.fallCount+" av "+dataset.falls.length+" invented falls and "+
+      item.jämförelseCount+" av "+dataset.jämförelses.length+" jämförelser. Detta är modellsamband, inte en cancerdiagnos.";
     quality.dataset.status=result.stable?"stable":"unstable";
     quality.textContent=(result.stable
-      ?"The probability pattern met the model's internal stability checks."
-      :"The rotating probabilities have NOT fully stabilized in the selected number of passes.")+
-      " "+result.rotations+" rotations were calculated. Stability does not establish biological truth.";
+      ?"Sannolikhetsmönstret uppfyllde modellens interna stabilitetsvillkor."
+      :"The rotating probabilities have NOT fully stabilized in the selected number av passes.")+
+      " "+result.rotations+" rotationer beräknades. Stabilitet är inte samma sak som biologisk sanning.";
     if(evidence){
       const nullCheck=D.permutationAudit({...readSettings(),selectedState:item.state});
       const pct=(100*nullCheck.familywiseFraction).toFixed(1)+"%";
       evidence.dataset.status=nullCheck.familywiseFraction>.05?"weak":"unvalidated";
-      const groupDescription=dataset.cases.length+" cases and "+dataset.controls.length+" comparisons";
+      const groupDescription=dataset.falls.length+" falls and "+dataset.jämförelses.length+" jämförelser";
       const samplingText=nullCheck.method==="exact"
-        ?"We checked all "+nullCheck.assignments+" possible ways of reassigning "+groupDescription+"."
-        :"We tried "+nullCheck.assignments+" reproducible random reassignments of "+groupDescription+
-          "; this is an ESTIMATE using sampled labels, not every possible grouping.";
+        ?"Vi kontrollerade alla "+nullCheck.assignments+" possible ways av reassigning "+groupDescription+"."
+        :"Vi provade "+nullCheck.assignments+" reproducible random reassignments av "+groupDescription+
+          "; detta är en UPPSKATTNING från ett urval gruppetiketter, inte en uttömmande genomgång.";
       const proportionText=nullCheck.method==="exact"
-        ?nullCheck.tailAssignments+" of those groupings ("+pct+")"
-        :nullCheck.tailAssignments+" of those sampled groupings (corrected estimate "+pct+")";
-      evidence.textContent="How convincing is the grouping? "+samplingText+" "+
-        proportionText+" produced at least one eligible pattern with a group difference as large as this one. "+
-        "We considered "+nullCheck.validCandidates+" candidate combinations. This does not account for adjusting the search rules after seeing the results, and it is not medical evidence.";
+        ?nullCheck.tailAssignments+" av those groupings ("+pct+")"
+        :nullCheck.tailAssignments+" av those sampled groupings (corrected estimate "+pct+")";
+      evidence.textContent="Hur starkt är stödet för gruppskillnaden? "+samplingText+" "+
+        proportionText+" gav minst ett godkänt mönster med en minst lika stor gruppskillnad. "+
+        "Vi undersökte "+nullCheck.validCandidates+" kandidatkombinationer. Kontrollen tar inte hänsyn till att sökregler kan ändras efter att resultaten setts, och är ingen medicinsk evidens.";
     }
     const allOptions=result.ranked.slice(0,16);
-    for(const alt of allOptions){
+    for(const alt av allOptions){
       const b=e("button","cohort-alt",locusNames(alt.loci));b.type="button";
       b.setAttribute("aria-pressed",selectedState===alt.state?"true":"false");
       b.classList.toggle("is-selected",selectedState===alt.state);
@@ -300,7 +300,7 @@
       alts.append(b);
     }
     const title=$("cohortAlternativeTitle");
-    if(title)title.textContent="See other possible DNA connections ("+Math.min(result.ranked.length,16)+")";
+    if(title)title.textContent="Visa andra möjliga DNA-samband ("+Math.min(result.ranked.length,16)+")";
   }
   function readSettings(){
     return {
@@ -326,14 +326,14 @@
       notify();
     }catch(error){$("cohortError").textContent=error.message;}
   }
-  // The cohort is a user-chosen research input, never a fixed property of QCDS.
+  // The cohort is a user-chosen research input, never a fixed property av QCDS.
   // Refresh available counts, preserving each old threshold as a fraction
-  // of its prior group size if the sample size changes.
+  // av its prior group size if the sample size changes.
   function populateThresholds(previousCases,previousControls){
-    const cases=dataset.cases.length,controls=dataset.controls.length;
-    for(const [id,n,oldN,minMode] of [
-      ["cohortMinCases",cases,previousCases,true],
-      ["cohortMaxControls",controls,previousControls,false]
+    const falls=dataset.falls.length,jämförelses=dataset.jämförelses.length;
+    for(const [id,n,oldN,minMode] av [
+      ["cohortMinCases",falls,previousCases,true],
+      ["cohortMaxControls",jämförelses,previousControls,false]
     ]){
       const el=$(id);
       const old=Number(el.value);
@@ -342,27 +342,27 @@
         Math.max(0,Math.min(n,Math.floor(fraction*n+.000001)));
       el.replaceChildren();
       for(let i=minMode?1:0;i<=n;i++){
-        const option=e("option","",(minMode?"At least ":"At most ")+i+" / "+n);
+        const option=e("option","",(minMode?"Minst ":"Högst ")+i+" / "+n);
         option.value=String(i);
         el.append(option);
       }
       el.value=String(chosen);
     }
-    if($("cohortStatsPeople"))$("cohortStatsPeople").textContent=cases+" + "+controls;
+    if($("cohortStatsPeople"))$("cohortStatsPeople").textContent=falls+" + "+jämförelses;
     if($("cohortStatsPeopleLabel"))
-      $("cohortStatsPeopleLabel").textContent="fictional cases + fictional comparisons · adjustable example";
-    if($("cohortHeaderCount"))$("cohortHeaderCount").textContent=cases+" cases + "+controls+" comparisons";
+      $("cohortStatsPeopleLabel").textContent="fictional falls + fictional jämförelser · adjustable example";
+    if($("cohortHeaderCount"))$("cohortHeaderCount").textContent=falls+" falls + "+jämförelses+" jämförelser";
   }
   function regenerate(delta=0){
     const seedInput=$("cohortDataSeed");
     const seed=Number(seedInput.value)+delta;
     const mode=$("cohortDataMode").value;
-    const caseCount=Number($("cohortCaseCount").value),controlCount=Number($("cohortControlCount").value);
-    if(!Number.isInteger(caseCount)||!Number.isInteger(controlCount)||
-       caseCount<2||controlCount<2||caseCount>30||controlCount>30)
-      throw Error("Choose between 2 and 30 fictional profiles in each group for this browser example.");
-    const previousCases=dataset.cases.length,previousControls=dataset.controls.length;
-    const next=D.generateProfiles(seed,mode,caseCount,controlCount);
+    const fallCount=Number($("cohortCaseCount").value),jämförelseCount=Number($("cohortControlCount").value);
+    if(!Number.isInteger(fallCount)||!Number.isInteger(jämförelseCount)||
+       fallCount<2||jämförelseCount<2||fallCount>30||jämförelseCount>30)
+      throw Error("Välj mellan 2 och 30 påhittade profiler per grupp i detta webbläsarexempel.");
+    const previousCases=dataset.falls.length,previousControls=dataset.jämförelses.length;
+    const next=D.generateProfils(seed,mode,fallCount,jämförelseCount);
     changed();
     dataset=next;
     populateThresholds(previousCases,previousControls);
@@ -372,29 +372,29 @@
     run();
   }
   // Load only declarative input conditions. Every result is recalculated by
-  // the SAME production genome funnel; no answer mask is part of a preset.
+  // the SAME production genome funnel; no answer mask is part av a preset.
   function loadExample(config){
-    if(!config||!["structure","null"].includes(config.mode))throw Error("Unknown tutorial example.");
-    const {seed,mode,caseCount,controlCount}=config;
-    const c=Number(caseCount),k=Number(controlCount);
+    if(!config||!["structure","null"].includes(config.mode))throw Error("Okänt handledningsexempel.");
+    const {seed,mode,fallCount,jämförelseCount}=config;
+    const c=Number(fallCount),k=Number(jämförelseCount);
     if(!Number.isInteger(c)||!Number.isInteger(k)||c<2||k<2||c>30||k>30)
-      throw Error("The guided browser examples support 2–30 synthetic profiles per group.");
-    const generated=D.generateProfiles(Number(seed),mode,c,k);
+      throw Error("De guidade exemplen stöder 2–30 syntetiska profiler per grupp.");
+    const generated=D.generateProfils(Number(seed),mode,c,k);
     const minCases=Number(config.minCases),maxControls=Number(config.maxControls);
     if(!Number.isInteger(minCases)||minCases<1||minCases>c||
        !Number.isInteger(maxControls)||maxControls<0||maxControls>k)
-       throw Error("Example cohort thresholds do not match its sample size.");
+       throw Error("Exemplets tröskelvärden stämmer inte med gruppstorleken.");
     const relation=config.relation||"cooccurrence";
-    if(!["cooccurrence","parity"].includes(relation))throw Error("Unknown example relation oracle.");
+    if(!["cooccurrence","parity"].includes(relation))throw Error("Okänt sambandsorakel i exemplet.");
     const chosen=config.anchors||[];
     if(!Array.isArray(chosen)||chosen.length>3||new Set(chosen).size!==chosen.length||
        chosen.some(n=>!Number.isInteger(n)||n<0||n>=10))
-       throw Error("Example contains invalid starting anchors.");
+       throw Error("Exemplet innehåller ogiltiga startpositioner.");
     const passes=Number(config.maxPasses||6);
-    if(![3,6,9,12].includes(passes))throw Error("Invalid tutorial rotation count.");
+    if(![3,6,9,12].includes(passes))throw Error("Ogiltigt antal rotationer i exemplet.");
     const readoutNoise=Number(config.readoutNoise||0);
-    if(![0,.08,.15,.25].includes(readoutNoise))throw Error("Invalid tutorial noise parameter.");
-    const formerCases=dataset.cases.length,formerControls=dataset.controls.length;
+    if(![0,.08,.15,.25].includes(readoutNoise))throw Error("Ogiltig brusinställning i exemplet.");
+    const formerCases=dataset.falls.length,formerControls=dataset.jämförelses.length;
     dataset=generated;
     anchors=chosen.slice();
     $("cohortCaseCount").value=String(c);
@@ -421,7 +421,7 @@
       const conclusion=$("cohortResultTitle");
       if(conclusion && typeof conclusion.scrollIntoView==="function")conclusion.scrollIntoView({behavior:"smooth",block:"start"});
     });
-    populateThresholds(dataset.cases.length,dataset.controls.length);
+    populateThresholds(dataset.falls.length,dataset.jämförelses.length);
     $("cohortCaseCount").addEventListener("change",()=>{try{regenerate(0)}catch(e){$("cohortError").textContent=e.message;}});
     $("cohortControlCount").addEventListener("change",()=>{try{regenerate(0)}catch(e){$("cohortError").textContent=e.message;}});
     $("cohortMinCases").addEventListener("change",()=>{changed();run();});
@@ -433,7 +433,7 @@
     $("cohortNextDataset").addEventListener("click",()=>{try{regenerate(1)}catch(e){$("cohortError").textContent=e.message;}});
     $("cohortClearAnchors").addEventListener("click",()=>{changed();anchors=[];run();});
     if(typeof document.querySelectorAll==="function"){
-      for(const link of document.querySelectorAll('a[href="#workbench"], a[data-open-details="funnelDeepDive"]')){
+      for(const link av document.querySelectorAll('a[href="#workbench"], a[data-open-details="funnelDeepDive"]')){
         link.addEventListener("click",()=>{
           const id=link.getAttribute("href")==="#workbench"?"legacyWorkbenchDetails":"funnelDeepDive";
           const advanced=$(id);
@@ -443,6 +443,6 @@
     }
     run();
   }
-  return {LOCI,N,generateProfiles:D.generateProfiles,evaluateOracle:D.evaluate,initialize,
+  return {LOCI,N,generateProfils:D.generateProfils,evaluateOracle:D.evaluate,initialize,
     loadExample,getSnapshot,subscribe};
 });
