@@ -27,8 +27,8 @@ const noCandidate=D.permutationAudit({...negative,selectedState:null});
 assert.equal(noCandidate.tailAssignments,null);
 assert.equal(noCandidate.familywiseFraction,null);
 assert.equal(noCandidate.observedQualified,0);
-assert.throws(()=>D.permutationAudit({...datasetSettings,anchors:[-1]}),/Invalid permutation/);
-assert.throws(()=>D.permutationAudit({...datasetSettings,selectedState:999}),/Selected state/);
+assert.throws(()=>D.permutationAudit({...datasetSettings,anchors:[-1]}),/Ogiltigt startvillkor/);
+assert.throws(()=>D.permutationAudit({...datasetSettings,selectedState:999}),/valda tillståndet/);
 const modes=["cooccurrence","parity"];
 for(const relation of modes){
  const opts={...settings(42),relation};
