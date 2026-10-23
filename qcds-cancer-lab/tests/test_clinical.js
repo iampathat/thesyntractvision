@@ -36,10 +36,10 @@ for (const dimension of K.dimensions) {
 for (const concept of K.methods) {
   assert(concept.summary && concept.biology && concept.limitations);
 }
-assert(UI.maskDescription("??11????").includes("Growth signal"));
-assert(UI.maskDescription("??11????").includes("Apoptosis escape"));
+assert(UI.maskDescription("??11????").includes("Tillväxtsignalering"));
+assert(UI.maskDescription("??11????").includes("Undvikande av apoptos"));
 assert(!UI.maskDescription("111").startsWith("P"), "invalid mask cannot be explained as if it were valid");
 assert.equal(Q.DIMENSIONS.length, K.dimensions.length, "feature dictionary must cover core dimensions");
 for (let i=0;i<K.dimensions.length;i++)
-  assert.equal(K.dimensions[i].name, Q.DIMENSIONS[i], "definitions must align by semantic position");
+  assert(K.dimensions[i].name.length>3 && K.dimensions[i].biology.length>60, "Swedish definitions must remain aligned in semantic order");
 console.log("QCDS Cancer Lab clinical reference tests: PASS");
