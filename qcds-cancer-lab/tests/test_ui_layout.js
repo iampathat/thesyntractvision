@@ -38,4 +38,16 @@ assert(!app.includes('getElementById("funnelInputCount")'),"no stale references 
 assert(!app.includes('e("button","funnel-prob-row")'),"candidate chooser should not be duplicated inside probability chart");
 assert(css.includes(".genome-funnel-panel")&&css.includes(".legacy-lab-details"),"independent styles for both method branches");
 assert(html.includes('id="cohortAlternativeTitle"'),"alternatives intro is a single reusable affordance");
+// The main identity must remain exactly two rows across mobile layouts,
+// and must not quietly re-introduce the old multi-line "QCDS research" block.
+const brand=html.match(/<div class="clinical-brand">([\s\S]*?)<\/div>\s*<\/div>\s*<nav class="clinical-nav"/);
+assert(brand,"main identity brand and nav remain intact");
+assert(brand[1].includes('class="brand-pretitle">QCDS / THE SYNTRACT VISION'));
+assert(brand[1].includes('<h1 class="clinical-brand-title">Oncology Lab</h1>'));
+assert(!brand[1].includes("QCDS research"),"no redundant research title line");
+assert(!brand[1].includes("Exploratory computational hypothesis workspace"),"no redundant subtitle");
+assert(!brand[1].includes("<p>"),"brand should not expand to a third row");
+assert(!brand[1].includes("<h1")||brand[1].split("<h1").length===2,"single product heading");
+assert(css.includes(".clinical-brand h1.clinical-brand-title"),"compact mobile-specific title styling");
+assert(css.includes("max-width:350px"),"small phone header gets responsive sizing");
 console.log("Oncology Lab layperson-first UI and de-duplication checks: PASS");
