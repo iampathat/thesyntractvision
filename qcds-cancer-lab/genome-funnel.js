@@ -11,7 +11,7 @@
   root.QCDSGenomeFunnel=api;
 })(typeof globalThis!=="undefined"?globalThis:this,function(Q,D){
  "use strict";
- if(!Q||!D)throw Error("QCDS core and genome discovery are required");
+ if(!Q||!D)throw Error("QCDS-kärnan och genomsökningen måste vara tillgängliga");
  const WIDTH=10, STATES=1024, LANE_WIDTH=4, LANE_STATES=16;
  const LANES=16, FAN_IN=4, GROUPS=4;
  const MAX_PASSES=12, DEFAULT_PASSES=6;
@@ -23,7 +23,7 @@
  const EPS=1e-12;
  function normalize(vector){
    const z=vector.reduce((a,b)=>a+b,0);
-   if(!(z>0))throw Error("QCDS probability normalization failed");
+   if(!(z>0))throw Error("Normalisering av QCDS-sannolikheter misslyckades");
    return vector.map(x=>x/z);
  }
  function entropy(v){let h=0;for(const p of v)if(p>0)h-=p*Math.log2(p);return h;}
@@ -81,7 +81,7 @@
  function subsetValidity(settings){
    const anchors=D.mask(settings.anchors||[]);
    const valid=VALID.filter(s=>(s&anchors)===anchors);
-   if(!valid.length)throw Error("No states satisfy the current locus Condition");
+   if(!valid.length)throw Error("Inga tillstånd uppfyller det aktuella positionsvillkoret");
    return valid;
  }
  function fold(lanes,domain){
@@ -132,15 +132,15 @@
    return normalize(logs.map(v=>v===-Infinity?0:Math.exp(v-max)));
  }
  function validate(settings){
-   if(!settings?.dataset)throw Error("Cohort evidence is missing");
+   if(!settings?.dataset)throw Error("Gruppens observationsdata saknas");
    const anchors=settings.anchors||[];
    if(!Array.isArray(anchors)||anchors.length>3||new Set(anchors).size!==anchors.length||
-     anchors.some(x=>!Number.isInteger(x)||x<0||x>=WIDTH))throw Error("Invalid starting Condition");
+     anchors.some(x=>!Number.isInteger(x)||x<0||x>=WIDTH))throw Error("Ogiltigt startvillkor");
    const noise=Number(settings.readoutNoise||0);
-   if(!Number.isFinite(noise)||noise<0||noise>.35)throw Error("Readout mixing must be 0–35%");
+   if(!Number.isFinite(noise)||noise<0||noise>.35)throw Error("Avläsningsblandningen måste vara mellan 0 och 35 %");
    const maxPasses=settings.maxPasses===undefined?DEFAULT_PASSES:Number(settings.maxPasses);
-   if(!Number.isInteger(maxPasses)||maxPasses<1||maxPasses>MAX_PASSES)throw Error("Rotations must be 1–12");
-   if(!["cooccurrence","parity"].includes(settings.relation||"cooccurrence"))throw Error("Unknown oracle family");
+   if(!Number.isInteger(maxPasses)||maxPasses<1||maxPasses>MAX_PASSES)throw Error("Antalet rotationer måste vara mellan 1 och 12");
+   if(!["cooccurrence","parity"].includes(settings.relation||"cooccurrence"))throw Error("Okänd orakelfamilj");
    return {noise,maxPasses};
  }
  function verify(domain,settings){
