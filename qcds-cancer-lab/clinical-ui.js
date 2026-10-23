@@ -6,7 +6,7 @@
   "use strict";
   const K = root.CancerLabKnowledge;
   const Q = root.QCDSCore;
-  if (!K || !Q) throw new Error("Oncology Lab knowledge or core failed to load");
+  if (!K || !Q) throw new Error("Kunskapsbanken eller QCDS-kärnan kunde inte laddas");
   const $ = id => document.getElementById(id);
   const element = (tag, className, value) => {
     const e = document.createElement(tag);
@@ -18,12 +18,12 @@
   let currentTab = "oracles";
 
   function maskDescription(mask) {
-    if (!/^[01?]{8}$/.test(mask)) return "Invalid mask. Use exactly eight values from 0 / 1 / ?.";
+    if (!/^[01?]{8}$/.test(mask)) return "Ogiltig mask. Ange exakt åtta tecken med värdena 0 / 1 / ?.";
     const bindings = [];
     for (let i = 0; i < mask.length; i++) {
-      if (mask[i] !== "?") bindings.push("P" + (i + 1) + " = " + mask[i] + " (unrotated input: " + Q.DIMENSIONS[i] + ")");
+      if (mask[i] !== "?") bindings.push("P" + (i + 1) + " = " + mask[i] + " (oroterade indata: " + Q.DIMENSIONS[i] + ")");
     }
-    return bindings.length ? bindings.join("; ") : "All eight oracle positions are open; no position is constrained.";
+    return bindings.length ? bindings.join("; ") : "Alla åtta orakelpositioner är öppna. Ingen position är låst.";
   }
 
   function addField(host, heading, value) {
@@ -40,34 +40,34 @@
     lastFocus = document.activeElement;
     const content = $("clinicalBody");
     content.replaceChildren();
-    content.append(element("div", "reference-type", kind === "oracle" ? "ORACLE · RESEARCH HYPOTHESIS" : kind === "dimension" ? "DIMENSION · FEATURE DEFINITION" : "QCDS · TECHNICAL DEFINITION"));
+    content.append(element("div", "reference-type", kind === "oracle" ? "ORAKEL · FORSKNINGSHYPOTES" : kind === "dimension" ? "DIMENSION · EGENSKAPSDEFINITION" : "QCDS · TEKNISK DEFINITION"));
     content.append(element("h2", "", item.name));
     content.append(element("p", "reference-intro", item.summary));
     if (kind === "oracle") {
       const mask = override?.mask || root.CancerLabOracleState?.()[index] || item.mask || "????????";
-      addField(content, "Current QCDS mask", mask);
-      addField(content, "Formal positional constraints", maskDescription(mask));
-      addField(content, "Critical mapping limitation", "These are fixed positional constraints. Sixteen input rotations move semantic dimensions through those positions. The pathway label does not preserve a one-to-one gene mapping during rotation. The biological context below is explanatory, not encoded into this mask.");
+      addField(content, "Aktuell QCDS-mask", mask);
+      addField(content, "Formella positionsvillkor", maskDescription(mask));
+      addField(content, "Viktig begränsning i kopplingen", "Detta är fasta positionsvillkor. Sexton rotationer flyttar de semantiska dimensionerna genom positionerna. Namnet på en biologisk signalväg innebär inte att samma genkoppling bevaras i varje rotation. Den biologiska texten nedan är en förklaring, inte något som kodas i masken.");
     }
     if (kind === "dimension") {
-      addField(content, "Model index / state", "D" + (index + 1) + " · " + (override?.value ?? "?") + " · " + (override?.value === "?" || override?.value === undefined ? "Unresolved bit" : "Fixed symbolic bit; not an assay result"));
-      addField(content, "Scientific area", item.type);
+      addField(content, "Modellindex / tillstånd", "D" + (index + 1) + " · " + (override?.value ?? "?") + " · " + (override?.value === "?" || override?.value === undefined ? "Oavgjord bit" : "Fast symbolisk bit, inte ett provresultat"));
+      addField(content, "Vetenskapligt område", item.type);
     }
-    if (item.category) addField(content, "Classification", item.category);
-    addField(content, kind === "method" ? "Implementation / model interpretation" : "Molecular and biological context", item.biology);
-    addField(content, "Relevant genes / mechanisms (examples)", item.genes);
-    addField(content, "Data or assays needed for clinical interpretation", item.evidence);
-    addField(content, "Interpretation boundaries", item.limitations || item.caution);
-    if (item.question) addField(content, "Question before making this a testable oracle", item.question);
+    if (item.category) addField(content, "Klassificering", item.category);
+    addField(content, kind === "method" ? "Implementering / modelltolkning" : "Molekylärt och biologiskt sammanhang", item.biology);
+    addField(content, "Relevanta gener / mekanismer (exempel)", item.genes);
+    addField(content, "Data och mätmetoder som krävs för klinisk tolkning", item.evidence);
+    addField(content, "Tolkningens begränsningar", item.limitations || item.caution);
+    if (item.question) addField(content, "Fråga innan oraklet kan prövas vetenskapligt", item.question);
 
     if (kind === "oracle") {
       const box = element("div", "reference-alert");
-      box.append(element("strong", "", "Not a validated clinical rule"), element("p", "", "The name and legacy mask are independent illustrative objects. Editing this mask changes the simulation, not a proven causal model or biomarker interpretation. No patient-level evidence is loaded."));
+      box.append(element("strong", "", "Inte en validerad klinisk regel"), element("p", "", "Namnet och den äldre masken är två separata illustrationer. Att ändra masken påverkar simuleringen, inte någon bevisad orsaksmekanism eller biomarkörtolkning. Inga patientdata har laddats."));
       content.appendChild(box);
     }
     if (item.sourceKeys && item.sourceKeys.length) {
       const section = element("section", "clinical-sources");
-      section.append(element("h4", "", "Scientific references"));
+      section.append(element("h4", "", "Vetenskapliga källor"));
       const ul = element("ul");
       for (const key of item.sourceKeys) {
         const src = K.sources[key];
@@ -83,7 +83,7 @@
       section.appendChild(ul);
       content.appendChild(section);
     } else {
-      addField(content, "Reference status", "Algorithm explanation derived from the current Oncology Lab QCDS implementation; no external clinical validation is claimed.");
+      addField(content, "Källstatus", "Algoritmförklaringen utgår från den aktuella QCDS-implementeringen i Oncology Lab. Ingen extern klinisk validering påstås.");
     }
     $("clinicalOverlay").hidden = false;
     document.body.classList.add("clinical-open");
@@ -105,11 +105,11 @@
       const title = element("div", "dimension-reference-title");
       title.append(element("strong", "", "D" + (index + 1) + " · " + d.name), element("small", "", d.type));
       const state = element("code", "dimension-current-value", mask[index]);
-      state.title = "Current symbolic state, not a clinical result";
+      state.title = "Aktuellt symboliskt tillstånd, inte ett kliniskt resultat";
       const b = element("button", "explain-button", "?");
       b.type = "button";
-      b.setAttribute("aria-label", "Explain " + d.name);
-      b.title = "Explain domain meaning and model limitations";
+      b.setAttribute("aria-label", "Förklara " + d.name);
+      b.title = "Förklara domain meaning and model limitations";
       b.addEventListener("click", () => open("dimension", index, {value: mask[index]}));
       row.append(title, state, b);
       target.appendChild(row);
@@ -130,12 +130,12 @@
       button.type = "button";
       const main = element("span");
       main.append(element("strong", "", item.name), element("small", "", item.summary));
-      const rhs = element("span", "knowledge-arrow", "Open definition →");
+      const rhs = element("span", "knowledge-arrow", "Öppna förklaring →");
       button.append(main, rhs);
       button.addEventListener("click", () => open(kind, index));
       list.appendChild(button);
     });
-    if (!list.childElementCount) list.append(element("p", "knowledge-empty", "No matching definitions. Try a pathway, gene or model term."));
+    if (!list.childElementCount) list.append(element("p", "knowledge-empty", "Inga träffar. Prova en signalväg, gen eller ett modellbegrepp."));
   }
 
   function initialize() {
