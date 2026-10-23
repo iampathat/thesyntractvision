@@ -21,6 +21,7 @@ test -s _site/qcds-cancer-lab/tests/test_examples.js
 test -s _site/qcds-cancer-lab/tests/test_swedish.js
 test -s _site/qcds-oncology-lab/onco-navigation.js
 test -s _site/qcds-cancer-lab/tests/test_funnel.js
+test -s _site/qcds-cancer-lab/tests/test_funnel_visuals.js
 test -s _site/qcds-cancer-lab/tests/test_calibration.js
 test -s _site/qcds-cancer-lab/tests/test_cohort_sizes.js
 test -s _site/qcds-cancer-lab/tests/test_ui_layout.js
@@ -69,6 +70,7 @@ node _site/qcds-cancer-lab/tests/test_clinical.js
 node _site/qcds-cancer-lab/tests/test_conclusion.js
 node _site/qcds-cancer-lab/tests/test_genome.js
 node _site/qcds-cancer-lab/tests/test_funnel.js
+node _site/qcds-cancer-lab/tests/test_funnel_visuals.js
 node _site/qcds-cancer-lab/tests/test_calibration.js
 node _site/qcds-cancer-lab/tests/test_cohort_sizes.js
 node _site/qcds-cancer-lab/tests/test_ui_layout.js
