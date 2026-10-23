@@ -100,6 +100,6 @@ assert.equal(noSolution.leaders.length,0);
 assert.equal(noSolution.selected,null);
 assert.equal(noSolution.parentGrover.iterations,0);
 assert.equal(noSolution.stable,false,"empty candidate set is not verified success despite flat numerical distributions");
-assert.throws(()=>F.run({...opts(),maxPasses:13}),/1–12/);
-assert.throws(()=>F.run({...opts(),readoutNoise:.6}),/0–35/);
+assert.throws(()=>F.run({...opts(),maxPasses:13}),/1 och 12/);
+assert.throws(()=>F.run({...opts(),readoutNoise:.6}),/0 och 35/);
 console.log("QCDS genome 16→4→1 rotating probability funnel numerical tests: PASS");
