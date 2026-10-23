@@ -186,7 +186,7 @@ function initialize(){
   }
  });
  root.OncologyLabExamples={
-  load:id=>{const p=byId.get(id);if(!p)throw Error("Unknown example: "+id);load(p)},
+  load:id=>{const p=byId.get(id);if(!p)throw Error("Okänt exempel: "+id);load(p)},
   list:()=>PRESETS.map(p=>({id:p.id,name:p.name}))
  };
 }
