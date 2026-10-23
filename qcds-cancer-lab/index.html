@@ -7,7 +7,7 @@
   <title>QCDS Oncology Lab — Utforska samband i syntetiskt DNA</title>
   <meta name="description" content="Utforska hur QCDS roterar små logiska rum och beräknar sannolikhetsmönster i påhittade DNA-profiler. Endast forskningssimulering, inga patientdata eller kliniskt verifierade resultat." />
   <link rel="stylesheet" href="./style.css?v=20261022-inference" />
-  <link rel="stylesheet" href="./clinical.css?v=20261023-sv1" />
+  <link rel="stylesheet" href="./clinical.css?v=20261023-verified-probabilities" />
 </head>
 <body class="clinical-theme">
   <main class="shell">
@@ -191,11 +191,11 @@
             <div id="funnelTimeline" class="funnel-timeline" aria-label="Välj en beräknad rotation"></div>
             <p id="funnelPassDescription"></p>
           </div>
-          <div class="funnel-stage-caption"><span>01 / INGÅNGSBAND­BREDD</span><strong>16 små Grover-sökningar</strong><small>Staplarna visar simulerade sannolikheter för 16 tillstånd efter orakel och eventuell avläsningsblandning.</small></div>
+          <div class="funnel-stage-caption"><span>01 / INGÅNGSBAND­BREDD</span><strong>16 små Grover-sökningar</strong><small>Endast rum med en lokal träff får förstärkta staplar. Annars är samtliga 16 tillstånd lika sannolika (6,25 %). Staplarnas skala är 0–100 %.</small></div>
           <div class="funnel-lane-grid" id="funnelLaneGrid" aria-label="Sexton separat beräknade Grover-fördelningar"></div>
-          <div class="funnel-stage-caption"><span>02 / DIMENSIONSSAMMANBINDNING</span><strong>Fyra sammanbundna sannolikhetsfördelningar</strong><small>Fyra lokala fördelningar per grupp förs samman i kandidatrummet.</small></div>
+          <div class="funnel-stage-caption"><span>02 / DIMENSIONSSAMMANBINDNING</span><strong>Fyra sammanbundna sannolikhetsfördelningar</strong><small>Varje grupp innehåller 375 kandidatsannolikheter. Diagrammen visar alla kandidater i 15 ranggrupper med samma skala för F1–F4.</small></div>
           <div class="funnel-group-grid" id="funnelGroupGrid" aria-label="Fyra syntetiserade sannolikhetsfördelningar"></div>
-          <div class="funnel-stage-caption"><span>03 / SYNTRACT-SAMMANBINDNING</span><strong>Ett samlat resultat, kontrollerat mot varje profil</strong><small>Staplarna jämför sannolikheter för symboliska kandidater som uppfyller reglerna.</small></div>
+          <div class="funnel-stage-caption"><span>03 / SYNTRACT-SAMMANBINDNING</span><strong>Ett samlat resultat, kontrollerat mot varje profil</strong><small>Staplarna visar absoluta modellandelar före överordnad Grover, inte sannolikheter för cancer. Kandidater godkänns genom separat klassisk kontroll av alla 375 kombinationer.</small></div>
           <div id="funnelDistribution" class="funnel-distribution" aria-label="Huvudfördelning för kandidater som uppfyller samma indataregler"></div>
           <details class="funnel-method">
             <summary>Tekniska kontroller: vad bevaras, går förlorat och prövas?</summary>
@@ -412,7 +412,7 @@
   <script src="./app.js?v=20261023-sv1"></script>
   <script src="./genome-discovery.js?v=20261023-sv1"></script>
   <script src="./genome-funnel.js?v=20261023-sv1"></script>
-  <script src="./genome-perspective.js?v=20261023-sv1"></script>
+  <script src="./genome-perspective.js?v=20261023-verified-probabilities"></script>
   <script src="./onco-navigation.js?v=20261023-sv1"></script>
   <script src="./onco-examples.js?v=20261023-sv1"></script>
 </body>
