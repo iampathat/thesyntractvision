@@ -64,7 +64,7 @@
       btn.classList.toggle("is-anchor",anchors.includes(i));
       btn.setAttribute("aria-pressed",anchors.includes(i)?"true":"false");
       btn.setAttribute("aria-label","Startposition "+loc.label+" kromosom "+loc.chr);
-      btn.append(e("strong","",loc.label),e("small","","chr"+loc.chr));
+      btn.append(e("strong","",loc.label),e("small","","krom. "+loc.chr));
       btn.addEventListener("click",()=>toggleAnchor(i));
       panel.append(btn);
     });
