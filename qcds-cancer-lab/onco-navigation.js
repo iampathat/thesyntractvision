@@ -112,8 +112,8 @@ function init(){
  const older=$("legacyWorkbenchDetails");if(older)older.open=true;
  const resources=document.createElement("div");resources.className="onco-library-links";
  resources.innerHTML='<strong>Vetenskaplig granskning och källor</strong>'+
-  '<a href="./AUDIT_2026-10-22.md">Granskningsrapport ↗</a>'+
-  '<a href="./README.md">Teknisk dokumentation ↗</a>'+
+  '<a href="./GRANSKNING_SV.md">Granskningsrapport ↗</a>'+
+  '<a href="./GUIDE_SV.md">Teknisk dokumentation ↗</a>'+
   '<a href="./LICENSE.md">Licens ↗</a>';
  knowledge.prepend(resources);
  let active="";
