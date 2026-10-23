@@ -38,10 +38,10 @@ assert.equal(absent.grover.iterations,0);
 assert.equal(absent.refinedGrover.iterations,0);
 const anchored=D.evaluate({dataset:d42,anchors:[5],minCases:3,maxControls:1});
 assert(anchored.ranked.every(r=>r.loci.includes(5)));
-assert.throws(()=>D.evaluate({dataset:d42,anchors:[1,1]}),/distinct/);
-assert.throws(()=>D.evaluate({dataset:d42,anchors:[1,2,3,4]}),/three/);
-assert.throws(()=>D.evaluate({dataset:d42,anchors:[10]}),/valid/);
-assert.throws(()=>D.evaluate({dataset:d42,minCases:0}),/threshold/);
+assert.throws(()=>D.evaluate({dataset:d42,anchors:[1,1]}),/olika/);
+assert.throws(()=>D.evaluate({dataset:d42,anchors:[1,2,3,4]}),/tre/);
+assert.throws(()=>D.evaluate({dataset:d42,anchors:[10]}),/giltiga/);
+assert.throws(()=>D.evaluate({dataset:d42,minCases:0}),/tröskelvärden/);
 
 const perturbed=D.perturb(d42,8021,.25);
 assert.notDeepEqual(perturbed.cases,d42.cases);
@@ -64,7 +64,7 @@ if(parity.selected){
   assert.equal(D.coverage(parity.selected.state,d42.cases,"parity"),parity.selected.caseCount);
   assert.equal(D.coverage(parity.selected.state,d42.controls,"parity"),parity.selected.controlCount);
 }
-assert.throws(()=>D.evaluate({dataset:d42,relation:"arbitrary"}),/Unsupported/);
+assert.throws(()=>D.evaluate({dataset:d42,relation:"arbitrary"}),/stöds inte/);
 const parityAudit=D.stabilityAudit(parity);
 assert.equal(parityAudit.simulations.length,5);
 const nullData=D.generateProfiles(42,"null");
