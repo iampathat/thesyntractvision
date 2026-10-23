@@ -140,7 +140,7 @@
     const p1 = document.createElement("p");
     const status = last.stability?.stable ? "De interna konvergensvillkoren uppfylldes." : "De interna konvergensvillkoren uppfylldes inte.";
     p1.textContent = result.finalResolved
-      ? `The engine executed ${first.laneCount} symbolic seven-bit Grover searches per recursive pass (16 position rotations × 8 feature exclusions), combined the complete distributions into eight families och then a Parent-Grover distribution. Following ${result.cycles.length} pass(es), the algorithm amplified state ${result.finalState}, with inferred constraint mask ${result.finalLogic} (${unresolved} unresolved dimensions). ${status}`
+      ? `Motorn genomförde ${first.laneCount} symboliska sjubitarsökningar med Grover per rekursivt pass (16 positionsrotationer × 8 uteslutna dimensioner). Fördelningarna bands samman till åtta familjer och därefter till en överordnad Grover-fördelning. Efter ${result.cycles.length} pass förstärktes tillståndet ${result.finalState}, med härledd villkorsmask ${result.finalLogic} (${unresolved} oavgjorda dimensioner). ${status}`
       : `Motorn genomförde ${result.cycles.length} rekursiva pass, men ingen särskiljande förstärkning från överordnad Grover observerades. Den härledda masken är ${result.finalLogic} med ${unresolved} oavgjorda dimensioner. Beräkningsresultatet är olöst. ${status}`;
 
     const p2 = document.createElement("p");
