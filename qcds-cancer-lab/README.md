@@ -254,6 +254,15 @@ For scientific validation in a later research system, separately specify tumor s
 All additions in this section are research documentation, **not assertions of clinical efficacy**.
 
 
+## Guided reproducible examples — Oncology Lab
+
+**Where:** open the public Oncology Lab and select **Översikt → Prova ett färdigt exempel**. Two buttons load complete configurations through \`CancerGenomePerspective.loadExample\`. The same on-screen form, 10D cohort oracle, 16→4→1 QCDS probability funnel and statistical audit are used as for a manually entered condition. No hidden answer masks or pre-rendered biological discoveries are supplied. Each example changes the actual inputs and re-executes the model. A dynamic Swedish-language explanation remains present on each of the three relevant pages: **Undersökning, Resultat och QCDS-motorn**.
+
+- **Search for an unexpected relationship (recommended):** reproducible synthetic seed 42, structure mode, 8 fictional case profiles and 12 fictional comparators; no anchor; joint-presence relation; require ≥5/8 cases, ≤2/12 comparisons, at most six rotations, ideal amplitude simulation with no additional readout mixing. At this exact version of the model, a mathematically admissible combination emerges and the numerical stability criteria are met. The explanation obtains actual loci, support, count of rotations and verification limitations from the result. This is a purposely selected **teaching fixture**, not independent evidence of oncology causality or a fair estimate of sensitivity/precision.
+- **Negative-comparison demonstration:** reproducible seed 81, null mode, otherwise the same parameters. This particular generated dataset yields zero oracle-qualified combinations and therefore must show no selected locus. Many other null datasets **can** produce accidental positives; one negative run is not a proof of general noise rejection or clinical specificity.
+
+Both scenarios use 8+12 only as an **illustration**, not a maximum or minimum inherent to QCDS. The browser keeps independent editable sizes (2–30 in each group), symbolic 10-locus state size, and all existing advanced controls. Changing an example labels it as modified and recomputes the explanations from the current numerical result.
+
 ## Group size is a model input, not part of QCDS — updated 22 October 2026
 
 The example of *five people with a cancer and five comparison profiles* came from one explanation. **Neither five people nor equal-sized groups are an architectural QCDS assumption.** In the Oncology Lab UI, users choose independent group sizes from 2 to 30 synthetic profiles per group; the generating module accepts 2 to 100. These are **browser/example limits**, not claims about the limits of the substrate-independent QCDS architecture. The ten-locus encoding and 16-lane 4→1 rotating funnel are also finite teaching/reference configurations, not genome-wide limits.
