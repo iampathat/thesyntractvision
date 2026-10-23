@@ -41,7 +41,7 @@
     <section class="research-strip" aria-label="Forskningsomfattning">
       <div><small>BÖRJA HÄR</small><strong>DNA-samband</strong></div>
       <div><small>VALFRI GRUPPSTORLEK</small><strong id="cohortHeaderCount">Exempel: 5 + 5 profiler</strong></div>
-      <div><small>SEPARAT FORSKNINGSVERKTYG</small><strong>Original 8-bitarslaboratorium</strong></div>
+      <div><small>SEPARAT FORSKNINGSVERKTYG</small><strong>Ursprungligt 8-bitarslaboratorium</strong></div>
       <div><small>FORSKNINGSSTATUS</small><strong>Syntetiska data · inte kliniskt</strong></div>
     </section>
     <div class="research-scope"><strong>Vad analyseras egentligen?</strong> Tio påhittade DNA-positioner med värdena 0/1 från ett valfritt antal fiktiva profiler – <strong>inte</strong> tio sekvenserade mänskliga genom. Samtliga 375 tillåtna positionskombinationer kontrolleras också med ett vanligt CPU-orakel. Ingenting på sidan utgör ett patientfynd eller ett medicinskt test. Det separata 8-bitarslaboratoriet använder illustrativa regler, inte verkliga gentester. <button class="text-link" data-explain="provenance">Så skiljer vi modell och evidens ↗</button></div>
@@ -212,7 +212,7 @@
 
 <section id="workbench" class="workbench">
       <div class="section-head">
-        <span>SEPARAT METODLABORATORIUM · URSPRUNGLIG LÄGELL</span>
+        <span>SEPARAT METODLABORATORIUM · URSPRUNGLIG MODELL</span>
         <h2>Ursprungligt 8-bitars QCDS-laboratorium</h2>
         <p class="section-copy">Detta är ett separat äldre symboliskt experiment med åtta modelldimensioner och 128 lokala sökningar per pass. Det är <strong>inte</strong> genomundersökningen ovan. Funktionaliteten finns kvar för test av äldre masker, rekursiv inferens och diagnostik för enskilda logiska rum.</p>
       </div>
@@ -222,7 +222,7 @@
         <div class="legacy-workbench-body">
       <div class="bench-grid">
         <section class="control-panel">
-          <div class="panel-title"><span>01</span><div><small>LÄGELLINDATA</small><strong>Villkor: 0 / 1 / ?</strong></div><button class="explain-button" data-explain="state" aria-label="Förklara det logiska villkoret">?</button></div>
+          <div class="panel-title"><span>01</span><div><small>MODELLINDATA</small><strong>Villkor: 0 / 1 / ?</strong></div><button class="explain-button" data-explain="state" aria-label="Förklara det logiska villkoret">?</button></div>
           <div class="dimension-head"><span>Tryck för att växla symboliskt tillstånd: ? → 0 → 1</span><button id="resetMask" class="ghost">Rensa villkoret</button></div>
           <div class="dimension-labels" id="dimensionLabels"></div>
           <div class="mask-input" id="maskInput" aria-label="Interaktiv QCDS-indatamask"></div>
@@ -328,8 +328,8 @@
 
         <div class="results-live" id="resultsLive" hidden>
           <div class="result-head">
-            <div><small>AMPLIFIED LÄGEL STATE <button class="explain-button explain-inline" data-explain="parent">?</button></small><strong id="finalState">—</strong></div>
-            <div><small>INTERNAL LÄGEL PROBABILITY <button class="explain-button explain-inline" data-explain="grover">?</button></small><strong id="finalP">—</strong></div>
+            <div><small>FÖRSTÄRKT MODELLTILLSTÅND <button class="explain-button explain-inline" data-explain="parent">?</button></small><strong id="finalState">—</strong></div>
+            <div><small>INTERN MODELLSANNOLIKHET <button class="explain-button explain-inline" data-explain="grover">?</button></small><strong id="finalP">—</strong></div>
             <div><small>REKURSIVT BUNDEN MASK <button class="explain-button explain-inline" data-explain="state">?</button></small><strong id="finalLogic">—</strong></div>
             <div><small>REKURSIVA PASS <button class="explain-button explain-inline" data-explain="stability">?</button></small><strong id="roundCount">—</strong></div>
           </div>
@@ -352,7 +352,7 @@
           </article>
 
           <article class="plain-result">
-            <div class="plain-kicker">LÄGEL INTERPRETATION</div>
+            <div class="plain-kicker">MODELLTOLKNING</div>
             <h3>Tolkning och begränsningar</h3>
             <div id="laymanExplanation"></div>
           </article>
@@ -378,7 +378,7 @@
     </section>
 
     <details class="method-details" id="methods">
-      <summary><span>ORIGINAL 8-BIT LÄGEL / FORMAL METHODS</span><strong>Se hur det separata 8-bitarslaboratoriet fungerar</strong><span aria-hidden="true">＋</span></summary>
+      <summary><span>URSPRUNGLIG 8-BITARSMODELL / FORMELLA METODER</span><strong>Se hur det separata 8-bitarslaboratoriet fungerar</strong><span aria-hidden="true">＋</span></summary>
       <div class="method-content">
         <div class="method-table">
           <div><strong>Condition</strong><p>Åtta symboliska bitar. Fasta 0/1-villkor bevaras vid sammanbindning efter uteslutning, medan ? lämnar dimensionen öppen.</p><button class="text-link" data-explain="state">Definition ↗</button></div>
@@ -399,7 +399,7 @@
   </main>
   <div id="clinicalOverlay" class="clinical-overlay" hidden>
     <section class="clinical-dialog" role="dialog" aria-modal="true" aria-label="Referensdefinition för onkologi och QCDS" tabindex="-1">
-      <div class="clinical-dialog-top"><strong>CLINICAL REFERENCE / QCDS LÄGEL DEFINITION</strong><button type="button" id="clinicalClose" aria-label="Stäng referensinformationen">✕ Stäng</button></div>
+      <div class="clinical-dialog-top"><strong>KLINISK REFERENS / QCDS-MODELLDEFINITION</strong><button type="button" id="clinicalClose" aria-label="Stäng referensinformationen">✕ Stäng</button></div>
       <div id="clinicalBody" class="clinical-body"></div>
       <div class="clinical-dialog-foot">Vetenskapliga källbeskrivningar är separata från QCDS-reglerna som körs · Endast för forskning.</div>
     </section>
