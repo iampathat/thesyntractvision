@@ -36,11 +36,11 @@
   }
   function clamp(value,a,b){return Math.max(a,Math.min(b,value));}
   function generateProfiles(seed=173,mode="structure",caseCount=5,controlCount=caseCount){
-    if(!["structure","null"].includes(mode))throw Error("Unknown synthetic generation mode");
-    if(!Number.isInteger(Number(seed))||Number(seed)<1||Number(seed)>1000000)throw Error("Data seed must be an integer from 1 to 1,000,000.");
+    if(!["structure","null"].includes(mode))throw Error("Okänt sätt att skapa syntetiska data");
+    if(!Number.isInteger(Number(seed))||Number(seed)<1||Number(seed)>1000000)throw Error("Slumptalsfröet måste vara ett heltal mellan 1 och 1 000 000.");
     if(!Number.isInteger(caseCount)||!Number.isInteger(controlCount)||
        caseCount<2||controlCount<2||caseCount>100||controlCount>100)
-       throw Error("Synthetic browser examples support 2–100 people per group; this is not an architectural QCDS limit.");
+       throw Error("De syntetiska exemplen stöder 2–100 personer per grupp. Det är ingen arkitektonisk gräns för QCDS.");
     const rand=randomSource(seed);
     // Unobserved cohort-level shift and locus-specific effects are sampled,
     // rather than hardcoding a winning triple or fixed set of co-occurrences.
@@ -76,17 +76,17 @@
     const positives=chosen.filter(i=>person.variants.includes(i)).length;
     if(relation==="cooccurrence")return positives===chosen.length;
     if(relation==="parity")return positives%2===1;
-    throw Error("Unsupported relation-oracle family.");
+    throw Error("Orakeltypen för sambandet stöds inte.");
   }
   function coverage(state,profiles,relation="cooccurrence"){
     return profiles.reduce((sum,p)=>sum+Number(satisfies(state,p,relation)),0);
   }
   function checkProfiles(dataset){
     if(!dataset||!Array.isArray(dataset.cases)||!Array.isArray(dataset.controls)||dataset.cases.length<2||dataset.controls.length<2)
-      throw Error("Provide at least two synthetic cases and two comparators.");
+      throw Error("Ange minst två syntetiska fall och två jämförelser.");
     for(const p of [...dataset.cases,...dataset.controls]){
       if(!Array.isArray(p.variants)||new Set(p.variants).size!==p.variants.length||p.variants.some(i=>!Number.isInteger(i)||i<0||i>=LOCI.length))
-        throw Error("Invalid genotype vector for profile "+p.id);
+        throw Error("Ogiltig genotypvektor för profil "+p.id);
     }
   }
   function assess(state,dataset,relation="cooccurrence"){
@@ -96,7 +96,7 @@
     return {caseCount:c,controlCount:k,caseRate,controlRate,contrast};
   }
   function evaluate(options={}){
-    if(!Q||typeof Q.runGrover!=="function"||typeof Q.peakIterationCount!=="function")throw Error("QCDS core with tangent and threshold Grover required.");
+    if(!Q||typeof Q.runGrover!=="function"||typeof Q.peakIterationCount!=="function")throw Error("QCDS-kärnan med Grover, tangent och tröskelvärde krävs.");
     const dataset=options.dataset||generateProfiles(173,"structure");
     checkProfiles(dataset);
     const anchors=options.anchors===undefined?[]:options.anchors;
@@ -105,12 +105,12 @@
     const minSize=options.minSize===undefined?2:Number(options.minSize);
     const maxSize=options.maxSize===undefined?4:Number(options.maxSize);
     const relation=options.relation||"cooccurrence";
-    if(!["cooccurrence","parity"].includes(relation))throw Error("Unsupported relation-oracle family.");
-    if(!Array.isArray(anchors)||anchors.length>3||new Set(anchors).size!==anchors.length||anchors.some(i=>!Number.isInteger(i)||i<0||i>=LOCI.length))throw Error("Choose up to three distinct valid locus anchors.");
+    if(!["cooccurrence","parity"].includes(relation))throw Error("Orakeltypen för sambandet stöds inte.");
+    if(!Array.isArray(anchors)||anchors.length>3||new Set(anchors).size!==anchors.length||anchors.some(i=>!Number.isInteger(i)||i<0||i>=LOCI.length))throw Error("Välj högst tre olika giltiga startpositioner.");
     if(!Number.isInteger(minCases)||minCases<1||minCases>dataset.cases.length||
        !Number.isInteger(maxControls)||maxControls<0||maxControls>dataset.controls.length)
-       throw Error("Invalid cohort thresholds.");
-    if(!Number.isInteger(minSize)||!Number.isInteger(maxSize)||minSize<2||maxSize>5||minSize>maxSize)throw Error("Invalid subset-size interval.");
+       throw Error("Ogiltiga tröskelvärden för gruppen.");
+    if(!Number.isInteger(minSize)||!Number.isInteger(maxSize)||minSize<2||maxSize>5||minSize>maxSize)throw Error("Ogiltigt intervall för delmängdens storlek.");
     const must=mask(anchors);
     const examined=[],marked=[];
     for(let state=1;state<N;state++){
@@ -210,17 +210,17 @@
     const anchors=options.anchors||[];
     if(!Array.isArray(anchors)||new Set(anchors).size!==anchors.length||
        anchors.some(i=>!Number.isInteger(i)||i<0||i>=LOCI.length))
-       throw Error("Invalid permutation anchor Condition.");
+       throw Error("Ogiltigt startvillkor för omfördelningstestet.");
     const must=mask(anchors),relation=options.relation||"cooccurrence";
     const minCases=options.minCases===undefined?Math.ceil(.6*nCase):Number(options.minCases);
     const maxControls=options.maxControls===undefined?Math.floor(.2*nControl):Number(options.maxControls);
     const minSize=options.minSize===undefined?2:Number(options.minSize);
     const maxSize=options.maxSize===undefined?4:Number(options.maxSize);
-    if(!["cooccurrence","parity"].includes(relation))throw Error("Unsupported relation oracle.");
+    if(!["cooccurrence","parity"].includes(relation))throw Error("Orakeltypen stöds inte.");
     if(!Number.isInteger(minCases)||minCases<1||minCases>nCase||
        !Number.isInteger(maxControls)||maxControls<0||maxControls>nControl||
        !Number.isInteger(minSize)||!Number.isInteger(maxSize)||minSize<2||maxSize>5||minSize>maxSize)
-       throw Error("Invalid permutation search constraints.");
+       throw Error("Ogiltiga sökvillkor för omfördelningstestet.");
     const people=[...dataset.cases,...dataset.controls];
     const candidates=[];
     for(let state=1;state<N;state++){
@@ -234,7 +234,7 @@
     const observedDatum=observed==null?null:assess(observed,dataset,relation);
     if(observed!=null&&(!Number.isInteger(observed)||observed<0||observed>=N||
        !candidates.some(c=>c.state===observed)))
-       throw Error("Selected state is not a valid candidate under the Condition.");
+       throw Error("Det valda tillståndet uppfyller inte villkoret och är ingen giltig kandidat.");
     const passed=observedDatum!==null&&observedDatum.caseCount>=minCases&&
       observedDatum.controlCount<=maxControls&&observedDatum.contrast>0;
     const observedMembership=new Uint8Array(nTotal);
@@ -300,9 +300,9 @@
       tailAssignments:passed?asExtreme:null,familywiseFraction:estimatedFraction,
       nullAnyFraction:anyPositive/assignments,
       description:exact?
-        "Exhaustive regrouping of "+nTotal+" synthetic profiles into "+nCase+" cases and "+nControl+" comparators.":
-        "399 deterministic random regroupings, corrected (1+extreme)/(400). Estimated, not an exhaustive permutation test.",
-      qualification:"Accounts for the searched symbolic subset family under these fixed oracle settings, not post-hoc tuning or biological validation."
+        "Uttömmande omfördelning av "+nTotal+" syntetiska profiler i "+nCase+" fall och "+nControl+" jämförelser.":
+        "399 reproducerbara slumpmässiga gruppomfördelningar, med korrigering (1+extrema)/(400). Detta är en uppskattning, inte ett uttömmande omfördelningstest.",
+      qualification:"Tar hänsyn till de sökta symboliska delmängderna med fasta orakelinställningar, men inte efterhandsändrade regler eller biologisk validering."
     };
   }
   return {LOCI,N,MAX_ITERATIONS,ALIGNMENT_THRESHOLD,randomSource,generateProfiles,permutationAudit,
