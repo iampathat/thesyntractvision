@@ -1,0 +1,47 @@
+name: Oncology Lab — independent checks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "qcds-cancer-lab/**"
+      - "qcds_fabric_4_2/**"
+      - ".github/scripts/check-oncology-lab.sh"
+      - ".github/workflows/oncology-lab-ci.yml"
+  pull_request:
+    paths:
+      - "qcds-cancer-lab/**"
+      - "qcds_fabric_4_2/**"
+      - ".github/scripts/check-oncology-lab.sh"
+      - ".github/workflows/oncology-lab-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: oncology-lab-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  oncology-validation:
+    name: Oncology Lab · research, Swedish UI and QCDS tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install project dependencies
+        run: python -m pip install -e .
+      - name: Stage Oncology Lab in the same Paths layout as GitHub Pages
+        run: |
+          mkdir -p _site/qcds-cancer-lab _site/qcds-oncology-lab
+          cp -a qcds-cancer-lab/. _site/qcds-cancer-lab/
+          cp -a _site/qcds-cancer-lab/. _site/qcds-oncology-lab/
+      - name: Run full isolated Oncology Lab release checks
+        run: bash .github/scripts/check-oncology-lab.sh
