@@ -10,18 +10,18 @@
   "use strict";
 
   function percent(value) {
-    if (!Number.isFinite(value)) return "unavailable";
+    if (!Number.isFinite(value)) return "ej tillgängligt";
     return (value * 100).toFixed(value >= 0.01 ? 2 : 4) + "%";
   }
 
   function summarize(result, dimensionNames) {
     if (!result || !Array.isArray(result.cycles) || result.cycles.length === 0) {
-      throw new Error("QCDS conclusion requires a completed inference result.");
+      throw new Error("QCDS-slutsatsen kräver en färdig inferenskörning.");
     }
     const input = result.inputMask;
     const logic = result.finalLogic;
     if (typeof input !== "string" || typeof logic !== "string" || input.length !== 8 || logic.length !== 8) {
-      throw new Error("QCDS conclusion requires eight-bit input and derived masks.");
+      throw new Error("QCDS-slutsatsen kräver åttabitarsindata och härledda masker.");
     }
     const dimensions = Array.isArray(dimensionNames) && dimensionNames.length === 8
       ? dimensionNames : Array.from({length: 8}, (_, i) => "D" + (i + 1));
@@ -44,36 +44,36 @@
     }
     const verified = Boolean(last.stability?.stable);
     const stability = verified
-      ? "The internal numerical stability criteria were met."
-      : "The internal numerical stability criteria have not been demonstrated.";
-    const modelScope = "This is a conclusion about the current symbolic QCDS model, not a validated finding about a tumor, gene or therapy.";
+      ? "De interna numeriska stabilitetsvillkoren uppfylldes."
+      : "De interna numeriska stabilitetsvillkoren har inte påvisats.";
+    const modelScope = "Detta är en slutsats från den symboliska QCDS-modellen, inte ett validerat fynd om tumörer, gener eller behandlingar.";
 
     if (conditionOnly) {
       return {
         category: "condition_only",
-        title: "One state remains — fixed by the input",
-        lead: "The specified Condition already fixes state " + input +
-          ". QCDS returns the same eight-bit state; it has not discovered a new state or distinguished competing hypotheses.",
-        detail: "Output pattern: " + logic + ". All eight dimensions are fixed by the entered Condition; no alternatives were available for the model to resolve. " + stability,
+        title: "Ett tillstånd återstår – redan bestämt av indata",
+        lead: "Det angivna villkoret bestämmer redan tillståndet " + input +
+          ". QCDS returnerar samma åttabitarstillstånd och har varken upptäckt ett nytt tillstånd eller skilt mellan konkurrerande hypoteser.",
+        detail: "Utmatat mönster: " + logic + ". Alla åtta dimensioner bestäms av indatavillkoret. Det fanns inga alternativ för modellen att avgöra. " + stability,
         scope: modelScope
       };
     }
 
     const newDetail = additional.length
-      ? "Newly fixed symbolic dimensions in the derived mask: " + additional.join("; ") + "."
-      : "The derived mask did not fix any additional dimensions beyond the original Condition.";
+      ? "Nya bestämda symboliska dimensioner i den härledda masken: " + additional.join("; ") + "."
+      : "Den härledda masken bestämde inga fler dimensioner än det ursprungliga villkoret.";
     const remaining = open.length
-      ? " Unresolved dimensions: " + open.join(", ") + "."
-      : " No dimensions remain open in the shared derived mask.";
-    const detail = "Shared model pattern: " + logic + ". " + newDetail + remaining + " " + stability;
+      ? " Oavgjorda dimensioner: " + open.join(", ") + "."
+      : " Inga dimensioner återstår öppna i den gemensamt härledda masken.";
+    const detail = "Gemensamt modellmönster: " + logic + ". " + newDetail + remaining + " " + stability;
 
     if (!result.finalResolved) {
       return {
         category: "unresolved",
-        title: "No discriminating solution from the current oracles",
-        lead: "QCDS evaluated the candidate space, but Parent Grover did not isolate a distinct solution. " +
-          candidateCount + (candidateCount === 1 ? " compatible model state remains" : " compatible model states remain") +
-          " after the Syntract bind; the current rules do not resolve the open dimensions.",
+        title: "De aktuella oraklen gav ingen särskiljande lösning",
+        lead: "QCDS prövade kandidatrummet, men överordnad Grover kunde inte isolera en särskiljande lösning. " +
+          candidateCount + (candidateCount === 1 ? " förenligt modelltillstånd återstår" : " förenliga modelltillstånd återstår") +
+          " efter Syntract-sammanbindningen; de aktuella reglerna avgör inte de öppna dimensionerna.",
         detail,
         scope: modelScope
       };
@@ -82,11 +82,11 @@
     if (markedCount !== 1) {
       return {
         category: "multiple",
-        title: markedCount + " model candidates amplified — not a unique solution",
-        lead: "QCDS amplified a set of " + markedCount +
-          " candidates. The highest-ranked displayed state is " + result.finalState +
+        title: markedCount + " modellkandidater förstärktes – ingen unik lösning",
+        lead: "QCDS förstärkte en uppsättning med " + markedCount +
+          " kandidater. Det högst rankade visade tillståndet är " + result.finalState +
           " (" + percent(result.finalProbability) +
-          " of the final simulated state distribution), but multiple alternatives remain.",
+          " av den slutliga simulerade tillståndsfördelningen), men flera alternativ återstår.",
         detail,
         scope: modelScope
       };
@@ -94,12 +94,12 @@
 
     return {
       category: "candidate",
-      title: "QCDS identified one amplified model candidate",
-      lead: "The leading candidate is symbolic state " + result.finalState +
-        ", with " + percent(result.finalProbability) +
-        " of the final Parent-Grover state distribution after " +
-        result.cycles.length + (result.cycles.length === 1 ? " recursive pass." : " recursive passes.") +
-        " This is a model-selected candidate, not a clinically confirmed solution.",
+      title: "QCDS identifierade en förstärkt modellkandidat",
+      lead: "Den ledande kandidaten är det symboliska tillståndet " + result.finalState +
+        ", med " + percent(result.finalProbability) +
+        " av den slutliga fördelningen från överordnad Grover efter " +
+        result.cycles.length + (result.cycles.length === 1 ? " rekursivt pass." : " rekursiva pass.") +
+        " Detta är en modellvald kandidat, inte en kliniskt bekräftad lösning.",
       detail,
       scope: modelScope
     };
