@@ -344,7 +344,7 @@
   function stabilityReport(history) {
     const window = 3;
     if (history.length < window) {
-      return { stable: false, reasons: [`need ${window} cycles; have ${history.length}`] };
+      return { stable: false, reasons: [`kräver ${window} cykler; har ${history.length}`] };
     }
     const recent = history.slice(-window);
     let maxTvd = 0, maxEntropyDelta = 0, minJ = 1, maxInfluenceDelta = 0;
@@ -363,11 +363,11 @@
     }
 
     const reasons = [];
-    if (maxTvd > 0.03) reasons.push("distribution not stable");
-    if (maxEntropyDelta > 0.05) reasons.push("entropy not stable");
-    if (!topStable) reasons.push("top identity not stable");
-    if (minJ < 0.70) reasons.push("top-k not stable");
-    if (maxInfluenceDelta > 0.05) reasons.push("dimension influence not stable");
+    if (maxTvd > 0.03) reasons.push("fördelningen är inte stabil");
+    if (maxEntropyDelta > 0.05) reasons.push("entropin är inte stabil");
+    if (!topStable) reasons.push("ledande tillstånd varierar");
+    if (minJ < 0.70) reasons.push("topp-k är inte stabilt");
+    if (maxInfluenceDelta > 0.05) reasons.push("dimensionernas påverkan varierar");
     return { stable: reasons.length === 0, reasons, maxTvd, maxEntropyDelta, minJ, maxInfluenceDelta, topStable };
   }
 
