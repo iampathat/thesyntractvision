@@ -234,10 +234,14 @@
     // A shared vertical axis allows F1–F4 to be compared meaningfully.
     const bins=pass.groups.map(g=>rankedDistributionBins(g.posterior));
     const sharedScale=Math.max(1e-12,...bins.flatMap(group=>group.map(b=>b.mean)));
+    const binSizes=bins[0].map(b=>b.count);
+    const sizeLabel=Math.min(...binSizes)===Math.max(...binSizes)?
+      binSizes[0]+" kandidater per grupp":
+      Math.min(...binSizes)+"–"+Math.max(...binSizes)+" kandidater per grupp";
     groups.append(e("p","funnel-reading-note",
-      "Hela kandidatfördelningen visas i "+bins[0].length+" ranggrupper ("+
-      bins[0].map(b=>b.count).join("/")+" kandidater). Gemensam skala: 0–"+
-      percent(sharedScale)+" i medelsannolikhet per kandidat. Ordningen är högst till lägst."));
+      "Alla "+binSizes.reduce((a,b)=>a+b,0)+" kandidater visas i "+bins[0].length+
+      " ranggrupper ("+sizeLabel+"). Samma skala i alla fyra diagram: 0–"+
+      percent(sharedScale)+" per kandidat, från högst till lägst."));
     for(const [j,g] of pass.groups.entries()){
       const card=e("article","funnel-fold-card");
       card.append(e("strong","","F"+(g.index+1)+" · L"+g.memberIndices.map(i=>i+1).join(", L")));
