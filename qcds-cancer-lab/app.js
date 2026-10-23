@@ -2,18 +2,18 @@
   "use strict";
 
   const CORE = globalThis.QCDSCore;
-  if (!CORE) throw new Error("QCDSCore failed to load.");
+  if (!CORE) throw new Error("QCDS-kärnan kunde inte laddas.");
 
-  const DIMENSIONS = CORE.DIMENSIONS;
+  const DIMENSIONS = globalThis.CancerLabKnowledge?.dimensions?.map(d => d.name) || CORE.DIMENSIONS;
   const ROOM = globalThis.QCDSInferenceRoom;
   const CLINICAL = globalThis.CancerLabClinicalUI;
   const CONCLUSION = globalThis.QCDSConclusion;
   const DEFAULT_ORACLES = [
-    { name: "DNA repair", mask: "11??0???", provenance: "Illustrative · unvalidated mask" },
-    { name: "PI3K axis", mask: "??1?1???", provenance: "Illustrative · unvalidated mask" },
-    { name: "Receptor axis", mask: "???111??", provenance: "Illustrative · unvalidated mask" },
-    { name: "HR + broad", mask: "1??1????", provenance: "Illustrative · unvalidated mask" },
-    { name: "PI3K + HR", mask: "??11????", provenance: "Illustrative · unvalidated mask" }
+    { name: "DNA-reparation", mask: "11??0???", provenance: "Illustrativ · ej validerad mask" },
+    { name: "PI3K-axeln", mask: "??1?1???", provenance: "Illustrativ · ej validerad mask" },
+    { name: "Receptoraxeln", mask: "???111??", provenance: "Illustrativ · ej validerad mask" },
+    { name: "Homolog rekombination + brett villkor", mask: "1??1????", provenance: "Illustrativ · ej validerad mask" },
+    { name: "PI3K + homolog rekombination", mask: "??11????", provenance: "Illustrativ · ej validerad mask" }
   ];
 
   let mask = Array(8).fill("?");
@@ -56,7 +56,7 @@
       b.textContent = v;
       b.className = v === "?" ? "" : "bound";
       b.title = DIMENSIONS[idx];
-      b.setAttribute("aria-label", `${DIMENSIONS[idx]}: ${v === "?" ? "unknown" : v}`);
+      b.setAttribute("aria-label", `${DIMENSIONS[idx]}: ${v === "?" ? "okänd" : v}`);
       b.addEventListener("click", () => {
         mask[idx] = cycleBit(mask[idx]);
         renderMask();
@@ -66,8 +66,8 @@
 
     const u = mask.filter(x => x === "?").length;
     unknownCount.textContent = String(u);
-    stateCount.textContent = (2 ** u).toLocaleString("en-US");
-    modeText.textContent = u === 0 ? "COMPLETE" : "OPEN";
+    stateCount.textContent = (2 ** u).toLocaleString("sv-SE");
+    modeText.textContent = u === 0 ? "FULLSTÄNDIGT" : "ÖPPET";
 
     // No fabricated decorative probability bars: the analysis panels show only computed data.
     maskViz.replaceChildren();
@@ -80,16 +80,16 @@
       const row = document.createElement("div");
       row.className = "oracle-row";
       row.innerHTML = `
-        <label class="oracle-switch" title="Enable oracle hypothesis">
-          <input type="checkbox" ${o.enabled ? "checked" : ""} aria-label="Enable ${o.name}">
+        <label class="oracle-switch" title="Aktivera orakelhypotes">
+          <input type="checkbox" ${o.enabled ? "checked" : ""} aria-label="Aktivera ${o.name}">
           <span></span>
         </label>
         <div class="oracle-meta">
           <strong>${o.name}</strong>
           <small>${o.provenance}</small>
         </div>
-        <input class="oracle-mask" value="${o.mask}" maxlength="8" spellcheck="false" aria-label="${o.name} positional mask">
-        <button type="button" class="explain-button oracle-help" aria-label="Scientific and QCDS explanation for ${o.name}" title="Mechanism, genes, assays and actual mask mapping">?</button>
+        <input class="oracle-mask" value="${o.mask}" maxlength="8" spellcheck="false" aria-label="${o.name} positionsmask">
+        <button type="button" class="explain-button oracle-help" aria-label="Vetenskaplig förklaring och QCDS-modell för ${o.name}" title="Mekanism, gener, mätmetoder och exakt maskkoppling">?</button>
       `;
 
       const checkbox = row.querySelector('input[type="checkbox"]');
@@ -134,17 +134,17 @@
       .sort((a, b) => b[1] - a[1])
       .slice(0, 2)
       .map(([name]) => name)
-      .join(" and ");
+      .join(" och ");
 
     box.innerHTML = "";
     const p1 = document.createElement("p");
-    const status = last.stability?.stable ? "The internal convergence gate passed." : "The internal convergence gate was not satisfied.";
+    const status = last.stability?.stable ? "De interna konvergensvillkoren uppfylldes." : "De interna konvergensvillkoren uppfylldes inte.";
     p1.textContent = result.finalResolved
-      ? `The engine executed ${first.laneCount} symbolic seven-bit Grover searches per recursive pass (16 position rotations × 8 feature exclusions), combined the complete distributions into eight families and then a Parent-Grover distribution. Following ${result.cycles.length} pass(es), the algorithm amplified state ${result.finalState}, with inferred constraint mask ${result.finalLogic} (${unresolved} unresolved dimensions). ${status}`
-      : `The engine completed ${result.cycles.length} recursive pass(es) but no discriminating Parent-Grover amplification was observed. The derived mask remains ${result.finalLogic} with ${unresolved} unresolved dimensions. This is an unresolved computational result. ${status}`;
+      ? `The engine executed ${first.laneCount} symbolic seven-bit Grover searches per recursive pass (16 position rotations × 8 feature exclusions), combined the complete distributions into eight families och then a Parent-Grover distribution. Following ${result.cycles.length} pass(es), the algorithm amplified state ${result.finalState}, with inferred constraint mask ${result.finalLogic} (${unresolved} unresolved dimensions). ${status}`
+      : `Motorn genomförde ${result.cycles.length} rekursiva pass, men ingen särskiljande förstärkning från överordnad Grover observerades. Den härledda masken är ${result.finalLogic} med ${unresolved} oavgjorda dimensioner. Beräkningsresultatet är olöst. ${status}`;
 
     const p2 = document.createElement("p");
-    p2.textContent = `The most sensitive excluded features were ${strongest || "not differentiated"}. These scores measure total-variation differences under feature exclusion; they do not establish causal biology. Parent-state probability ${formatP(result.finalProbability)} is a modeled distribution conditional on the current synthetic masks, not an estimated likelihood of malignancy, DNA repair deficiency or therapeutic response. No patient observations or independent molecular truth labels were evaluated.`;
+    p2.textContent = `De mest känsliga uteslutna egenskaperna var ${strongest || "ingen tydlig skillnad"}. Måtten visar skillnader i total variationsdistans när en egenskap utesluts; de bevisar inte biologiska orsakssamband. Huvudtillståndets sannolikhet ${formatP(result.finalProbability)} hör till modellens fördelning med aktuella syntetiska masker, inte sannolikheten för cancer, bristande DNA-reparation eller behandlingseffekt. Inga patientobservationer eller oberoende molekylära facit har utvärderats.`;
 
     box.append(p1, p2);
   }
@@ -154,7 +154,7 @@
     resultsRunning.hidden = false;
     resultsRunning.style.display = "grid";
     orb.classList.remove("spin");
-    resultsRunning.querySelector("h3").textContent = "QCDS complete.";
+    resultsRunning.querySelector("h3").textContent = "QCDS-beräkningen är klar.";
     $("runProgressText").hidden = true;
     const conclusion = CONCLUSION.summarize(result, DIMENSIONS);
     $("qcdsConclusion").dataset.outcome = conclusion.category;
@@ -172,7 +172,7 @@
 
     const lastParent = result.cycles[result.cycles.length - 1].parent;
     const unresolvedParent = result.finalResolved === false;
-    $("finalState").textContent = unresolvedParent ? "UNRESOLVED" : result.finalState;
+    $("finalState").textContent = unresolvedParent ? "OLÖST" : result.finalState;
     $("finalP").textContent = unresolvedParent ? "—" : formatP(result.finalProbability);
     $("finalLogic").textContent = result.finalLogic;
     $("roundCount").textContent = String(result.cycles.length);
@@ -182,11 +182,11 @@
     result.cycles.forEach((r, i) => {
       const row = document.createElement("div");
       row.className = "round-row";
-      const stableText = r.stability?.stable ? "stable" : "re-enter";
+      const stableText = r.stability?.stable ? "stabil" : "återförs";
       row.innerHTML = `
         <div class="round-index">R${i + 1}</div>
         <div class="round-path"><code>${r.derivedLogic}</code><span>·</span><code>${stableText}</code></div>
-        <div class="round-meta"><b>${r.laneCount}</b> lanes · local N=128 · M=${r.markedMin === r.markedMax ? r.markedMin : r.markedMin + "–" + r.markedMax} · Grover m=${r.groverMin === r.groverMax ? r.groverMin : r.groverMin + "–" + r.groverMax} · Parent N=${r.parent.grover.stateCount}, M=${r.parent.grover.markedCount}, m=${r.parent.grover.iterations} · top <code>${CORE.stateToBits(r.parent.topCanonical)}</code> · ${formatP(r.parent.grover.topProbability)}</div>
+        <div class="round-meta"><b>${r.laneCount}</b> logiska rum · lokalt N=128 · M=${r.markedMin === r.markedMax ? r.markedMin : r.markedMin + "–" + r.markedMax} · Grover m=${r.groverMin === r.groverMax ? r.groverMin : r.groverMin + "–" + r.groverMax} · överordnad N=${r.parent.grover.stateCount}, M=${r.parent.grover.markedCount}, m=${r.parent.grover.iterations} · topp <code>${CORE.stateToBits(r.parent.topCanonical)}</code> · ${formatP(r.parent.grover.topProbability)}</div>
       `;
       timeline.appendChild(row);
     });
@@ -248,8 +248,8 @@
 
       const orb = resultsRunning.querySelector(".result-orb");
       orb.classList.add("spin");
-      resultsRunning.querySelector("h3").textContent = "QCDS is running.";
-      $("runProgressText").textContent = "Computing 128 logical QCDS lanes: sixteen balanced rotations × eight true-null exclusions. The browser schedules these lanes sequentially.";
+      resultsRunning.querySelector("h3").textContent = "QCDS beräknar …";
+      $("runProgressText").textContent = "Beräknar 128 logiska QCDS-rum: sexton balanserade rotationer × åtta uteslutna dimensioner. Webbläsaren kör dessa sekventiellt.";
       resultsRunning.hidden = false;
       resultsRunning.style.display = "grid";
       resultsEmpty.hidden = true;
@@ -264,14 +264,14 @@
         hypotheses,
         maxCycles,
         onProgress(info) {
-          runState.textContent = `Cycle ${info.cycle + 1}/${maxCycles}: ${info.lanesDone}/${info.lanesTotal} computed lanes · rotation bank ${info.bank}/${info.banks}`;
+          runState.textContent = `Cykel ${info.cycle + 1}/${maxCycles}: ${info.lanesDone}/${info.lanesTotal} beräknade rum · rotationsbank ${info.bank}/${info.banks}`;
           ROOM?.update(info);
         }
       });
 
       const last = result.cycles[result.cycles.length - 1];
       runState.textContent =
-        `Complete · ${result.cycles.length} recursive cycle${result.cycles.length === 1 ? "" : "s"} · 128→8→1 · Parent Grover m=${last.parent.grover.iterations} · no target state supplied.`;
+        `Klart · ${result.cycles.length} rekursiva cykler · 128→8→1 · överordnad Grover m=${last.parent.grover.iterations} · inget fördefinierat måltillstånd.`;
       ROOM?.finish(result);
       renderResults(result);
     } catch (err) {
@@ -284,10 +284,10 @@
       resultsEmpty.replaceChildren();
       const symbol = document.createElement("div");
       symbol.className = "result-orb error"; symbol.textContent = "!";
-      const heading = document.createElement("h3"); heading.textContent = "Input needs attention.";
+      const heading = document.createElement("h3"); heading.textContent = "Kontrollera dina indata.";
       const message = document.createElement("p"); message.textContent = err.message;
       resultsEmpty.append(symbol, heading, message);
-      runState.textContent = "Run stopped: " + err.message;
+      runState.textContent = "Körningen stoppades: " + err.message;
     } finally {
       runButton.disabled = false;
       runButton.classList.remove("running");
