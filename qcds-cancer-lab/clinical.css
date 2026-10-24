@@ -1310,3 +1310,272 @@ body.clinical-theme .funnel-inspection-details>.funnel-group-grid{
   body.clinical-theme .funnel-inspection-details>.funnel-lane-grid,
   body.clinical-theme .funnel-inspection-details>.funnel-group-grid{margin:0 9px 12px}
 }
+
+
+/* Oncology Lab: reading-first typography and genuinely collapsed details.
+   IMPORTANT: author-level display:grid styles on graph children can override
+   the browser's user-agent details[closed] hiding rules. Explicitly hide them. */
+body.clinical-theme #qcdsFunnel {
+  font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  color:#254e5d;
+  letter-spacing:normal;
+  line-height:1.55;
+}
+body.clinical-theme #qcdsFunnel :is(h2,h3,h4,p,span,strong,b,small,summary,button,label,select){
+  font-family:inherit;
+  box-sizing:border-box;
+}
+body.clinical-theme #qcdsFunnel details:not([open]) > :not(summary) {
+  display:none !important;
+}
+body.clinical-theme #qcdsFunnel details > summary {
+  display:list-item;
+  list-style-position:outside;
+  cursor:pointer;
+}
+body.clinical-theme #qcdsFunnel .genome-funnel-header{
+  margin:0 0 15px;
+}
+body.clinical-theme #qcdsFunnel .genome-funnel-header>h3{
+  margin:5px 0 7px;
+  font-size:clamp(18px,2.4vw,24px);
+  line-height:1.25;
+}
+body.clinical-theme #qcdsFunnel .funnel-intro-lead {
+  margin:4px 0 10px;
+  color:#587580;
+  font-size:13px;
+  line-height:1.65;
+}
+body.clinical-theme #qcdsFunnel .funnel-intro-details {
+  border:0;
+  background:transparent;
+  margin:6px 0 10px;
+}
+body.clinical-theme #qcdsFunnel .funnel-intro-details>summary {
+  padding:6px 0;
+  color:#267386;
+  font-size:12px;
+  font-weight:690;
+}
+body.clinical-theme #qcdsFunnel .funnel-intro-details>p{
+  max-width:77ch;
+  font-size:12px;
+  color:#536e7b;
+  margin:5px 0 8px;
+}
+body.clinical-theme #qcdsFunnel .funnel-main-takeaway {
+  border:1px solid #c5ded9;
+  border-top:4px solid #227d76;
+  border-radius:12px;
+  background:#f7faf9;
+  box-shadow:0 2px 12px rgba(36,81,83,.04);
+  padding:20px;
+  margin:13px 0 23px;
+  min-width:0;
+}
+body.clinical-theme #qcdsFunnel .funnel-main-kicker{
+  display:block;
+  margin:0 0 6px;
+  font-size:10px;
+  line-height:1.4;
+  font-weight:770;
+  letter-spacing:.085em;
+  color:#2a8077;
+}
+body.clinical-theme #qcdsFunnel .funnel-main-title{
+  margin:0 0 9px !important;
+  color:#1e4855 !important;
+  font-size:clamp(20px,2.5vw,25px) !important;
+  font-weight:770;
+  line-height:1.28 !important;
+  letter-spacing:-.025em;
+}
+body.clinical-theme #qcdsFunnel .funnel-main-intro{
+  display:block;
+  margin:0 0 16px !important;
+  font-size:13px;
+  line-height:1.65;
+  color:#5a7480;
+}
+body.clinical-theme #qcdsFunnel .funnel-main-measures {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin:0 0 15px;
+}
+body.clinical-theme #qcdsFunnel .funnel-main-measure{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:8px;
+  min-width:0;
+  padding:16px 17px;
+  border:1px solid #d4e1e5;
+  border-radius:9px;
+  background:#fff;
+}
+body.clinical-theme #qcdsFunnel .funnel-main-measure.is-after{
+  border:1px solid #8cc0b7;
+  background:#ecf6f2;
+}
+body.clinical-theme #qcdsFunnel .funnel-main-measure-label{
+  display:block;
+  width:100%;
+  margin:0 !important;
+  font-size:11px;
+  line-height:1.5;
+  font-weight:750;
+  text-transform:none;
+  letter-spacing:.015em;
+  color:#456b73;
+}
+body.clinical-theme #qcdsFunnel .funnel-main-value{
+  display:block;
+  width:100%;
+  margin:2px 0 0 !important;
+  padding:0;
+  color:#1e5764;
+  font-size:clamp(33px,4vw,47px);
+  font-weight:790;
+  line-height:1.14;
+  letter-spacing:-.035em;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+body.clinical-theme #qcdsFunnel .funnel-main-measure.is-after .funnel-main-value {
+  color:#126b57;
+}
+body.clinical-theme #qcdsFunnel .funnel-main-explain{
+  display:block;
+  margin:0 !important;
+  font-size:12px;
+  line-height:1.7;
+  color:#55717a;
+  font-weight:430;
+}
+body.clinical-theme #qcdsFunnel .funnel-main-interpretation{
+  display:block;
+  margin:0;
+  padding:13px 15px;
+  background:#fff;
+  border:1px solid #d7e5e2;
+  border-left:3px solid #318b79;
+  border-radius:7px;
+}
+body.clinical-theme #qcdsFunnel .funnel-main-interpretation strong{
+  display:block;
+  margin:0 0 5px;
+  font-size:14px;
+  line-height:1.45;
+  color:#245d51;
+}
+body.clinical-theme #qcdsFunnel .funnel-main-interpretation p{
+  display:block;
+  margin:0 !important;
+  color:#40655f;
+  line-height:1.68;
+  font-size:12.5px;
+  font-weight:430;
+}
+body.clinical-theme #qcdsFunnel .funnel-main-interpretation p.funnel-main-evidence{
+  border-top:1px solid #e0ebe8;
+  margin-top:9px !important;
+  padding-top:8px;
+  color:#627d76;
+  font-size:11.5px;
+}
+body.clinical-theme #qcdsFunnel .funnel-main-method{
+  display:block;
+  margin:11px 0 0;
+  border:0;
+  background:transparent;
+  color:#456e75;
+}
+body.clinical-theme #qcdsFunnel .funnel-main-method>summary{
+  padding:6px 0;
+  font-size:12px;
+  line-height:1.45;
+  font-weight:720;
+  color:#256e7b;
+}
+body.clinical-theme #qcdsFunnel .funnel-main-method>p{
+  margin:6px 0 2px;
+  color:#58757b;
+  font-size:12px;
+  line-height:1.72;
+}
+body.clinical-theme #qcdsFunnel .funnel-main-desc,
+body.clinical-theme #qcdsFunnel .funnel-main-meaning{
+  display:block;
+  margin:8px 0 !important;
+  font-size:13px;
+  line-height:1.7;
+}
+body.clinical-theme #qcdsFunnel :is(
+ .funnel-inspection-details,
+ .funnel-reconciliation-details,
+ .funnel-candidate-details
+){
+  margin:10px 0;
+  padding:0;
+  border:1px solid #d6e3e8;
+  border-radius:9px;
+  background:#fff;
+  overflow:hidden;
+}
+body.clinical-theme #qcdsFunnel :is(
+ .funnel-inspection-details,
+ .funnel-reconciliation-details,
+ .funnel-candidate-details
+)>summary{
+  display:list-item;
+  margin:0;
+  padding:13px 17px;
+  background:#f0f6f8;
+  color:#295f6d;
+  font-size:13px;
+  line-height:1.5;
+  font-weight:730;
+  white-space:normal;
+}
+body.clinical-theme #qcdsFunnel :is(
+ .funnel-inspection-details,
+ .funnel-reconciliation-details,
+ .funnel-candidate-details
+)[open]>summary{
+  border-bottom:1px solid #d8e6ea;
+}
+body.clinical-theme #qcdsFunnel .funnel-reconciliation-details>.funnel-reconciliation{
+  margin:12px 13px 14px;
+  padding:14px;
+}
+body.clinical-theme #qcdsFunnel .funnel-reconciliation-details>.funnel-stage-caption{
+  margin:14px 13px 8px;
+}
+body.clinical-theme #qcdsFunnel .funnel-candidate-details>.funnel-distribution{
+  margin:0;
+  padding:12px 13px 15px;
+}
+body.clinical-theme #qcdsFunnel .funnel-stage-caption{
+  margin-block:13px 10px;
+}
+@media(max-width:780px){
+  body.clinical-theme #qcdsFunnel .funnel-main-takeaway{padding:15px;margin:9px 0 19px}
+  body.clinical-theme #qcdsFunnel .funnel-main-measures{grid-template-columns:minmax(0,1fr);gap:10px}
+  body.clinical-theme #qcdsFunnel .funnel-main-measure{padding:14px 15px;gap:7px}
+  body.clinical-theme #qcdsFunnel .funnel-main-value{font-size:38px}
+  body.clinical-theme #qcdsFunnel .funnel-main-title{font-size:21px !important}
+  body.clinical-theme #qcdsFunnel .funnel-main-intro{font-size:12.5px}
+}
+@media(max-width:400px){
+  body.clinical-theme #qcdsFunnel .funnel-main-takeaway{padding:12px}
+  body.clinical-theme #qcdsFunnel .funnel-main-value{font-size:35px}
+  body.clinical-theme #qcdsFunnel .funnel-main-interpretation{padding:11px 12px}
+  body.clinical-theme #qcdsFunnel .funnel-main-measure-label{font-size:11px}
+  body.clinical-theme #qcdsFunnel :is(
+    .funnel-inspection-details,
+    .funnel-reconciliation-details,
+    .funnel-candidate-details
+  )>summary{padding:11px 13px;font-size:12.5px}
+}
