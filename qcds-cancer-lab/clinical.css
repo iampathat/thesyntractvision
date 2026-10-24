@@ -1180,3 +1180,100 @@ body.clinical-theme .funnel-rotation-final p{margin:5px 0 0}
   body.clinical-theme .funnel-reconciliation-overview>strong{font-size:14px}
   body.clinical-theme .funnel-rotation-final strong{font-size:14px}
 }
+
+
+/* Oncology Lab · prioritize the key Parent-Grover result, not a tiny footnote.
+   The two model probabilities come from distinct distributions; avoid false
+   clinical certainty or visually suggesting a direct 6%→99% conversion. */
+body.clinical-theme .funnel-main-takeaway{
+  margin:12px 0 25px;
+  padding:22px 24px;
+  background:#f4faf8;
+  border:1px solid #a3cec1;
+  border-top:5px solid #247b70;
+  border-radius:13px;
+  color:#245454;
+  box-shadow:0 5px 18px rgba(29,100,87,.06);
+}
+body.clinical-theme .funnel-main-kicker{
+  font-size:11px;letter-spacing:.09em;font-weight:830;color:#29796f;
+}
+body.clinical-theme .funnel-main-title{
+  font-size:clamp(20px,2.4vw,26px)!important;
+  margin:7px 0 16px!important;line-height:1.24!important;
+  color:#174e47!important;letter-spacing:-.02em;
+}
+body.clinical-theme .funnel-main-measures{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;
+}
+body.clinical-theme .funnel-main-measure{
+  min-width:0;display:grid;align-content:start;gap:8px;
+  padding:19px 18px;border:1px solid #bdd7d1;
+  border-radius:10px;background:#fff;
+}
+body.clinical-theme .funnel-main-measure.is-after{
+  border:2px solid #2f887c;background:#e6f5ed;
+}
+body.clinical-theme .funnel-main-measure-label{
+  display:block;font-size:11px;font-weight:820;color:#397467;letter-spacing:.055em;line-height:1.5;
+}
+body.clinical-theme .funnel-main-value{
+  display:block;color:#205c55;line-height:1.05;
+  font-size:clamp(32px,4.6vw,53px);font-weight:830;letter-spacing:-.045em;
+  font-variant-numeric:tabular-nums;
+}
+body.clinical-theme .funnel-main-measure.is-after .funnel-main-value{color:#08775c}
+body.clinical-theme .funnel-main-explain{
+  margin:0!important;font-size:12.5px;line-height:1.65;color:#4f6e69;
+}
+body.clinical-theme .funnel-main-interpretation{
+  display:grid;gap:10px;margin-top:17px;padding:15px 17px;
+  background:#fff;border-left:4px solid #2d8274;border-radius:6px;
+}
+body.clinical-theme .funnel-main-interpretation strong{
+  font-size:15px;color:#1a5d4e;
+}
+body.clinical-theme .funnel-main-interpretation p{
+  margin:0!important;color:#3e655f;font-size:13px;line-height:1.68;
+}
+body.clinical-theme .funnel-main-interpretation .funnel-main-evidence{
+  padding-top:10px;border-top:1px solid #d8e9e2;
+  color:#597971;font-size:12px;
+}
+body.clinical-theme .funnel-main-none{
+  display:block;padding:13px 16px;margin:7px 0 10px;
+  border:1px solid #bfd5d1;border-radius:8px;
+  background:#fff;color:#326b62;font-size:20px;
+}
+body.clinical-theme .funnel-main-desc,
+body.clinical-theme .funnel-main-meaning{
+  font-size:13px;line-height:1.7;color:#4b6968;margin:8px 0;
+}
+body.clinical-theme .funnel-candidate-details{
+  margin:13px 0 25px;padding:0;background:#fff;
+  border:1px solid #d3e3e6;border-radius:9px;overflow:hidden;
+}
+body.clinical-theme .funnel-candidate-details>summary{
+  padding:14px 17px;cursor:pointer;
+  font-size:13px;font-weight:750;line-height:1.55;color:#235968;
+  background:#edf5f6;
+}
+body.clinical-theme .funnel-candidate-details>summary:hover{background:#e1eff1}
+body.clinical-theme .funnel-candidate-details>.funnel-distribution{
+  margin:0!important;padding:13px 15px 17px;
+}
+@media(max-width:760px){
+  body.clinical-theme .funnel-main-takeaway{padding:17px 15px;margin:8px 0 21px}
+  body.clinical-theme .funnel-main-measures{gap:10px}
+  body.clinical-theme .funnel-main-measure{padding:14px 12px}
+  body.clinical-theme .funnel-main-value{font-size:clamp(28px,6.6vw,39px)}
+  body.clinical-theme .funnel-main-explain{font-size:11.5px}
+  body.clinical-theme .funnel-main-interpretation{padding:12px 13px}
+  body.clinical-theme .funnel-main-interpretation p{font-size:12px}
+}
+@media(max-width:490px){
+  body.clinical-theme .funnel-main-measures{grid-template-columns:minmax(0,1fr)}
+  body.clinical-theme .funnel-main-measure{padding:13px 15px}
+  body.clinical-theme .funnel-main-value{font-size:38px}
+  body.clinical-theme .funnel-candidate-details>summary{font-size:12px;padding:12px}
+}
