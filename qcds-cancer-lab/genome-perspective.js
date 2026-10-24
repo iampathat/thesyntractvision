@@ -196,26 +196,34 @@
   }
   function renderFunnel(){
     const local=$("funnelLaneGrid"),groups=$("funnelGroupGrid"),timeline=$("funnelTimeline");
-    const dist=$("funnelDistribution"),notes=$("funnelDiagnostics");
-    if(!local||!groups||!timeline||!dist||!notes)return;
-    local.replaceChildren();groups.replaceChildren();timeline.replaceChildren();dist.replaceChildren();notes.replaceChildren();
+    const dist=$("funnelDistribution"),notes=$("funnelDiagnostics"),bridge=$("funnelReconciliation");
+    if(!local||!groups||!timeline||!dist||!notes||!bridge)return;
+    local.replaceChildren();groups.replaceChildren();timeline.replaceChildren();
+    dist.replaceChildren();notes.replaceChildren();bridge.replaceChildren();
     const pass=result.rounds[Math.min(selectedPass,result.rotations-1)];
+    const referenceState=selectedState!==null?selectedState:result.selected?.state;
+    const reference=referenceState===null||referenceState===undefined?
+      null:result.ranked.find(x=>x.state===referenceState)||null;
+    const swedishPercentage=p=>(100*p).toLocaleString("sv-SE",
+      {minimumFractionDigits:2,maximumFractionDigits:2})+" %";
+    const rankOf=(distribution,state)=>1+distribution.filter(p=>p>distribution[state]+1e-14).length;
     for(const [i,r] of result.rounds.entries()){
       const btn=e("button","funnel-pass-button","R"+(i+1));
       btn.type="button";btn.classList.toggle("is-selected",r.index===pass.index);
       btn.addEventListener("click",()=>{selectedPass=i;renderFunnel();});
       timeline.append(btn);
     }
-    $("funnelPassDescription").textContent="Rotation "+pass.index+"/"+result.rotations+
-      " · 16 separata fyrpositionsfördelningar · 4 grupper med 4 rum · 1 sammanbunden tiodimensionell fördelning. Entropi: "+
-      pass.alignment.boundEntropyBits.toFixed(3)+" bits.";
+    $("funnelPassDescription").textContent="DU TITTAR PÅ ROTATION R"+pass.index+" AV "+result.rotations+
+      ". F1–F4 nedan gäller bara denna rotation – slutresultatet väger samman alla "+result.rotations+
+      ". 16 lokala rum · 4 grupper · entropi efter sammanbindning i vald rotation: "+
+      pass.alignment.boundEntropyBits.toFixed(3)+" bitar.";
     const markedLanes=pass.lanes.filter(l=>l.marks>0).length;
     local.append(e("p","funnel-reading-note",markedLanes+" av 16 lokala rum har minst en orakelträff. "+
       (markedLanes===0?"Inget rum kan förstärka något i denna rotation.":
        "Övriga rum lämnar bara en jämn grundfördelning och ger ingen egen urvalssignal.")));
     for(const lane of pass.lanes){
       const card=e("article","funnel-lane-card");
-      card.append(e("strong","","L"+String(lane.index+1).padStart(2,"0")+" · "+lane.window.map(i=>LOCI[i].label).join(" / ")));
+      card.append(e("strong","","Rum "+String(lane.index+1).padStart(2,"0")+" · positioner "+lane.window.map(i=>LOCI[i].label).join(" / ")));
       if(lane.marks===0){
         card.classList.add("funnel-lane-neutral");
         card.append(e("div","funnel-lane-nohit","Ingen lokal träff · 16 lika sannolika tillstånd (6,25 % var)"));
@@ -244,7 +252,8 @@
       percent(sharedScale)+" per kandidat, från högst till lägst."));
     for(const [j,g] of pass.groups.entries()){
       const card=e("article","funnel-fold-card");
-      card.append(e("strong","","F"+(g.index+1)+" · L"+g.memberIndices.map(i=>i+1).join(", L")));
+      card.append(e("strong","","F"+(g.index+1)+" · rum "+
+        g.memberIndices.map(i=>String(i+1).padStart(2,"0")).join(", ")));
       const groupBins=bins[j];
       card.append(miniBars(groupBins.map(b=>b.mean),"funnel-fold-spark",sharedScale,
         groupBins.map(b=>"Rang "+b.start+"–"+b.end+": medel "+percent(b.mean)+
@@ -253,7 +262,67 @@
       const spread=Math.round(2**g.entropyBits);
       card.append(e("small","","Entropi "+g.entropyBits.toFixed(3)+" bitar · motsvarar ungefär "+
         spread+" jämnt fördelade kandidater · högsta enskilda "+percent(topProbability)));
+      if(reference){
+        const probability=g.posterior[reference.state];
+        card.append(e("small","funnel-reference-score","Vald slutkandidat i F"+(g.index+1)+
+          " (endast R"+pass.index+"): "+swedishPercentage(probability)+
+          " · rang "+rankOf(g.posterior,reference.state)+" av "+result.domainCount));
+      }
       groups.append(card);
+    }
+    // A visible, reproducible bridge between the selected R-pass charts and
+    // the multi-pass final distribution. Numerical inputs come ONLY from the
+    // production funnel result; no separately inferred/adjusted values.
+    if(reference){
+      const overview=e("div","funnel-reconciliation-overview");
+      overview.append(
+        e("span","funnel-bridge-tag","SÅ HÄNGER ROTATIONERNA IHOP"),
+        e("strong","","Kandidat: "+locusNames(reference.loci)));
+      const currentProbability=pass.bound[reference.state];
+      overview.append(e("p","",
+        "F1–F4 ovan är bara R"+pass.index+". Efter deras 4→1-sammanbindning får kandidaten "+
+        swedishPercentage(currentProbability)+" i denna rotation (rang "+
+        rankOf(pass.bound,reference.state)+" av "+result.domainCount+")."));
+      overview.append(e("p","",
+        "Nedan visas samma kandidats modellandel efter varje rotations egna fyra grupper. "+
+        "Det är INTE sex oberoende patientprov eller sex biologiska bevis."));
+      bridge.append(overview);
+      const values=result.rounds.map(r=>r.bound[reference.state]);
+      const max=Math.max(1e-14,...values);
+      const rotationGrid=e("div","funnel-rotation-bridge");
+      for(const [i,r] of result.rounds.entries()){
+        const row=e("div","funnel-rotation-score");
+        row.classList.toggle("is-current",r.index===pass.index);
+        row.append(e("strong","","R"+r.index));
+        const rail=e("span","funnel-rotation-rail");
+        const bar=e("i","");
+        bar.style.width=(100*values[i]/max).toFixed(2)+"%";
+        rail.append(bar);
+        rail.setAttribute("role","img");
+        rail.setAttribute("aria-label","Rotation "+r.index+": "+swedishPercentage(values[i])+
+          ". Diagrammets gemensamma skala är noll till "+swedishPercentage(max));
+        row.append(rail,e("b","",swedishPercentage(values[i])));
+        rotationGrid.append(row);
+      }
+      bridge.append(rotationGrid);
+      bridge.append(e("p","funnel-bridge-scale",
+        "Rotationsstaplarna jämförs med samma axel: 0–"+swedishPercentage(max)+
+        ". Procenttalen är absoluta andelar av respektive rotations fulla fördelning."));
+      const conclusion=e("div","funnel-rotation-final");
+      conclusion.append(e("strong","","Efter "+result.rotations+
+        " rotationer: "+swedishPercentage(result.distribution[reference.state])));
+      conclusion.append(e("p","",
+        "Slutvärdet beräknas som ett NORMALISERAT GEOMETRISKT MEDEL av de "+
+        result.rotations+" HELA rotationsfördelningarna, inte som medelvärdet av kandidatens sex procenttal. "+
+        "Alla "+result.domainCount+" möjliga tillstånd normaliseras gemensamt. "+
+        "Först därefter filtreras kandidaterna genom det klassiska grupporaklet "+
+        "("+result.qualifiedCount+" godkända av "+result.evaluatedCount+")."));
+      bridge.append(conclusion);
+    }else{
+      bridge.append(e("p","funnel-reading-note",
+        "Det finns ingen kandidat som uppfyller grupporaklet. De "+result.rotations+
+        " rotationerna sammanbinds matematiskt, men den klassiska kontrollen "+
+        "ger ingen giltig slutkandidat."));
     }
     const top=result.ranked.slice(0,12);
     dist.append(e("p","funnel-reading-note",
