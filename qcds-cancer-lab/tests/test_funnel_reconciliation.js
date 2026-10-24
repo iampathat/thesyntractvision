@@ -56,5 +56,5 @@ assert(ui.includes('Rum "+String(lane.index+1)'),'Local room names distinct from
 assert(ui.includes('F"+(g.index+1)+" · rum "'),'Fold labels identify four rooms');
 assert(html.includes('id="funnelReconciliation"'));
 assert(html.includes('Diagrammet nedan visar hur samma kandidat bidrar i varje rotation'));
-assert(html.includes('klassiska regelkontrollen'));
+assert(html.includes('Reglerna kontrolleras klassiskt') && ui.includes('klassiska grupporaklet'));
 console.log("QCDS Oncology Lab six-pass / one-pass reconciliation against screenshots: PASS");
