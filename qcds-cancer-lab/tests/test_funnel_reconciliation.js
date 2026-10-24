@@ -55,6 +55,6 @@ assert(ui.includes("NORMALISERAT GEOMETRISKT MEDEL"));
 assert(ui.includes('Rum "+String(lane.index+1)'),'Local room names distinct from L01–L10 DNA locus labels');
 assert(ui.includes('F"+(g.index+1)+" · rum "'),'Fold labels identify four rooms');
 assert(html.includes('id="funnelReconciliation"'));
-assert(html.includes('F1–F4 ovan hör enbart till den valda rotationen.'));
+assert(html.includes('Diagrammet nedan visar hur samma kandidat bidrar i varje rotation'));
 assert(html.includes('klassiska regelkontrollen'));
 console.log("QCDS Oncology Lab six-pass / one-pass reconciliation against screenshots: PASS");
