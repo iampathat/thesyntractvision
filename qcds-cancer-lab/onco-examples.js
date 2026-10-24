@@ -159,9 +159,14 @@ function initialize(){
   explainRow(er,4,"Rotationer och ny prövning",
     "Dimensionerna placeras om och får nya fönster. I detta exempel beräknades "+(result?.rotations??0)+
     " rotationer, alltså "+((result?.rotations??0)*16)+" små Grover-körningar, i webbläsarens CPU.");
-  explainRow(er,5,"Slutkontroll och begränsning",
-    (result?.qualifiedCount??0)+" kombinationer uppfyllde hela de syntetiska gruppvillkoren. Parent-Grover kördes "+
-    (result?.parentGrover?.iterations??0)+" iterationer. Några samband över fler än fyra samtidiga dimensioner kan gå förlorade.");
+  explainRow(er,5,"Varför F1–F4 och resultatet kan se olika ut",
+    "F1–F4 gäller EN vald rotation. Det slutliga kandidatvärdet bygger i stället på "+
+    (result?.rotations??0)+" hela rotationsfördelningar, som sammanförs med ett normaliserat geometriskt medel. "+
+    "En kandidat kan därför vara svag i en enskild rotation men stark efter alla.");
+  explainRow(er,6,"Klassisk kontroll och begränsning",
+    (result?.qualifiedCount??0)+" kombinationer klarade grupporaklet vid klassisk genomgång av "+
+    (result?.evaluatedCount??0)+" kandidater. Därefter kördes överordnad Grover "+
+    (result?.parentGrover?.iterations??0)+" iterationer. Detta är inte extern biologisk validering och korrelationer över fler än fyra samtidiga dimensioner kan gå förlorade.");
   enginePanel.append(er);
   aside(enginePanel,"Detta är en klassisk emulering av idealiserad Grover, inte en kvantdator. En hög förstärkningsgrad är inte ett cancersannolikhetsmått.");
   enginePanel.append(stepButton("findings","← Tillbaka till upplysta DNA-positioner"));
