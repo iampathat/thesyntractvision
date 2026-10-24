@@ -46,7 +46,7 @@
     return indices.map(i=>LOCI[i].label+" (kromosom "+LOCI[i].chr+")").join(" · ");
   }
   function all(){return [...dataset.cases,...dataset.controls];}
-  function percent(p){return (100*p).toFixed(2)+"%";}
+  function percent(p){return (100*p).toLocaleString("sv-SE",{minimumFractionDigits:2,maximumFractionDigits:2})+" %";}
   function toggleAnchor(i){
     changed();
     if(anchors.includes(i))anchors=anchors.filter(x=>x!==i);
