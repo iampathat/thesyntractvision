@@ -192,11 +192,17 @@
             <div id="funnelTimeline" class="funnel-timeline" aria-label="Välj en beräknad rotation"></div>
             <p id="funnelPassDescription"></p>
           </div>
-          <div class="funnel-stage-caption"><span>01 / INGÅNGSBAND­BREDD</span><strong>16 små Grover-sökningar</strong><small>Endast rum med en lokal träff får förstärkta staplar. Annars är samtliga 16 tillstånd lika sannolika (6,25 %). Staplarnas skala är 0–100 %.</small></div>
-          <div class="funnel-lane-grid" id="funnelLaneGrid" aria-label="Sexton separat beräknade Grover-fördelningar"></div>
-          <div class="funnel-stage-caption"><span>02 / DIMENSIONSSAMMANBINDNING</span><strong>Fyra sammanbundna sannolikhetsfördelningar</strong><small>Varje grupp innehåller 375 kandidatsannolikheter. Diagrammen visar alla kandidater i 15 ranggrupper med samma skala för F1–F4.</small></div>
-          <div class="funnel-group-grid" id="funnelGroupGrid" aria-label="Fyra syntetiserade sannolikhetsfördelningar"></div>
-          <div class="funnel-stage-caption"><span>03 / ROTATIONERNA SAMMANVÄGS</span><strong>Från en rotation till det samlade resultatet</strong><small>F1–F4 ovan hör enbart till den valda rotationen. Resultatet nedan använder alla körda rotationer. Se hur den ledande kandidaten förändras för varje rotation innan fördelningarna binds samman.</small></div>
+          <details class="funnel-inspection-details">
+            <summary>Fördjupning 1 · Visa de 16 små Grover-rummen</summary>
+            <div class="funnel-stage-caption"><span>01 / INGÅNGSBAND­BREDD</span><strong>16 små Grover-sökningar</strong><small>Endast rum med en lokal träff får förstärkta staplar. Annars är samtliga 16 tillstånd lika sannolika (6,25 %). Staplarnas skala är 0–100 %.</small></div>
+            <div class="funnel-lane-grid" id="funnelLaneGrid" aria-label="Sexton separat beräknade Grover-fördelningar"></div>
+          </details>
+          <details class="funnel-inspection-details">
+            <summary>Fördjupning 2 · Visa de fyra sammanbundna fördelningarna (F1–F4)</summary>
+            <div class="funnel-stage-caption"><span>02 / DIMENSIONSSAMMANBINDNING</span><strong>Fyra sammanbundna sannolikhetsfördelningar</strong><small>Varje grupp innehåller 375 kandidatsannolikheter. Diagrammen visar alla kandidater i 15 ranggrupper med samma skala för F1–F4.</small></div>
+            <div class="funnel-group-grid" id="funnelGroupGrid" aria-label="Fyra syntetiserade sannolikhetsfördelningar"></div>
+          </details>
+          <div class="funnel-stage-caption"><span>03 / ROTATIONERNA SAMMANVÄGS</span><strong>Varför får vi ett samlat resultat?</strong><small>Öppna fördjupning 1–2 för att se enskilda rum och F1–F4. Diagrammet nedan visar hur samma kandidat bidrar i varje rotation och vad sammanvägningen av alla rotationer ger.</small></div>
           <div id="funnelReconciliation" class="funnel-reconciliation" aria-label="Jämför kandidatens sannolikhet i varje rotation och i den slutliga sammanvägningen"></div>
           <div class="funnel-stage-caption"><span>04 / KANDIDATER FÖRE GROVER</span><strong>Granska kandidaternas andelar – vid behov</strong><small>Den viktiga skillnaden mellan före och efter överordnad Grover visas längst upp. Öppna fördjupningen nedan för att se de 12 högst rankade kandidaterna från samma körning. Reglerna kontrolleras klassiskt mot de syntetiska profilerna.</small></div>
           <details class="funnel-candidate-details">
