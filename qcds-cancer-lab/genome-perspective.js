@@ -194,10 +194,68 @@
     });
     return el;
   }
+  // The scientifically important readout comes FIRST; never hide the
+  // Parent-Grover marked mass underneath a list of pre-Grover candidates.
+  // The pre-fusion and Parent-Grover figures have different normalizations.
+  function renderGroverHeadline(){
+    const panel=$("funnelHeadlineSummary");
+    if(!panel||!result)return;
+    panel.replaceChildren();
+    panel.append(e("span","funnel-main-kicker","VIKTIGAST ATT FÖRSTÅ"));
+    panel.append(e("h3","funnel-main-title","Vad betyder QCDS-resultatet?"));
+    if(!result.selected){
+      panel.append(e("strong","funnel-main-none","Ingen kandidat klarade sökreglerna"));
+      panel.append(e("p","funnel-main-desc",
+        "Den klassiska regelkontrollen hittade ingen giltig kombination bland "+
+        result.evaluatedCount+" prövade kombinationer. Ingen kandidatgrupp markerades för överordnad Grover. "+
+        "En jämn sannolikhetsfördelning eller en numerisk konvergens är inte en upptäckt."));
+      panel.append(e("p","funnel-main-meaning",
+        "Detta gäller enbart de syntetiska observationerna och de valda villkoren, inte verkliga cancerfall."));
+      return;
+    }
+    const leaderCount=result.leaders.length;
+    const before=result.selected.foldedProbability;
+    const after=result.parentGrover.markedMass;
+    const measures=e("div","funnel-main-measures");
+    const beforeCard=e("div","funnel-main-measure is-before");
+    beforeCard.append(e("span","funnel-main-measure-label","1 · FÖRE ÖVERORDNAD GROVER"));
+    beforeCard.append(e("strong","funnel-main-value",percent(before)));
+    beforeCard.append(e("p","funnel-main-explain",
+      "Den högst rankade kandidatens andel efter sammanvägning av "+
+      result.rotations+" rotationer (bland "+result.domainCount+" tillåtna tillstånd)."));
+    const afterCard=e("div","funnel-main-measure is-after");
+    afterCard.append(e("span","funnel-main-measure-label","2 · EFTER ÖVERORDNAD GROVER"));
+    afterCard.append(e("strong","funnel-main-value",percent(after)));
+    afterCard.append(e("p","funnel-main-explain",
+      "Den TOTALA markerade sannolikhetsmassan för "+
+      leaderCount+" ledande "+(leaderCount===1?"kandidat":"kandidater")+
+      " efter "+result.parentGrover.iterations+
+      " idealiserade Grover-iterationer över "+result.parentGrover.stateCount+" tillstånd."));
+    measures.append(beforeCard,afterCard);
+    panel.append(measures);
+    const explanation=e("div","funnel-main-interpretation");
+    explanation.append(e("strong","","Vad är det viktiga?"));
+    explanation.append(e("p","",
+      "Grover kan koncentrera den simulerade sannolikheten till tillstånd som oraklet REDAN har markerat. "+
+      "Det här är förstärkning inom modellen, inte "+percent(after)+" chans att DNA-sambandet är sant."));
+    explanation.append(e("p","",
+      "De två procenttalen kommer från OLIKA fördelningar: "+
+      percent(before)+" är en vikt efter traktens sammanvägning, medan "+
+      percent(after)+" gäller en ny, idealiserad Grover-sökning över "+
+      result.parentGrover.stateCount+" tillstånd. "+
+      "Det är alltså inte en direkt sannolikhetshöjning från det första talet till det andra."));
+    explanation.append(e("p","funnel-main-evidence",
+      "Den klassiska kontrollen godkände "+result.qualifiedCount+" av "+
+      result.evaluatedCount+" kandidatkombinationer med SAMMA syntetiska observationer. "+
+      "Bara "+leaderCount+" av dessa markerades för överordnad Grover. "+
+      "Det är varken oberoende biologisk validering eller sannolikheten för cancer."));
+    panel.append(explanation);
+  }
   function renderFunnel(){
     const local=$("funnelLaneGrid"),groups=$("funnelGroupGrid"),timeline=$("funnelTimeline");
     const dist=$("funnelDistribution"),notes=$("funnelDiagnostics"),bridge=$("funnelReconciliation");
     if(!local||!groups||!timeline||!dist||!notes||!bridge)return;
+    renderGroverHeadline();
     local.replaceChildren();groups.replaceChildren();timeline.replaceChildren();
     dist.replaceChildren();notes.replaceChildren();bridge.replaceChildren();
     const pass=result.rounds[Math.min(selectedPass,result.rotations-1)];
@@ -343,11 +401,8 @@
       // A visually short bar is intended: this is NOT a normalized top-rank bar.
       dist.append(btn);
     }
-    if(top.length)dist.append(e("p","funnel-parent-note",
-      "EFTER överordnad Grover: den markerade kandidatgruppens beräknade massa är "+
-      percent(result.parentGrover.markedMass)+
-      ". Detta är en annan fördelning och får inte förväxlas med "+percent(top[0].foldedProbability)+
-      " före förstärkning – ingetdera är sannolikheten för cancer."));
+    // The Parent-Grover mass is explained PROMINENTLY above the entire diagram,
+    // not buried as a parenthetical footnote after the candidate list.
     const last=result.rounds.at(-1).alignment;
     const messages=[
       ["Bevarade sannolikheter","Alla 16 sannolikheter från varje fyrbitarsrum förs vidare, inte bara det högst rankade tillståndet."],
