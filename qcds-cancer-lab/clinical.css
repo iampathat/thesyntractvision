@@ -1109,3 +1109,74 @@ body.clinical-theme .funnel-parent-note {
   body.clinical-theme .funnel-lane-nohit {min-height:40px}
   body.clinical-theme .funnel-parent-note {font-size:11px}
 }
+
+
+/* 2026-10-24 - transparent mathematical reconciliation of one selected
+   16→4→1 rotation and the normalized geometric mean across all passes. */
+body.clinical-theme .funnel-reference-score{
+  margin-top:9px;padding:8px 9px;border-radius:6px;
+  background:#f4f9f8;border:1px solid #d2e5dd;
+  color:#245f53;font-weight:690;font-size:11px;line-height:1.5;
+}
+body.clinical-theme .funnel-reconciliation{
+  display:grid;gap:13px;margin:0 0 22px;
+  padding:17px 19px;background:#f5faf9;
+  border:1px solid #a9d0cb;border-radius:12px;
+  box-shadow:0 2px 9px rgba(42,100,100,.05);
+}
+body.clinical-theme .funnel-reconciliation-overview{
+  display:grid;gap:7px;color:#315d6b;font-size:13px;line-height:1.64;
+}
+body.clinical-theme .funnel-reconciliation-overview>strong{
+  color:#174d58;font-size:16px;line-height:1.45;overflow-wrap:anywhere;
+}
+body.clinical-theme .funnel-reconciliation-overview p{margin:0}
+body.clinical-theme .funnel-bridge-tag{
+  color:#197587;letter-spacing:.065em;font-weight:830;font-size:10px;
+}
+body.clinical-theme .funnel-rotation-bridge{
+  display:grid;grid-template-columns:1fr;gap:7px;
+}
+body.clinical-theme .funnel-rotation-score{
+  display:grid;grid-template-columns:40px minmax(0,1fr) 74px;
+  align-items:center;gap:10px;padding:7px 9px;
+  background:#fff;border:1px solid #dce9e9;border-radius:7px;
+  color:#446e77;
+}
+body.clinical-theme .funnel-rotation-score.is-current{
+  border-color:#66aba8;background:#e6f3f2;
+}
+body.clinical-theme .funnel-rotation-score>strong{color:#2a6875;font-size:12px}
+body.clinical-theme .funnel-rotation-score>b{
+  color:#225a64;text-align:right;font-size:12px;font-variant-numeric:tabular-nums;
+}
+body.clinical-theme .funnel-rotation-rail{
+  display:block;height:12px;background:#e6f0f0;border:1px solid #c7dada;
+  border-radius:7px;overflow:hidden;
+}
+body.clinical-theme .funnel-rotation-rail>i{
+  display:block;height:100%;border-radius:7px;
+  background:linear-gradient(90deg,#438a94,#176b80);
+}
+body.clinical-theme .funnel-rotation-score.is-current .funnel-rotation-rail>i{
+  background:#297b75;
+}
+body.clinical-theme .funnel-bridge-scale{
+  margin:0;color:#5f7f86;font-size:11px;line-height:1.5;
+}
+body.clinical-theme .funnel-rotation-final{
+  padding:13px 15px;background:#e2f2ea;border:1px solid #92c6b0;
+  border-left:4px solid #298a78;border-radius:8px;
+  color:#355d55;font-size:12px;line-height:1.7;
+}
+body.clinical-theme .funnel-rotation-final strong{
+  color:#146451;font-size:16px;line-height:1.4;
+}
+body.clinical-theme .funnel-rotation-final p{margin:5px 0 0}
+@media(max-width:600px){
+  body.clinical-theme .funnel-reconciliation{padding:12px;gap:10px}
+  body.clinical-theme .funnel-rotation-score{grid-template-columns:29px minmax(0,1fr) 61px;gap:6px}
+  body.clinical-theme .funnel-rotation-score>b{font-size:11px}
+  body.clinical-theme .funnel-reconciliation-overview>strong{font-size:14px}
+  body.clinical-theme .funnel-rotation-final strong{font-size:14px}
+}
