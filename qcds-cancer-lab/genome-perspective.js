@@ -197,59 +197,77 @@
   // The scientifically important readout comes FIRST; never hide the
   // Parent-Grover marked mass underneath a list of pre-Grover candidates.
   // The pre-fusion and Parent-Grover figures have different normalizations.
+  // Main result must be readable before any of the optional technical charts.
+  // Two numbers refer to DIFFERENT distributions, and the second is the
+  // combined marked mass (not the probability that an association is true).
   function renderGroverHeadline(){
     const panel=$("funnelHeadlineSummary");
     if(!panel||!result)return;
     panel.replaceChildren();
-    panel.append(e("span","funnel-main-kicker","VIKTIGAST ATT FÖRSTÅ"));
-    panel.append(e("h3","funnel-main-title","Vad betyder QCDS-resultatet?"));
+    const pct=p=>(100*p).toLocaleString("sv-SE",
+      {minimumFractionDigits:2,maximumFractionDigits:2})+" %";
+    panel.append(e("span","funnel-main-kicker","RESULTATET I KORTHET"));
     if(!result.selected){
-      panel.append(e("strong","funnel-main-none","Ingen kandidat klarade sökreglerna"));
+      panel.append(e("h3","funnel-main-title","Ingen kombination uppfyllde villkoren"));
       panel.append(e("p","funnel-main-desc",
-        "Den klassiska regelkontrollen hittade ingen giltig kombination bland "+
-        result.evaluatedCount+" prövade kombinationer. Ingen kandidatgrupp markerades för överordnad Grover. "+
-        "En jämn sannolikhetsfördelning eller en numerisk konvergens är inte en upptäckt."));
+        "Alla "+result.evaluatedCount+" möjliga kombinationer kontrollerades mot de påhittade profilerna. "+
+        "Ingen uppfyllde de valda reglerna, så Grover har ingen utvald kandidat att förstärka."));
       panel.append(e("p","funnel-main-meaning",
-        "Detta gäller enbart de syntetiska observationerna och de valda villkoren, inte verkliga cancerfall."));
+        "Det betyder inte att sådana samband saknas i verkliga patientdata."));
       return;
     }
-    const leaderCount=result.leaders.length;
+    const count=result.leaders.length;
     const before=result.selected.foldedProbability;
     const after=result.parentGrover.markedMass;
+    const single=count===1;
+    panel.append(e("h3","funnel-main-title",
+      single?"Grover förstärkte den utvalda kandidaten":
+             "Grover förstärkte "+count+" utvalda kandidater"));
+    panel.append(e("p","funnel-main-intro",
+      "Här visas två beräknade mått som kommer från olika delar av QCDS-modellen. "+
+      "De är inte direkt jämförbara."));
     const measures=e("div","funnel-main-measures");
-    const beforeCard=e("div","funnel-main-measure is-before");
-    beforeCard.append(e("span","funnel-main-measure-label","1 · FÖRE ÖVERORDNAD GROVER"));
-    beforeCard.append(e("strong","funnel-main-value",percent(before)));
-    beforeCard.append(e("p","funnel-main-explain",
-      "Den högst rankade kandidatens andel efter sammanvägning av "+
-      result.rotations+" rotationer (bland "+result.domainCount+" tillåtna tillstånd)."));
-    const afterCard=e("div","funnel-main-measure is-after");
-    afterCard.append(e("span","funnel-main-measure-label","2 · EFTER ÖVERORDNAD GROVER"));
-    afterCard.append(e("strong","funnel-main-value",percent(after)));
-    afterCard.append(e("p","funnel-main-explain",
-      "Den TOTALA markerade sannolikhetsmassan för "+
-      leaderCount+" ledande "+(leaderCount===1?"kandidat":"kandidater")+
-      " efter "+result.parentGrover.iterations+
-      " idealiserade Grover-iterationer över "+result.parentGrover.stateCount+" tillstånd."));
-    measures.append(beforeCard,afterCard);
+    const makeMeasure=(n,label,value,description,variant)=>{
+      const card=e("div","funnel-main-measure "+variant);
+      card.append(e("p","funnel-main-measure-label",n+" · "+label));
+      card.append(e("p","funnel-main-value",pct(value)));
+      card.append(e("p","funnel-main-explain",description));
+      return card;
+    };
+    measures.append(
+      makeMeasure("01","Efter rotationstratten",before,
+        "Den ledande kandidatens andel efter "+result.rotations+
+        " rotationer, i en fördelning över "+result.domainCount+" tillstånd.","is-before"),
+      makeMeasure("02","Efter överordnad Grover",after,
+        "Sammanlagd sannolikhetsmassa för "+count+
+        (single?" markerad kandidat":" markerade kandidater")+
+        " efter "+result.parentGrover.iterations+" Grover-iterationer i en "+
+        "annan fördelning över "+result.parentGrover.stateCount+" tillstånd.","is-after")
+    );
     panel.append(measures);
-    const explanation=e("div","funnel-main-interpretation");
-    explanation.append(e("strong","","Vad är det viktiga?"));
-    explanation.append(e("p","",
-      "Grover kan koncentrera den simulerade sannolikheten till tillstånd som oraklet REDAN har markerat. "+
-      "Det här är förstärkning inom modellen, inte "+percent(after)+" chans att DNA-sambandet är sant."));
-    explanation.append(e("p","",
-      "De två procenttalen kommer från OLIKA fördelningar: "+
-      percent(before)+" är en vikt efter traktens sammanvägning, medan "+
-      percent(after)+" gäller en ny, idealiserad Grover-sökning över "+
-      result.parentGrover.stateCount+" tillstånd. "+
-      "Det är alltså inte en direkt sannolikhetshöjning från det första talet till det andra."));
-    explanation.append(e("p","funnel-main-evidence",
-      "Den klassiska kontrollen godkände "+result.qualifiedCount+" av "+
-      result.evaluatedCount+" kandidatkombinationer med SAMMA syntetiska observationer. "+
-      "Bara "+leaderCount+" av dessa markerades för överordnad Grover. "+
-      "Det är varken oberoende biologisk validering eller sannolikheten för cancer."));
-    panel.append(explanation);
+    const meaning=e("div","funnel-main-interpretation");
+    meaning.append(e("strong","","Vad visar resultatet?"));
+    meaning.append(e("p","",
+      "Grover förstärker tillstånd som oraklet har markerat. "+
+      "Det innebär inte "+pct(after)+" säkerhet om ett DNA-samband eller cancer."));
+    meaning.append(e("p","funnel-main-evidence",
+      "Klassisk kontroll: "+result.qualifiedCount+" av "+result.evaluatedCount+
+      " syntetiska kombinationer uppfyllde villkoren. "+
+      "Av dem valdes "+count+" till överordnad Grover. "+
+      "Kontrollen använder samma data och är inte oberoende biologisk validering."));
+    panel.append(meaning);
+    const more=e("details","funnel-main-method");
+    more.append(e("summary","","Varför går det inte att jämföra procenttalen direkt?"));
+    more.append(e("p","",
+      "Det första värdet är en kandidats andel efter sammanvägning av flera rotationsfördelningar. "+
+      "Det andra är total sannolikhetsmassa för den markerade kandidatgruppen i en "+
+      "ny idealiserad Grover-simulering. Den nya sökningen använder ett annat "+
+      "tillståndsrum och en ny fördelning. Siffrorna utgör därför inte en "+
+      "före–efter-mätning av samma sannolikhet."));
+    more.append(e("p","",
+      "Resultatet är en klassisk simulering av idealiserad Grover, inte ett "+
+      "uppmätt kvantresultat eller ett medicinskt fynd."));
+    panel.append(more);
   }
   function renderFunnel(){
     const local=$("funnelLaneGrid"),groups=$("funnelGroupGrid"),timeline=$("funnelTimeline");
