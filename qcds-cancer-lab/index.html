@@ -7,7 +7,7 @@
   <title>QCDS Oncology Lab — Utforska samband i syntetiskt DNA</title>
   <meta name="description" content="Utforska hur QCDS roterar små logiska rum och beräknar sannolikhetsmönster i påhittade DNA-profiler. Endast forskningssimulering, inga patientdata eller kliniskt verifierade resultat." />
   <link rel="stylesheet" href="./style.css?v=20261022-inference" />
-  <link rel="stylesheet" href="./clinical.css?v=20261024-grover-main-result" />
+  <link rel="stylesheet" href="./clinical.css?v=20261024-oncology-readable-v3" />
 </head>
 <body class="clinical-theme">
   <main class="shell">
@@ -163,7 +163,11 @@
           <header class="genome-funnel-header">
             <small>QCDS · ROTERANDE SANNOLIKHETSTRATT</small>
             <h3 id="funnelTitle">Hur 16 små sökningar ger ett gemensamt resultat</h3>
-            <p>Tänk dig 16 grupper som granskar fyra DNA-positioner var. Varje grupp lämnar <strong>en hel sannolikhetsfördelning</strong>, inte bara ett förslag. Fyra grupper kombineras till en och därefter binds de fyra resultaten samman. Genom att rotera positionerna prövar modellen nya perspektiv. Beräkningarna är verkliga, men görs i en klassisk simulering – inte parallellt på en kvantdator.</p>
+            <p class="funnel-intro-lead">Se först vad QCDS beräknade. Därefter kan du undersöka rotationerna och de enskilda Grover-sökningarna.</p>
+            <details class="funnel-intro-details">
+              <summary>Hur arbetar QCDS-tratten?</summary>
+              <p>Sexton små logiska rum testar fyra DNA-positioner vardera. De skickar vidare hela sannolikhetsfördelningar som binds fyra till ett och sedan fyra till ett igen. Genom rotationer prövas flera logiska perspektiv. Demonstrationen körs som en klassisk simulering, inte på en kvantdator.</p>
+            </details>
           </header>
           <section id="funnelHeadlineSummary" class="funnel-main-takeaway" aria-label="Viktigaste resultatet före och efter överordnad Grover" aria-live="polite"></section>
           <div class="funnel-controls">
@@ -193,20 +197,22 @@
             <p id="funnelPassDescription"></p>
           </div>
           <details class="funnel-inspection-details">
-            <summary>Fördjupning 1 · Visa de 16 små Grover-rummen</summary>
+            <summary>Fördjupning 1 · De 16 lokala Grover-sökningarna</summary>
             <div class="funnel-stage-caption"><span>01 / INGÅNGSBAND­BREDD</span><strong>16 små Grover-sökningar</strong><small>Endast rum med en lokal träff får förstärkta staplar. Annars är samtliga 16 tillstånd lika sannolika (6,25 %). Staplarnas skala är 0–100 %.</small></div>
             <div class="funnel-lane-grid" id="funnelLaneGrid" aria-label="Sexton separat beräknade Grover-fördelningar"></div>
           </details>
           <details class="funnel-inspection-details">
-            <summary>Fördjupning 2 · Visa de fyra sammanbundna fördelningarna (F1–F4)</summary>
+            <summary>Fördjupning 2 · Hur fyra grupper binds samman (F1–F4)</summary>
             <div class="funnel-stage-caption"><span>02 / DIMENSIONSSAMMANBINDNING</span><strong>Fyra sammanbundna sannolikhetsfördelningar</strong><small>Varje grupp innehåller 375 kandidatsannolikheter. Diagrammen visar alla kandidater i 15 ranggrupper med samma skala för F1–F4.</small></div>
             <div class="funnel-group-grid" id="funnelGroupGrid" aria-label="Fyra syntetiserade sannolikhetsfördelningar"></div>
           </details>
-          <div class="funnel-stage-caption"><span>03 / ROTATIONERNA SAMMANVÄGS</span><strong>Varför får vi ett samlat resultat?</strong><small>Öppna fördjupning 1–2 för att se enskilda rum och F1–F4. Diagrammet nedan visar hur samma kandidat bidrar i varje rotation och vad sammanvägningen av alla rotationer ger.</small></div>
-          <div id="funnelReconciliation" class="funnel-reconciliation" aria-label="Jämför kandidatens sannolikhet i varje rotation och i den slutliga sammanvägningen"></div>
-          <div class="funnel-stage-caption"><span>04 / KANDIDATER FÖRE GROVER</span><strong>Granska kandidaternas andelar – vid behov</strong><small>Den viktiga skillnaden mellan före och efter överordnad Grover visas längst upp. Öppna fördjupningen nedan för att se de 12 högst rankade kandidaterna från samma körning. Reglerna kontrolleras klassiskt mot de syntetiska profilerna.</small></div>
+          <details class="funnel-reconciliation-details">
+            <summary>Fördjupning 3 · Så bidrar varje rotation till slutresultatet</summary>
+            <div class="funnel-stage-caption"><span>03 / ROTATIONERNA SAMMANVÄGS</span><strong>Varför får vi ett samlat resultat?</strong><small>Diagrammet nedan visar hur samma kandidat bidrar i varje rotation. Alla rotationernas fördelningar sammanvägs till ett slutresultat.</small></div>
+            <div id="funnelReconciliation" class="funnel-reconciliation" aria-label="Jämför kandidatens sannolikhet i varje rotation och i den slutliga sammanvägningen"></div>
+          </details>
           <details class="funnel-candidate-details">
-            <summary>Fördjupning: visa rangordnade kandidater och deras modellandelar före överordnad Grover</summary>
+            <summary>Fördjupning 4 · Visa de 12 högst rankade kandidaterna</summary>
             <div id="funnelDistribution" class="funnel-distribution" aria-label="Sammanvägd modellfördelning efter alla rotationer, för kandidater som godkänts av regelkontrollen"></div>
           </details>
           <details class="funnel-method">
@@ -424,7 +430,7 @@
   <script src="./app.js?v=20261023-sv1"></script>
   <script src="./genome-discovery.js?v=20261023-sv1"></script>
   <script src="./genome-funnel.js?v=20261023-sv1"></script>
-  <script src="./genome-perspective.js?v=20261024-grover-main-result"></script>
+  <script src="./genome-perspective.js?v=20261024-oncology-readable-v3"></script>
   <script src="./onco-navigation.js?v=20261023-sv1"></script>
   <script src="./onco-examples.js?v=20261024-audited-syntract"></script>
 </body>
