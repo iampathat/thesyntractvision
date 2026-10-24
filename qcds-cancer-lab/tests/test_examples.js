@@ -96,6 +96,15 @@ assert(pages.setup.children[0].children.length>3);
 assert(pages.findings.children[0].children.length>3);
 assert(pages.engine.children[0].children.length>3);
 assert(elements.cohortEvidence.textContent.includes("399"));
+const visibleText=node=>[node.textContent,...(node.children||[]).flatMap(child=>visibleText(child))].join(" ");
+const initialHeadline=visibleText(elements.funnelHeadlineSummary);
+assert(initialHeadline.includes("VIKTIGAST ATT FÖRSTÅ"));
+assert(initialHeadline.includes("99.95%"),"Parent Grover marked mass is prominently displayed");
+assert(initialHeadline.includes("0.80%"),"Pre-Grover percentage is displayed as a DIFFERENT distribution");
+assert(initialHeadline.includes("en ny, idealiserad Grover-sökning"),
+  "Do not present the two percentages as direct clinical probability increase");
+assert(initialHeadline.includes("1 ledande kandidat"),
+  "The headline distinguishes singleton from a group of marked candidates");
 const earlier=pages.findings.children[0].children.map(x=>x.textContent).join(" ");
 elements.cohortMinCases.value="8";
 if(elements.cohortMinCases.events.change)elements.cohortMinCases.events.change();
@@ -111,4 +120,19 @@ assert.equal(snap.result.selected,null);
 assert(elements.cohortOutcome.textContent.startsWith("Inget samband uppfyller"));
 assert(pages.findings.children[0].children.length>2);
 assert.equal(routes.at(-1),"setup");
-console.log("Oncology Lab loaded guided examples and explanations: PASS");
+const nullHeadline=visibleText(elements.funnelHeadlineSummary);
+assert(nullHeadline.includes("Ingen kandidat klarade sökreglerna"));
+assert(!nullHeadline.includes("99.95%"),"Null dataset must not imply Parent Grover amplification");
+assert(html.includes('id="funnelHeadlineSummary"'));
+assert(html.indexOf('id="funnelHeadlineSummary"')<html.indexOf('id="funnelLaneGrid"'));
+assert(html.includes('class="funnel-inspection-details"'),"Technical graphs preserved but collapsed");
+assert(html.includes('class="funnel-candidate-details"'),"Candidate distribution preserved but collapsed");
+api.loadExample({id:"screenshot-173",seed:173,mode:"structure",caseCount:5,controlCount:5,
+ minCases:3,maxControls:1,anchors:[],relation:"cooccurrence",maxPasses:6,readoutNoise:0});
+const screenshotHeadline=visibleText(elements.funnelHeadlineSummary);
+assert(screenshotHeadline.includes("6.34%"),"Screenshot pre-Grover distribution should show 6.34%");
+assert(screenshotHeadline.includes("99.95%"),"Screenshot post-Grover marked mass should show 99.95%");
+assert(screenshotHeadline.includes("148 av 375"),"Classically qualified 148 out of 375");
+assert(screenshotHeadline.includes("Bara 1"),"Only one leader is marked for final Grover");
+assert(screenshotHeadline.includes("1024 tillstånd"),"Parent search is 1024, not 375 state space");
+console.log("Oncology Lab prominent Grover model interpretation and guided examples: PASS");
