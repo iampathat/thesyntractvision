@@ -7,7 +7,7 @@
   <title>QCDS Oncology Lab — Utforska samband i syntetiskt DNA</title>
   <meta name="description" content="Utforska hur QCDS roterar små logiska rum och beräknar sannolikhetsmönster i påhittade DNA-profiler. Endast forskningssimulering, inga patientdata eller kliniskt verifierade resultat." />
   <link rel="stylesheet" href="./style.css?v=20261022-inference" />
-  <link rel="stylesheet" href="./clinical.css?v=20261024-audited-syntract" />
+  <link rel="stylesheet" href="./clinical.css?v=20261024-grover-main-result" />
 </head>
 <body class="clinical-theme">
   <main class="shell">
@@ -165,6 +165,7 @@
             <h3 id="funnelTitle">Hur 16 små sökningar ger ett gemensamt resultat</h3>
             <p>Tänk dig 16 grupper som granskar fyra DNA-positioner var. Varje grupp lämnar <strong>en hel sannolikhetsfördelning</strong>, inte bara ett förslag. Fyra grupper kombineras till en och därefter binds de fyra resultaten samman. Genom att rotera positionerna prövar modellen nya perspektiv. Beräkningarna är verkliga, men görs i en klassisk simulering – inte parallellt på en kvantdator.</p>
           </header>
+          <section id="funnelHeadlineSummary" class="funnel-main-takeaway" aria-label="Viktigaste resultatet före och efter överordnad Grover" aria-live="polite"></section>
           <div class="funnel-controls">
             <label for="funnelPasses">Hur många rotationer?
               <select id="funnelPasses">
@@ -197,8 +198,11 @@
           <div class="funnel-group-grid" id="funnelGroupGrid" aria-label="Fyra syntetiserade sannolikhetsfördelningar"></div>
           <div class="funnel-stage-caption"><span>03 / ROTATIONERNA SAMMANVÄGS</span><strong>Från en rotation till det samlade resultatet</strong><small>F1–F4 ovan hör enbart till den valda rotationen. Resultatet nedan använder alla körda rotationer. Se hur den ledande kandidaten förändras för varje rotation innan fördelningarna binds samman.</small></div>
           <div id="funnelReconciliation" class="funnel-reconciliation" aria-label="Jämför kandidatens sannolikhet i varje rotation och i den slutliga sammanvägningen"></div>
-          <div class="funnel-stage-caption"><span>04 / SAMMANVÄGD SYNTRACT</span><strong>Kandidater efter alla rotationer och den klassiska regelkontrollen</strong><small>Staplarna visar absoluta modellandelar FÖRE överordnad Grover, inte sannolikheter för cancer. Kandidaterna godkänns genom separat klassisk kontroll av alla 375 symboliska kombinationer. Samma data används i både sökning och kontroll.</small></div>
-          <div id="funnelDistribution" class="funnel-distribution" aria-label="Sammanvägd modellfördelning efter alla rotationer, för kandidater som godkänts av regelkontrollen"></div>
+          <div class="funnel-stage-caption"><span>04 / KANDIDATER FÖRE GROVER</span><strong>Granska kandidaternas andelar – vid behov</strong><small>Den viktiga skillnaden mellan före och efter överordnad Grover visas längst upp. Öppna fördjupningen nedan för att se de 12 högst rankade kandidaterna från samma körning. Reglerna kontrolleras klassiskt mot de syntetiska profilerna.</small></div>
+          <details class="funnel-candidate-details">
+            <summary>Fördjupning: visa rangordnade kandidater och deras modellandelar före överordnad Grover</summary>
+            <div id="funnelDistribution" class="funnel-distribution" aria-label="Sammanvägd modellfördelning efter alla rotationer, för kandidater som godkänts av regelkontrollen"></div>
+          </details>
           <details class="funnel-method">
             <summary>Tekniska kontroller: vad bevaras, går förlorat och prövas?</summary>
             <div id="funnelDiagnostics" class="funnel-diagnostics"></div>
@@ -414,7 +418,7 @@
   <script src="./app.js?v=20261023-sv1"></script>
   <script src="./genome-discovery.js?v=20261023-sv1"></script>
   <script src="./genome-funnel.js?v=20261023-sv1"></script>
-  <script src="./genome-perspective.js?v=20261024-audited-syntract"></script>
+  <script src="./genome-perspective.js?v=20261024-grover-main-result"></script>
   <script src="./onco-navigation.js?v=20261023-sv1"></script>
   <script src="./onco-examples.js?v=20261024-audited-syntract"></script>
 </body>
