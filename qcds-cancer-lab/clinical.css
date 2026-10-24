@@ -1277,3 +1277,36 @@ body.clinical-theme .funnel-candidate-details>.funnel-distribution{
   body.clinical-theme .funnel-main-value{font-size:38px}
   body.clinical-theme .funnel-candidate-details>summary{font-size:12px;padding:12px}
 }
+
+/* Smaller reading path: calculations remain intact and can be expanded. */
+body.clinical-theme .funnel-inspection-details{
+  margin:12px 0 16px;
+  padding:0;
+  border:1px solid #d0e1e6;
+  border-radius:9px;
+  overflow:hidden;background:#fff;
+}
+body.clinical-theme .funnel-inspection-details>summary{
+  padding:15px 18px;cursor:pointer;
+  background:#eef5f7;color:#285d6c;
+  font-size:13px;line-height:1.55;font-weight:750;
+}
+body.clinical-theme .funnel-inspection-details>summary:hover{
+  background:#e3eff2;
+}
+body.clinical-theme .funnel-inspection-details[open]>summary{
+  border-bottom:1px solid #cfdfe4;
+}
+body.clinical-theme .funnel-inspection-details>.funnel-stage-caption{
+  margin:15px 16px 10px;
+}
+body.clinical-theme .funnel-inspection-details>.funnel-lane-grid,
+body.clinical-theme .funnel-inspection-details>.funnel-group-grid{
+  margin:0 15px 16px;
+}
+@media(max-width:600px){
+  body.clinical-theme .funnel-inspection-details>summary{padding:12px;font-size:12px}
+  body.clinical-theme .funnel-inspection-details>.funnel-stage-caption{margin:12px 10px 8px}
+  body.clinical-theme .funnel-inspection-details>.funnel-lane-grid,
+  body.clinical-theme .funnel-inspection-details>.funnel-group-grid{margin:0 9px 12px}
+}
