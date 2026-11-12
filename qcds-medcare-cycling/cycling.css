@@ -76,3 +76,15 @@
 .discovery-card .d-meta{color:#ffda8d;font-size:11px}
 @media(max-width:1060px){.discovery-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:660px){.discovery-panel{padding:14px}.discovery-head{align-items:flex-start}.discovery-chip{display:none}.discovery-cards{grid-template-columns:1fr;max-height:390px}.discovery-tab{min-height:46px}}
+
+/* QCDS Cycling v0.7.0 · Independent route profile controls */
+.route-planner-controls{padding:15px;margin:14px 0;border:1px solid #326276;border-radius:12px;background:#0a2532;display:grid;gap:12px;min-width:0}
+.route-planner-controls>label{display:grid;gap:6px;color:#bde2ec;font-size:12px}
+.route-planner-controls select{width:100%;min-width:0;border-radius:8px;border:1px solid #3e7387;background:#071e2c;color:#f0fbff;padding:12px}
+.planner-start{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.planner-start button{min-width:0;overflow-wrap:anywhere;font-size:12px}
+.planner-start button:last-child{grid-column:span 2}
+.auto-elevation{display:flex;align-items:center;gap:8px;color:#b9dde7;font-size:12px;line-height:1.5;padding:8px 2px}
+.auto-elevation input{width:18px;height:18px;accent-color:#6fe0cd}
+.profile-wrap canvas{height:124px}
+@media(max-width:620px){.planner-start{grid-template-columns:1fr}.planner-start button:last-child{grid-column:auto}}

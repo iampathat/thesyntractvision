@@ -334,22 +334,43 @@ function dijkstra(net,start,maxDistance){
  }
  return {dist,parents};
 }
+
+// Directed shortest alternate return; paths with heavy overlap are rejected by caller.
+function alternateReturn(net,from,to,outwardEdges,maxKm){
+ const queue=new Heap(),scores=new Map([[from,0]]),traveled=new Map([[from,0]]),parents=new Map();
+ queue.push({id:from,d:0});let visited=0;
+ while(queue.size&&visited++<90000){
+  const u=queue.pop();if(u.d!==scores.get(u.id))continue;
+  if(u.id===to){const path=[to];let p=to;while(parents.has(p)&&path.length<20000){p=parents.get(p);path.push(p);}path.reverse();return path;}
+  for(const e of net.adj.get(u.id)||[]){
+   const physical=traveled.get(u.id)+e.km;if(physical>maxKm)continue;
+   const shared=outwardEdges.has([u.id,e.to].sort().join('|'));
+   const score=u.d+e.km*(shared?10:1);
+   if(score>maxKm*9||score>=(scores.get(e.to)??Infinity))continue;
+   scores.set(e.to,score);traveled.set(e.to,physical);parents.set(e.to,u.id);queue.push({id:e.to,d:score});
+  }
+ }
+ return null;
+}
+
 function reconstruct(net,parents,end){const keys=[end];let k=end;while(parents.has(k)&&keys.length<25000){k=parents.get(k).from;keys.push(k);}keys.reverse();return keys.map(id=>({lat:net.nodes.get(id).lat,lon:net.nodes.get(id).lon,ele:null}));}
 const approximateCenter = b=>({lat:(b.getSouth()+b.getNorth())/2,lon:(b.getWest()+b.getEast())/2});
-function generateConnectedRoutes(ways,{mode='road',bounds,targetKm=8,count=4}={}){
+function generateConnectedRoutes(ways,{mode='road',bounds,targetKm=8,count=4,routeType='any',startCoord=null}={}){
  const net=buildRouteNetwork(ways,mode);
  if(!net.edges||net.nodes.size<3)return {routes:[],nodeCount:net.nodes.size,edgeCount:net.edges,largestKm:0};
- const center=bounds?approximateCenter(bounds):[...net.nodes.values()][0];
+ const center=startCoord&&Number.isFinite(startCoord.lat)&&Number.isFinite(startCoord.lon)?startCoord:(bounds?approximateCenter(bounds):[...net.nodes.values()][0]);
  const nearest=[...net.nodes.values()].sort((a,b)=>Math.abs(a.lat-center.lat)+Math.abs(a.lon-center.lon)-Math.abs(b.lat-center.lat)-Math.abs(b.lon-center.lon)).slice(0,16);
  const origin=nearest.reduce((best,p)=>{
   const score=(net.adj.get(p.id)?.length||0) - kmBetween(p,center)*4;
   return score>best.score?{p,score}:best;
  },{p:nearest[0],score:-Infinity}).p;
+ const startGapKm=startCoord?kmBetween(startCoord,origin):0;
+ if(startCoord&&startGapKm>2.5)return {routes:[],nodeCount:net.nodes.size,edgeCount:net.edges,largestKm:0,startGapKm,startIssue:`Startpunkten är ${startGapKm.toFixed(1)} km från närmaste tillgängliga väg i den hämtade kartdatan. Flytta kartan till startpunkten och hämta vägar igen.`};
  const {dist,parents}=dijkstra(net,origin.id,Math.max(10,targetKm*1.6));
  const ranked=[...dist].filter(([k,d])=>d>=Math.max(1.3,targetKm*.57)&&d<=targetKm*1.35).map(([id,km])=>({id,km,p:net.nodes.get(id)}));
  ranked.sort((a,b)=>Math.abs(a.km-targetKm)-Math.abs(b.km-targetKm));
  const routes=[],ends=[];
- for(const entry of ranked){
+ if(routeType==='any'||routeType==='oneway')for(const entry of ranked){
   // Prevent several nearly identical variations ending on the same block.
   if(ends.some(p=>kmBetween(p,entry.p)<Math.max(.3,targetKm*.12)))continue;
   const points=reconstruct(net,parents,entry.id);if(points.length<3)continue;
@@ -362,7 +383,7 @@ function generateConnectedRoutes(ways,{mode='road',bounds,targetKm=8,count=4}={}
  // area is too small for a one-way route of that length. Every leg stays on
  // actual connected OSM edges, with the return track reversed explicitly.
  const backEnds=[];
- for(const [id,oneWayKm] of [...dist].sort((a,b)=>Math.abs(a[1]*2-targetKm)-Math.abs(b[1]*2-targetKm))){
+ if(routeType==='any'||routeType==='outback')for(const [id,oneWayKm] of [...dist].sort((a,b)=>Math.abs(a[1]*2-targetKm)-Math.abs(b[1]*2-targetKm))){
   if(oneWayKm*2<Math.max(2.5,targetKm*.72)||oneWayKm*2>targetKm*1.3)continue;
   const endpoint=net.nodes.get(id);
   if(backEnds.some(p=>kmBetween(p,endpoint)<Math.max(.3,targetKm*.07)))continue;
@@ -381,10 +402,37 @@ function generateConnectedRoutes(ways,{mode='road',bounds,targetKm=8,count=4}={}
   routes.push({name:`Tur & retur · ${actual.toFixed(1)} km`,source:'OSM · sammanhängande väg tur och retur',surface:null,roadClass:'connected',mode,points,generated:true,generatedType:'out-and-back',targetKm,graphEdges:net.edges,networkNodeCount:net.nodes.size,verifiedAccess:false});
   backEnds.push(endpoint);if(backEnds.length>=3)break;
  }
+ // A REAL loop requires a different lawful return path on the directed graph.
+ // Penalise edges used on the outward leg so a backtrack is never mislabeled as a loop.
+ if(routeType==='any'||routeType==='loop'){
+  const loopEnds=[...dist].filter(([id,d])=>d>targetKm*.22&&d<targetKm*.64)
+   .sort((a,b)=>Math.abs(a[1]-targetKm*.5)-Math.abs(b[1]-targetKm*.5)).slice(0,55);
+  const foundEnds=[];
+  for(const [id] of loopEnds){
+   if(foundEnds.length>=2)break;
+   const end=net.nodes.get(id);
+   if(foundEnds.some(p=>kmBetween(p,end)<Math.max(.35,targetKm*.08)))continue;
+   const outwardIds=[];let walk=id;outwardIds.push(walk);
+   while(parents.has(walk)&&outwardIds.length<25000){walk=parents.get(walk).from;outwardIds.push(walk);}
+   if(walk!==origin.id||outwardIds.length<5)continue;
+   outwardIds.reverse();
+   const used=new Set();for(let k=1;k<outwardIds.length;k++)used.add([outwardIds[k-1],outwardIds[k]].sort().join('|'));
+   const back=alternateReturn(net,id,origin.id,used,targetKm*1.9);
+   if(!back||back.length<4)continue;
+   let overlap=0;for(let k=1;k<back.length;k++)if(used.has([back[k-1],back[k]].sort().join('|')))overlap++;
+   if(overlap/Math.max(1,back.length-1)>.42)continue;
+   const ids=outwardIds.concat(back.slice(1));
+   const points=ids.map(key=>({lat:net.nodes.get(key).lat,lon:net.nodes.get(key).lon,ele:null}));
+   const km=distanceKm(points);
+   if(km<targetKm*.68||km>targetKm*1.35)continue;
+   routes.push({name:`Rundslinga · ${km.toFixed(1)} km`,source:'OSM · separat ut- och återväg',surface:null,roadClass:'connected',mode,points,generated:true,generatedType:'loop',targetKm,graphEdges:net.edges,networkNodeCount:net.nodes.size,verifiedAccess:false});
+   foundEnds.push(end);
+  }
+ }
  routes.sort((a,b)=>Math.abs(distanceKm(a.points)-targetKm)-Math.abs(distanceKm(b.points)-targetKm));
  routes.length=Math.min(count,routes.length);
  const longest=Math.max(0,...dist.values());
- return {routes,nodeCount:net.nodes.size,edgeCount:net.edges,largestKm:longest};
+ return {routes,nodeCount:net.nodes.size,edgeCount:net.edges,largestKm:longest,startGapKm};
 }
 
 /* module: elevation.js */
@@ -423,28 +471,42 @@ async function responseJson(url,fetcher,signal,timeout=11000){
 }
 let lastPublicDemoCall=0;
 async function enrichRouteElevation(route,{fetcher=fetch,signal,onProgress=()=>{}}={}){
- if(!route||route.points?.length<2)throw Error('Välj en rutt först.');
- if(route.points.every(p=>Number.isFinite(p.ele)))return {...route,elevationSource:route.elevationSource||'GPX / tidigare höjddata'};
- const sample=distanceSample(route.points,75);if(sample.length<2)throw Error('Banan är för kort för en höjdprofil.');
+ if(!route||route.points?.length<2)throw Error('Välj en bana först.');
+ if(route.points.every(p=>Number.isFinite(p.ele)))return {...route,elevationSource:route.elevationSource||'GPX / befintliga höjddata'};
+ const sample=distanceSample(route.points,65);if(sample.length<2)throw Error('Banan är för kort för höjdprofil.');
  const locations=sample.map(p=>`${p.lat.toFixed(5)},${p.lon.toFixed(5)}`).join('|');
- const eu=sample.every(regionEurope),datasets=eu?['eudem25m','mapzen']:['mapzen'];let last=null;
+ const eu=sample.every(regionEurope);const failed=[];
+ const datasets=eu?['eudem25m','mapzen']:['mapzen'];
  for(const dataset of datasets){
-  onProgress(`Hämtar ${sample.length} höjdpunkter från ${dataset==='eudem25m'?'EU DEM 25 m':'Mapzen global DEM'} …`);
+  if(signal?.aborted)throw Error('Höjdhämtningen avbröts.');
+  const label=dataset==='eudem25m'?'EU-DEM 25 m':'Mapzen DEM';
+  onProgress(`Försöker ${label} (${sample.length} höjdpunkter) …`);
   try{
-   // The public test API allows at most one request per second; serialize
-   // requests in this browser. Production must use a private licensed service.
-   const until=lastPublicDemoCall+1150-Date.now();
-   if(until>0)await new Promise((resolve,reject)=>{const t=setTimeout(resolve,until);signal?.addEventListener('abort',()=>{clearTimeout(t);reject(Error('Höjdhämtningen avbröts.'));},{once:true});});
+   const until=lastPublicDemoCall+1100-Date.now();
+   if(until>0)await new Promise((resolve,reject)=>{const timer=setTimeout(resolve,until);signal?.addEventListener('abort',()=>{clearTimeout(timer);reject(Error('Höjdhämtningen avbröts.'));},{once:true});});
    lastPublicDemoCall=Date.now();
    const url=`https://api.opentopodata.org/v1/${dataset}?locations=${encodeURIComponent(locations)}`;
-   const raw=await responseJson(url,fetcher,signal);
-   if(raw.status!=='OK'||!Array.isArray(raw.results)||raw.results.length!==sample.length)throw Error(raw.error||'Ogiltigt höjdsvar');
-   const h=raw.results.map(r=>typeof r.elevation==='number'&&Number.isFinite(r.elevation)?r.elevation:null);
-   if(h.filter(v=>v!==null).length<sample.length*.85)throw Error('Ofullständig höjdmodell för området.');
-   return {...route,points:interpolateHeights(route.points,sample,h),elevationSource:`OpenTopoData ${dataset} · terrängmodell`,elevationResolution:dataset==='eudem25m'?'25 m':'≈30 m',elevationSamples:sample.length};
-  }catch(e){last=e;if(signal?.aborted)throw e;}
+   const raw=await responseJson(url,fetcher,signal,6500);
+   if(raw.status!=='OK'||!Array.isArray(raw.results)||raw.results.length!==sample.length)throw Error(raw.error||'Felaktigt höjdsvar');
+   const values=raw.results.map(r=>typeof r.elevation==='number'&&Number.isFinite(r.elevation)?r.elevation:null);
+   if(values.filter(Number.isFinite).length<sample.length*.85)throw Error('Otillräcklig geografisk täckning');
+   return {...route,points:interpolateHeights(route.points,sample,values),elevationSource:`OpenTopoData · ${label}`,elevationResolution:dataset==='eudem25m'?'cirka 25 m':'ungefär 30 m',elevationSamples:sample.length,elevationLicense:'OpenTopoData dataset, källa och licens enligt dataleverantör'};
+  }catch(err){if(signal?.aborted)throw err;failed.push(`${label}: ${err.message||String(err)}`);}
  }
- throw Error(`Höjddata saknas eller tjänsten svarar inte: ${last?.message||'okänt fel'}`);
+ // An independent service with worldwide Copernicus GLO-90 coverage.
+ // IMPORTANT: its free endpoint is non-commercial ONLY and must not be used
+ // as a commercial product data source without a separate licence/plan.
+ onProgress('Försöker reservkälla Open-Meteo / Copernicus GLO-90 (90 m) …');
+ try{
+  const lat=sample.map(p=>p.lat.toFixed(5)).join(','),lon=sample.map(p=>p.lon.toFixed(5)).join(',');
+  const url=`https://api.open-meteo.com/v1/elevation?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}`;
+  const raw=await responseJson(url,fetcher,signal,9000);
+  if(!Array.isArray(raw.elevation)||raw.elevation.length!==sample.length)throw Error(raw.reason||'Ogiltigt svar från Open-Meteo');
+  const values=raw.elevation.map(v=>Number.isFinite(v)?v:null);
+  if(values.filter(Number.isFinite).length<sample.length*.85)throw Error('Otillräcklig täckning i Copernicus DEM');
+  return {...route,points:interpolateHeights(route.points,sample,values),elevationSource:'Open-Meteo / Copernicus DEM GLO-90',elevationResolution:'90 m',elevationSamples:sample.length,elevationLicense:'Open-Meteo CC BY 4.0 / Copernicus · gratis API endast icke-kommersiellt'};
+ }catch(err){if(signal?.aborted)throw err;failed.push(`Open-Meteo: ${err.message||String(err)}`);}
+ throw Error('Höjddata saknas eftersom ingen höjdkälla svarade. '+failed.join(' · '));
 }
 
 /* module: route-discovery.js */
@@ -565,7 +627,7 @@ const wasmCourseIndex=index;
 
 
 const $=id=>document.getElementById(id);
-const S={mode:'road',tab:'explore',route:null,map:null,mapLayer:null,osmLayer:null,osmWays:[],source:'none',telemetry:{source:'none',power:null,cadence:null,speed:null,hr:null},running:false,elapsed:0,km:0,liveWatts:0,tick:0,graphWays:[],generatedRoutes:[],mixRoutes:[],localRoutes:[],discoveryTab:'near',heightAbort:null};
+const S={mode:'road',tab:'explore',route:null,map:null,mapLayer:null,osmLayer:null,osmWays:[],source:'none',telemetry:{source:'none',power:null,cadence:null,speed:null,hr:null},running:false,elapsed:0,km:0,liveWatts:0,tick:0,graphWays:[],generatedRoutes:[],mixRoutes:[],localRoutes:[],discoveryTab:'near',heightAbort:null,plannerStart:null,pickingStart:false,startMarker:null};
 const modeWords={road:'ROAD RACE',gravel:'GRAVEL CHALLENGE',mtb:'MTB TRAIL',downhill:'DOWNHILL EXPERIENCE'};
 const radio=new BikeFTMS(data=>{S.source='ftms';S.telemetry={...S.telemetry,...data,source:'ftms'};S.liveWatts=Number.isFinite(data.power)?Math.max(0,data.power):S.liveWatts; updateDevice('FTMS · livemätning');updateTelemetry();renderOracles();},status=>{updateDevice(status);});
 function updateDevice(msg){$('deviceText').textContent=msg;$('feedStatus').textContent=S.source==='ftms'?'CYKEL ANSLUTEN':S.source==='demo'?'SIMULERAD DATA':'EJ ANSLUTEN';$('dataStatus').textContent=S.source==='ftms'?'● FTMS LIVE':S.source==='demo'?'● DEMO · SIMULERAT':'● DEMO / LOKALT';$('btLight').classList.toggle('online',S.source==='ftms');document.querySelector('.led').classList.toggle('online',S.source==='ftms');}
@@ -587,6 +649,31 @@ function flyToWorld(lat,lon,label,zoom=12){
 }
 for(const [label,lat,lon,zoom] of WORLD_DESTINATIONS){const btn=document.createElement('button');btn.type='button';btn.className='world-place';btn.textContent=label;btn.addEventListener('click',()=>flyToWorld(lat,lon,label,zoom));$('worldPlaces').append(btn);}
 $('goCoords').addEventListener('click',()=>{const m=$('gotoCoords').value.trim().match(/^(-?\d+(?:[.,]\d+)?)\s*[,; ]\s*(-?\d+(?:[.,]\d+)?)$/);if(!m){$('worldStatus').textContent='Skriv koordinater, exempel: 45.9237, 6.8694';return;}const lat=Number(m[1]),lon=Number(m[2]);if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>85||Math.abs(lon)>180){$('worldStatus').textContent='Koordinater utanför giltigt intervall.';return;}flyToWorld(lat,lon,`${lat.toFixed(4)}, ${lon.toFixed(4)}`);});
+function setPlannerStart(point,label){
+ S.plannerStart=point?{lat:Number(point.lat),lon:Number(point.lon)}:null;
+ if(S.startMarker&&S.map){S.map.removeLayer(S.startMarker);S.startMarker=null;}
+ if(S.plannerStart&&S.map&&window.L){S.startMarker=L.circleMarker([S.plannerStart.lat,S.plannerStart.lon],{radius:9,color:'#fff',weight:3,fillColor:'#51e3ca',fillOpacity:1}).addTo(S.map).bindTooltip('Startpunkt: '+label);}
+ const length=Number($('routeLength').value)||10,mode=$('routeType').value;
+ const distanceInfo=mode==='outback'?`${(length/2).toFixed(1)} km ut + ${(length/2).toFixed(1)} km tillbaka`:mode==='loop'?'Slutar ungefär där du startade, på andra vägar':mode==='oneway'?'Start och mål kan ligga på olika platser':'Turtyp väljs av banmotorn';
+ $('plannerStatus').textContent=`Start: ${label}. ${distanceInfo}. Distansen beräknas på verkliga OSM-vägar.`;
+ if(S.graphWays.length)renderRouteSuggestions();
+}
+$('routeType').addEventListener('change',()=>setPlannerStart(S.plannerStart,S.plannerStart?'Vald punkt':'kartans mitt'));
+$('startMap').addEventListener('click',()=>{S.pickingStart=true;if(S.drawing){S.drawing=false;S.drawPoints=[];drawPreview();$('map').classList.remove('drawing-active');updateDrawStatus('Ritning avbruten: välj startpunkt.');} $('plannerStatus').textContent='Tryck på kartan för att sätta startpunkten.';});
+$('startCenter').addEventListener('click',()=>{S.pickingStart=false;setPlannerStart(null,'kartans mitt');});
+$('startGPS').addEventListener('click',()=>{
+ if(!navigator.geolocation){$('plannerStatus').textContent='GPS är inte tillgänglig i denna webbläsare.';return;}
+ $('plannerStatus').textContent='Frågar om GPS-tillstånd …';
+ navigator.geolocation.getCurrentPosition(position=>{
+  const point={lat:position.coords.latitude,lon:position.coords.longitude};
+  if(!Number.isFinite(point.lat)||!Number.isFinite(point.lon)){ $('plannerStatus').textContent='GPS returnerade ogiltiga koordinater.';return;}
+  S.pickingStart=false;
+  // The user coordinates are kept only in this in-memory session, never uploaded as a special account field.
+  S.map?.setView([point.lat,point.lon],14);
+  setPlannerStart(point,'min GPS');
+  $('plannerStatus').textContent+=' · Hämta OSM-vägar här om inget nät är inläst runt startpunkten.';
+ },err=>{$('plannerStatus').textContent='GPS kunde inte användas: '+(err.code===1?'tillstånd saknas':err.message);},{enableHighAccuracy:false,timeout:12000,maximumAge:60000});
+});
 function getInputs(){const ftp=Number($('ftp').value),weight=Number($('weight').value);return {ftp,weight,valid:Number.isFinite(ftp)&&ftp>=40&&ftp<=700&&Number.isFinite(weight)&&weight>=35&&weight<=250};}
 function updateHandicap(){const d=getInputs();const h=d.valid?chp(d.ftp,d.weight,S.mode):null;$('hcp').textContent=h===null?'—':h.toFixed(1);$('hcpLarge').textContent=h===null?'—':h.toFixed(1);$('hcpExplainer').textContent=d.valid?`${(d.ftp/d.weight).toFixed(2)} W/kg · uppskattad grundklass.`:'Ange FTP 40–700 W och vikt 35–250 kg.';renderOracles();}
 $('ftp').addEventListener('input',updateHandicap);$('weight').addEventListener('input',updateHandicap);
@@ -607,7 +694,7 @@ function initMap(){
   S.osmLayer=L.layerGroup().addTo(S.map);
   S.mapLayer=L.layerGroup().addTo(S.map);
   S.drawLayer=L.layerGroup().addTo(S.map);
-  S.map.on('click',event=>{if(S.drawing)addDrawPoint(event.latlng);});
+  S.map.on('click',event=>{if(S.pickingStart){S.pickingStart=false;setPlannerStart({lat:event.latlng.lat,lon:event.latlng.lng},'Vald kartpunkt');return;}if(S.drawing)addDrawPoint(event.latlng);});
   // Merely panning/zooming the viewport updates local nearby suggestions, no server calls.
   S.map.on('moveend',()=>renderDiscoveryCatalog());
   if(window.ResizeObserver){const ob=new ResizeObserver(()=>{if(!S.map)return;const r=el.getBoundingClientRect();if(r.width>0&&r.height>0)S.map.invalidateSize({pan:false});});ob.observe(el);}
@@ -619,10 +706,29 @@ function selectRoute(route){route.points=cleanRoute(route.points);if(route.point
  S.route=route;
  $('loadElevation').disabled=route.points.every(p=>Number.isFinite(p.ele));
  $('elevationStatus').textContent=route.points.every(p=>Number.isFinite(p.ele))?'Höjdvärden finns för rutten.': 'Höjdprofil saknas. Tryck Hämta verklig höjdprofil – DEM-data från extern tjänst.';
- $('routeKind').textContent=route.generated?`PRELIMINÄR OSM-TUR ${route.generatedType==='out-and-back'?'TUR & RETUR':'EN VÄG'} · kontrollera tillträde`:route.source?.startsWith('Importerad GPX')?'IMPORTERAD GPX-RUTT':route.source?.includes('Egenritad')?'EGENRITAD · RAKA LINJER':'VERKLIG GPS-GEOMETRI';
- S.km=0;S.elapsed=0;S.lastSavedElapsed=-1;S.running=false;$('raceToggle').textContent='▶ Starta race';updateRoute();if(S.map&&window.L){S.mapLayer.clearLayers();const line=L.polyline(route.points.map(p=>[p.lat,p.lon]),{color:'#00b88c',weight:7,opacity:.95}).addTo(S.mapLayer);S.map.fitBounds(line.getBounds(),{padding:[30,30],maxZoom:15});}renderOracles();}
+ $('routeKind').textContent=route.generated?`PRELIMINÄR OSM-TUR ${route.generatedType==='out-and-back'?'TUR & RETUR':route.generatedType==='loop'?'RUNDSLINGA':'EN VÄG'} · kontrollera tillträde`:route.source?.startsWith('Importerad GPX')?'IMPORTERAD GPX-RUTT':route.source?.includes('Egenritad')?'EGENRITAD · RAKA LINJER':'VERKLIG GPS-GEOMETRI';
+ S.km=0;S.elapsed=0;S.lastSavedElapsed=-1;S.running=false;$('raceToggle').textContent='▶ Starta race';updateRoute();if(S.map&&window.L){S.mapLayer.clearLayers();const line=L.polyline(route.points.map(p=>[p.lat,p.lon]),{color:'#00b88c',weight:7,opacity:.95}).addTo(S.mapLayer);S.map.fitBounds(line.getBounds(),{padding:[30,30],maxZoom:15});}renderOracles();
+ // Auto-fetch only when a user selects a route, not on every map movement.
+ if($('autoElevation').checked&&!route.points.every(p=>Number.isFinite(p.ele)))setTimeout(()=>{if(S.route===route&&!S.heightAbort)$('loadElevation').click();},120);
+}
 function updateRoute(){const r=S.route;const a=r?altitude(r.points):null;const dist=r?distanceKm(r.points):null;const idx=r?wasmCourseIndex(r,S.mode):null;$('routeName').textContent=r?.name||'Ingen bana vald';$('routeKm').textContent=dist===null?'—':dist.toFixed(2);$('routeClimb').textContent=a?.valid?a.climb:'—';$('routeIndex').textContent=idx===null?'—':idx;$('rideRouteName').textContent=r?.name||'Illustrerad testbana';$('rideLabel').textContent=r?.source||'ILLUSTRERAD TESTBANA';$('routeIndex').title= a?.valid?'Uppskattat experimentellt index':'Preliminärt index utan höjddata';$('routeClimb').title=a?.valid?(r?.elevationSource||'Källfilens höjddata, ej kvalitetsgranskade'):'Höjddata saknas';$('sourceLabel').textContent=r?`Källa: ${r.source} · ${r.points.length} koordinater · ${a?.valid?'höjdprofil: '+(r.elevationSource||'GPX'):'höjddata saknas'} · tillstånd ej validerat`:'Inga ruttdata inlästa.';$('rideRouteInfo').textContent=r?`Verkligt koordinatspår från ${r.source}. Spelvyn är illustrerad; återgivningen av terräng är ännu inte georefererad 3D.`:'Ladda en OSM-led eller GPX för att cykla efter riktiga spår. Den animerade spelvyn är en illustration, inte en geografisk 3D-rendering.';$('realAltitude').textContent=a?.valid?`${a.climb} m upp / ${a.drop} m ned`:'Ej inläst';updateLeague();drawProfile();}
-function drawProfile(){const c=$('profile'),ctx=c.getContext('2d'),rect=c.getBoundingClientRect();c.width=Math.max(280,Math.round(rect.width*devicePixelRatio));c.height=110*devicePixelRatio;ctx.scale(devicePixelRatio,devicePixelRatio);const w=c.width/devicePixelRatio,h=110;ctx.clearRect(0,0,w,h);const pts=S.route?.points.filter(p=>Number.isFinite(p.ele))||[];if(pts.length<2){$('profileHint').textContent='Ingen höjdprofil. Tryck Hämta verklig höjdprofil för terrängdata.';return;}const vals=pts.map(p=>p.ele),min=Math.min(...vals),max=Math.max(...vals),span=Math.max(10,max-min);ctx.fillStyle='#073844';ctx.strokeStyle='#57dfc8';ctx.lineWidth=2;ctx.beginPath();vals.forEach((v,i)=>{const x=10+(i/(vals.length-1))*(w-20),y=h-12-(v-min)/span*(h-24);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();ctx.lineTo(w-10,h);ctx.lineTo(10,h);ctx.closePath();ctx.globalAlpha=.35;ctx.fill();ctx.globalAlpha=1;$('profileHint').textContent=`${S.route?.elevationSource||'Källfilens höjddata'} · ${Math.round(min)}–${Math.round(max)} möh`;} 
+function drawProfile(){
+ const c=$('profile'),ctx=c.getContext('2d'),rect=c.getBoundingClientRect();
+ const dpr=Math.min(2,window.devicePixelRatio||1),w=Math.max(280,Math.round(rect.width||300)),h=124;
+ c.width=w*dpr;c.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+ const pts=S.route?.points||[];const complete=pts.length>1&&pts.every(p=>Number.isFinite(p.ele));
+ if(!complete){$('profileHint').textContent='Ingen verifierad höjdprofil ännu. Välj bana och hämta verkliga höjddata.';return;}
+ const cumulative=[0];for(let i=1;i<pts.length;i++)cumulative.push(cumulative.at(-1)+distanceKm([pts[i-1],pts[i]]));
+ const vals=pts.map(p=>p.ele),min=Math.min(...vals),max=Math.max(...vals),span=Math.max(10,max-min),total=cumulative.at(-1)||1;
+ const left=38,right=12,top=11,bottom=26,innerW=w-left-right,innerH=h-top-bottom;
+ ctx.font='10px system-ui';ctx.textAlign='right';ctx.fillStyle='#92b8c7';ctx.strokeStyle='#265667';ctx.lineWidth=.8;
+ for(let j=0;j<=2;j++){const y=top+j*innerH/2,v=max-(span*j/2);ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(w-right,y);ctx.stroke();ctx.fillText(Math.round(v)+'m',left-5,y+3);}
+ ctx.beginPath();ctx.moveTo(left,top+innerH);for(let i=0;i<pts.length;i++)ctx.lineTo(left+cumulative[i]/total*innerW,top+innerH-((vals[i]-min)/span)*innerH);
+ ctx.lineTo(w-right,top+innerH);ctx.closePath();ctx.fillStyle='#1b6763aa';ctx.fill();
+ ctx.strokeStyle='#66ecd3';ctx.lineWidth=2;ctx.beginPath();pts.forEach((p,i)=>{const x=left+cumulative[i]/total*innerW,y=top+innerH-((p.ele-min)/span)*innerH;i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();
+ ctx.textAlign='left';ctx.fillStyle='#a6c8d1';ctx.fillText('0 km',left,h-5);ctx.textAlign='right';ctx.fillText(total.toFixed(1)+' km',w-right,h-5);
+ $('profileHint').textContent=`${S.route?.elevationSource||'GPX-höjddata'} · ${Math.round(min)}–${Math.round(max)} möh · ${total.toFixed(1)} km`;
+}
 $('loadElevation').addEventListener('click',async()=>{
  const route=S.route;if(!route)return;
  const ctl=new AbortController();S.heightAbort=ctl;
@@ -631,7 +737,7 @@ $('loadElevation').addEventListener('click',async()=>{
   const updated=await enrichRouteElevation(route,{signal:ctl.signal,onProgress:t=>$('elevationStatus').textContent=t});
   if(S.route!==route||ctl.signal.aborted)return;
   S.route=updated;updateRoute();renderOracles();
-  $('elevationStatus').textContent=`Klart: ${updated.elevationSamples} uppmätta DEM-punkter (${updated.elevationResolution}), höjd interpolerad längs rutten. Inte trailmätning. Spara banan för att behålla profilen lokalt.`;
+  $('elevationStatus').textContent=`Klart: ${updated.elevationSamples||'Flera'} terrängpunkter (${updated.elevationResolution||'modell'}). Källa: ${updated.elevationSource}. Spara banan lokalt för att behålla profilen. ${updated.elevationLicense||''}`;
  }catch(e){if(!ctl.signal.aborted)$('elevationStatus').textContent=e.message+' · Importera GPX med höjddata eller prova senare.';}
  finally{if(S.heightAbort===ctl){S.heightAbort=null;$('loadElevation').disabled=!!S.route?.points.every(p=>Number.isFinite(p.ele));}}
 });
@@ -721,25 +827,27 @@ function renderRouteSuggestions(){
  const area=$('routeSuggestions');area.replaceChildren();
  if(!S.graphWays.length){S.generatedRoutes=[];S.mixRoutes=[];const p=document.createElement('p');p.className='empty-routes';p.textContent='Ingen nätverksdata laddad. Hämta OSM-vägar eller importera GPX.';area.append(p);renderDiscoveryCatalog();return;}
  const target=Number($('routeLength').value)||10;
- const generated=generateConnectedRoutes(S.graphWays,{mode:S.mode,bounds:S.map?.getBounds(),targetKm:target,count:4});
+ const routeType=$('routeType').value;
+ const generated=generateConnectedRoutes(S.graphWays,{mode:S.mode,bounds:S.map?.getBounds(),targetKm:target,count:4,routeType,startCoord:S.plannerStart});
  S.generatedRoutes=generated.routes;
  // Mix modes/distances only where a real connected OSM network exists.
  const otherModes=['road','gravel','mtb','downhill'].filter(m=>m!==S.mode);
- S.mixRoutes=[];for(const m of otherModes){const mix=generateConnectedRoutes(S.graphWays,{mode:m,bounds:S.map?.getBounds(),targetKm:m==='downhill'?5:Math.max(5,target*.7),count:2});S.mixRoutes.push(...mix.routes);}
+ S.mixRoutes=[];for(const m of otherModes){const mix=generateConnectedRoutes(S.graphWays,{mode:m,bounds:S.map?.getBounds(),targetKm:m==='downhill'?5:Math.max(5,target*.7),count:2,startCoord:S.plannerStart});S.mixRoutes.push(...mix.routes);}
  renderDiscoveryCatalog();
  const heading=document.createElement('p');heading.className='route-summary';heading.textContent=`${generated.routes.length} sammanhängande turförslag · ${generated.edgeCount} vägkanter · ${generated.nodeCount} OSM-noder`;
+ if(generated.startIssue){$('plannerStatus').textContent=generated.startIssue;}
  area.append(heading);
- if(!generated.routes.length){const p=document.createElement('p');p.className='empty-routes';p.textContent=`Inget sammanhängande ruttnät på cirka ${target} km från dessa vägar (längsta nåbara sträcka ≈ ${generated.largestKm.toFixed(1)} km). Zooma eller välj kortare distans och hämta igen. Vi hittar INTE på förbindelser.`;area.append(p);return;}
+ if(!generated.routes.length){const p=document.createElement('p');p.className='empty-routes';p.textContent=generated.startIssue||`Ingen ${routeType==='loop'?'verklig rundslinga':routeType==='outback'?'tillåten tur och retur':routeType==='oneway'?'enkelriktad tur':'sammanhängande tur'} på cirka ${target} km hittades i de vägar som är inlästa. Pröva att hämta mer vägnät, välj annan startpunkt eller kortare distans. Vi hittar inte på vägförbindelser.`;area.append(p);return;}
  for(let i=0;i<generated.routes.length;i++){
   const r=generated.routes[i],div=document.createElement('article');div.className='route-suggestion';
   const num=document.createElement('span');num.className='route-number';num.textContent='TUR '+String(i+1).padStart(2,'0');
-  const title=document.createElement('strong');title.textContent=`${distanceKm(r.points).toFixed(1)} km · ${r.generatedType==='out-and-back'?'tur & retur':'enkelriktad tur'}`;
+  const title=document.createElement('strong');title.textContent=`${distanceKm(r.points).toFixed(1)} km · ${r.generatedType==='out-and-back'?'tur & retur':r.generatedType==='loop'?'rundslinga':'enkel väg'}`;
   const info=document.createElement('small');info.textContent=`${r.points.length} vägkoordinater · OSM-noder länkade · höjddata kan hämtas`;
   const button=document.createElement('button');button.type='button';button.textContent='Välj tur →';button.addEventListener('click',()=>selectRoute({...r,points:r.points.map(p=>({...p}))}));
   div.append(num,title,info,button);area.append(div);
  }
 }
-$('routeLength').addEventListener('change',renderRouteSuggestions);
+$('routeLength').addEventListener('change',()=>setPlannerStart(S.plannerStart,S.plannerStart?'Vald punkt':'kartans mitt'));
 function osmCacheKey(bounds,mode){return mode+':'+[bounds.getSouth(),bounds.getWest(),bounds.getNorth(),bounds.getEast()].map(x=>x.toFixed(2)).join(',');}
 // Manual route drawing is independent of Overpass; geometry stays only in the local browser.
 S.drawing=false;S.drawPoints=[];S.drawLayer=null;

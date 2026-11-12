@@ -6,13 +6,13 @@
 <meta name="description" content="Proprietary cycling intelligence prototype. Theory and creation by Patrik Sundblom.">
 <meta name="author" content="Patrik Sundblom">
 <meta name="copyright" content="© 2026 Patrik Sundblom. All Rights Reserved.">
-<link rel="stylesheet" href="leaflet.css?v=0.6.0">
-<link rel="stylesheet" href="cycling.css?v=0.6.0">
+<link rel="stylesheet" href="leaflet.css?v=0.7.0">
+<link rel="stylesheet" href="cycling.css?v=0.7.0">
 <meta name="robots" content="noindex,nofollow">
 </head>
 <body>
 <div class="app">
-<header class="topbar"><a class="wordmark" href="#" aria-label="QCDS MedCare Cycling Intelligence"><span class="mark">◈</span><span>QCDS <strong>MedCare</strong><small>CYCLING INTELLIGENCE <i>·</i> PUBLIC TECH DEMO</small></span></a><div class="topmeta"><span class="pill" id="dataStatus">● DEMO / TESTVERSION</span><span class="ver">v0.6.0 · 2026-11-12</span><button id="tvMode" class="outline">⛶ TV-läge</button></div></header>
+<header class="topbar"><a class="wordmark" href="#" aria-label="QCDS MedCare Cycling Intelligence"><span class="mark">◈</span><span>QCDS <strong>MedCare</strong><small>CYCLING INTELLIGENCE <i>·</i> PUBLIC TECH DEMO</small></span></a><div class="topmeta"><span class="pill" id="dataStatus">● DEMO / TESTVERSION</span><span class="ver">v0.7.0 · 2026-11-12</span><button id="tvMode" class="outline">⛶ TV-läge</button></div></header>
 <div class="shell">
 <aside class="sidebar">
 <div class="side-title">DIN DISCIPLIN</div>
@@ -53,7 +53,12 @@
 </nav>
 <div id="discoveryCards" class="discovery-cards"><p class="empty-routes">Banor som passerar området du visar dyker upp här. Hämta vägar eller öppna en sparad bana.</p></div>
 </section>
-<div class="route-grid"><div class="map-wrap"><div id="map"><div class="map-wait">Kartan laddas …</div></div><span class="map-credit">© OpenStreetMap contributors · ODbL</span></div><div class="route-side"><div class="route-card"><span class="kicker">IMPORT / DISCOVERY</span><h3>Bygg en verklig cykeltur</h3><p>Sök ett inzoomat område eller hela landskap. Ruttmotorn bygger sammanhängande förslag av tillgängliga OSM-vägar och visar banor som passerar nära kartutsnittet. Ett 100-meterssegment är <strong>aldrig en färdig bana</strong>.</p><label class="route-length-label" for="routeLength">ÖNSKAD TUR<select id="routeLength"><option value="5">5 km · kort tur</option><option value="10" selected>10 km · motion</option><option value="20">20 km · träningspass</option><option value="40">40 km · längre tur</option></select></label><label class="provider-label" for="osmProvider">KARTDATAKÄLLA<select id="osmProvider" aria-label="Välj OSM-källa">
+<div class="route-grid"><div class="map-wrap"><div id="map"><div class="map-wait">Kartan laddas …</div></div><span class="map-credit">© OpenStreetMap contributors · ODbL</span></div><div class="route-side"><div class="route-card"><span class="kicker">IMPORT / DISCOVERY</span><h3>Bygg en verklig cykeltur</h3><p>Sök ett inzoomat område eller hela landskap. Ruttmotorn bygger sammanhängande förslag av tillgängliga OSM-vägar och visar banor som passerar nära kartutsnittet. Ett 100-meterssegment är <strong>aldrig en färdig bana</strong>.</p><label class="route-length-label" for="routeLength">ÖNSKAD TUR<select id="routeLength"><option value="5">5 km · kort tur</option><option value="10" selected>10 km · motion</option><option value="20">20 km · träningspass</option><option value="40">40 km · längre tur</option></select></label><div class="route-planner-controls" aria-label="Planera bana">
+<span class="kicker">BANTYP OCH STARTPUNKT</span>
+<label for="routeType">Bantyp<select id="routeType" aria-label="Välj bantyp"><option value="any">Alla typer</option><option value="outback" selected>Tur & retur (t.ex. 5 + 5 km)</option><option value="oneway">Enkel väg</option><option value="loop">Rundslinga – annan väg tillbaka</option></select></label>
+<div class="planner-start"><button id="startMap" type="button" class="secondary">◎ Välj start på kartan</button><button id="startGPS" type="button" class="secondary">⌖ Starta vid min GPS</button><button id="startCenter" type="button" class="secondary">↺ Kartans mitt</button></div>
+<div id="plannerStatus" class="mini" role="status" aria-live="polite">Start: kartans mitt. För tur & retur avser 10 km cirka 5 km ut och 5 km tillbaka. GPS används bara efter ditt godkännande.</div>
+</div><label class="provider-label" for="osmProvider">KARTDATAKÄLLA<select id="osmProvider" aria-label="Välj OSM-källa">
 <option value="auto">Automatiskt · närmaste först</option>
 <option value="europe">Dresel · Europa (reservväxling)</option>
 <option value="america">Dresel · Nordamerika (reservväxling)</option>
@@ -72,6 +77,7 @@
 <div class="draw-actions"><button id="undoDraw" type="button" class="secondary" disabled>↶ Ångra punkt</button><button id="finishDraw" type="button" class="secondary" disabled>✓ Använd banan</button><button id="discardDraw" type="button" class="secondary" disabled>✕ Avbryt ritning</button></div>
 <div id="drawStatus" class="mini" role="status" aria-live="polite">Välj Rita, klicka minst två gånger på kartan och avsluta med Använd banan.</div>
 </div><div class="route-card selected"><span class="kicker">VALD BANA</span><h3 id="routeName">Ingen bana vald</h3><div id="routeKind" class="route-kind">Välj en sammanhängande rutt eller importera GPX</div><div class="route-metrics"><div><strong id="routeKm">—</strong><span>km</span></div><div><strong id="routeClimb">—</strong><span>höjdmeter</span></div><div><strong id="routeIndex">—</strong><span>banindex</span></div></div><div class="profile-wrap"><canvas id="profile" height="90" aria-label="Banans höjdprofil"></canvas><span id="profileHint">Ingen höjdprofil ännu. Hämta verklig terränghöjd för den valda rutten.</span></div>
+<label class="auto-elevation"><input type="checkbox" id="autoElevation" checked> Hämta höjdprofil automatiskt för vald bana</label>
 <button class="secondary elevation-button" id="loadElevation" type="button" disabled>▥ Hämta verklig höjdprofil</button>
 <div id="elevationStatus" class="mini" role="status" aria-live="polite">Höjdvärden hämtas vid behov från terrängdata (demo-tjänst, inte GPS-mätning).</div>
 <button class="primary" id="startRoute">▶ Kör vald bana</button><button class="secondary" id="saveRoute">☆ Spara bana lokalt</button><button class="secondary" id="clearRoute">Rensa bana</button><div class="mini" id="sourceLabel">Inga ruttdata inlästa.</div></div></div></div>
@@ -85,7 +91,7 @@
 <div class="backup-actions"><button id="exportLocal" class="secondary" type="button">↓ Säkerhetskopiera</button><label class="file-btn backup-file">↑ Återställ JSON<input id="importLocal" type="file" accept=".json,application/json" hidden></label></div>
 <div class="mini" id="libraryMessage" role="status" aria-live="polite">Lagringen är lokal och synkas inte mellan enheter. Radera inte webbplatsdata utan säkerhetskopia.</div>
 </div></div>
-<div class="notice"><strong>Riktiga koordinater, inga påhittade banor.</strong> Banor byggs av sammankopplade OSM-vägsegment, inte av 40–100 meter långa gatstumpar. Höjddata kan hämtas från EU:s eller global terrängmodell via OpenTopoData; det är ungefärliga terränghöjder, inte verifierade stighöjder. API:t är för prototyptest – en kommersiell version behöver egen eller licensierad tjänst. Lantmäteriets höjddata och ortofoto är framtida separata adaptrar.</div>
+<div class="notice"><strong>Riktiga koordinater, inga påhittade banor.</strong> Banor byggs av sammankopplade OSM-vägsegment, inte av 40–100 meter långa gatstumpar. Höjddata hämtas från EU:s eller global terrängmodell via OpenTopoData, med Open-Meteo/Copernicus som reserv för icke-kommersiella tester; det är ungefärliga terränghöjder, inte verifierade stighöjder. API:t är för prototyptest – en kommersiell version behöver egen eller licensierad tjänst. Lantmäteriets höjddata och ortofoto är framtida separata adaptrar.</div>
 </section>
 <section id="ride" class="view"><div class="section-title"><div><span class="kicker">LIVE ARENA</span><h2>Din 65-tummare. Ditt race.</h2></div><span class="chip" id="rideLabel">ILLUSTRERAD TESTBANA</span></div>
 <div class="arena"><canvas id="raceCanvas" aria-label="Animerad virtuell cykelbana"></canvas><div class="arena-top"><span id="modeLabel">ROAD RACE</span><span id="raceSource">● DEMO MOTSTÅNDARE</span><span id="raceTime">00:00</span></div><div class="arena-bottom"><div class="main-watt"><strong id="watts">0</strong><span>WATT</span></div><div><strong id="cadence">—</strong><span>RPM</span></div><div><strong id="speed">—</strong><span>KM/H · MODELL</span></div><div><strong id="distance">0.00</strong><span>KM</span></div><div><strong id="position">—</strong><span>PLACERING · DEMO</span></div></div></div>
@@ -96,5 +102,5 @@
 <footer><span>© 2026 Patrik Sundblom. All Rights Reserved. · Theory and creation by Patrik Sundblom · OpenAI/ChatGPT R&D support</span><span>QCDS LIFE SCIENCE / MEDCARE / CYCLING</span></footer>
 </main></div></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script type="module" src="cycling.js?v=0.6.0"></script>
+<script type="module" src="cycling.js?v=0.7.0"></script>
 </body></html>
