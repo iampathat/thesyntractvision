@@ -240,7 +240,6 @@ jobs:
           assert 'id="drawRoute"' in html and 'id="osmProvider"' in html and 'id="finishDraw"' in html
           assert 'id="worldPlaces"' in html and 'id="routeSuggestions"' in html and 'id="loadElevation"' in html
           assert 'v0.5.0' in html
-          assert 'v0.4.1' in html
           js = Path('_site/qcds-medcare-cycling/cycling.js').read_text(encoding='utf-8')
           assert 'QCDS_MedCare_Cycling_v1' in js and 'AbortController' in js
           assert 'generateConnectedRoutes' in js and 'enrichRouteElevation' in js
