@@ -184,7 +184,9 @@ function categoryRegex(mode){
 }
 function buildOverpassQuery(bounds,mode){
  const n=[bounds.getSouth(),bounds.getWest(),bounds.getNorth(),bounds.getEast()];
- if(n.some(v=>!Number.isFinite(v))||n[2]-n[0]>.11||n[3]-n[1]>.16||n[2]<=n[0]||n[3]<=n[1])throw Error('Zooma in lite mer (området får vara högst cirka 10 km brett).');
+ if(n.some(v=>!Number.isFinite(v))||n[2]<=n[0]||n[3]<=n[1])throw Error('Ogiltigt kartområde.');
+ // Callers partition large viewports before making requests; no user-facing zoom cap.
+ if(n[2]-n[0]>.115||n[3]-n[1]>.17)throw Error('Internt sökfel: stort område måste delas i mindre kartdelar.');
  const rect=n.map(v=>v.toFixed(5)).join(',');
  return `[out:json][timeout:14];way["highway"~"${categoryRegex(mode)}"]["bicycle"!="no"]["access"!="private"]["access"!="no"](${rect});out body geom 900;`;
 }
@@ -445,6 +447,111 @@ async function enrichRouteElevation(route,{fetcher=fetch,signal,onProgress=()=>{
  throw Error(`Höjddata saknas eller tjänsten svarar inte: ${last?.message||'okänt fel'}`);
 }
 
+/* module: route-discovery.js */
+
+
+function bounded(x,a,b){return Math.min(b,Math.max(a,x));}
+const earthKm=(a,b)=>distanceKm([a,b]);
+function viewportOf(bounds){
+ const south=Number(bounds.getSouth()),north=Number(bounds.getNorth()),west=Number(bounds.getWest()),east=Number(bounds.getEast());
+ if(![south,north,west,east].every(Number.isFinite)||north<=south||east<=west)throw Error('Ogiltigt kartområde.');
+ return {south,north,west,east,center:{lat:(south+north)/2,lon:(west+east)/2}};
+}
+function pointInView(p,box){return p.lat>=box.south&&p.lat<=box.north&&p.lon>=box.west&&p.lon<=box.east;}
+function intersectsSegment(a,b,r){
+ // Line segment vs rectangular lat/lon viewport using Liang–Barsky.
+ let min=0,max=1;const dx=b.lon-a.lon,dy=b.lat-a.lat;
+ const tests=[[-dx,a.lon-r.west],[dx,r.east-a.lon],[-dy,a.lat-r.south],[dy,r.north-a.lat]];
+ for(const [p,q] of tests){if(p===0){if(q<0)return false;continue;}const t=q/p;
+  if(p<0){if(t>max)return false;if(t>min)min=t;}
+  else{if(t<min)return false;if(t<max)max=t;}
+ }
+ return min<=max;
+}
+function pointToSegmentKm(p,a,b){
+ const cos=Math.max(.15,Math.cos(p.lat*Math.PI/180));
+ const scaleX=111.32*cos,scaleY=111.32;
+ const ax=(a.lon-p.lon)*scaleX,ay=(a.lat-p.lat)*scaleY;
+ const bx=(b.lon-p.lon)*scaleX,by=(b.lat-p.lat)*scaleY;
+ const dx=bx-ax,dy=by-ay,den=dx*dx+dy*dy;
+ const t=den>0?bounded(-(ax*dx+ay*dy)/den,0,1):0;
+ return Math.hypot(ax+dx*t,ay+dy*t);
+}
+function segmentViewportDistanceKm(a,b,box){
+ if(intersectsSegment(a,b,box))return 0;
+ const closestA={lat:bounded(a.lat,box.south,box.north),lon:bounded(a.lon,box.west,box.east)};
+ const closestB={lat:bounded(b.lat,box.south,box.north),lon:bounded(b.lon,box.west,box.east)};
+ let d=Math.min(earthKm(a,closestA),earthKm(b,closestB));
+ const corners=[{lat:box.south,lon:box.west},{lat:box.south,lon:box.east},{lat:box.north,lon:box.west},{lat:box.north,lon:box.east}];
+ for(const c of corners)d=Math.min(d,pointToSegmentKm(c,a,b));
+ return d;
+}
+function routeViewportMetrics(route,bounds){
+ if(!route?.points?.length)return {crosses:false,nearKm:Infinity,km:0};
+ const box=viewportOf(bounds),pts=route.points;
+ let crosses=false,nearKm=Infinity;
+ const stride=Math.max(1,Math.floor(pts.length/1200));
+ const sampled=[];for(let i=0;i<pts.length;i+=stride)sampled.push(pts[i]);if(sampled.at(-1)!==pts.at(-1))sampled.push(pts.at(-1));
+ for(let i=0;i<sampled.length;i++){
+  const p=sampled[i];if(!Number.isFinite(p?.lat)||!Number.isFinite(p?.lon))continue;
+  if(pointInView(p,box)){crosses=true;nearKm=0;break;}
+  const nearest={lat:bounded(p.lat,box.south,box.north),lon:bounded(p.lon,box.west,box.east)};
+  nearKm=Math.min(nearKm,earthKm(p,nearest));
+  if(i>0){const sd=segmentViewportDistanceKm(sampled[i-1],p,box);nearKm=Math.min(nearKm,sd);if(sd===0){crosses=true;nearKm=0;break;}}
+ }
+ return {crosses,nearKm,km:Number(route.distanceKm)||distanceKm(pts)};
+}
+function nearbyRoutes(routes,bounds,{limit=12,radiusKm=3}={}){
+ return (routes||[]).map(route=>({route,geo:routeViewportMetrics(route,bounds)}))
+ .filter(x=>x.geo.crosses||x.geo.nearKm<=radiusKm)
+ .sort((a,b)=>Number(b.geo.crosses)-Number(a.geo.crosses)||a.geo.nearKm-b.geo.nearKm||Math.abs(a.geo.km-15)-Math.abs(b.geo.km-15))
+ .slice(0,limit);
+}
+function rankedRoutes(routes,bounds,{targetKm=10,mode='road',limit=12}={}){
+ const seen=new Set();return (routes||[]).filter(r=>r?.points?.length>1).map(route=>{
+  const geo=routeViewportMetrics(route,bounds);
+  const distancePenalty=Math.abs(geo.km-targetKm)/Math.max(5,targetKm);
+  // An editorial relevance score; NOT user ratings or verified course quality.
+  const modeBonus=route.mode===mode?18:0;
+  const proximityPenalty=Math.min(60,geo.nearKm*6);
+  const score=100+modeBonus-Math.min(80,distancePenalty*18)-proximityPenalty+(geo.crosses?12:0);
+  return {route,geo,score};
+ }).sort((a,b)=>b.score-a.score).filter(x=>{
+  const pts=x.route.points,first=pts[0],last=pts.at(-1);
+  const key=[x.route.mode||'road',Math.round(x.geo.km*2),first.lat.toFixed(3),first.lon.toFixed(3),last.lat.toFixed(3),last.lon.toFixed(3)].join(':');
+  if(seen.has(key))return false;seen.add(key);return true;
+ }).slice(0,limit);
+}
+const mockBounds=(south,west,north,east)=>({getSouth:()=>south,getWest:()=>west,getNorth:()=>north,getEast:()=>east});
+function planViewportCoverage(bounds,{maxPatches=3}={}){
+ const b=viewportOf(bounds);
+ const latSpan=b.north-b.south,lonSpan=b.east-b.west;
+ // Individual queries are ALWAYS budgeted to protect public Overpass instances.
+ // There is NO maximum user viewport size. A large map is sampled in multiple
+ // patches and the UI explicitly says the whole area was not exhaustively searched.
+ const tileLat=.085,tileLon=.115;
+ if(latSpan<=tileLat&&lonSpan<=tileLon)return {patches:[mockBounds(b.south,b.west,b.north,b.east)],partial:false};
+ const n=Math.max(1,Math.min(5,Math.floor(maxPatches)));
+ const positions=[ [.5,.5],[.28,.28],[.72,.72],[.28,.72],[.72,.28] ];
+ const patches=[],seen=new Set();
+ for(const [u,v] of positions.slice(0,n)){
+  const cy=b.south+latSpan*u,cx=b.west+lonSpan*v;
+  const hh=Math.min(tileLat,latSpan)/2,hw=Math.min(tileLon,lonSpan)/2;
+  const s=Math.max(b.south,cy-hh),nn=Math.min(b.north,cy+hh),w=Math.max(b.west,cx-hw),e=Math.min(b.east,cx+hw);
+  const k=[s,w,nn,e].map(x=>x.toFixed(3)).join('/');
+  if(!seen.has(k)){seen.add(k);patches.push(mockBounds(s,w,nn,e));}
+ }
+ return {patches,partial:true};
+}
+function mergeOSMWays(responses,{maxWays=2600}={}){
+ const map=new Map();for(const list of responses||[])for(const w of list||[]){
+  if(!w?.geometry?.length)continue;
+  const key=String(w.id??'geo:'+w.geometry[0]?.lat+':'+w.geometry[0]?.lon);
+  if(!map.has(key))map.set(key,w);if(map.size>=maxWays)break;
+ }
+ return [...map.values()];
+}
+
 /* module: app.js */
 const wasmCourseIndex=index;
 
@@ -456,14 +563,15 @@ const wasmCourseIndex=index;
 
 
 
+
 const $=id=>document.getElementById(id);
-const S={mode:'road',tab:'explore',route:null,map:null,mapLayer:null,osmLayer:null,osmWays:[],source:'none',telemetry:{source:'none',power:null,cadence:null,speed:null,hr:null},running:false,elapsed:0,km:0,liveWatts:0,tick:0,graphWays:[],generatedRoutes:[],heightAbort:null};
+const S={mode:'road',tab:'explore',route:null,map:null,mapLayer:null,osmLayer:null,osmWays:[],source:'none',telemetry:{source:'none',power:null,cadence:null,speed:null,hr:null},running:false,elapsed:0,km:0,liveWatts:0,tick:0,graphWays:[],generatedRoutes:[],mixRoutes:[],localRoutes:[],discoveryTab:'near',heightAbort:null};
 const modeWords={road:'ROAD RACE',gravel:'GRAVEL CHALLENGE',mtb:'MTB TRAIL',downhill:'DOWNHILL EXPERIENCE'};
 const radio=new BikeFTMS(data=>{S.source='ftms';S.telemetry={...S.telemetry,...data,source:'ftms'};S.liveWatts=Number.isFinite(data.power)?Math.max(0,data.power):S.liveWatts; updateDevice('FTMS · livemätning');updateTelemetry();renderOracles();},status=>{updateDevice(status);});
 function updateDevice(msg){$('deviceText').textContent=msg;$('feedStatus').textContent=S.source==='ftms'?'CYKEL ANSLUTEN':S.source==='demo'?'SIMULERAD DATA':'EJ ANSLUTEN';$('dataStatus').textContent=S.source==='ftms'?'● FTMS LIVE':S.source==='demo'?'● DEMO · SIMULERAT':'● DEMO / LOKALT';$('btLight').classList.toggle('online',S.source==='ftms');document.querySelector('.led').classList.toggle('online',S.source==='ftms');}
 function changeTab(tab){S.tab=tab;document.querySelectorAll('.tab').forEach(n=>n.classList.toggle('active',n.dataset.tab===tab));document.querySelectorAll('.view').forEach(n=>n.classList.toggle('visible',n.id===tab));if(tab==='explore'&&S.map)setTimeout(()=>S.map.invalidateSize(),70);if(tab==='ride')resizeRace();if(tab==='oracles')renderOracles();if(tab==='league')updateLeague();}
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>changeTab(b.dataset.tab)));
-document.querySelectorAll('.discipline').forEach(b=>b.addEventListener('click',()=>{S.mode=b.dataset.mode;document.querySelectorAll('.discipline').forEach(x=>x.classList.toggle('active',x===b));$('modeLabel').textContent=modeWords[S.mode];$('hcpMode').textContent=MODES[S.mode];$('leagueMode').textContent=MODES[S.mode];updateHandicap();updateRoute();renderOracles();if(S.graphWays.length)renderRouteSuggestions();}));
+document.querySelectorAll('.discipline').forEach(b=>b.addEventListener('click',()=>{S.mode=b.dataset.mode;document.querySelectorAll('.discipline').forEach(x=>x.classList.toggle('active',x===b));$('modeLabel').textContent=modeWords[S.mode];$('hcpMode').textContent=MODES[S.mode];$('leagueMode').textContent=MODES[S.mode];updateHandicap();updateRoute();renderOracles();if(S.graphWays.length)renderRouteSuggestions();else renderDiscoveryCatalog();}));
 const WORLD_DESTINATIONS=[
  ['Göteborg',57.7089,11.9746,12],['Åre',63.3995,13.0838,12],['Mallorca',39.7214,2.6202,12],
  ['Alpe d’Huez',45.0918,6.0698,12],['Dolomiterna',46.5405,11.7210,12],['Girona',41.9794,2.8214,12],
@@ -474,8 +582,8 @@ const WORLD_DESTINATIONS=[
 function flyToWorld(lat,lon,label,zoom=12){
  if(!S.map){$('worldStatus').textContent='Kartan är inte tillgänglig.';return;}
  S.map.setView([lat,lon],zoom,{animate:true});$('worldStatus').textContent=label+' · kartan flyttad. Tryck ”Skapa rutter från OSM-vägar” för att hämta riktiga vägar.';
- S.graphWays=[];S.generatedRoutes=[];$('routeSuggestions').replaceChildren();
- const p=document.createElement('p');p.className='empty-routes';p.textContent='Hämta vägar på den nya platsen för att bygga sammanhängande turer.';$('routeSuggestions').append(p);
+ S.graphWays=[];S.generatedRoutes=[];S.mixRoutes=[];$('routeSuggestions').replaceChildren();
+ const p=document.createElement('p');p.className='empty-routes';p.textContent='Hämta vägar på den nya platsen för att bygga sammanhängande turer.';$('routeSuggestions').append(p);renderDiscoveryCatalog();
 }
 for(const [label,lat,lon,zoom] of WORLD_DESTINATIONS){const btn=document.createElement('button');btn.type='button';btn.className='world-place';btn.textContent=label;btn.addEventListener('click',()=>flyToWorld(lat,lon,label,zoom));$('worldPlaces').append(btn);}
 $('goCoords').addEventListener('click',()=>{const m=$('gotoCoords').value.trim().match(/^(-?\d+(?:[.,]\d+)?)\s*[,; ]\s*(-?\d+(?:[.,]\d+)?)$/);if(!m){$('worldStatus').textContent='Skriv koordinater, exempel: 45.9237, 6.8694';return;}const lat=Number(m[1]),lon=Number(m[2]);if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>85||Math.abs(lon)>180){$('worldStatus').textContent='Koordinater utanför giltigt intervall.';return;}flyToWorld(lat,lon,`${lat.toFixed(4)}, ${lon.toFixed(4)}`);});
@@ -500,8 +608,10 @@ function initMap(){
   S.mapLayer=L.layerGroup().addTo(S.map);
   S.drawLayer=L.layerGroup().addTo(S.map);
   S.map.on('click',event=>{if(S.drawing)addDrawPoint(event.latlng);});
+  // Merely panning/zooming the viewport updates local nearby suggestions, no server calls.
+  S.map.on('moveend',()=>renderDiscoveryCatalog());
   if(window.ResizeObserver){const ob=new ResizeObserver(()=>{if(!S.map)return;const r=el.getBoundingClientRect();if(r.width>0&&r.height>0)S.map.invalidateSize({pan:false});});ob.observe(el);}
-  S.map.whenReady(()=>setTimeout(()=>S.map?.invalidateSize({pan:false}),100));
+  S.map.whenReady(()=>setTimeout(()=>{S.map?.invalidateSize({pan:false});renderDiscoveryCatalog();},100));
  }catch(e){console.error('Map initialization failed',e);$('osmInfo').textContent='Kartan kunde inte startas: '+e.message;}
 }
 function cleanRoute(points){return points.filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lon)&&Math.abs(p.lat)<=90&&Math.abs(p.lon)<=180).slice(0,25000);}
@@ -548,12 +658,75 @@ function displayOsmOnMap(rows){
  }
 }
 function rowsToWays(rows){return rows.map(r=>({id:r.osmId,geometry:r.points,nodes:r.nodeIds,tags:{highway:r.roadClass,surface:r.surface}}));}
+function displayDiscoveryMessage(message,buttonText='',onClick=null){
+ const area=$('discoveryCards');area.replaceChildren();const card=document.createElement('article');card.className='discovery-card info-card';
+ const msg=document.createElement('p');msg.textContent=message;card.append(msg);
+ if(buttonText&&onClick){const b=document.createElement('button');b.textContent=buttonText;b.addEventListener('click',onClick);card.append(b);}
+ area.append(card);
+}
+function discoveryRouteCard(entry,label){
+ const {route,geo}=entry,card=document.createElement('article');card.className='discovery-card';
+ const badge=document.createElement('span');badge.className='d-badge';badge.textContent=label;
+ const title=document.createElement('strong');title.textContent=route.name;
+ const km=Number.isFinite(geo.km)?geo.km:distanceKm(route.points);
+ const detail=document.createElement('p');detail.textContent=`${km.toFixed(1)} km · ${MODES[route.mode||S.mode]||'Cykling'} · ${geo.crosses?'Passerar kartutsnittet':geo.nearKm.toFixed(1)+' km från kartan'}`;
+ const meta=document.createElement('div');meta.className='d-meta';meta.textContent=route.generated?'Förslag från lokalt OSM-vägnät · ej verifierad officiell tävlingsbana':(route.source||'Lokalt sparad bana');
+ const button=document.createElement('button');button.type='button';button.textContent='Visa och välj bana →';button.addEventListener('click',()=>selectRoute({...route,points:route.points.map(p=>({...p}))}));
+ card.append(badge,title,detail,meta,button);return card;
+}
+function renderDiscoveryCatalog(){
+ const area=$('discoveryCards');if(!area||!S.map)return;
+ const bounds=S.map.getBounds(),target=Number($('routeLength').value)||10;
+ const all=[...S.localRoutes,...S.generatedRoutes,...S.mixRoutes];
+ const status=$('discoveryStatus');
+ status.textContent='När du flyttar kartan uppdateras närliggande banor direkt. Sparade banor söks lokalt; nya OSM-vägar hämtas bara när du väljer det.';
+ if(S.discoveryTab==='community'){
+  displayDiscoveryMessage('Andras användares banor är en planerad kategori. Vi har ännu ingen verifierad community-datakälla. Importera en delad GPX-fil för att använda en verklig bana – inga påhittade användare eller betyg.', 'Importera en GPX',()=>{$('fileGPX').click();});return;
+ }
+ if(S.discoveryTab==='race'){
+  displayDiscoveryMessage('Verkliga lopp får en separat verifierad bankatalog med officiell arrangör, distans, datum, GPX-spår och banversion. Ingen sådan datakälla är ansluten än – vi visar därför inte påhittade tävlingsbanor.', 'Importera officiell GPX',()=>{$('fileGPX').click();});return;
+ }
+ let results=[];
+ if(S.discoveryTab==='mine'){
+  results=rankedRoutes(S.localRoutes,bounds,{mode:S.mode,targetKm:target,limit:24});
+  status.textContent=`${S.localRoutes.length} egna banor sparade på den här enheten. De som passerar kartan visas först.`;
+ }else if(S.discoveryTab==='near'){
+  results=nearbyRoutes(all,bounds,{radiusKm:3,limit:12});
+  status.textContent=`${results.length} banor som korsar eller passerar inom 3 km från kartområdet. Även banor som börjar långt därifrån räknas.`;
+ }else if(S.discoveryTab==='mix'){
+  results=rankedRoutes([...S.mixRoutes,...S.localRoutes,...S.generatedRoutes],bounds,{mode:S.mode,targetKm:target,limit:12});
+  status.textContent='Olika distanser och discipliner från tillgängliga verkliga OSM-segment och egna banor – preliminära förslag.';
+ }else{
+  results=rankedRoutes([...S.generatedRoutes,...S.localRoutes],bounds,{mode:S.mode,targetKm:target,limit:12});
+  // Top is an editorial scoring model; no popularity/quality data exists yet.
+  results=results.filter(x=>x.geo.crosses||x.geo.nearKm<20);
+  status.textContent='Toppförslag sorteras efter närhet, distans och disciplin – inte efter påhittade betyg eller popularitet.';
+ }
+ area.replaceChildren();
+ if(!results.length){
+  displayDiscoveryMessage(S.discoveryTab==='mine'?'Du har ännu inga sparade banor. Välj en rutt eller rita en egen och tryck Spara bana.':S.discoveryTab==='near'?'Inga inlästa eller sparade banor passerar nära kartutsnittet ännu. Hämta OSM-vägar i området eller importera en GPX-bana.':'Inga passande turförslag här ännu. Bygg rutter från kartan eller välj en annan distans.', 'Hämta rutter här',()=>{$('loadOSM').click();});return;
+ }
+ for(const entry of results){
+  let badge=S.discoveryTab==='mine'?'MIN BANA':S.discoveryTab==='near'?'NÄRA KARTAN':S.discoveryTab==='mix'?'MIXAD TUR':'RELEVANT FÖRSLAG';
+  if(entry.route.source?.startsWith('Importerad'))badge='GPX · LOKAL';
+  area.append(discoveryRouteCard(entry,badge));
+ }
+}
+for(const b of document.querySelectorAll('[data-discovery]'))b.addEventListener('click',()=>{
+ S.discoveryTab=b.dataset.discovery;
+ document.querySelectorAll('[data-discovery]').forEach(x=>x.classList.toggle('active',x===b));
+ renderDiscoveryCatalog();
+});
 function renderRouteSuggestions(){
  const area=$('routeSuggestions');area.replaceChildren();
- if(!S.graphWays.length){const p=document.createElement('p');p.className='empty-routes';p.textContent='Ingen nätverksdata laddad. Hämta OSM-vägar eller importera GPX.';area.append(p);return;}
+ if(!S.graphWays.length){S.generatedRoutes=[];S.mixRoutes=[];const p=document.createElement('p');p.className='empty-routes';p.textContent='Ingen nätverksdata laddad. Hämta OSM-vägar eller importera GPX.';area.append(p);renderDiscoveryCatalog();return;}
  const target=Number($('routeLength').value)||10;
  const generated=generateConnectedRoutes(S.graphWays,{mode:S.mode,bounds:S.map?.getBounds(),targetKm:target,count:4});
  S.generatedRoutes=generated.routes;
+ // Mix modes/distances only where a real connected OSM network exists.
+ const otherModes=['road','gravel','mtb','downhill'].filter(m=>m!==S.mode);
+ S.mixRoutes=[];for(const m of otherModes){const mix=generateConnectedRoutes(S.graphWays,{mode:m,bounds:S.map?.getBounds(),targetKm:m==='downhill'?5:Math.max(5,target*.7),count:2});S.mixRoutes.push(...mix.routes);}
+ renderDiscoveryCatalog();
  const heading=document.createElement('p');heading.className='route-summary';heading.textContent=`${generated.routes.length} sammanhängande turförslag · ${generated.edgeCount} vägkanter · ${generated.nodeCount} OSM-noder`;
  area.append(heading);
  if(!generated.routes.length){const p=document.createElement('p');p.className='empty-routes';p.textContent=`Inget sammanhängande ruttnät på cirka ${target} km från dessa vägar (längsta nåbara sträcka ≈ ${generated.largestKm.toFixed(1)} km). Zooma eller välj kortare distans och hämta igen. Vi hittar INTE på förbindelser.`;area.append(p);return;}
@@ -607,33 +780,48 @@ $('finishDraw').addEventListener('click',()=>{
 $('cancelOSM').addEventListener('click',()=>osmAbort?.abort());
 $('loadOSM').addEventListener('click',async()=>{
  if(osmAbort)return;
- if(!S.map){$('osmInfo').textContent='Kartan kan inte laddas. Importera GPX i stället.';return;}
- const bounds=S.map.getBounds(),provider=$('osmProvider').value;let q;
- try{
-  if(provider==='osm-api'&&!smallBbox(bounds))throw Error('OSM direkt behöver ett mycket litet område. Zooma in till cirka 1 km.');
-  q=buildOverpassQuery(bounds,S.mode);
- }catch(err){$('osmInfo').textContent=err.message;return;}
- const cacheKey=osmCacheKey(bounds,S.mode);
- const cached=await localDB.getCache(cacheKey).catch(()=>null);
- // Keep a recently retrieved response while online endpoints are under load.
- if(provider==='auto'&&cached?.rows?.length&&Date.now()-cached.savedAt<7*864e5){
-  displayOsmOnMap(cached.rows);renderOsmRows(cached.rows);S.graphWays=rowsToWays(cached.rows);renderRouteSuggestions();
-  $('osmInfo').textContent=`${cached.rows.length} råa vägsegment från lokal cache, ${S.generatedRoutes.length} sammanhängande turer. Välj turförslag nedan. (${new Date(cached.savedAt).toLocaleDateString('sv-SE')})`;
-  return;
+ if(!S.map){$('osmInfo').textContent='Kartan kunde inte startas. Importera en GPX-fil eller använd sparad bana.';return;}
+ const bounds=S.map.getBounds(),provider=$('osmProvider').value;
+ if(provider==='osm-api'&&!smallBbox(bounds)){
+  $('osmInfo').textContent='OSM:s huvud-API är en separat reserv för mycket små manuella uttag. Välj Automatisk för valfritt stort område.';return;
  }
- osmAbort=new AbortController();
+ const {patches,partial}=provider==='osm-api'?{patches:[bounds],partial:false}:planViewportCoverage(bounds,{maxPatches:3});
+ const controller=new AbortController();osmAbort=controller;
  $('loadOSM').disabled=true;$('cancelOSM').hidden=false;
- $('osmInfo').textContent='Startar sökning …';
+ const fetched=[],hosts=[],warnings=[];
+ let cachedCount=0,goodCount=0;
+ const msg=$('osmInfo');
  try{
-  const {data,host}=await requestOverpass(q,{bounds,mode:S.mode,provider,signal:osmAbort.signal,onProgress:s=>$('osmInfo').textContent=s});
-  const rows=osmRows(data,S.mode);
-  displayOsmOnMap(rows);renderOsmRows(rows);S.graphWays=data.elements||rowsToWays(rows);renderRouteSuggestions();
-  $('osmInfo').textContent=rows.length?`Hittade ${rows.length} vägsegment via ${host}. Ruttmotorn skapade ${S.generatedRoutes.length} SAMMANHÄNGANDE förslag av dessa. Segmenten är bara byggstenar.`:'Inga leder hittades. Flytta kartan, zooma eller välj en annan disciplin.';
-  if(rows.length&&localDB.db)await localDB.putCache({key:cacheKey,rows,savedAt:Date.now()}).catch(()=>{});
- }catch(err){
-  if(cached?.rows?.length){displayOsmOnMap(cached.rows);renderOsmRows(cached.rows);S.graphWays=rowsToWays(cached.rows);renderRouteSuggestions();$('osmInfo').textContent='Kartservern svarade inte – visar tidigare hämtade leder från lokalt minne.';}
-  else $('osmInfo').textContent=err.message||'Kunde inte hämta OSM. Prova igen eller importera GPX.';
- }finally{osmAbort=null;$('loadOSM').disabled=false;$('cancelOSM').hidden=true;}
+  for(let i=0;i<patches.length;i++){
+   if(controller.signal.aborted)throw Error('Sökningen avbröts.');
+   const box=patches[i],key=osmCacheKey(box,S.mode);
+   msg.textContent=`Kartområde ${i+1}/${patches.length}: söker efter riktiga vägsegment …`;
+   const cached=await localDB.getCache(key).catch(()=>null);
+   if(provider==='auto'&&cached?.rows?.length&&Date.now()-cached.savedAt<7*864e5){
+    fetched.push(rowsToWays(cached.rows));cachedCount++;goodCount++;
+    continue;
+   }
+   try{
+    const q=buildOverpassQuery(box,S.mode);
+    const result=await requestOverpass(q,{bounds:box,mode:S.mode,provider,signal:controller.signal,onProgress:t=>msg.textContent=`Delområde ${i+1}/${patches.length}: ${t}`});
+    const ways=result.data.elements||[];fetched.push(ways);hosts.push(result.host);goodCount++;
+    const rows=osmRows(result.data,S.mode);
+    if(rows.length&&localDB.db)await localDB.putCache({key,rows,savedAt:Date.now()}).catch(()=>{});
+   }catch(e){
+    if(controller.signal.aborted)throw Error('Sökningen avbröts.');
+    warnings.push(`Delområde ${i+1}: ${String(e.message||e).slice(0,130)}`);
+    if(cached?.rows?.length){fetched.push(rowsToWays(cached.rows));cachedCount++;goodCount++;}
+   }
+  }
+  const allWays=mergeOSMWays(fetched,{maxWays:2600});
+  if(!allWays.length){msg.textContent='Inga vägar hämtades. '+warnings.join(' · ').slice(0,260)+'. Du kan fortfarande rita en egen bana eller öppna sparade banor.';return;}
+  const rows=osmRows({elements:allWays},S.mode);
+  displayOsmOnMap(rows);renderOsmRows(rows);S.graphWays=allWays;renderRouteSuggestions();
+  const note=partial?` Sökningen täckte ${goodCount}/${patches.length} utvalda delområden, inte varje väg i hela kartutsnittet.`:'';
+  const issue=warnings.length?` ${warnings.length} delområde(n) svarade inte.`:'';
+  msg.textContent=`${allWays.length} vägsegment hämtade (${[...new Set(hosts)].join(', ')||'lokal cache'}${cachedCount?' + cache':''}). ${S.generatedRoutes.length} anslutna turförslag.${note}${issue}`;
+ }catch(e){msg.textContent=e.message||'Sökningen avbröts. Tidigare sparade banor påverkas inte.';}
+ finally{osmAbort=null;$('loadOSM').disabled=false;$('cancelOSM').hidden=true;}
 });
 
 // QCDS Local Database – all stored records remain on this browser/device.
@@ -642,6 +830,7 @@ async function refreshLibrary(){
  if(!localDB.db)return;
  const [routes,rides]=await Promise.all([localDB.listRoutes(),localDB.listRides()]);
  const saved=$('savedRoutes');saved.replaceChildren();
+ S.localRoutes=routes;renderDiscoveryCatalog();
  routes.sort((a,b)=>String(b.savedAt||'').localeCompare(String(a.savedAt||'')));
  if(!routes.length)saved.textContent='Inga sparade banor ännu.';
  for(const route of routes){

@@ -56,3 +56,23 @@
 .route-kind{color:#6de3ce;font-size:10px;font-weight:800;margin:-2px 0 10px;letter-spacing:.5px}
 .elevation-button{width:100%;margin:10px 0 0}.elevation-button:disabled{opacity:.55;cursor:not-allowed}
 @media(max-width:620px){.world-explorer{padding:13px}.world-globe{font-size:42px}.world-places{margin-right:-6px}.coordinate-jump label{flex-basis:100%}.route-suggestion{grid-template-columns:1fr}.route-suggestion button{grid-column:1;grid-row:auto}.segment-row{flex-direction:column;gap:3px}}
+
+/* v0.6.0 · discovery-first route studio. */
+.discovery-panel{border:1px solid #316475;border-radius:17px;background:linear-gradient(130deg,#123541,#102333 55%,#0e1e2c);padding:22px;margin:16px 0 20px;box-shadow:0 10px 44px #0002;min-width:0}
+.discovery-head{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:15px}
+.discovery-head h3{font-size:clamp(21px,2.4vw,30px);margin:7px 0 8px;letter-spacing:-.5px}
+.discovery-head p{color:#adc6cf;margin:5px 0;font-size:12px;line-height:1.6}
+.discovery-chip{border:1px solid #3f7280;padding:8px 11px;border-radius:22px;white-space:nowrap;font-size:10px;letter-spacing:.8px;color:#6ae8d1}
+.discovery-tabs{display:flex;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;padding-bottom:9px;scrollbar-width:thin}
+.discovery-tab{background:#122e3d;border:1px solid #2b5162;color:#aacbd7;border-radius:9px;min-height:42px;padding:10px 13px;font-size:12px;font-weight:750;white-space:nowrap;flex-shrink:0}
+.discovery-tab.active{background:linear-gradient(120deg,#2a6e6b,#1e5965);border-color:#6be6d5;color:#fff;box-shadow:inset 0 -2px #67e5d1}
+.discovery-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:9px;max-height:510px;overflow-y:auto;overscroll-behavior:contain}
+.discovery-card{border:1px solid #345e6d;border-radius:13px;padding:15px;background:#0c2533;min-width:0;display:flex;flex-direction:column;gap:8px}
+.discovery-card .d-badge{font-size:10px;color:#71e5d1;font-weight:900;letter-spacing:1px;text-transform:uppercase}
+.discovery-card strong{font-size:15px;line-height:1.25;word-break:break-word}
+.discovery-card p{font-size:12px;color:#a8c5cc;margin:0;line-height:1.5}
+.discovery-card button{margin-top:auto;align-self:start;background:#1b5362;border:1px solid #4b8b95;color:#e7f9ff;padding:9px 12px;border-radius:9px;font-weight:750}
+.discovery-card.info-card{grid-column:1/-1;background:#0b2633}
+.discovery-card .d-meta{color:#ffda8d;font-size:11px}
+@media(max-width:1060px){.discovery-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:660px){.discovery-panel{padding:14px}.discovery-head{align-items:flex-start}.discovery-chip{display:none}.discovery-cards{grid-template-columns:1fr;max-height:390px}.discovery-tab{min-height:46px}}

@@ -6,13 +6,13 @@
 <meta name="description" content="Proprietary cycling intelligence prototype. Theory and creation by Patrik Sundblom.">
 <meta name="author" content="Patrik Sundblom">
 <meta name="copyright" content="© 2026 Patrik Sundblom. All Rights Reserved.">
-<link rel="stylesheet" href="leaflet.css?v=0.4.1">
-<link rel="stylesheet" href="cycling.css?v=0.4.1">
+<link rel="stylesheet" href="leaflet.css?v=0.6.0">
+<link rel="stylesheet" href="cycling.css?v=0.6.0">
 <meta name="robots" content="noindex,nofollow">
 </head>
 <body>
 <div class="app">
-<header class="topbar"><a class="wordmark" href="#" aria-label="QCDS MedCare Cycling Intelligence"><span class="mark">◈</span><span>QCDS <strong>MedCare</strong><small>CYCLING INTELLIGENCE <i>·</i> PUBLIC TECH DEMO</small></span></a><div class="topmeta"><span class="pill" id="dataStatus">● DEMO / TESTVERSION</span><span class="ver">v0.5.0 · 2026-11-12</span><button id="tvMode" class="outline">⛶ TV-läge</button></div></header>
+<header class="topbar"><a class="wordmark" href="#" aria-label="QCDS MedCare Cycling Intelligence"><span class="mark">◈</span><span>QCDS <strong>MedCare</strong><small>CYCLING INTELLIGENCE <i>·</i> PUBLIC TECH DEMO</small></span></a><div class="topmeta"><span class="pill" id="dataStatus">● DEMO / TESTVERSION</span><span class="ver">v0.6.0 · 2026-11-12</span><button id="tvMode" class="outline">⛶ TV-läge</button></div></header>
 <div class="shell">
 <aside class="sidebar">
 <div class="side-title">DIN DISCIPLIN</div>
@@ -41,7 +41,19 @@
 <div class="coordinate-jump"><label for="gotoCoords">Valfri plats: koordinater lat, lon</label><input id="gotoCoords" placeholder="Ex. 45.9237, 6.8694" inputmode="text" aria-label="Latitud och longitud"><button id="goCoords" type="button" class="secondary">Visa plats</button></div>
 <span id="worldStatus" class="mini" role="status">Välj ett resmål. Inga banor är förinlästa eller påhittade.</span>
 </div>
-<div class="route-grid"><div class="map-wrap"><div id="map"><div class="map-wait">Kartan laddas …</div></div><span class="map-credit">© OpenStreetMap contributors · ODbL</span></div><div class="route-side"><div class="route-card"><span class="kicker">IMPORT / DISCOVERY</span><h3>Bygg en verklig cykeltur</h3><p>Hämta OSM-vägar och låt ruttmotorn sammanfoga verkligt anslutna väg- och stignoder. Ett 100-meterssegment är <strong>aldrig en färdig bana</strong>.</p><label class="route-length-label" for="routeLength">ÖNSKAD TUR<select id="routeLength"><option value="5">5 km · kort tur</option><option value="10" selected>10 km · motion</option><option value="20">20 km · träningspass</option><option value="40">40 km · längre tur</option></select></label><label class="provider-label" for="osmProvider">KARTDATAKÄLLA<select id="osmProvider" aria-label="Välj OSM-källa">
+<section class="discovery-panel" aria-label="Banupptäckaren">
+<div class="discovery-head"><div><span class="kicker">QCDS COURSE DISCOVERY</span><h3>Banor där du tittar – och i hela världen.</h3><p id="discoveryStatus" role="status" aria-live="polite">Flytta eller zooma kartan. Förslag uppdateras efter området du visar.</p></div><span class="discovery-chip">LOKAL BANMOTOR · BETA</span></div>
+<nav class="discovery-tabs" aria-label="Bantyper">
+<button type="button" class="discovery-tab" data-discovery="top">✦ Toppförslag</button>
+<button type="button" class="discovery-tab active" data-discovery="near">◎ Nära kartan</button>
+<button type="button" class="discovery-tab" data-discovery="mix">⇄ Mixade förslag</button>
+<button type="button" class="discovery-tab" data-discovery="mine">☆ Mina banor</button>
+<button type="button" class="discovery-tab" data-discovery="community">♧ Andras banor</button>
+<button type="button" class="discovery-tab" data-discovery="race">▣ Verkliga lopp</button>
+</nav>
+<div id="discoveryCards" class="discovery-cards"><p class="empty-routes">Banor som passerar området du visar dyker upp här. Hämta vägar eller öppna en sparad bana.</p></div>
+</section>
+<div class="route-grid"><div class="map-wrap"><div id="map"><div class="map-wait">Kartan laddas …</div></div><span class="map-credit">© OpenStreetMap contributors · ODbL</span></div><div class="route-side"><div class="route-card"><span class="kicker">IMPORT / DISCOVERY</span><h3>Bygg en verklig cykeltur</h3><p>Sök ett inzoomat område eller hela landskap. Ruttmotorn bygger sammanhängande förslag av tillgängliga OSM-vägar och visar banor som passerar nära kartutsnittet. Ett 100-meterssegment är <strong>aldrig en färdig bana</strong>.</p><label class="route-length-label" for="routeLength">ÖNSKAD TUR<select id="routeLength"><option value="5">5 km · kort tur</option><option value="10" selected>10 km · motion</option><option value="20">20 km · träningspass</option><option value="40">40 km · längre tur</option></select></label><label class="provider-label" for="osmProvider">KARTDATAKÄLLA<select id="osmProvider" aria-label="Välj OSM-källa">
 <option value="auto">Automatiskt · närmaste först</option>
 <option value="europe">Dresel · Europa (reservväxling)</option>
 <option value="america">Dresel · Nordamerika (reservväxling)</option>
@@ -49,7 +61,7 @@
 <option value="fossgis">FOSSGIS · hela världen</option>
 <option value="osm-api">OpenStreetMap direkt · liten yta</option>
 </select></label>
-<button id="loadOSM" class="primary">◉ Skapa rutter från OSM-vägar</button><label class="file-btn">↥ Importera GPX<input id="fileGPX" type="file" accept=".gpx,application/gpx+xml,application/xml,text/xml" hidden></label><div class="mini" id="osmInfo" role="status" aria-live="polite">Välj område på kartan. OSM-data hämtas endast på begäran.</div>
+<button id="loadOSM" class="primary">◉ Skapa rutter från OSM-vägar</button><label class="file-btn">↥ Importera GPX<input id="fileGPX" type="file" accept=".gpx,application/gpx+xml,application/xml,text/xml" hidden></label><div class="mini" id="osmInfo" role="status" aria-live="polite">Visa valfritt område. Stora utsnitt söks stegvis i ett fåtal delområden; ingen tvingande zoomgräns.</div>
 <button id="cancelOSM" type="button" class="secondary" hidden>✕ Avbryt sökning</button>
 <div id="routeSuggestions" class="route-suggestions" aria-label="Sammanhängande cykelturer"><p class="empty-routes">Välj plats och hämta OSM för att få riktiga turförslag på flera kilometer.</p></div>
 <details class="segments-details"><summary id="segmentsTitle">Visa råa vägsegment (inte banor)</summary><div id="osmResults" class="route-search-results" aria-label="Råa vägsegment"></div></details>
@@ -84,5 +96,5 @@
 <footer><span>© 2026 Patrik Sundblom. All Rights Reserved. · Theory and creation by Patrik Sundblom · OpenAI/ChatGPT R&D support</span><span>QCDS LIFE SCIENCE / MEDCARE / CYCLING</span></footer>
 </main></div></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script type="module" src="cycling.js?v=0.4.1"></script>
+<script type="module" src="cycling.js?v=0.6.0"></script>
 </body></html>
