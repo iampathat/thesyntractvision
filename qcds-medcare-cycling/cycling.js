@@ -614,6 +614,172 @@ function mergeOSMWays(responses,{maxWays=2600}={}){
  return [...map.values()];
 }
 
+/* module: experience-engine.js */
+
+const DEMO_RIDERS = Object.freeze([
+  {id:'aurora',name:'AURORA',color:'#ffb874',baseKmh:20.7,lane:-0.56,offsetM:54},
+  {id:'ridge',name:'RIDGE',color:'#7dd2fa',baseKmh:19.0,lane:0.48,offsetM:22},
+  {id:'nova',name:'NOVA',color:'#eab6ff',baseKmh:21.4,lane:-0.08,offsetM:12},
+  {id:'vista',name:'VISTA',color:'#f3e7b8',baseKmh:19.4,lane:0.73,offsetM:-18},
+  {id:'solar',name:'SOLAR',color:'#77e6c9',baseKmh:20.1,lane:-0.71,offsetM:-46},
+  {id:'ember',name:'EMBER',color:'#ff8e95',baseKmh:21.0,lane:0.10,offsetM:76},
+]);
+class SyntractRaceState {
+  constructor(){this.reset();}
+  reset(){
+    this.elapsed=0;this.playerKm=0;this.watts=0;this.speedKmh=0;this.grade=null;this.running=false;
+    this.bots=DEMO_RIDERS.map((b,i)=>({...b,km:Math.max(0,.07+b.offsetM/1000),drift:0}));
+    this.playerStartKm=0.07; // all riders start together with small staggered positions
+    this.events=[];this.lastPosition=4;this.lastGradeBucket=null;this.seq=0;
+    this.lastSnapshot=this.snapshot();this.lastPosition=this.lastSnapshot.position;
+  }
+  step({elapsed,km,watts=0,speedKmh=0,grade=null,running=true}){
+    const dt=Math.max(0,Math.min(3,Number(elapsed)-this.elapsed));
+    this.elapsed=Math.max(0,Number(elapsed)||0);
+    this.playerKm=Math.max(0,Number(km)||0);
+    this.watts=Math.max(0,Number(watts)||0);
+    this.speedKmh=Math.max(0,Number(speedKmh)||0);
+    this.grade=Number.isFinite(grade)?Number(grade):null;
+    this.running=!!running;
+    for(let i=0;i<this.bots.length;i++){
+      const b=this.bots[i];
+      const oscillation=1.5*Math.sin(this.elapsed/17+i*0.94)+0.7*Math.sin(this.elapsed/5+i*2.1);
+      const hillAdjustment=this.grade===null?0:Math.max(-5,Math.min(5,this.grade))*-0.28;
+      b.speedKmh=Math.max(8,b.baseKmh+oscillation+hillAdjustment);
+      if(running)b.km+=(b.speedKmh*dt)/3600;
+      b.laneAnimated=b.lane+0.11*Math.sin(this.elapsed/8+i*1.41);
+    }
+    const snap=this.snapshot();
+    if(running&&this.elapsed>1){
+      if(snap.position!==this.lastPosition){
+        const improving=snap.position<this.lastPosition;
+        this.events.push({seq:++this.seq,kind:improving?'overtake':'passed',text:improving?'Du avancerar till plats '+snap.position+'.':'Du är nu på plats '+snap.position+'.',elapsed:this.elapsed});
+      }
+      const bucket=this.grade===null?null:this.grade>3?1:this.grade< -3?-1:0;
+      if(bucket!==null&&bucket!==this.lastGradeBucket&&this.lastGradeBucket!==null){
+        const t=bucket>0?'En stigning närmar sig.':bucket<0?'Nu blir det utför.':'Lutningen planar ut.';
+        this.events.push({seq:++this.seq,kind:'grade',text:t,elapsed:this.elapsed});
+      }
+      this.lastGradeBucket=bucket;
+    }
+    this.lastPosition=snap.position;
+    if(this.events.length>30)this.events.splice(0,this.events.length-30);
+    this.lastSnapshot=snap;
+    return snap;
+  }
+  snapshot(){
+    const player={id:'player',name:'PATRIK · DU',color:'#65f6d8',me:true,km:this.playerKm+0.07,speedKmh:this.speedKmh,lane:0};
+    const others=this.bots.map(b=>({...b,me:false,lane:b.laneAnimated??b.lane}));
+    const all=[player,...others].sort((a,b)=>b.km-a.km);
+    const position=all.findIndex(x=>x.me)+1;
+    const inRange=others.filter(b=>Math.abs((b.km-player.km)*1000)<=55);
+    const front=others.filter(b=>b.km>player.km).sort((a,b)=>a.km-b.km)[0]??null;
+    const behind=others.filter(b=>b.km<player.km).sort((a,b)=>b.km-a.km)[0]??null;
+    return {elapsed:this.elapsed,player,all,others,position,total:all.length,nearby:inRange.length,frontGapM:front?Math.round((front.km-player.km)*1000):null,backGapM:behind?Math.round((player.km-behind.km)*1000):null,grade:this.grade,watts:this.watts,speedKmh:this.speedKmh,running:this.running,events:this.events.slice(),simulated:true};
+  }
+}
+function experienceText(state,detail='tactical'){
+  const base=`Plats ${state.position} av ${state.total}. ${Math.round(state.speedKmh)} kilometer i timmen.`;
+  if(detail==='essential')return base;
+  const gap=state.frontGapM===null?'Ingen framför dig.':`${state.frontGapM} meter till nästa cyklist.`;
+  const grade=state.grade===null?'Lutning saknas.':`Lutning ${state.grade.toFixed(1).replace('.',',')} procent.`;
+  if(detail==='tactical')return `${base} ${gap} ${state.nearby} cyklister inom femtiofem meter. ${grade}`;
+  return `${base} ${gap} ${state.nearby} cyklister nära. ${grade} Effekt ${Math.round(state.watts)} watt. ${state.backGapM===null?'Ingen bakom dig.':state.backGapM+' meter till cyklisten bakom.'}`;
+}
+
+/* module: race-renderer.js */
+
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+const mix=(a,b,t)=>a+(b-a)*t;
+function polygon(ctx,points,fill){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.fillStyle=fill;ctx.fill();}
+function cloud(ctx,x,y,s,color){ctx.fillStyle=color;for(const [dx,dy,rad] of [[-30,4,23],[0,0,31],[28,5,20],[6,-15,22]]){ctx.beginPath();ctx.ellipse(x+dx*s,y+dy*s,rad*s,rad*s*.57,0,0,Math.PI*2);ctx.fill();}}
+function bike(ctx,x,y,scale,color,player=false,lean=0){
+ ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);ctx.rotate(lean);
+ ctx.fillStyle='#0c1720aa';ctx.beginPath();ctx.ellipse(0,4,30,7,0,0,Math.PI*2);ctx.fill();
+ ctx.strokeStyle='#111f29';ctx.lineWidth=4;for(const dx of [-21,20]){ctx.beginPath();ctx.ellipse(dx,-3,11,14,0,0,Math.PI*2);ctx.stroke();}
+ ctx.lineWidth=3;ctx.strokeStyle=color;ctx.beginPath();ctx.moveTo(-21,-3);ctx.lineTo(-5,-24);ctx.lineTo(20,-3);ctx.lineTo(-21,-3);ctx.moveTo(-5,-24);ctx.lineTo(7,-5);ctx.stroke();
+ ctx.strokeStyle='#d9e6ef';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-4,-28);ctx.lineTo(-10,-45);ctx.lineTo(8,-50);ctx.stroke();
+ ctx.strokeStyle='#2b3442';ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(-9,-36);ctx.lineTo(-15,-16);ctx.moveTo(2,-35);ctx.lineTo(10,-16);ctx.stroke();
+ ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(-12,-62);ctx.lineTo(11,-62);ctx.lineTo(7,-39);ctx.lineTo(-9,-41);ctx.closePath();ctx.fill();
+ ctx.strokeStyle='#f3bfa0';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-8,-60);ctx.lineTo(-20,-47);ctx.lineTo(-15,-41);ctx.moveTo(9,-60);ctx.lineTo(19,-49);ctx.lineTo(14,-41);ctx.stroke();
+ ctx.fillStyle='#14212a';ctx.beginPath();ctx.ellipse(0,-77,10,12,0,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle=player?'#a8ffed':color;ctx.beginPath();ctx.moveTo(-12,-77);ctx.quadraticCurveTo(-6,-94,5,-89);ctx.quadraticCurveTo(15,-85,12,-78);ctx.closePath();ctx.fill();
+ if(player){ctx.fillStyle='#0b2026';ctx.font='bold 7px system-ui';ctx.textAlign='center';ctx.fillText('PATR',0,-49);}
+ ctx.restore();
+}
+function tree(ctx,x,y,size,pine=true){ctx.save();ctx.translate(x,y);ctx.scale(size,size);ctx.fillStyle='#243c39';ctx.fillRect(-2,-30,4,32);if(pine){for(const z of [0,1,2]){const yy=-27-z*14;polygon(ctx,[[-15+z*2,yy],[0,yy-28],[15-z*2,yy]],['#1f5450','#28645a','#316b5b'][z]);}}else{ctx.fillStyle='#39745d';ctx.beginPath();ctx.ellipse(0,-49,17,23,0,0,Math.PI*2);ctx.fill();}ctx.restore();}
+function paintSyntractRace(ctx,w,h,snapshot,clock,discipline='road',visual='tactical'){
+  if(!snapshot||!w||!h)return;
+  const t=Number.isFinite(clock)?clock:0,progress=snapshot.player.km*1000;
+  const alpine=discipline==='road',forest=discipline==='mtb'||discipline==='downhill',gold=discipline==='gravel';
+  const horizon=h*.365;
+  const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,forest?'#123450':gold?'#253e57':'#17395b');bg.addColorStop(.50,forest?'#6c9190':gold?'#cea17b':'#9bc4cc');bg.addColorStop(1,forest?'#356b5c':gold?'#a57b57':'#4a8d73');ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
+  const lightX=w*.75,lightY=h*.18;
+  const sun=ctx.createRadialGradient(lightX,lightY,5,lightX,lightY,w*.45);sun.addColorStop(0,'#ffe5ac99');sun.addColorStop(.4,'#f2d7ad22');sun.addColorStop(1,'#ffffff00');ctx.fillStyle=sun;ctx.fillRect(0,0,w,h);
+  cloud(ctx,w*.22+Math.sin(t*.016)*14,h*.17,w/1350,'#dbf4e93b');cloud(ctx,w*.76-Math.sin(t*.009)*18,h*.12,w/1700,'#f1f8ec33');
+  // Multiple parallax ranges create depth, without claiming geographic reconstruction.
+  for(let layer=0;layer<3;layer++){
+    const y=horizon-h*(.17-layer*.055),amp=h*(.10-layer*.025);
+    ctx.beginPath();ctx.moveTo(0,horizon+35);
+    for(let j=0;j<=72;j++){
+      const xx=j/72*w;
+      const shift=progress*.0007*(1+layer*.3);
+      const yy=y-Math.abs(Math.sin(j*.27+shift+layer*3.2))*(amp*.62)-Math.abs(Math.sin(j*.11+layer*2.1+shift))*(amp*.48);
+      ctx.lineTo(xx,yy);
+    }
+    ctx.lineTo(w,horizon+35);ctx.closePath();ctx.fillStyle=["#446b79","#396777","#315c64"][layer];ctx.fill();
+  }
+  ctx.fillStyle=forest?'#34694e':gold?'#867a51':'#3d8063';ctx.fillRect(0,horizon,w,h-horizon);
+  // Small landscape fields / shoulder shadows follow the road.
+  const road = z => {
+    const perspective=1/(1+z/57),v=1-perspective;
+    const curvature=(Math.sin((progress+z)/225)*.065+Math.sin((progress+z)/75)*.022)*(w*.72)*(1-v*.55);
+    const x=w*.5+curvature;
+    const y=horizon+(h-horizon)*perspective;
+    const half=(w*.37*perspective)+w*.016;
+    return {x,y,half,perspective};
+  };
+  const Z=460,seg=24;
+  for(let z=Z;z>=0;z-=seg){
+    const a=road(z),b=road(Math.max(0,z-seg));
+    const mud=forest?'#4d5c46':gold?'#be9065':'#b8c6a0';
+    polygon(ctx,[[a.x-a.half*1.19,a.y],[a.x+a.half*1.19,a.y],[b.x+b.half*1.19,b.y],[b.x-b.half*1.19,b.y]],mud);
+    polygon(ctx,[[a.x-a.half,a.y],[a.x+a.half,a.y],[b.x+b.half,b.y],[b.x-b.half,b.y]],forest?'#475b56':gold?'#a0815d':'#465b64');
+    ctx.strokeStyle='#a4b5ab';ctx.lineWidth=Math.max(1.2,b.perspective*4.5);
+    for(const edge of [-.90,.90]){ctx.beginPath();ctx.moveTo(a.x+a.half*edge,a.y);ctx.lineTo(b.x+b.half*edge,b.y);ctx.stroke();}
+    if(Math.floor((z+progress)/16)%3===0){ctx.strokeStyle='#eeddb5';ctx.lineWidth=Math.max(1,b.perspective*3);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();}
+  }
+  // Roadside 3D-scale vegetation: distant first.
+  for(let z=430;z>=10;z-=24){
+    const r=road(z),seed=Math.floor((progress+z)/24);
+    for(const side of [-1,1]){
+      if((seed+Math.floor((side+1)*17))%4===0)continue;
+      const s=clamp(r.perspective*w/950,.12,2.4);
+      const xx=r.x+side*r.half*(1.24+.18*Math.abs(Math.sin(seed*1.7)));
+      tree(ctx,xx,r.y+4*s,s,forest||seed%4!==0);
+    }
+  }
+  // Subtle sunlight and live motion marks.
+  const high=road(360);ctx.fillStyle='#d1f6eb11';ctx.beginPath();ctx.moveTo(high.x,high.y);ctx.lineTo(w*.75,0);ctx.lineTo(w*.96,0);ctx.closePath();ctx.fill();
+  const others=snapshot.others.map(b=>({b,d:(b.km-snapshot.player.km)*1000})).filter(x=>x.d>=0&&x.d<380).sort((a,b)=>b.d-a.d);
+  for(const {b,d} of others){
+    const p=road(clamp(d+62,62,440));const x=p.x+(b.lane||0)*p.half*.72;
+    const size=clamp(p.perspective*w/690,.15,1.28);
+    bike(ctx,x,p.y-3*size,size,b.color,false,Math.sin(t/3+Number(b.offsetM))*.025);
+    if((visual==='detailed'||visual==='tactical')&&d>=0&&d<130){ctx.textAlign='center';ctx.fillStyle='#f2fbf9';ctx.shadowBlur=5;ctx.shadowColor='#081b27';ctx.font=`800 ${clamp(size*10,9,16)}px system-ui`;ctx.fillText(b.name,x,p.y-91*size);ctx.shadowBlur=0;}
+  }
+  const me=road(30);bike(ctx,me.x,me.y,clamp(w/850,.8,1.55),'#75f5d7',true,Math.sin(t*.02)*.022);
+  // Subtle bezel / cinematic vignette.
+  const grad=ctx.createRadialGradient(w*.5,h*.45,w*.18,w*.5,h*.5,w*.85);grad.addColorStop(0,'#00000000');grad.addColorStop(1,'#06151d7c');ctx.fillStyle=grad;ctx.fillRect(0,0,w,h);
+  if(visual!=='minimal'){
+    ctx.fillStyle='#091e2cbf';ctx.beginPath();ctx.roundRect(w*.5-64,13,128,32,14);ctx.fill();
+    ctx.fillStyle='#e4f8f1';ctx.font='800 11px system-ui';ctx.textAlign='center';ctx.fillText(`${snapshot.nearby} CYKLISTER NÄRA`,w*.5,33);
+  }
+  if(visual==='detailed'){
+    ctx.fillStyle='#06202abb';ctx.beginPath();ctx.roundRect(17,h*.55,147,53,10);ctx.fill();ctx.fillStyle='#b4f9e9';ctx.font='700 13px system-ui';ctx.textAlign='left';ctx.fillText('SIMULERAD TERRÄNG',28,h*.55+22);ctx.fillStyle='#d0e3e1';ctx.font='11px system-ui';ctx.fillText(snapshot.grade===null?'Lutning okänd':`${snapshot.grade.toFixed(1)}% lutning`,28,h*.55+41);
+  }
+}
+
 /* module: app.js */
 const wasmCourseIndex=index;
 
@@ -626,7 +792,12 @@ const wasmCourseIndex=index;
 
 
 
+
+
 const $=id=>document.getElementById(id);
+const experience=new SyntractRaceState();
+let latestExperience=experience.lastSnapshot,lastExperienceMs=performance.now(),lastAudioAt=0,spokenEvent=0;
+let soundMode='off',visualMode='tactical';
 const S={mode:'road',tab:'explore',route:null,map:null,mapLayer:null,osmLayer:null,osmWays:[],source:'none',telemetry:{source:'none',power:null,cadence:null,speed:null,hr:null},running:false,elapsed:0,km:0,liveWatts:0,tick:0,graphWays:[],generatedRoutes:[],mixRoutes:[],localRoutes:[],discoveryTab:'near',heightAbort:null,plannerStart:null,pickingStart:false,startMarker:null};
 const modeWords={road:'ROAD RACE',gravel:'GRAVEL CHALLENGE',mtb:'MTB TRAIL',downhill:'DOWNHILL EXPERIENCE'};
 const radio=new BikeFTMS(data=>{S.source='ftms';S.telemetry={...S.telemetry,...data,source:'ftms'};S.liveWatts=Number.isFinite(data.power)?Math.max(0,data.power):S.liveWatts; updateDevice('FTMS · livemätning');updateTelemetry();renderOracles();},status=>{updateDevice(status);});
@@ -707,7 +878,7 @@ function selectRoute(route){route.points=cleanRoute(route.points);if(route.point
  $('loadElevation').disabled=route.points.every(p=>Number.isFinite(p.ele));
  $('elevationStatus').textContent=route.points.every(p=>Number.isFinite(p.ele))?'Höjdvärden finns för rutten.': 'Höjdprofil saknas. Tryck Hämta verklig höjdprofil – DEM-data från extern tjänst.';
  $('routeKind').textContent=route.generated?`PRELIMINÄR OSM-TUR ${route.generatedType==='out-and-back'?'TUR & RETUR':route.generatedType==='loop'?'RUNDSLINGA':'EN VÄG'} · kontrollera tillträde`:route.source?.startsWith('Importerad GPX')?'IMPORTERAD GPX-RUTT':route.source?.includes('Egenritad')?'EGENRITAD · RAKA LINJER':'VERKLIG GPS-GEOMETRI';
- S.km=0;S.elapsed=0;S.lastSavedElapsed=-1;S.running=false;$('raceToggle').textContent='▶ Starta race';updateRoute();if(S.map&&window.L){S.mapLayer.clearLayers();const line=L.polyline(route.points.map(p=>[p.lat,p.lon]),{color:'#00b88c',weight:7,opacity:.95}).addTo(S.mapLayer);S.map.fitBounds(line.getBounds(),{padding:[30,30],maxZoom:15});}renderOracles();
+ S.km=0;S.elapsed=0;S.lastSavedElapsed=-1;S.running=false;experience.reset();latestExperience=experience.snapshot();updateLeaderboard();updateExperienceUi();$('raceToggle').textContent='▶ Starta race';updateRoute();if(S.map&&window.L){S.mapLayer.clearLayers();const line=L.polyline(route.points.map(p=>[p.lat,p.lon]),{color:'#00b88c',weight:7,opacity:.95}).addTo(S.mapLayer);S.map.fitBounds(line.getBounds(),{padding:[30,30],maxZoom:15});}renderOracles();
  // Auto-fetch only when a user selects a route, not on every map movement.
  if($('autoElevation').checked&&!route.points.every(p=>Number.isFinite(p.ele)))setTimeout(()=>{if(S.route===route&&!S.heightAbort)$('loadElevation').click();},120);
 }
@@ -827,7 +998,7 @@ function renderRouteSuggestions(){
  const area=$('routeSuggestions');area.replaceChildren();
  if(!S.graphWays.length){S.generatedRoutes=[];S.mixRoutes=[];const p=document.createElement('p');p.className='empty-routes';p.textContent='Ingen nätverksdata laddad. Hämta OSM-vägar eller importera GPX.';area.append(p);renderDiscoveryCatalog();return;}
  const target=Number($('routeLength').value)||10;
- const routeType=$('routeType').value;
+const routeType=$('routeType').value;
  const generated=generateConnectedRoutes(S.graphWays,{mode:S.mode,bounds:S.map?.getBounds(),targetKm:target,count:4,routeType,startCoord:S.plannerStart});
  S.generatedRoutes=generated.routes;
  // Mix modes/distances only where a real connected OSM network exists.
@@ -996,24 +1167,114 @@ $('startRoute').addEventListener('click',()=>{if(!S.route){$('osmInfo').textCont
 $('clearRoute').addEventListener('click',()=>{S.route=null;if(S.mapLayer)S.mapLayer.clearLayers();S.km=0;S.elapsed=0;S.running=false;updateRoute();renderOracles();});
 function updateLeague(){const idx=wasmCourseIndex(S.route,S.mode);$('leagueIndex').textContent=idx??'—';$('leagueRoute').textContent=S.route?.name||'Ingen vald';}
 function renderOracles(){const v=getInputs();const checks=evaluate({route:S.route,mode:S.mode,telemetry:S.telemetry,ftp:v.ftp,weight:v.weight});const ok=checks.filter(c=>c.result==='ok').length;$('oracleCount').textContent=`${ok} / ${checks.length}`;$('oracleList').innerHTML='';for(const c of checks){const div=document.createElement('article');div.className=`oracle ${c.result}`;const badge=document.createElement('span');badge.className='status';badge.textContent=c.result==='ok'?'UPPFYLLT':c.result==='unknown'?'OKÄNT':'EJ UPPFYLLT';const h=document.createElement('h3');h.textContent=`${c.id} · ${c.name}`;const p=document.createElement('p');p.textContent=c.desc;div.append(badge,h,p);$('oracleList').append(div);}}
-function updateTelemetry(){const watts=S.source==='none'?null:S.liveWatts;$('watts').textContent=watts===null?'—':Math.round(watts);$('cadence').textContent=S.telemetry.cadence===null?'—':Math.round(S.telemetry.cadence);$('distance').textContent=S.km.toFixed(2);const hill=gradeAtProgress();const kmh=watts===null?0:Math.max(0,6+0.094*watts-(Number.isFinite(hill)?hill*.7:0));$('speed').textContent=watts===null?'—':kmh.toFixed(1);$('position').textContent=watts===null?'—':Math.max(1,Math.min(5,3-Math.round((watts-140)/65)))+'/5';}
+function currentSpeedKmh(){const watts=S.source==='none'?null:S.liveWatts,grade=gradeAtProgress();return watts===null?0:Math.max(0,6+.094*watts-(Number.isFinite(grade)?grade*.7:0));}
+function updateTelemetry(){
+ const watts=S.source==='none'?null:S.liveWatts;
+ $('watts').textContent=watts===null?'—':Math.round(watts);
+ $('cadence').textContent=S.telemetry.cadence===null?'—':Math.round(S.telemetry.cadence);
+ $('distance').textContent=S.km.toFixed(2);
+ $('speed').textContent=watts===null?'—':currentSpeedKmh().toFixed(1);
+ $('position').textContent=`${latestExperience.position}/${latestExperience.total}`;
+}
 function gradeAtProgress(){const pts=S.route?.points;if(!pts||pts.length<2)return null;let i=Math.floor((S.km/Math.max(.1,distanceKm(pts)))*(pts.length-2));i=Math.max(0,Math.min(pts.length-2,i));const a=pts[i],b=pts[i+1];if(!Number.isFinite(a.ele)||!Number.isFinite(b.ele))return null;const d=distanceKm([a,b])*1000;return wasmGrade(b.ele-a.ele,d);}
-function raceTick(){if(!S.running)return;S.elapsed++;if(S.source==='demo'){S.liveWatts=Math.round(125+37*Math.sin(S.elapsed/14)+13*Math.sin(S.elapsed/3));S.telemetry.power=S.liveWatts;S.telemetry.cadence=Math.round(79+8*Math.sin(S.elapsed/8));}const hill=gradeAtProgress();const kmh=Math.max(0,6+.094*S.liveWatts-(Number.isFinite(hill)?hill*.7:0));S.km+=kmh/3600;const max=S.route?distanceKm(S.route.points):12.4;if(S.km>=max&&max>0){S.km=max;S.running=false;$('raceToggle').textContent='✓ Målgång';void recordRide(true);}updateTelemetry();$('raceTime').textContent=`${String(Math.floor(S.elapsed/60)).padStart(2,'0')}:${String(S.elapsed%60).padStart(2,'0')}`;updateLeaderboard();}
-$('raceToggle').addEventListener('click',()=>{if(S.source==='none'){$('rideNotice').textContent='Anslut cykeln eller välj Testa demokälla i sidopanelen först.';return;}if(S.running){S.running=false;$('raceToggle').textContent='▶ Fortsätt';}else{const max=S.route?distanceKm(S.route.points):12.4;if(S.km>=max){S.km=0;S.elapsed=0;S.lastSavedElapsed=-1;}S.running=true;$('raceToggle').textContent='Ⅱ Pausa race';$('rideNotice').textContent=S.source==='ftms'?'Träningswatt läses live. Simulerad bana och motståndare.':'DEMOLÄGE: watt, motståndare och resultat är simulerade.';}});
-$('raceReset').addEventListener('click',()=>{S.running=false;S.km=0;S.elapsed=0;S.lastSavedElapsed=-1;$('raceToggle').textContent='▶ Starta race';$('raceTime').textContent='00:00';updateTelemetry();updateLeaderboard();});
-function updateLeaderboard(){const bots=[{name:'NOVA · bot',pace:16.2},{name:'RIDGE · bot',pace:20.1},{name:'SOLAR · bot',pace:18.4},{name:'VISTA · bot',pace:14.7}];const people=[{name:'DU · cykel',d:S.km,me:true},...bots.map(b=>({name:b.name,d:b.pace*S.elapsed/3600,me:false}))].sort((a,b)=>b.d-a.d);$('leaderboard').innerHTML='';people.forEach((p,i)=>{const el=document.createElement('div');el.className='racerow'+(p.me?' me':'');const j=document.createElement('span');j.textContent=String(i+1).padStart(2,'0');const n=document.createElement('span');n.textContent=p.name;const d=document.createElement('span');d.textContent=p.d.toFixed(2)+' km';el.append(j,n,d);$('leaderboard').append(el);});$('position').textContent=(people.findIndex(x=>x.me)+1)+'/5';}
-const canvas=$('raceCanvas');let cw=0,ch=0,phase=0;
-function resizeRace(){const r=canvas.getBoundingClientRect();if(r.width<=0)return;const dpr=Math.min(2,devicePixelRatio||1);cw=r.width;ch=r.height;canvas.width=Math.floor(cw*dpr);canvas.height=Math.floor(ch*dpr);canvas.getContext('2d').setTransform(dpr,0,0,dpr,0,0);}
+function renderRaceRadar(st){
+ const root=$('raceRadar');root.replaceChildren();
+ const marker=document.createElement('span');marker.className='radar-self';marker.title='DU';marker.textContent='▲';root.append(marker);
+ const you=st.player.km;
+ for(const p of st.others){const relative=(p.km-you)*1000;const dot=document.createElement('span');dot.className='radar-dot';
+ dot.style.left=`${Math.max(2,Math.min(98,50+relative*.43))}%`;
+ dot.style.backgroundColor=p.color;dot.title=`${p.name}: ${Math.round(Math.abs(relative))} meter ${relative>0?'framför':'bakom'}`;root.append(dot);}
+ $('radarText').textContent=`${st.others.filter(p=>p.km>you).length} framför · ${st.others.filter(p=>p.km<you).length} bakom`;
+ root.setAttribute('aria-label',`${$('radarText').textContent}. Din placering ${st.position} av ${st.total}.`);
+}
+function updateExperienceUi({announce=false}={}){
+ const st=latestExperience;
+ renderRaceRadar(st);
+ $('position').textContent=st.position+'/'+st.total;
+ $('racePackCount').textContent=`${st.nearby} nära`;
+ $('raceGap').textContent=st.frontGapM===null?'Du leder':`${st.frontGapM} m till nästa`;
+ $('raceTicker').textContent=experienceText(st,visualMode==='minimal'?'essential':visualMode==='detailed'?'detailed':'tactical');
+ $('raceDetail').textContent=st.events.at(-1)?.text||'Klungan rör sig efter samma simulerade tävlingsdata som topplistan.';
+ $('raceEvent').textContent=st.events.at(-1)?.text||(S.running?'Racet är igång · 7 cyklister i det lokala demonstrationsfältet':'Välj Kör demo direkt för ett lokalt simulerat race.');
+ $('raceInfo').dataset.visual=visualMode;
+ if(soundMode!=='off'&&announce&&S.running)talkRace(st);
+}
+function talkRace(st){
+ if(!('speechSynthesis' in window)||!('SpeechSynthesisUtterance' in window))return;
+ const ms=Date.now(),frequency=soundMode==='essential'?25000:soundMode==='tactical'?14500:8500;
+ const recent=st.events.at(-1),newEvent=recent&&recent.seq>spokenEvent&&recent.elapsed>=st.elapsed-2;
+ if(ms-lastAudioAt<4500 || (!newEvent && ms-lastAudioAt<frequency))return;
+ lastAudioAt=ms;
+ const msg=newEvent?recent.text:experienceText(st,soundMode);
+ if(newEvent)spokenEvent=recent.seq;
+ window.speechSynthesis.cancel();
+ const speech=new SpeechSynthesisUtterance(msg);speech.lang='sv-SE';speech.rate=1.02;speech.volume=.85;
+ window.speechSynthesis.speak(speech);
+}
+function setAudioMode(mode){
+ soundMode=mode;$('audioMode').value=mode;
+ if(mode==='off'){window.speechSynthesis?.cancel();$('audioStatus').textContent='Ljudbeskrivning av';return;}
+ if(!('speechSynthesis' in window)){$('audioStatus').textContent='Den här webbläsaren saknar talstöd.';soundMode='off';$('audioMode').value='off';return;}
+ lastAudioAt=0;$('audioStatus').textContent='Ljudbeskrivning aktiv · svenskt tal · '+(mode==='essential'?'enkel':mode==='tactical'?'taktisk':'detaljerad');
+ if(latestExperience&&S.running)talkRace(latestExperience);
+}
+$('audioMode').addEventListener('change',e=>setAudioMode(e.target.value));
+$('visualMode').addEventListener('change',e=>{visualMode=e.target.value;updateExperienceUi();});
+function raceTick(){
+ if(!S.running)return;
+ S.elapsed++;
+ if(S.source==='demo'){
+  S.liveWatts=Math.round(153+35*Math.sin(S.elapsed/14)+14*Math.sin(S.elapsed/3));
+  S.telemetry.power=S.liveWatts;S.telemetry.cadence=Math.round(79+8*Math.sin(S.elapsed/8));
+ }
+ const kmh=currentSpeedKmh();S.km+=kmh/3600;
+ const max=S.route?distanceKm(S.route.points):12.4;
+ if(S.km>=max&&max>0){S.km=max;S.running=false;$('raceToggle').textContent='✓ Målgång';void recordRide(true);}
+ latestExperience=experience.step({elapsed:S.elapsed,km:S.km,watts:S.liveWatts,speedKmh:kmh,grade:gradeAtProgress(),running:S.running});
+ lastExperienceMs=performance.now();
+ updateTelemetry();$('raceTime').textContent=`${String(Math.floor(S.elapsed/60)).padStart(2,'0')}:${String(S.elapsed%60).padStart(2,'0')}`;
+ updateLeaderboard();updateExperienceUi({announce:true});
+}
+$('raceToggle').addEventListener('click',()=>{
+ if(S.source==='none'){$('rideNotice').textContent='Anslut cykeln eller tryck Kör demo direkt.';return;}
+ if(S.running){S.running=false;$('raceToggle').textContent='▶ Fortsätt';window.speechSynthesis?.cancel();}
+ else {const max=S.route?distanceKm(S.route.points):12.4;if(S.km>=max){S.km=0;S.elapsed=0;S.lastSavedElapsed=-1;experience.reset();latestExperience=experience.snapshot();}
+ S.running=true;$('raceToggle').textContent='Ⅱ Pausa race';$('rideNotice').textContent=S.source==='ftms'?'Verkliga watt från cykeln · motståndare simulerade.':'DEMOLÄGE · effekter, medspelare och resultat simulerade.';
+ }
+ updateExperienceUi();
+});
+$('raceDemo').addEventListener('click',()=>{
+ radio.disconnect();S.source='demo';S.telemetry={source:'demo',power:153,cadence:79,speed:null,hr:null};S.liveWatts=153;
+ updateDevice('SIMULERAD DATA · inte cykelmätning');$('disconnect').hidden=false;
+ if(!S.running)$('raceToggle').click();updateTelemetry();updateLeaderboard();
+});
+$('raceReset').addEventListener('click',()=>{
+ S.running=false;S.km=0;S.elapsed=0;S.lastSavedElapsed=-1;experience.reset();latestExperience=experience.snapshot();
+ $('raceToggle').textContent='▶ Starta race';$('raceTime').textContent='00:00';window.speechSynthesis?.cancel();
+ updateTelemetry();updateLeaderboard();updateExperienceUi();
+});
+function updateLeaderboard(){
+ const people=latestExperience.all;
+ const list=$('leaderboard');list.replaceChildren();
+ people.forEach((p,i)=>{
+  const el=document.createElement('div');el.className='racerow'+(p.me?' me':'');
+  const place=document.createElement('span');place.textContent=String(i+1).padStart(2,'0');
+  const name=document.createElement('span');name.textContent=p.name;
+  const dist=document.createElement('span');dist.textContent=Math.max(0,p.km-0.07).toFixed(2)+' km';
+  el.append(place,name,dist);list.append(el);
+ });
+ $('position').textContent=`${latestExperience.position}/${latestExperience.total}`;
+}
+const canvas=$('raceCanvas');let cw=0,ch=0;
+function resizeRace(){const r=canvas.getBoundingClientRect();if(r.width<=0||r.height<=0)return;const dpr=Math.min(2,devicePixelRatio||1);cw=r.width;ch=r.height;canvas.width=Math.floor(cw*dpr);canvas.height=Math.floor(ch*dpr);canvas.getContext('2d').setTransform(dpr,0,0,dpr,0,0);}
 window.addEventListener('resize',()=>{resizeRace();drawProfile();});
-function raceDraw(){requestAnimationFrame(raceDraw);if(!cw||!ch||S.tab!=='ride')return;const ctx=canvas.getContext('2d'),w=cw,h=ch;const ground=h*.52;const sky=ctx.createLinearGradient(0,0,0,ground);sky.addColorStop(0,'#173454');sky.addColorStop(1,'#62a1a7');ctx.fillStyle=sky;ctx.fillRect(0,0,w,ground);const m=(x,y)=>[x*w,y*h];ctx.fillStyle='#1b5260';ctx.beginPath();ctx.moveTo(0,ground);for(let i=0;i<=12;i++){let x=i/12,y=.43-.1*Math.abs(Math.sin(i*1.4+2));ctx.lineTo(x*w,y*h);}ctx.lineTo(w,ground);ctx.fill();ctx.fillStyle='#25494b';ctx.beginPath();ctx.moveTo(0,ground);for(let i=0;i<=9;i++){ctx.lineTo((i/9)*w,(.49-.05*Math.abs(Math.sin(i*1.8+1)))*h);}ctx.lineTo(w,ground);ctx.fill();ctx.fillStyle='#284b43';ctx.fillRect(0,ground,w,h-ground);
-// Stylized race road, deliberately not claimed as true 3D cartography.
-ctx.fillStyle='#304554';ctx.beginPath();ctx.moveTo(w*.45,ground);ctx.lineTo(w*.55,ground);ctx.lineTo(w*.92,h);ctx.lineTo(w*.08,h);ctx.closePath();ctx.fill();ctx.strokeStyle='#f8e6a3';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(w*.45,ground);ctx.lineTo(w*.08,h);ctx.moveTo(w*.55,ground);ctx.lineTo(w*.92,h);ctx.stroke();if(S.running)phase+=Math.min(2,.25+S.liveWatts/280);for(let j=0;j<8;j++){const t=((j/8+phase*.035)%1);const y=ground+(h-ground)*t*t;const half=(.08+.36*t)*w/2;ctx.strokeStyle='#b5c5bc';ctx.lineWidth=1+3*t;ctx.beginPath();ctx.moveTo(w/2-(2+5*t),y);ctx.lineTo(w/2+(2+5*t),y);ctx.stroke();}
-// A pack of illustrated opponents.
-for(let i=0;i<6;i++){const depth=(i+1)/8,x=w/2+Math.sin(i*1.8+phase*.01)*w*(.02+.09*depth),y=ground+depth*depth*(h-ground)*.85;const sz=4+depth*19;ctx.fillStyle=['#ffbc65','#75e8ce','#d9e6fd'][i%3];ctx.beginPath();ctx.arc(x,y-sz,sz*.48,0,Math.PI*2);ctx.fill();ctx.strokeStyle=ctx.fillStyle;ctx.lineWidth=Math.max(2,sz*.23);ctx.beginPath();ctx.moveTo(x,y-sz*.45);ctx.lineTo(x,y+sz*.7);ctx.moveTo(x-sz*.6,y+sz*.2);ctx.lineTo(x+sz*.6,y+sz*.2);ctx.stroke();}
-// Player avatar / bike illustration.
-const bx=w*.5,by=h*.86,scale=Math.min(w/800,1.2);ctx.strokeStyle='#131e25';ctx.lineWidth=5*scale;ctx.beginPath();ctx.arc(bx-24*scale,by,13*scale,0,Math.PI*2);ctx.moveTo(bx+25*scale+13*scale,by);ctx.arc(bx+25*scale,by,13*scale,0,Math.PI*2);ctx.stroke();ctx.strokeStyle='#56e7d0';ctx.lineWidth=4*scale;ctx.beginPath();ctx.moveTo(bx-24*scale,by);ctx.lineTo(bx,by-18*scale);ctx.lineTo(bx+25*scale,by);ctx.lineTo(bx-24*scale,by);ctx.stroke();ctx.fillStyle='#71e8d7';ctx.beginPath();ctx.arc(bx,by-60*scale,9*scale,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#e3f6fa';ctx.lineWidth=8*scale;ctx.beginPath();ctx.moveTo(bx,by-47*scale);ctx.lineTo(bx,by-22*scale);ctx.stroke();
-ctx.fillStyle='#d9edf0';ctx.font=`bold ${Math.max(12,16*scale)}px sans-serif`;ctx.textAlign='center';ctx.fillText('DU',bx,by-82*scale);
+function raceDraw(timestamp){requestAnimationFrame(raceDraw);if(!cw||!ch||S.tab!=='ride')return;
+ const ctx=canvas.getContext('2d');
+ const now=timestamp||performance.now(),extra=S.running?Math.max(0,Math.min(950,now-lastExperienceMs))/3600000:0;
+ const st=latestExperience;
+ const drawState={...st,player:{...st.player,km:st.player.km+st.speedKmh*extra},others:st.others.map(b=>({...b,km:b.km+(b.speedKmh||20)*extra}))};
+ paintSyntractRace(ctx,cw,ch,drawState,now/1000,S.mode,visualMode);
 }
 initEngine().then(()=>{if($('wasmStatus'))$('wasmStatus').textContent=engineStatus();updateHandicap();updateRoute();});
 if($('graphicsStatus'))$('graphicsStatus').textContent='Canvas 2D aktiv · WebGPU förberett · DLSS 5 kräver RTX-native/SDK';
-setInterval(raceTick,1000);setInterval(()=>{if(S.source==='demo'&&!S.running){S.liveWatts=115;updateTelemetry();}},5000);updateDevice('Väntar på Bluetooth FTMS');updateHandicap();updateRoute();updateTelemetry();updateLeaderboard();initMap();requestAnimationFrame(raceDraw);resizeRace();
+setInterval(raceTick,1000);setInterval(()=>{if(S.source==='demo'&&!S.running){S.liveWatts=115;updateTelemetry();}},5000);updateDevice('Väntar på Bluetooth FTMS');updateHandicap();updateRoute();updateTelemetry();updateLeaderboard();initMap();requestAnimationFrame(raceDraw);resizeRace();updateExperienceUi();
