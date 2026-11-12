@@ -8,6 +8,7 @@ on:
       - "qcds_fabric_4_2/**"
       - "qcds-security-lab/**"
       - "qcds-cancer-lab/**"
+      - "qcds-medcare-cycling/**"
       - "credemia/**"
       - "qgen/**"
       - "robots/legal/sweden_housing/**"
@@ -217,6 +218,23 @@ jobs:
         run: |
           mkdir -p _site/qcds-cancer-lab
           cp -a qcds-cancer-lab/. _site/qcds-cancer-lab/
+
+      - name: Publish QCDS MedCare Cycling WebAssembly runtime
+        run: |
+          mkdir -p _site/qcds-medcare-cycling
+          cp qcds-medcare-cycling/index.html qcds-medcare-cycling/cycling.js qcds-medcare-cycling/cycling.css qcds-medcare-cycling/core.wasm qcds-medcare-cycling/README_PUBLIC.txt _site/qcds-medcare-cycling/
+          test -s _site/qcds-medcare-cycling/index.html
+          test -s _site/qcds-medcare-cycling/cycling.js
+          test -s _site/qcds-medcare-cycling/core.wasm
+          python - <<'PYWASM'
+          from pathlib import Path
+          binary = Path('_site/qcds-medcare-cycling/core.wasm').read_bytes()
+          assert binary[:4] == b'\\x00asm', 'Invalid WASM magic header'
+          assert binary[4:8] == b'\\x01\\x00\\x00\\x00', 'Unsupported WASM version'
+          html = Path('_site/qcds-medcare-cycling/index.html').read_text(encoding='utf-8')
+          assert 'cycling.js' in html and 'cycling.css' in html
+          print('QCDS Cycling runtime published, WASM validated, original C source stays private')
+          PYWASM
 
       - name: Publish CREDEMIA scientific credit workbench
         run: |
