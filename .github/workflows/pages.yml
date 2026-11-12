@@ -238,9 +238,13 @@ jobs:
           assert 'cycling.js' in html and 'cycling.css' in html and 'leaflet.css' in html
           assert 'id="savedRoutes"' in html and 'id="savedRides"' in html and 'id="cancelOSM"' in html
           assert 'id="drawRoute"' in html and 'id="osmProvider"' in html and 'id="finishDraw"' in html
+          assert 'id="worldPlaces"' in html and 'id="routeSuggestions"' in html and 'id="loadElevation"' in html
+          assert 'v0.5.0' in html
           assert 'v0.4.1' in html
           js = Path('_site/qcds-medcare-cycling/cycling.js').read_text(encoding='utf-8')
           assert 'QCDS_MedCare_Cycling_v1' in js and 'AbortController' in js
+          assert 'generateConnectedRoutes' in js and 'enrichRouteElevation' in js
+          assert 'out body geom 900' in js
           assert 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css' not in html
           assert 'max-height:520px' in Path('_site/qcds-medcare-cycling/cycling.css').read_text(encoding='utf-8')
           print('QCDS Cycling runtime published, WASM validated, original C source stays private')
@@ -261,6 +265,9 @@ jobs:
           assert current.stat().st_size == archive.stat().st_size
           latest = directory / 'QCDS_Cycling_Runtime_v0.4.1.zip'
           shutil.copyfile(archive, latest)
+          current = directory / 'QCDS_Cycling_Runtime_v0.5.0.zip'
+          shutil.copyfile(archive, current)
+          assert current.stat().st_size > 2000
           assert latest.stat().st_size > 500
           print('Downloadable public runtime ZIP:', latest, latest.stat().st_size)
           PYZIP
