@@ -229,8 +229,8 @@ jobs:
           python - <<'PYWASM'
           from pathlib import Path
           binary = Path('_site/qcds-medcare-cycling/core.wasm').read_bytes()
-          assert binary[:4] == b'\\x00asm', 'Invalid WASM magic header'
-          assert binary[4:8] == b'\\x01\\x00\\x00\\x00', 'Unsupported WASM version'
+          assert binary[:4] == bytes([0,97,115,109]), 'Invalid WASM magic header'
+          assert binary[4:8] == bytes([1,0,0,0]), 'Unsupported WASM version'
           html = Path('_site/qcds-medcare-cycling/index.html').read_text(encoding='utf-8')
           assert 'cycling.js' in html and 'cycling.css' in html
           print('QCDS Cycling runtime published, WASM validated, original C source stays private')
