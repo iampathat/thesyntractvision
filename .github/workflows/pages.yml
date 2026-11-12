@@ -222,24 +222,29 @@ jobs:
       - name: Publish QCDS MedCare Cycling WebAssembly runtime
         run: |
           mkdir -p _site/qcds-medcare-cycling
-          cp qcds-medcare-cycling/index.html qcds-medcare-cycling/cycling.js qcds-medcare-cycling/cycling.css qcds-medcare-cycling/core.wasm qcds-medcare-cycling/README_PUBLIC.txt _site/qcds-medcare-cycling/
+          cp qcds-medcare-cycling/index.html qcds-medcare-cycling/cycling.js qcds-medcare-cycling/cycling.css qcds-medcare-cycling/leaflet.css qcds-medcare-cycling/LEAFLET_LICENSE.txt qcds-medcare-cycling/core.wasm qcds-medcare-cycling/README_PUBLIC.txt _site/qcds-medcare-cycling/
           test -s _site/qcds-medcare-cycling/index.html
           test -s _site/qcds-medcare-cycling/cycling.js
+          test -s _site/qcds-medcare-cycling/cycling.css
+          test -s _site/qcds-medcare-cycling/leaflet.css
           test -s _site/qcds-medcare-cycling/core.wasm
+          node --check _site/qcds-medcare-cycling/cycling.js
           python - <<'PYWASM'
           from pathlib import Path
           binary = Path('_site/qcds-medcare-cycling/core.wasm').read_bytes()
           assert binary[:4] == bytes([0,97,115,109]), 'Invalid WASM magic header'
           assert binary[4:8] == bytes([1,0,0,0]), 'Unsupported WASM version'
           html = Path('_site/qcds-medcare-cycling/index.html').read_text(encoding='utf-8')
-          assert 'cycling.js' in html and 'cycling.css' in html
+          assert 'cycling.js' in html and 'cycling.css' in html and 'leaflet.css' in html
+          assert 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css' not in html
+          assert 'max-height:520px' in Path('_site/qcds-medcare-cycling/cycling.css').read_text(encoding='utf-8')
           print('QCDS Cycling runtime published, WASM validated, original C source stays private')
           PYWASM
           python - <<'PYZIP'
           from pathlib import Path
           from zipfile import ZipFile, ZIP_DEFLATED
           directory = Path('_site/qcds-medcare-cycling')
-          names = ('index.html', 'cycling.js', 'cycling.css', 'core.wasm', 'README_PUBLIC.txt')
+          names = ('index.html', 'cycling.js', 'cycling.css', 'leaflet.css', 'LEAFLET_LICENSE.txt', 'core.wasm', 'README_PUBLIC.txt')
           archive = directory / 'QCDS_Cycling_Runtime_v0.3.zip'
           with ZipFile(archive, 'w', compression=ZIP_DEFLATED) as out:
               for name in names:
