@@ -235,6 +235,18 @@ jobs:
           assert 'cycling.js' in html and 'cycling.css' in html
           print('QCDS Cycling runtime published, WASM validated, original C source stays private')
           PYWASM
+          python - <<'PYZIP'
+          from pathlib import Path
+          from zipfile import ZipFile, ZIP_DEFLATED
+          directory = Path('_site/qcds-medcare-cycling')
+          names = ('index.html', 'cycling.js', 'cycling.css', 'core.wasm', 'README_PUBLIC.txt')
+          archive = directory / 'QCDS_Cycling_Runtime_v0.3.zip'
+          with ZipFile(archive, 'w', compression=ZIP_DEFLATED) as out:
+              for name in names:
+                  out.write(directory / name, arcname=name)
+          assert archive.stat().st_size > 500, 'Empty ZIP archive'
+          print('Downloadable public runtime ZIP:', archive, archive.stat().st_size)
+          PYZIP
 
       - name: Publish CREDEMIA scientific credit workbench
         run: |
