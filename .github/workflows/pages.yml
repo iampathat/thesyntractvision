@@ -239,11 +239,13 @@ jobs:
           assert 'id="savedRoutes"' in html and 'id="savedRides"' in html and 'id="cancelOSM"' in html
           assert 'id="drawRoute"' in html and 'id="osmProvider"' in html and 'id="finishDraw"' in html
           assert 'id="worldPlaces"' in html and 'id="routeSuggestions"' in html and 'id="loadElevation"' in html
-          assert 'v0.6.0' in html
+          assert 'v0.7.0' in html
+          assert 'id="routeType"' in html and 'id="startMap"' in html and 'id="startGPS"' in html and 'id="autoElevation"' in html
           assert 'id="discoveryCards"' in html and 'data-discovery="near"' in html
           js = Path('_site/qcds-medcare-cycling/cycling.js').read_text(encoding='utf-8')
           assert 'QCDS_MedCare_Cycling_v1' in js and 'AbortController' in js
           assert 'generateConnectedRoutes' in js and 'enrichRouteElevation' in js
+          assert 'alternateReturn' in js and 'api.open-meteo.com/v1/elevation' in js and 'setPlannerStart' in js
           assert 'routeViewportMetrics' in js and 'planViewportCoverage' in js and 'renderDiscoveryCatalog' in js
           assert 'out body geom 900' in js
           assert 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css' not in html
@@ -272,6 +274,9 @@ jobs:
           current6 = directory / 'QCDS_Cycling_Runtime_v0.6.0.zip'
           shutil.copyfile(archive, current6)
           assert current6.stat().st_size > 2000
+          current7 = directory / 'QCDS_Cycling_Runtime_v0.7.0.zip'
+          shutil.copyfile(archive, current7)
+          assert current7.stat().st_size > 2000
           assert latest.stat().st_size > 500
           print('Downloadable public runtime ZIP:', latest, latest.stat().st_size)
           PYZIP
