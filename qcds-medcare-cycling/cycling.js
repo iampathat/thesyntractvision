@@ -151,11 +151,14 @@ function newCyclingId(){return typeof globalThis.crypto?.randomUUID==='function'
 
 /* module: osm-client.js */
 
-const OVERPASS_ENDPOINTS=[
- 'https://overpass.private.coffee/api/interpreter',
- 'https://overpass-api.de/api/interpreter'
-];
-const TIMEOUT_MS=10500;
+const OSM_PROVIDERS=Object.freeze([
+ {id:'private',name:'Private.coffee (global)',url:'https://overpass.private.coffee/api/interpreter',region:'global',timeoutMs:10500},
+ {id:'europe',name:'Dresel Europe',url:'https://ovp.dresel.systems/api/interpreter',region:'europe',timeoutMs:10500},
+ {id:'america',name:'Dresel North America',url:'https://ovp.dresel.systems/api-na/interpreter',region:'america',timeoutMs:10500},
+ {id:'fossgis',name:'FOSSGIS (global)',url:'https://overpass-api.de/api/interpreter',region:'global',timeoutMs:10500}
+]);
+const OVERPASS_ENDPOINTS=OSM_PROVIDERS.map(p=>p.url);
+const cooldowns=new Map();
 function categoryRegex(mode){
  if(mode==='road')return '^(cycleway|residential|living_street|tertiary|secondary|unclassified|service|path|track)$';
  if(mode==='gravel')return '^(track|path|cycleway|unclassified|residential)$';
@@ -165,39 +168,87 @@ function buildOverpassQuery(bounds,mode){
  const n=[bounds.getSouth(),bounds.getWest(),bounds.getNorth(),bounds.getEast()];
  if(n.some(v=>!Number.isFinite(v))||n[2]-n[0]>.11||n[3]-n[1]>.16||n[2]<=n[0]||n[3]<=n[1])throw Error('Zooma in lite mer (området får vara högst cirka 10 km brett).');
  const rect=n.map(v=>v.toFixed(5)).join(',');
- const re=categoryRegex(mode);
- return `[out:json][timeout:12];way["highway"~"${re}"]["bicycle"!="no"]["access"!="private"]["access"!="no"](${rect});out body geom 120;`;
+ return `[out:json][timeout:14];way["highway"~"${categoryRegex(mode)}"]["bicycle"!="no"]["access"!="private"]["access"!="no"](${rect});out body geom 120;`;
 }
-async function requestOverpass(query,{onProgress=()=>{},signal}={}){
- if(signal?.aborted)throw Error('Sökningen avbröts.');
- let lastError='Ingen kartserver svarade.';
- for(let i=0;i<OVERPASS_ENDPOINTS.length;i++){
-  if(signal?.aborted)throw Error('Sökningen avbröts.');
-  const url=OVERPASS_ENDPOINTS[i];
-  const host=new URL(url).hostname;
-  onProgress(`Söker riktiga bansegment via ${host} (${i+1}/${OVERPASS_ENDPOINTS.length}) …`);
-  const ctl=new AbortController();
-  const onAbort=()=>ctl.abort();
-  signal?.addEventListener('abort',onAbort,{once:true});
-  const t=setTimeout(()=>ctl.abort(),TIMEOUT_MS);
-  try{
-   const response=await fetch(url,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:'data='+encodeURIComponent(query),signal:ctl.signal});
-   if(response.status===429||response.status===403||response.status===406)throw Error('Kartservern begränsar anrop ('+response.status+'). Prova senare eller importera GPX.');
-   if(!response.ok)throw Error('HTTP '+response.status);
-   const raw=await response.text();
-   if(raw.length>8_000_000)throw Error('För mycket data från servern; zooma in mer.');
-   let data;try{data=JSON.parse(raw)}catch{throw Error('Kartservern skickade inte JSON.');}
-   if(data.remark||!Array.isArray(data.elements))throw Error(data.remark||'Ogiltigt Overpass-svar.');
-   return {data,host};
-  }catch(err){
-   if(signal?.aborted)throw Error('Sökningen avbröts.');
-   const msg=ctl.signal.aborted?'Tidsgräns (10 sekunder)':err?.message||String(err);
-   lastError=host+': '+msg;
-   // Rate-limit must be respected; do not immediately retry at another server.
-   if(/begränsar anrop|429|406|403/.test(msg))throw Error(lastError);
-  }finally{clearTimeout(t);signal?.removeEventListener('abort',onAbort);}
+function providerPlan(bounds,preferred='auto'){
+ const lat=(bounds.getSouth()+bounds.getNorth())/2,lon=(bounds.getWest()+bounds.getEast())/2;
+ const europe=lat>=34&&lat<=72&&lon>=-12&&lon<=45;
+ const america=lat>=5&&lat<=85&&lon>=-169&&lon<=-50;
+ const pool=OSM_PROVIDERS.filter(p=>p.region==='global'||(p.region==='europe'&&europe)||(p.region==='america'&&america));
+ const preferredOrder=europe?['europe','private','fossgis']:america?['america','private','fossgis']:['private','fossgis'];
+ const order=preferred!=='auto'&&preferred!=='osm-api'?[preferred,...preferredOrder]:preferredOrder;
+ return [...new Set(order)].map(id=>pool.find(p=>p.id===id)).filter(Boolean);
+}
+function smallBbox(bounds){
+ const a=[bounds.getSouth(),bounds.getWest(),bounds.getNorth(),bounds.getEast()];
+ return a.every(Number.isFinite)&&a[2]>a[0]&&a[3]>a[1]&&a[2]-a[0]<=.014&&a[3]-a[1]<=.020;
+}
+function parseOSMXml(xml,mode){
+ const doc=new DOMParser().parseFromString(xml,'application/xml');
+ if(doc.querySelector('parsererror'))throw Error('Ogiltigt XML-svar från OSM.');
+ const nodes=new Map();
+ for(const node of doc.getElementsByTagName('node')){
+  const lat=Number(node.getAttribute('lat')),lon=Number(node.getAttribute('lon'));
+  if(Number.isFinite(lat)&&Number.isFinite(lon))nodes.set(node.getAttribute('id'),{lat,lon});
  }
- throw Error('Ingen server kunde leverera banor. '+lastError+' Prova igen senare eller importera GPX.');
+ const filter=new RegExp(categoryRegex(mode));
+ const elements=[];
+ for(const way of doc.getElementsByTagName('way')){
+  const tags=Object.fromEntries([...way.getElementsByTagName('tag')].map(t=>[t.getAttribute('k'),t.getAttribute('v')]));
+  if(!filter.test(tags.highway||'')||tags.bicycle==='no'||['private','no'].includes(tags.access))continue;
+  const geometry=[...way.getElementsByTagName('nd')].map(n=>nodes.get(n.getAttribute('ref'))).filter(Boolean);
+  if(geometry.length>=2)elements.push({type:'way',id:Number(way.getAttribute('id')),geometry,tags});
+  if(elements.length>=180)break;
+ }
+ return {elements};
+}
+function requestAbort(parent,ctl){if(parent?.aborted)ctl.abort();const onAbort=()=>ctl.abort();parent?.addEventListener('abort',onAbort,{once:true});return ()=>parent?.removeEventListener('abort',onAbort);}
+async function boundedFetch(url,opts,timeoutMs,signal,fetcher){
+ const ctl=new AbortController(),off=requestAbort(signal,ctl),timer=setTimeout(()=>ctl.abort(),timeoutMs);
+ try{
+  const res=await fetcher(url,{...opts,signal:ctl.signal});
+  if(!res.ok)throw Error('HTTP '+res.status);
+  const contentLength=Number(res.headers?.get?.('content-length')||0);
+  if(contentLength>7500000)throw Error('Svar för stort; zooma in.');
+  const raw=await res.text();
+  if(raw.length>7500000)throw Error('Svar för stort; zooma in.');
+  return raw;
+ }catch(e){if(signal?.aborted)throw Error('Sökningen avbröts.');if(ctl.signal.aborted)throw Error('Tidsgräns ('+Math.round(timeoutMs/1000)+' sek)');throw e;}
+ finally{clearTimeout(timer);off();}
+}
+async function requestOSMDirect(bounds,mode,{signal,fetcher=fetch,onProgress=()=>{}}={}){
+ if(!smallBbox(bounds))throw Error('OSM direkt kräver ett mycket litet område. Zooma in till cirka 1 km.');
+ const rect=[bounds.getWest(),bounds.getSouth(),bounds.getEast(),bounds.getNorth()].map(n=>n.toFixed(6)).join(',');
+ onProgress('Hämtar ett litet kartutdrag direkt från OpenStreetMap …');
+ const xml=await boundedFetch('https://www.openstreetmap.org/api/0.6/map?bbox='+rect,{method:'GET',headers:{'Accept':'application/xml'}},12500,signal,fetcher);
+ return {data:parseOSMXml(xml,mode),host:'openstreetmap.org (kartutdrag)',provider:'osm-api'};
+}
+async function requestOverpass(query,{bounds,mode='road',provider='auto',onProgress=()=>{},signal,fetcher=fetch}={}){
+ if(signal?.aborted)throw Error('Sökningen avbröts.');
+ if(provider==='osm-api')return requestOSMDirect(bounds,mode,{signal,onProgress,fetcher});
+ const plan=providerPlan(bounds,provider);
+ const errors=[];
+ for(let i=0;i<plan.length;i++){
+  if(signal?.aborted)throw Error('Sökningen avbröts.');
+  const item=plan[i],host=new URL(item.url).hostname;
+  if((cooldowns.get(item.id)||0)>Date.now()) {errors.push(item.name+': tillfälligt pausad');continue;}
+  onProgress(`Söker via ${item.name} (${i+1}/${plan.length}) …`);
+  try{
+   const raw=await boundedFetch(item.url,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:'data='+encodeURIComponent(query)},item.timeoutMs,signal,fetcher);
+   let data;try{data=JSON.parse(raw);}catch{throw Error('Svaret är inte JSON');}
+   if(data.remark||!Array.isArray(data.elements))throw Error(String(data.remark||'Ogiltigt svar').slice(0,140));
+   return {data,host,provider:item.id};
+  }catch(e){
+   if(signal?.aborted)throw Error('Sökningen avbröts.');
+   const msg=String(e?.message||e).slice(0,140);
+   errors.push(item.name+': '+msg);
+   if(/HTTP (429|403|406)/.test(msg))cooldowns.set(item.id,Date.now()+180000);
+   else if(/HTTP (502|503|504)|Tidsgräns/.test(msg))cooldowns.set(item.id,Date.now()+25000);
+   onProgress(`${item.name} misslyckades (${msg}). Prövar nästa källa …`);
+  }
+ }
+ // OSM's main editing API is intentionally opt-in only: no unattended high-volume fallback.
+ throw Error('Ingen OSM-källa svarade. '+errors.join(' · ').slice(0,350)+' · Prova en annan källa, använd egenritad bana eller importera GPX.');
 }
 function osmRows(data,mode){
  const rows=[];
@@ -205,9 +256,7 @@ function osmRows(data,mode){
   if(!Array.isArray(way.geometry)||way.geometry.length<2)continue;
   const t=way.tags||{};
   if(t.bicycle==='no'||t.access==='private'||t.access==='no'||t.motor_vehicle==='yes'&&t.highway==='path')continue;
-  // Paths/footways that are not marked cycle-compatible are not presented as sanctioned bicycle routes.
   if(['footway','pedestrian','steps','motorway','motorway_link'].includes(t.highway))continue;
-  if(mode==='downhill'&&t['mtb:scale:uphill']&&t['mtb:scale:uphill']==='0'){} // technical metadata retained if available
   const pts=way.geometry.map(p=>({lat:Number(p.lat),lon:Number(p.lon),ele:null})).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lon)).slice(0,2000);
   if(pts.length<2)continue;
   const label=t.name||t.ref||t['mtb:scale']&&'MTB-stig nivå '+t['mtb:scale']||'Led '+way.id;
@@ -252,6 +301,8 @@ function initMap(){
   tiles.addTo(S.map);
   S.osmLayer=L.layerGroup().addTo(S.map);
   S.mapLayer=L.layerGroup().addTo(S.map);
+  S.drawLayer=L.layerGroup().addTo(S.map);
+  S.map.on('click',event=>{if(S.drawing)addDrawPoint(event.latlng);});
   if(window.ResizeObserver){const ob=new ResizeObserver(()=>{if(!S.map)return;const r=el.getBoundingClientRect();if(r.width>0&&r.height>0)S.map.invalidateSize({pan:false});});ob.observe(el);}
   S.map.whenReady(()=>setTimeout(()=>S.map?.invalidateSize({pan:false}),100));
  }catch(e){console.error('Map initialization failed',e);$('osmInfo').textContent='Kartan kunde inte startas: '+e.message;}
@@ -290,16 +341,55 @@ function displayOsmOnMap(rows){
  }
 }
 function osmCacheKey(bounds,mode){return mode+':'+[bounds.getSouth(),bounds.getWest(),bounds.getNorth(),bounds.getEast()].map(x=>x.toFixed(2)).join(',');}
+// Manual route drawing is independent of Overpass; geometry stays only in the local browser.
+S.drawing=false;S.drawPoints=[];S.drawLayer=null;
+function updateDrawStatus(message){
+ $('drawStatus').textContent=message;
+ $('drawRoute').disabled=S.drawing;
+ $('undoDraw').disabled=!S.drawing||!S.drawPoints.length;
+ $('finishDraw').disabled=!S.drawing||S.drawPoints.length<2;
+ $('discardDraw').disabled=!S.drawing;
+}
+function drawPreview(){
+ if(!S.drawLayer||!window.L)return;
+ S.drawLayer.clearLayers();
+ if(S.drawPoints.length>=2)L.polyline(S.drawPoints.map(p=>[p.lat,p.lon]),{color:'#40e5d5',weight:5,dashArray:'6 5',bubblingMouseEvents:false}).addTo(S.drawLayer);
+ for(const p of S.drawPoints)if(typeof L.circleMarker==='function')L.circleMarker([p.lat,p.lon],{radius:5,color:'#f9d27f',fillOpacity:1,bubblingMouseEvents:false}).addTo(S.drawLayer);
+}
+function addDrawPoint(latlng){
+ if(!S.drawing||S.drawPoints.length>=3000)return;
+ if(!Number.isFinite(latlng.lat)||!Number.isFinite(latlng.lng))return;
+ S.drawPoints.push({lat:latlng.lat,lon:latlng.lng,ele:null});drawPreview();
+ updateDrawStatus(`${S.drawPoints.length} punkter. Klicka på kartan för fler, eller välj Använd banan.`);
+}
+$('drawRoute').addEventListener('click',()=>{
+ if(!S.map){updateDrawStatus('Kartan saknas; GPX-import fungerar ändå.');return;}
+ S.drawing=true;S.drawPoints=[];drawPreview();updateDrawStatus('Ritläge aktiverat. Klicka minst två punkter på kartan.');
+ $('map').classList.add('drawing-active');
+});
+$('undoDraw').addEventListener('click',()=>{if(!S.drawing)return;S.drawPoints.pop();drawPreview();updateDrawStatus(`${S.drawPoints.length} punkter kvar.`);});
+$('discardDraw').addEventListener('click',()=>{S.drawing=false;S.drawPoints=[];drawPreview();$('map').classList.remove('drawing-active');updateDrawStatus('Ritningen avbröts.');});
+$('finishDraw').addEventListener('click',()=>{
+ if(!S.drawing||S.drawPoints.length<2)return;
+ const points=S.drawPoints.map(p=>({...p})),name=$('drawName').value.trim()||'Egen bana '+new Date().toLocaleDateString('sv-SE');
+ S.drawing=false;S.drawPoints=[];drawPreview();$('map').classList.remove('drawing-active');
+ selectRoute({name,source:'Egenritad i kartan (raka segment)',surface:null,points,mode:S.mode});
+ updateDrawStatus('Banan vald. Tryck Spara bana lokalt för att behålla den i banbiblioteket.');
+});
+
 $('cancelOSM').addEventListener('click',()=>osmAbort?.abort());
 $('loadOSM').addEventListener('click',async()=>{
  if(osmAbort)return;
  if(!S.map){$('osmInfo').textContent='Kartan kan inte laddas. Importera GPX i stället.';return;}
- const bounds=S.map.getBounds();let q;
- try{q=buildOverpassQuery(bounds,S.mode);}catch(err){$('osmInfo').textContent=err.message;return;}
+ const bounds=S.map.getBounds(),provider=$('osmProvider').value;let q;
+ try{
+  if(provider==='osm-api'&&!smallBbox(bounds))throw Error('OSM direkt behöver ett mycket litet område. Zooma in till cirka 1 km.');
+  q=buildOverpassQuery(bounds,S.mode);
+ }catch(err){$('osmInfo').textContent=err.message;return;}
  const cacheKey=osmCacheKey(bounds,S.mode);
  const cached=await localDB.getCache(cacheKey).catch(()=>null);
  // Keep a recently retrieved response while online endpoints are under load.
- if(cached?.rows?.length&&Date.now()-cached.savedAt<7*864e5){
+ if(provider==='auto'&&cached?.rows?.length&&Date.now()-cached.savedAt<7*864e5){
   displayOsmOnMap(cached.rows);renderOsmRows(cached.rows);
   $('osmInfo').textContent=`${cached.rows.length} leder från lokal cache. Klicka på Välj bana eller en gul led. (${new Date(cached.savedAt).toLocaleDateString('sv-SE')})`;
   return;
@@ -308,7 +398,7 @@ $('loadOSM').addEventListener('click',async()=>{
  $('loadOSM').disabled=true;$('cancelOSM').hidden=false;
  $('osmInfo').textContent='Startar sökning …';
  try{
-  const {data,host}=await requestOverpass(q,{signal:osmAbort.signal,onProgress:s=>$('osmInfo').textContent=s});
+  const {data,host}=await requestOverpass(q,{bounds,mode:S.mode,provider,signal:osmAbort.signal,onProgress:s=>$('osmInfo').textContent=s});
   const rows=osmRows(data,S.mode);
   displayOsmOnMap(rows);renderOsmRows(rows);
   $('osmInfo').textContent=rows.length?`Hittade ${rows.length} verkliga väg- och stigsegment via ${host}. Välj i listan eller klicka på kartan. Segment är inte automatiskt en sammanhängande tävlingsbana.`:'Inga leder hittades. Flytta kartan, zooma eller välj en annan disciplin.';

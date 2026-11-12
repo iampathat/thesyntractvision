@@ -29,3 +29,12 @@
 .route-card #cancelOSM{width:100%;margin-top:9px}
 @media(max-width:950px){.library-grid{grid-template-columns:1fr}}
 @media(max-width:620px){.library-list,.route-search-results{max-height:270px}.library-row-actions button{min-height:44px}}
+
+/* v0.4.1: Provider selection and a fully local route editor. */
+.provider-label{display:flex;flex-direction:column;gap:8px;color:#9fc5cf;font-size:11px;font-weight:800;letter-spacing:1px;margin:14px 0 8px}
+.provider-label select{width:100%;min-width:0;max-width:100%;padding:12px;background:#092738;color:#e9f7ff;border:1px solid #416a7a;border-radius:9px;letter-spacing:0;font-size:13px;font-weight:600}
+.draw-card input[type=text]{width:100%;border-radius:9px;border:1px solid #416a7a;padding:12px;background:#091b27;color:#f0faff;margin:2px 0 10px}
+.draw-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:10px}
+.draw-actions button{padding:9px 4px;font-size:12px}
+#map.drawing-active{cursor:crosshair}
+@media(max-width:620px){.draw-actions button{font-size:11px}}

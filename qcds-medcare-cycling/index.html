@@ -6,13 +6,13 @@
 <meta name="description" content="Proprietary cycling intelligence prototype. Theory and creation by Patrik Sundblom.">
 <meta name="author" content="Patrik Sundblom">
 <meta name="copyright" content="© 2026 Patrik Sundblom. All Rights Reserved.">
-<link rel="stylesheet" href="leaflet.css?v=0.4.0">
-<link rel="stylesheet" href="cycling.css?v=0.4.0">
+<link rel="stylesheet" href="leaflet.css?v=0.4.1">
+<link rel="stylesheet" href="cycling.css?v=0.4.1">
 <meta name="robots" content="noindex,nofollow">
 </head>
 <body>
 <div class="app">
-<header class="topbar"><a class="wordmark" href="#" aria-label="QCDS MedCare Cycling Intelligence"><span class="mark">◈</span><span>QCDS <strong>MedCare</strong><small>CYCLING INTELLIGENCE <i>·</i> PUBLIC TECH DEMO</small></span></a><div class="topmeta"><span class="pill" id="dataStatus">● DEMO / TESTVERSION</span><span class="ver">v0.4.0 · 2026-11-12</span><button id="tvMode" class="outline">⛶ TV-läge</button></div></header>
+<header class="topbar"><a class="wordmark" href="#" aria-label="QCDS MedCare Cycling Intelligence"><span class="mark">◈</span><span>QCDS <strong>MedCare</strong><small>CYCLING INTELLIGENCE <i>·</i> PUBLIC TECH DEMO</small></span></a><div class="topmeta"><span class="pill" id="dataStatus">● DEMO / TESTVERSION</span><span class="ver">v0.4.1 · 2026-11-12</span><button id="tvMode" class="outline">⛶ TV-läge</button></div></header>
 <div class="shell">
 <aside class="sidebar">
 <div class="side-title">DIN DISCIPLIN</div>
@@ -35,9 +35,24 @@
 <nav class="tabs" aria-label="Vy"><button class="tab active" data-tab="explore">01 / Ruttstudio</button><button class="tab" data-tab="ride">02 / Live race</button><button class="tab" data-tab="oracles">03 / QCDS orakel</button><button class="tab" data-tab="league">04 / Handicap & liga</button></nav>
 <section id="explore" class="view visible">
 <div class="section-title"><div><span class="kicker">RUTTSTUDIO</span><h2>Hela världen är banan.</h2></div><span class="chip">OpenStreetMap · GPX</span></div>
-<div class="route-grid"><div class="map-wrap"><div id="map"><div class="map-wait">Kartan laddas …</div></div><span class="map-credit">© OpenStreetMap contributors · ODbL</span></div><div class="route-side"><div class="route-card"><span class="kicker">IMPORT / DISCOVERY</span><h3>Hitta din nästa rutt</h3><p>Zooma till ett område och hämta riktiga stigar och cykelvägar. Välj ett markerat segment på kartan, eller importera en GPX-fil.</p><button id="loadOSM" class="primary">◉ Hämta OSM-leder</button><label class="file-btn">↥ Importera GPX<input id="fileGPX" type="file" accept=".gpx,application/gpx+xml,application/xml,text/xml" hidden></label><div class="mini" id="osmInfo" role="status" aria-live="polite">Välj område på kartan. OSM-data hämtas endast på begäran.</div>
+<div class="route-grid"><div class="map-wrap"><div id="map"><div class="map-wait">Kartan laddas …</div></div><span class="map-credit">© OpenStreetMap contributors · ODbL</span></div><div class="route-side"><div class="route-card"><span class="kicker">IMPORT / DISCOVERY</span><h3>Hitta din nästa rutt</h3><p>Zooma till ett område och hämta riktiga stigar och cykelvägar. Välj ett markerat segment på kartan, eller importera en GPX-fil.</p><label class="provider-label" for="osmProvider">KARTDATAKÄLLA<select id="osmProvider" aria-label="Välj OSM-källa">
+<option value="auto">Automatiskt · närmaste först</option>
+<option value="europe">Dresel · Europa (reservväxling)</option>
+<option value="america">Dresel · Nordamerika (reservväxling)</option>
+<option value="private">Private.coffee · hela världen</option>
+<option value="fossgis">FOSSGIS · hela världen</option>
+<option value="osm-api">OpenStreetMap direkt · liten yta</option>
+</select></label>
+<button id="loadOSM" class="primary">◉ Hämta OSM-leder</button><label class="file-btn">↥ Importera GPX<input id="fileGPX" type="file" accept=".gpx,application/gpx+xml,application/xml,text/xml" hidden></label><div class="mini" id="osmInfo" role="status" aria-live="polite">Välj område på kartan. OSM-data hämtas endast på begäran.</div>
 <button id="cancelOSM" type="button" class="secondary" hidden>✕ Avbryt sökning</button>
-<div id="osmResults" class="route-search-results" aria-label="Hittade leder"></div></div><div class="route-card selected"><span class="kicker">VALD BANA</span><h3 id="routeName">Ingen bana vald</h3><div class="route-metrics"><div><strong id="routeKm">—</strong><span>km</span></div><div><strong id="routeClimb">—</strong><span>höjdmeter</span></div><div><strong id="routeIndex">—</strong><span>banindex</span></div></div><div class="profile-wrap"><canvas id="profile" height="90" aria-label="Banans höjdprofil"></canvas><span id="profileHint">Ingen höjdprofil förrän höjddata finns.</span></div><button class="primary" id="startRoute">▶ Kör vald bana</button><button class="secondary" id="saveRoute">☆ Spara bana lokalt</button><button class="secondary" id="clearRoute">Rensa bana</button><div class="mini" id="sourceLabel">Inga ruttdata inlästa.</div></div></div></div>
+<div id="osmResults" class="route-search-results" aria-label="Hittade leder"></div>
+<div class="mini">Flera oberoende OSM-källor. OSM direkt är bara avsett för små manuella uttag. Alla banor lagras lokalt.</div></div>
+<div class="route-card draw-card"><span class="kicker">FUNGERAR UTAN BAN-SERVER</span><h3>Rita egen bana</h3><p>Peka ut punkter på kartan – även när OSM-sökservrar är nere. Punkterna kopplas med raka linjer; automatisk vägdragning kommer senare.</p>
+<input id="drawName" type="text" placeholder="Banans namn" maxlength="100" aria-label="Namn på egen bana">
+<button id="drawRoute" type="button" class="primary">✎ Börja rita på kartan</button>
+<div class="draw-actions"><button id="undoDraw" type="button" class="secondary" disabled>↶ Ångra punkt</button><button id="finishDraw" type="button" class="secondary" disabled>✓ Använd banan</button><button id="discardDraw" type="button" class="secondary" disabled>✕ Avbryt ritning</button></div>
+<div id="drawStatus" class="mini" role="status" aria-live="polite">Välj Rita, klicka minst två gånger på kartan och avsluta med Använd banan.</div>
+</div><div class="route-card selected"><span class="kicker">VALD BANA</span><h3 id="routeName">Ingen bana vald</h3><div class="route-metrics"><div><strong id="routeKm">—</strong><span>km</span></div><div><strong id="routeClimb">—</strong><span>höjdmeter</span></div><div><strong id="routeIndex">—</strong><span>banindex</span></div></div><div class="profile-wrap"><canvas id="profile" height="90" aria-label="Banans höjdprofil"></canvas><span id="profileHint">Ingen höjdprofil förrän höjddata finns.</span></div><button class="primary" id="startRoute">▶ Kör vald bana</button><button class="secondary" id="saveRoute">☆ Spara bana lokalt</button><button class="secondary" id="clearRoute">Rensa bana</button><div class="mini" id="sourceLabel">Inga ruttdata inlästa.</div></div></div></div>
 <div class="library-grid">
 <div class="card"><div class="library-heading"><div><span class="kicker">QCDS LOCAL DATABASE</span><h3>Mitt banbibliotek</h3></div><span id="dbStatus" class="db-badge">Öppnar …</span></div>
 <p>Banor lagras i denna webbläsare på din enhet. Öppna en sparad bana utan att hämta OSM igen.</p>
@@ -59,5 +74,5 @@
 <footer><span>© 2026 Patrik Sundblom. All Rights Reserved. · Theory and creation by Patrik Sundblom · OpenAI/ChatGPT R&D support</span><span>QCDS LIFE SCIENCE / MEDCARE / CYCLING</span></footer>
 </main></div></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script type="module" src="cycling.js?v=0.4.0"></script>
+<script type="module" src="cycling.js?v=0.4.1"></script>
 </body></html>
