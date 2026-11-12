@@ -1,5 +1,5 @@
 /* © 2026 Patrik Sundblom. All Rights Reserved. Proprietary executable distribution. */
-
+/* module: oracles.js */
 
 const MODES={road:'Landsväg',gravel:'Gravel',mtb:'MTB / trail',downhill:'Downhill'};
 function distanceKm(points){let km=0;for(let i=1;i<points.length;i++){const a=points[i-1],b=points[i];const dlat=(b.lat-a.lat)*Math.PI/180,dlon=(b.lon-a.lon)*Math.PI/180;const q=Math.sin(dlat/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dlon/2)**2;km+=6371*2*Math.atan2(Math.sqrt(q),Math.sqrt(Math.max(0,1-q)));}return km;}
@@ -19,7 +19,7 @@ function evaluate(state){const {route,mode,telemetry,ftp,weight}=state;const al=
 {id:'O10',name:'Tävlingsvalidering',desc:'Verifierade användare, godkänd effektmätare, server och officiella resultat saknas.',result:'unknown'},
 ];return checks;}
 
-
+/* module: ftms.js */
 
 const FM=0x1826, BIKE=0x2AD2;
 function parseIndoorBike(value){let p=0;const flags=value.getUint16(p,true);p+=2;const output={power:null,cadence:null,speed:null,hr:null};function has(bytes){return p+bytes<=value.byteLength;}function u8(){if(!has(1))throw Error('Short packet');return value.getUint8(p++);}function u16(){if(!has(2))throw Error('Short packet');let x=value.getUint16(p,true);p+=2;return x;}function i16(){if(!has(2))throw Error('Short packet');let x=value.getInt16(p,true);p+=2;return x;}function u24(){if(!has(3))throw Error('Short packet');let x=value.getUint8(p)+(value.getUint8(p+1)<<8)+(value.getUint8(p+2)<<16);p+=3;return x;}
@@ -28,7 +28,7 @@ class BikeFTMS{constructor(onData,onStatus){this.onData=onData;this.onStatus=onS
 async connect(){if(!navigator.bluetooth)throw Error('Web Bluetooth saknas. Använd Chrome på Mac via HTTPS eller localhost.');this.onStatus('Söker efter cykel …');const device=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:[FM]});this.device=device;device.addEventListener('gattserverdisconnected',this._disconnect);this.onStatus('Ansluter till '+device.name+' …');const server=await device.gatt.connect();const service=await server.getPrimaryService(FM);this.characteristic=await service.getCharacteristic(BIKE);await this.characteristic.startNotifications();this.characteristic.addEventListener('characteristicvaluechanged',this._handler);this.onStatus('FTMS ansluten: '+(device.name||'cykel'));return device.name||'FTMS';}
 disconnect(){if(this.characteristic)this.characteristic.removeEventListener('characteristicvaluechanged',this._handler);if(this.device){this.device.removeEventListener('gattserverdisconnected',this._disconnect);if(this.device.gatt?.connected)this.device.gatt.disconnect();}this.characteristic=null;this.device=null;this.onStatus('Frånkopplad');}}
 
-
+/* module: renderer-capabilities.js */
 
 
 const RENDERERS=Object.freeze({
@@ -44,7 +44,7 @@ function graphicsStatus(){return {
  message:'DLSS 5 kan inte köras direkt från en vanlig webbapp eller på Apple Silicon. Kräver separat RTX-renderare och auktoriserad SDK-integration.'
 };}
 
-
+/* module: core-wasm.js */
 const jsHandicap=handicap, jsCourseIndex=courseIndex;
 
 
@@ -80,8 +80,146 @@ function grade(deltaM,meters){
 }
 function smoothPower(previous,current,alpha=.35){return api?api.qcds_power_filter(previous,current,alpha):previous*(1-alpha)+Math.max(0,current)*alpha;}
 
+/* module: local-db.js */
 
+class QCDSLocalDB {
+  constructor() { this.db = null; this.status = 'Initierar lokalt bibliotek …'; }
+  async open() {
+    if (!globalThis.indexedDB) throw Error('IndexedDB stöds inte i denna webbläsare.');
+    const db = await new Promise((resolve, reject) => {
+      const r = indexedDB.open('QCDS_MedCare_Cycling_v1', 1);
+      r.onupgradeneeded = () => {
+        const db = r.result;
+        if (!db.objectStoreNames.contains('routes')) db.createObjectStore('routes', {keyPath:'id'});
+        if (!db.objectStoreNames.contains('rides')) db.createObjectStore('rides', {keyPath:'id'});
+        if (!db.objectStoreNames.contains('osmCache')) db.createObjectStore('osmCache', {keyPath:'key'});
+      };
+      r.onsuccess = () => resolve(r.result);
+      r.onerror = () => reject(r.error || Error('Databasen kunde inte öppnas'));
+      r.onblocked = () => reject(Error('Databasen används av en annan flik som behöver stängas.'));
+    });
+    db.onversionchange = () => {db.close(); this.db=null;};
+    this.db = db;
+    this.status = 'Lokalt bibliotek aktivt · IndexedDB';
+    return this;
+  }
+  operation(storeName, method, payload) {
+    if (!this.db) return Promise.reject(Error('Lokal databas ej tillgänglig.'));
+    return new Promise((resolve, reject) => {
+      let finished=false, result;
+      const tx=this.db.transaction(storeName, method==='getAll'||method==='get' ? 'readonly':'readwrite');
+      const store=tx.objectStore(storeName);
+      let r;
+      try {r=payload===undefined ? store[method]() : store[method](payload);}catch(e){reject(e);return;}
+      r.onsuccess=()=>{result=r.result;};
+      r.onerror=()=>{if(!finished){finished=true;reject(r.error||Error('Lagringsfel'));}};
+      tx.oncomplete=()=>{if(!finished){finished=true;resolve(result);}};
+      tx.onabort=tx.onerror=()=>{if(!finished){finished=true;reject(tx.error||Error('Databasen avbröts'));}};
+    });
+  }
+  listRoutes(){return this.operation('routes','getAll');}
+  listRides(){return this.operation('rides','getAll');}
+  putRoute(r){return this.operation('routes','put',r);}
+  deleteRoute(id){return this.operation('routes','delete',id);}
+  putRide(r){return this.operation('rides','put',r);}
+  deleteRide(id){return this.operation('rides','delete',id);}
+  getCache(key){return this.operation('osmCache','get',key);}
+  putCache(row){return this.operation('osmCache','put',row);}
+  clearCache(){return this.operation('osmCache','clear');}
+  async exportJSON(){
+    return JSON.stringify({schema:'qcds-cycling-local-v1',exportedAt:new Date().toISOString(),routes:await this.listRoutes(),rides:await this.listRides()},null,2);
+  }
+  async importJSON(json){
+    const obj=JSON.parse(json);
+    if(obj.schema!=='qcds-cycling-local-v1'||!Array.isArray(obj.routes)||!Array.isArray(obj.rides)) throw Error('Ogiltig QCDS-säkerhetskopia.');
+    if(obj.routes.length>1000||obj.rides.length>20000)throw Error('För stor säkerhetskopia.');
+    for(const route of obj.routes){
+      if(typeof route.id!=='string'||route.id.length>150||!Array.isArray(route.points)||route.points.length<2||route.points.length>25000)throw Error('Ogiltiga banor i säkerhetskopian.');
+      const points=route.points.map(p=>({lat:Number(p.lat),lon:Number(p.lon),ele:p.ele===null||p.ele===undefined?null:Number(p.ele)}));
+      if(points.some(p=>!Number.isFinite(p.lat)||!Number.isFinite(p.lon)||Math.abs(p.lat)>90||Math.abs(p.lon)>180||p.ele!==null&&!Number.isFinite(p.ele)))throw Error('Ogiltiga koordinater.');
+      await this.putRoute({...route,name:String(route.name||'Bana').slice(0,160),points});
+    }
+    for(const ride of obj.rides){
+      if(typeof ride.id!=='string'||ride.id.length>150||!Number.isFinite(Number(ride.elapsedSeconds))||!Number.isFinite(Number(ride.km)))continue;
+      await this.putRide({...ride,elapsedSeconds:Math.min(172800,Number(ride.elapsedSeconds)),km:Math.min(2000,Number(ride.km)),name:String(ride.name||'Körning').slice(0,160)});
+    }
+    return {routes:obj.routes.length,rides:obj.rides.length};
+  }
+}
+const localDB=new QCDSLocalDB();
+function newCyclingId(){return typeof globalThis.crypto?.randomUUID==='function'?globalThis.crypto.randomUUID():'qcds-'+Date.now()+'-'+Math.random().toString(36).slice(2);}
+
+/* module: osm-client.js */
+
+const OVERPASS_ENDPOINTS=[
+ 'https://overpass.private.coffee/api/interpreter',
+ 'https://overpass-api.de/api/interpreter'
+];
+const TIMEOUT_MS=10500;
+function categoryRegex(mode){
+ if(mode==='road')return '^(cycleway|residential|living_street|tertiary|secondary|unclassified|service|path|track)$';
+ if(mode==='gravel')return '^(track|path|cycleway|unclassified|residential)$';
+ return '^(path|track|cycleway)$';
+}
+function buildOverpassQuery(bounds,mode){
+ const n=[bounds.getSouth(),bounds.getWest(),bounds.getNorth(),bounds.getEast()];
+ if(n.some(v=>!Number.isFinite(v))||n[2]-n[0]>.11||n[3]-n[1]>.16||n[2]<=n[0]||n[3]<=n[1])throw Error('Zooma in lite mer (området får vara högst cirka 10 km brett).');
+ const rect=n.map(v=>v.toFixed(5)).join(',');
+ const re=categoryRegex(mode);
+ return `[out:json][timeout:12];way["highway"~"${re}"]["bicycle"!="no"]["access"!="private"]["access"!="no"](${rect});out body geom 120;`;
+}
+async function requestOverpass(query,{onProgress=()=>{},signal}={}){
+ if(signal?.aborted)throw Error('Sökningen avbröts.');
+ let lastError='Ingen kartserver svarade.';
+ for(let i=0;i<OVERPASS_ENDPOINTS.length;i++){
+  if(signal?.aborted)throw Error('Sökningen avbröts.');
+  const url=OVERPASS_ENDPOINTS[i];
+  const host=new URL(url).hostname;
+  onProgress(`Söker riktiga bansegment via ${host} (${i+1}/${OVERPASS_ENDPOINTS.length}) …`);
+  const ctl=new AbortController();
+  const onAbort=()=>ctl.abort();
+  signal?.addEventListener('abort',onAbort,{once:true});
+  const t=setTimeout(()=>ctl.abort(),TIMEOUT_MS);
+  try{
+   const response=await fetch(url,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},body:'data='+encodeURIComponent(query),signal:ctl.signal});
+   if(response.status===429||response.status===403||response.status===406)throw Error('Kartservern begränsar anrop ('+response.status+'). Prova senare eller importera GPX.');
+   if(!response.ok)throw Error('HTTP '+response.status);
+   const raw=await response.text();
+   if(raw.length>8_000_000)throw Error('För mycket data från servern; zooma in mer.');
+   let data;try{data=JSON.parse(raw)}catch{throw Error('Kartservern skickade inte JSON.');}
+   if(data.remark||!Array.isArray(data.elements))throw Error(data.remark||'Ogiltigt Overpass-svar.');
+   return {data,host};
+  }catch(err){
+   if(signal?.aborted)throw Error('Sökningen avbröts.');
+   const msg=ctl.signal.aborted?'Tidsgräns (10 sekunder)':err?.message||String(err);
+   lastError=host+': '+msg;
+   // Rate-limit must be respected; do not immediately retry at another server.
+   if(/begränsar anrop|429|406|403/.test(msg))throw Error(lastError);
+  }finally{clearTimeout(t);signal?.removeEventListener('abort',onAbort);}
+ }
+ throw Error('Ingen server kunde leverera banor. '+lastError+' Prova igen senare eller importera GPX.');
+}
+function osmRows(data,mode){
+ const rows=[];
+ for(const way of data.elements||[]){
+  if(!Array.isArray(way.geometry)||way.geometry.length<2)continue;
+  const t=way.tags||{};
+  if(t.bicycle==='no'||t.access==='private'||t.access==='no'||t.motor_vehicle==='yes'&&t.highway==='path')continue;
+  // Paths/footways that are not marked cycle-compatible are not presented as sanctioned bicycle routes.
+  if(['footway','pedestrian','steps','motorway','motorway_link'].includes(t.highway))continue;
+  if(mode==='downhill'&&t['mtb:scale:uphill']&&t['mtb:scale:uphill']==='0'){} // technical metadata retained if available
+  const pts=way.geometry.map(p=>({lat:Number(p.lat),lon:Number(p.lon),ele:null})).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lon)).slice(0,2000);
+  if(pts.length<2)continue;
+  const label=t.name||t.ref||t['mtb:scale']&&'MTB-stig nivå '+t['mtb:scale']||'Led '+way.id;
+  rows.push({name:String(label).slice(0,120),source:`OpenStreetMap way/${way.id}`,osmId:way.id,surface:t.surface||t.tracktype||null,roadClass:t.highway||'path',mode,points:pts});
+ }
+ return rows.slice(0,120);
+}
+
+/* module: app.js */
 const wasmCourseIndex=index;
+
+
 
 
 
@@ -119,20 +257,136 @@ function initMap(){
  }catch(e){console.error('Map initialization failed',e);$('osmInfo').textContent='Kartan kunde inte startas: '+e.message;}
 }
 function cleanRoute(points){return points.filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lon)&&Math.abs(p.lat)<=90&&Math.abs(p.lon)<=180).slice(0,25000);}
-function selectRoute(route){route.points=cleanRoute(route.points);if(route.points.length<2){$('osmInfo').textContent='Den valda rutten saknar tillräckligt med koordinater.';return;}S.route=route;S.km=0;S.elapsed=0;S.running=false;$('raceToggle').textContent='▶ Starta race';updateRoute();if(S.map&&window.L){S.mapLayer.clearLayers();const line=L.polyline(route.points.map(p=>[p.lat,p.lon]),{color:'#00b88c',weight:7,opacity:.95}).addTo(S.mapLayer);S.map.fitBounds(line.getBounds(),{padding:[30,30],maxZoom:15});}renderOracles();}
+function selectRoute(route){route.points=cleanRoute(route.points);if(route.points.length<2){$('osmInfo').textContent='Den valda rutten saknar tillräckligt med koordinater.';return;}S.route=route;S.km=0;S.elapsed=0;S.lastSavedElapsed=-1;S.running=false;$('raceToggle').textContent='▶ Starta race';updateRoute();if(S.map&&window.L){S.mapLayer.clearLayers();const line=L.polyline(route.points.map(p=>[p.lat,p.lon]),{color:'#00b88c',weight:7,opacity:.95}).addTo(S.mapLayer);S.map.fitBounds(line.getBounds(),{padding:[30,30],maxZoom:15});}renderOracles();}
 function updateRoute(){const r=S.route;const a=r?altitude(r.points):null;const dist=r?distanceKm(r.points):null;const idx=r?wasmCourseIndex(r,S.mode):null;$('routeName').textContent=r?.name||'Ingen bana vald';$('routeKm').textContent=dist===null?'—':dist.toFixed(2);$('routeClimb').textContent=a?.valid?a.climb:'—';$('routeIndex').textContent=idx===null?'—':idx;$('rideRouteName').textContent=r?.name||'Illustrerad testbana';$('rideLabel').textContent=r?.source||'ILLUSTRERAD TESTBANA';$('routeIndex').title= a?.valid?'Uppskattat experimentellt index':'Preliminärt index utan höjddata';$('routeClimb').title=a?.valid?'GPX-höjder, ej kvalitetsgranskade':'Höjddata saknas';$('sourceLabel').textContent=r?`Källa: ${r.source} · ${r.points.length} koordinater · ${a?.valid?'höjdprofil ingår':'höjddata saknas'} · tillstånd ej validerat`:'Inga ruttdata inlästa.';$('rideRouteInfo').textContent=r?`Verkligt koordinatspår från ${r.source}. Spelvyn är illustrerad; återgivningen av terräng är ännu inte georefererad 3D.`:'Ladda en OSM-led eller GPX för att cykla efter riktiga spår. Den animerade spelvyn är en illustration, inte en geografisk 3D-rendering.';$('realAltitude').textContent=a?.valid?`${a.climb} m upp / ${a.drop} m ned`:'Ej inläst';updateLeague();drawProfile();}
 function drawProfile(){const c=$('profile'),ctx=c.getContext('2d'),rect=c.getBoundingClientRect();c.width=Math.max(280,Math.round(rect.width*devicePixelRatio));c.height=110*devicePixelRatio;ctx.scale(devicePixelRatio,devicePixelRatio);const w=c.width/devicePixelRatio,h=110;ctx.clearRect(0,0,w,h);const pts=S.route?.points.filter(p=>Number.isFinite(p.ele))||[];if(pts.length<2)return;const vals=pts.map(p=>p.ele),min=Math.min(...vals),max=Math.max(...vals),span=Math.max(10,max-min);ctx.fillStyle='#073844';ctx.strokeStyle='#57dfc8';ctx.lineWidth=2;ctx.beginPath();vals.forEach((v,i)=>{const x=10+(i/(vals.length-1))*(w-20),y=h-12-(v-min)/span*(h-24);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();ctx.lineTo(w-10,h);ctx.lineTo(10,h);ctx.closePath();ctx.globalAlpha=.35;ctx.fill();ctx.globalAlpha=1;$('profileHint').textContent=`Höjdprofil från källfilen · ${Math.round(min)}–${Math.round(max)} möh`;} 
 $('fileGPX').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;if(file.size>15e6){$('osmInfo').textContent='GPX-fil över 15 MB stöds inte i den här versionen.';return;}try{const xml=new DOMParser().parseFromString(await file.text(),'application/xml');if(xml.querySelector('parsererror'))throw Error('Felaktig XML');let nodes=[...xml.getElementsByTagName('trkpt')];if(nodes.length<2)nodes=[...xml.getElementsByTagName('rtept')];let pts=nodes.map(n=>{const ele=n.getElementsByTagName('ele')[0];return {lat:Number(n.getAttribute('lat')),lon:Number(n.getAttribute('lon')),ele:ele?Number(ele.textContent):null};});const title=xml.getElementsByTagName('name')[0]?.textContent?.trim()||file.name;selectRoute({name:title,source:'Importerad GPX',surface:null,points:pts});$('osmInfo').textContent=`Importerat ${file.name}. Använd den riktiga rutten i Live race.`;}catch(err){$('osmInfo').textContent=`GPX-fel: ${err.message}`;}e.target.value='';});
-$('loadOSM').addEventListener('click',async()=>{if(!S.map){$('osmInfo').textContent='Karta kan inte laddas.';return;}const b=S.map.getBounds();if(b.getNorth()-b.getSouth()>.13||b.getEast()-b.getWest()>.19){$('osmInfo').textContent='Zooma in mer först (max ca 10 km brett).';return;}const rect=[b.getSouth(),b.getWest(),b.getNorth(),b.getEast()].map(n=>n.toFixed(6)).join(',');const filter=S.mode==='road'?'cycleway|path|track':S.mode==='gravel'?'track|cycleway': 'path|track|cycleway';const q=`[out:json][timeout:20];way["highway"~"^(${filter})$"](${rect});out geom 180;`;$('osmInfo').textContent='Hämtar riktiga OSM-segment från Overpass …';$('loadOSM').disabled=true;try{const response=await fetch('https://overpass.kumi.systems/api/interpreter',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'data='+encodeURIComponent(q)});if(!response.ok)throw Error('Överbelastad kartserver ('+response.status+')');const data=await response.json();S.osmLayer.clearLayers();let count=0;for(const way of data.elements||[]){if(!way.geometry||way.geometry.length<2)continue;const pts=cleanRoute(way.geometry.map(x=>({lat:x.lat,lon:x.lon,ele:null})));if(pts.length<2)continue;const name=(way.tags?.name||way.tags?.ref||`OSM-led ${way.id}`);const surface=way.tags?.surface||way.tags?.tracktype||null;const access=way.tags?.bicycle==='no'||way.tags?.access==='private'||way.tags?.access==='no';const obj={name,source:`OpenStreetMap way/${way.id}`,surface,points:pts};const l=L.polyline(pts.map(p=>[p.lat,p.lon]),{color:access?'#e67e7e':'#f5c967',weight:4,opacity:.88});l.bindTooltip(`${name}${access?' · tillträde kan vara förbjudet':''} · ${surface||'okänd yta'}`);if(!access){l.on('click',()=>selectRoute(obj));l.addTo(S.osmLayer);count++;}else{l.addTo(S.osmLayer);} }$('osmInfo').textContent=`Hittade ${count} valbara segment. Klicka på en gul led. Kontrollera alltid faktisk tillåtelse för cykling.`;}catch(err){$('osmInfo').textContent=`OSM hämtning misslyckades (${err.message}). Försök igen eller importera GPX.`;}finally{$('loadOSM').disabled=false;}});
+// OSM discovery is bounded and cancellable. IndexedDB caches the latest response for the chosen viewport.
+let osmAbort=null,resultsForCurrentView=[];
+function renderOsmRows(rows){
+ resultsForCurrentView=rows;
+ const area=$('osmResults');area.replaceChildren();
+ if(!rows.length){area.textContent='Inga valbara segment i området. Zooma eller byt disciplin.';return;}
+ const list=document.createDocumentFragment();
+ for(const obj of rows.slice(0,60)){
+  const row=document.createElement('div');row.className='library-row';
+  const title=document.createElement('strong');title.textContent=obj.name;
+  const sub=document.createElement('small');sub.textContent=[obj.roadClass,obj.surface||'okänt underlag',distanceKm(obj.points).toFixed(2)+' km'].join(' · ');
+  const action=document.createElement('button');action.type='button';action.textContent='Välj bana';
+  action.addEventListener('click',()=>selectRoute({...obj,points:obj.points.map(p=>({...p}))}));
+  const actions=document.createElement('div');actions.className='library-row-actions';actions.append(action);
+  row.append(title,sub,actions);list.append(row);
+ }
+ area.append(list);
+}
+function displayOsmOnMap(rows){
+ if(!S.map||!window.L)return;
+ S.osmLayer.clearLayers();
+ for(const obj of rows.slice(0,120)){
+  const poly=L.polyline(obj.points.map(p=>[p.lat,p.lon]),{color:'#ffd16c',weight:4,opacity:.85});
+  poly.bindTooltip(obj.name+' · '+(obj.surface||'okänt underlag'));
+  poly.on('click',()=>selectRoute({...obj,points:obj.points.map(p=>({...p}))}));
+  poly.addTo(S.osmLayer);
+ }
+}
+function osmCacheKey(bounds,mode){return mode+':'+[bounds.getSouth(),bounds.getWest(),bounds.getNorth(),bounds.getEast()].map(x=>x.toFixed(2)).join(',');}
+$('cancelOSM').addEventListener('click',()=>osmAbort?.abort());
+$('loadOSM').addEventListener('click',async()=>{
+ if(osmAbort)return;
+ if(!S.map){$('osmInfo').textContent='Kartan kan inte laddas. Importera GPX i stället.';return;}
+ const bounds=S.map.getBounds();let q;
+ try{q=buildOverpassQuery(bounds,S.mode);}catch(err){$('osmInfo').textContent=err.message;return;}
+ const cacheKey=osmCacheKey(bounds,S.mode);
+ const cached=await localDB.getCache(cacheKey).catch(()=>null);
+ // Keep a recently retrieved response while online endpoints are under load.
+ if(cached?.rows?.length&&Date.now()-cached.savedAt<7*864e5){
+  displayOsmOnMap(cached.rows);renderOsmRows(cached.rows);
+  $('osmInfo').textContent=`${cached.rows.length} leder från lokal cache. Klicka på Välj bana eller en gul led. (${new Date(cached.savedAt).toLocaleDateString('sv-SE')})`;
+  return;
+ }
+ osmAbort=new AbortController();
+ $('loadOSM').disabled=true;$('cancelOSM').hidden=false;
+ $('osmInfo').textContent='Startar sökning …';
+ try{
+  const {data,host}=await requestOverpass(q,{signal:osmAbort.signal,onProgress:s=>$('osmInfo').textContent=s});
+  const rows=osmRows(data,S.mode);
+  displayOsmOnMap(rows);renderOsmRows(rows);
+  $('osmInfo').textContent=rows.length?`Hittade ${rows.length} verkliga väg- och stigsegment via ${host}. Välj i listan eller klicka på kartan. Segment är inte automatiskt en sammanhängande tävlingsbana.`:'Inga leder hittades. Flytta kartan, zooma eller välj en annan disciplin.';
+  if(rows.length&&localDB.db)await localDB.putCache({key:cacheKey,rows,savedAt:Date.now()}).catch(()=>{});
+ }catch(err){
+  if(cached?.rows?.length){displayOsmOnMap(cached.rows);renderOsmRows(cached.rows);$('osmInfo').textContent='Kartservern svarade inte – visar tidigare hämtade leder från lokalt minne.';}
+  else $('osmInfo').textContent=err.message||'Kunde inte hämta OSM. Prova igen eller importera GPX.';
+ }finally{osmAbort=null;$('loadOSM').disabled=false;$('cancelOSM').hidden=true;}
+});
+
+// QCDS Local Database – all stored records remain on this browser/device.
+function libraryNotice(message){$('libraryMessage').textContent=message;}
+async function refreshLibrary(){
+ if(!localDB.db)return;
+ const [routes,rides]=await Promise.all([localDB.listRoutes(),localDB.listRides()]);
+ const saved=$('savedRoutes');saved.replaceChildren();
+ routes.sort((a,b)=>String(b.savedAt||'').localeCompare(String(a.savedAt||'')));
+ if(!routes.length)saved.textContent='Inga sparade banor ännu.';
+ for(const route of routes){
+  const div=document.createElement('article');div.className='library-row';div.setAttribute('role','listitem');
+  const title=document.createElement('strong');title.textContent=route.name;
+  const caption=document.createElement('small');caption.textContent=[MODES[route.mode]||route.mode||'Bana',distanceKm(route.points).toFixed(2)+' km',route.source].join(' · ');
+  const controls=document.createElement('div');controls.className='library-row-actions';
+  const load=document.createElement('button');load.textContent='Öppna';load.addEventListener('click',()=>{selectRoute({...route,points:route.points.map(p=>({...p}))});libraryNotice('Banan öppnad: '+route.name);});
+  const del=document.createElement('button');del.textContent='Radera';del.className='remove';del.addEventListener('click',async()=>{if(!confirm('Radera den sparade banan '+route.name+'? Körhistoriken sparas.'))return;await localDB.deleteRoute(route.id);if(S.route?.id===route.id)delete S.route.id;await refreshLibrary();libraryNotice('Banan raderad.');});
+  controls.append(load,del);div.append(title,caption,controls);saved.append(div);
+ }
+ const history=$('savedRides');history.replaceChildren();
+ rides.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
+ if(!rides.length)history.textContent='Ingen körhistorik sparad.';
+ for(const ride of rides.slice(0,70)){
+  const div=document.createElement('article');div.className='library-row';div.setAttribute('role','listitem');
+  const title=document.createElement('strong');title.textContent=ride.name;
+  const meta=document.createElement('small');meta.textContent=`${new Date(ride.date).toLocaleString('sv-SE')} · ${(ride.km||0).toFixed(2)} km · ${Math.round((ride.elapsedSeconds||0)/60)} min · ${ride.source==='demo'?'DEMO / simulerat':'FTMS / sensor'} · ${ride.finished?'Målgång':'Delpass'}`;
+  const buttons=document.createElement('div');buttons.className='library-row-actions';const del=document.createElement('button');del.textContent='Radera';del.className='remove';del.addEventListener('click',async()=>{if(!confirm('Radera detta körpass?'))return;await localDB.deleteRide(ride.id);await refreshLibrary();});buttons.append(del);
+  div.append(title,meta,buttons);history.append(div);
+ }
+ $('dbStatus').textContent=`${routes.length} banor · ${rides.length} pass`;
+}
+$('saveRoute').addEventListener('click',async()=>{
+ if(!S.route){libraryNotice('Välj en bana eller importera GPX först.');return;}
+ if(!localDB.db){libraryNotice('Lokal databas saknas: '+localDB.status);return;}
+ try{
+  const existing=!!S.route.id;const id=S.route.id||newCyclingId();
+  const name=prompt('Namn på sparad bana:',S.route.name||'Min bana');
+  if(name===null)return;
+  S.route.name=name.trim().slice(0,160)||'Min bana';S.route.id=id;
+  await localDB.putRoute({...S.route,mode:S.mode,savedAt:new Date().toISOString(),points:cleanRoute(S.route.points)});
+  updateRoute();await refreshLibrary();libraryNotice((existing?'Banan uppdaterad: ':'Banan sparad: ')+S.route.name);
+ }catch(e){libraryNotice('Kunde inte spara: '+e.message);}
+});
+async function recordRide(finished=false){
+ if(!localDB.db){$('rideNotice').textContent='Passet kunde inte sparas: lokal databas saknas.';return;}
+ if(S.elapsed<3){$('rideNotice').textContent='Kör minst tre sekunder innan du sparar.';return;}
+ if(S.lastSavedElapsed===S.elapsed){$('rideNotice').textContent='Passet är redan sparat.';return;}
+ const row={id:newCyclingId(),date:new Date().toISOString(),name:S.route?.name||'Illustrerad testbana',routeId:S.route?.id||null,mode:S.mode,elapsedSeconds:S.elapsed,km:S.km,source:S.source,finished,ftp:Number($('ftp').value),weight:Number($('weight').value)};
+ try{await localDB.putRide(row);S.lastSavedElapsed=S.elapsed;await refreshLibrary();$('rideNotice').textContent=(S.source==='demo'?'DEMO: ':'')+'Passet sparat lokalt. Det syns under Ruttstudio → Mina körpass.';}
+ catch(e){$('rideNotice').textContent='Kunde inte spara passet: '+e.message;}
+}
+$('saveRide').addEventListener('click',()=>recordRide(!S.running&&S.route&&S.km>=distanceKm(S.route.points)));
+$('exportLocal').addEventListener('click',async()=>{try{
+ const txt=await localDB.exportJSON();const url=URL.createObjectURL(new Blob([txt],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='QCDS_Cycling_backup_'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),5000);libraryNotice('Säkerhetskopian är nedladdad som JSON.');
+ }catch(e){libraryNotice('Exportfel: '+e.message);}});
+$('importLocal').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;
+ try{if(f.size>15e6)throw Error('Filen är för stor.');const text=await f.text();const tally=await localDB.importJSON(text);await refreshLibrary();libraryNotice(`Återställde ${tally.routes} banor och ${tally.rides} pass.`);}
+ catch(err){libraryNotice('Importfel: '+err.message);}finally{e.target.value='';}});
+async function initLocalLibrary(){try{await localDB.open();await refreshLibrary();libraryNotice('Lokal lagring är aktiv. Banor och pass finns kvar i denna webbläsare även efter omstart.');}catch(e){localDB.status=e.message;$('dbStatus').textContent='Lagring saknas';libraryNotice('Kunde inte öppna IndexedDB: '+e.message);}}
+initLocalLibrary();
+
 $('startRoute').addEventListener('click',()=>{if(!S.route){$('osmInfo').textContent='Välj först en OSM-led eller GPX.';return;}changeTab('ride');});
 $('clearRoute').addEventListener('click',()=>{S.route=null;if(S.mapLayer)S.mapLayer.clearLayers();S.km=0;S.elapsed=0;S.running=false;updateRoute();renderOracles();});
 function updateLeague(){const idx=wasmCourseIndex(S.route,S.mode);$('leagueIndex').textContent=idx??'—';$('leagueRoute').textContent=S.route?.name||'Ingen vald';}
 function renderOracles(){const v=getInputs();const checks=evaluate({route:S.route,mode:S.mode,telemetry:S.telemetry,ftp:v.ftp,weight:v.weight});const ok=checks.filter(c=>c.result==='ok').length;$('oracleCount').textContent=`${ok} / ${checks.length}`;$('oracleList').innerHTML='';for(const c of checks){const div=document.createElement('article');div.className=`oracle ${c.result}`;const badge=document.createElement('span');badge.className='status';badge.textContent=c.result==='ok'?'UPPFYLLT':c.result==='unknown'?'OKÄNT':'EJ UPPFYLLT';const h=document.createElement('h3');h.textContent=`${c.id} · ${c.name}`;const p=document.createElement('p');p.textContent=c.desc;div.append(badge,h,p);$('oracleList').append(div);}}
 function updateTelemetry(){const watts=S.source==='none'?null:S.liveWatts;$('watts').textContent=watts===null?'—':Math.round(watts);$('cadence').textContent=S.telemetry.cadence===null?'—':Math.round(S.telemetry.cadence);$('distance').textContent=S.km.toFixed(2);const hill=gradeAtProgress();const kmh=watts===null?0:Math.max(0,6+0.094*watts-(Number.isFinite(hill)?hill*.7:0));$('speed').textContent=watts===null?'—':kmh.toFixed(1);$('position').textContent=watts===null?'—':Math.max(1,Math.min(5,3-Math.round((watts-140)/65)))+'/5';}
 function gradeAtProgress(){const pts=S.route?.points;if(!pts||pts.length<2)return null;let i=Math.floor((S.km/Math.max(.1,distanceKm(pts)))*(pts.length-2));i=Math.max(0,Math.min(pts.length-2,i));const a=pts[i],b=pts[i+1];if(!Number.isFinite(a.ele)||!Number.isFinite(b.ele))return null;const d=distanceKm([a,b])*1000;return wasmGrade(b.ele-a.ele,d);}
-function raceTick(){if(!S.running)return;S.elapsed++;if(S.source==='demo'){S.liveWatts=Math.round(125+37*Math.sin(S.elapsed/14)+13*Math.sin(S.elapsed/3));S.telemetry.power=S.liveWatts;S.telemetry.cadence=Math.round(79+8*Math.sin(S.elapsed/8));}const hill=gradeAtProgress();const kmh=Math.max(0,6+.094*S.liveWatts-(Number.isFinite(hill)?hill*.7:0));S.km+=kmh/3600;const max=S.route?distanceKm(S.route.points):12.4;if(S.km>=max&&max>0){S.km=max;S.running=false;$('raceToggle').textContent='✓ Målgång';}updateTelemetry();$('raceTime').textContent=`${String(Math.floor(S.elapsed/60)).padStart(2,'0')}:${String(S.elapsed%60).padStart(2,'0')}`;updateLeaderboard();}
-$('raceToggle').addEventListener('click',()=>{if(S.source==='none'){$('rideNotice').textContent='Anslut cykeln eller välj Testa demokälla i sidopanelen först.';return;}if(S.running){S.running=false;$('raceToggle').textContent='▶ Fortsätt';}else{const max=S.route?distanceKm(S.route.points):12.4;if(S.km>=max){S.km=0;S.elapsed=0;}S.running=true;$('raceToggle').textContent='Ⅱ Pausa race';$('rideNotice').textContent=S.source==='ftms'?'Träningswatt läses live. Simulerad bana och motståndare.':'DEMOLÄGE: watt, motståndare och resultat är simulerade.';}});
-$('raceReset').addEventListener('click',()=>{S.running=false;S.km=0;S.elapsed=0;$('raceToggle').textContent='▶ Starta race';$('raceTime').textContent='00:00';updateTelemetry();updateLeaderboard();});
+function raceTick(){if(!S.running)return;S.elapsed++;if(S.source==='demo'){S.liveWatts=Math.round(125+37*Math.sin(S.elapsed/14)+13*Math.sin(S.elapsed/3));S.telemetry.power=S.liveWatts;S.telemetry.cadence=Math.round(79+8*Math.sin(S.elapsed/8));}const hill=gradeAtProgress();const kmh=Math.max(0,6+.094*S.liveWatts-(Number.isFinite(hill)?hill*.7:0));S.km+=kmh/3600;const max=S.route?distanceKm(S.route.points):12.4;if(S.km>=max&&max>0){S.km=max;S.running=false;$('raceToggle').textContent='✓ Målgång';void recordRide(true);}updateTelemetry();$('raceTime').textContent=`${String(Math.floor(S.elapsed/60)).padStart(2,'0')}:${String(S.elapsed%60).padStart(2,'0')}`;updateLeaderboard();}
+$('raceToggle').addEventListener('click',()=>{if(S.source==='none'){$('rideNotice').textContent='Anslut cykeln eller välj Testa demokälla i sidopanelen först.';return;}if(S.running){S.running=false;$('raceToggle').textContent='▶ Fortsätt';}else{const max=S.route?distanceKm(S.route.points):12.4;if(S.km>=max){S.km=0;S.elapsed=0;S.lastSavedElapsed=-1;}S.running=true;$('raceToggle').textContent='Ⅱ Pausa race';$('rideNotice').textContent=S.source==='ftms'?'Träningswatt läses live. Simulerad bana och motståndare.':'DEMOLÄGE: watt, motståndare och resultat är simulerade.';}});
+$('raceReset').addEventListener('click',()=>{S.running=false;S.km=0;S.elapsed=0;S.lastSavedElapsed=-1;$('raceToggle').textContent='▶ Starta race';$('raceTime').textContent='00:00';updateTelemetry();updateLeaderboard();});
 function updateLeaderboard(){const bots=[{name:'NOVA · bot',pace:16.2},{name:'RIDGE · bot',pace:20.1},{name:'SOLAR · bot',pace:18.4},{name:'VISTA · bot',pace:14.7}];const people=[{name:'DU · cykel',d:S.km,me:true},...bots.map(b=>({name:b.name,d:b.pace*S.elapsed/3600,me:false}))].sort((a,b)=>b.d-a.d);$('leaderboard').innerHTML='';people.forEach((p,i)=>{const el=document.createElement('div');el.className='racerow'+(p.me?' me':'');const j=document.createElement('span');j.textContent=String(i+1).padStart(2,'0');const n=document.createElement('span');n.textContent=p.name;const d=document.createElement('span');d.textContent=p.d.toFixed(2)+' km';el.append(j,n,d);$('leaderboard').append(el);});$('position').textContent=(people.findIndex(x=>x.me)+1)+'/5';}
 const canvas=$('raceCanvas');let cw=0,ch=0,phase=0;
 function resizeRace(){const r=canvas.getBoundingClientRect();if(r.width<=0)return;const dpr=Math.min(2,devicePixelRatio||1);cw=r.width;ch=r.height;canvas.width=Math.floor(cw*dpr);canvas.height=Math.floor(ch*dpr);canvas.getContext('2d').setTransform(dpr,0,0,dpr,0,0);}
