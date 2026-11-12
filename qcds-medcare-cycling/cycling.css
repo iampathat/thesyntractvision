@@ -38,3 +38,21 @@
 .draw-actions button{padding:9px 4px;font-size:12px}
 #map.drawing-active{cursor:crosshair}
 @media(max-width:620px){.draw-actions button{font-size:11px}}
+
+/* v0.5.0 GLOBAL EXPLORER + CONNECTED ROUTES + REAL ELEVATION */
+.world-explorer{margin:0 0 19px;border:1px solid #296071;border-radius:16px;padding:20px;background:linear-gradient(135deg,#112e3d,#0c202d 64%,#183747);overflow:hidden}
+.world-head{display:flex;justify-content:space-between;align-items:center;gap:14px}.world-head h3{font-size:clamp(19px,2.1vw,28px);margin:6px 0 7px}.world-head p{font-size:12px;line-height:1.55;color:#a7c5ce;margin:0;max-width:720px}
+.world-globe{font-size:60px;filter:drop-shadow(0 2px 19px #45d5b455)}.world-places{display:flex;gap:8px;overflow-x:auto;padding:18px 0 12px;scrollbar-color:#416c7e transparent}
+.world-place{flex:0 0 auto;border-radius:999px;border:1px solid #44788a;background:#123946;color:#d9f4f5;padding:9px 13px;font-size:12px;font-weight:700;min-height:39px}.world-place:active,.world-place:hover{border-color:#45deca;background:#13515a}
+.coordinate-jump{display:flex;gap:10px;align-items:center;flex-wrap:wrap;color:#96b9c9;font-size:11px}.coordinate-jump input{flex:1;min-width:155px;max-width:260px;border-radius:8px;border:1px solid #41687a;padding:10px;background:#081e2b;color:#effff9}.coordinate-jump button{padding:9px 15px}
+.route-length-label{display:grid;gap:7px;margin:13px 0 16px;font-size:11px;letter-spacing:1px;color:#a8c8d1;font-weight:800}
+.route-length-label select{border:1px solid #41687a;border-radius:8px;background:#0a2837;color:#eeffff;padding:12px;letter-spacing:0;font-weight:650}
+.route-suggestions{display:grid;gap:10px;margin:13px 0}.route-summary{font-size:12px;color:#76e6d7;font-weight:800;margin:6px 0}.route-suggestion{border:1px solid #36778a;padding:14px;background:#0c303c;border-radius:12px;display:grid;gap:6px;grid-template-columns:1fr auto;align-items:center}
+.route-suggestion .route-number{color:#70e5ce;font-size:10px;font-weight:900;letter-spacing:1.5px;grid-column:1/-1}.route-suggestion strong{font-size:16px;grid-column:1}.route-suggestion small{color:#9fbfca;font-size:11px;grid-column:1}
+.route-suggestion button{grid-column:2;grid-row:2/4;border:0;border-radius:8px;padding:12px;background:#60e9d2;color:#06272b;font-weight:850;white-space:nowrap}
+.empty-routes{background:#0d2634;border:1px dashed #436171;border-radius:9px;padding:12px;color:#aac9d2;font-size:12px;line-height:1.6;margin:7px 0}
+.segments-details{margin-top:13px;padding:9px 0;border-top:1px solid #294757;color:#a8c2ce;font-size:12px}.segments-details summary{cursor:pointer;padding:9px 5px;font-weight:700}.route-search-results{max-height:185px}
+.segment-row{padding:7px 9px;border-bottom:1px solid #294758;display:flex;justify-content:space-between;gap:10px;font-size:11px}.segment-row strong{font-size:11px;color:#d4e7ee}.segment-row small{color:#9dbbcb}
+.route-kind{color:#6de3ce;font-size:10px;font-weight:800;margin:-2px 0 10px;letter-spacing:.5px}
+.elevation-button{width:100%;margin:10px 0 0}.elevation-button:disabled{opacity:.55;cursor:not-allowed}
+@media(max-width:620px){.world-explorer{padding:13px}.world-globe{font-size:42px}.world-places{margin-right:-6px}.coordinate-jump label{flex-basis:100%}.route-suggestion{grid-template-columns:1fr}.route-suggestion button{grid-column:1;grid-row:auto}.segment-row{flex-direction:column;gap:3px}}
