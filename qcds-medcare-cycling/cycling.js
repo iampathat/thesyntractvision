@@ -37,14 +37,125 @@ function evaluate(state){const {route,mode,telemetry,ftp,weight}=state;const al=
 {id:'O10',name:'Tävlingsvalidering',desc:'Verifierade användare, godkänd effektmätare, server och officiella resultat saknas.',result:'unknown'},
 ];return checks;}
 
+/* module: resistance-engine.js */
+
+const RESISTANCE_LIMITS=Object.freeze({min:1,max:24,offsetMin:-5,offsetMax:5,initial:9});
+const clampLoad=(n,lo,hi)=>Math.max(lo,Math.min(hi,n));
+function interpolateHeight(points,distanceKm,km){
+ if(!Array.isArray(points)||points.length<2||!Number.isFinite(km))return null;
+ let sum=0;
+ for(let i=1;i<points.length;i++){
+  const a=points[i-1],b=points[i],d=distanceKm([a,b]);
+  if(d<=0)continue;
+  if(sum+d>=km){if(!Number.isFinite(a.ele)||!Number.isFinite(b.ele))return null;return a.ele+(b.ele-a.ele)*clampLoad((km-sum)/d,0,1);}
+  sum+=d;
+ }
+ const end=points.at(-1);return Number.isFinite(end?.ele)?end.ele:null;
+}
+function gradientOnRoute(route,km,distanceKm){
+ const points=route?.points;if(!points||points.length<2)return null;
+ const total=distanceKm(points);if(total<.02)return null;
+ const half=Math.min(.065,total/3),p=clampLoad(km,0,total);
+ let from=clampLoad(p-half,0,total),to=clampLoad(p+half,0,total);
+ if(to-from<.025){from=clampLoad(p-.025,0,total);to=clampLoad(p+.025,0,total);}
+ if(to-from<.015)return null;
+ const h1=interpolateHeight(points,distanceKm,from),h2=interpolateHeight(points,distanceKm,to);
+ if(!Number.isFinite(h1)||!Number.isFinite(h2))return null;
+ return Math.round(clampLoad((h2-h1)/((to-from)*1000)*100,-16,22)*10)/10;
+}
+function resistanceTarget({grade=0,offset=0,mode='road',baseline=9}={}){
+ if(!Number.isFinite(grade))return null;
+ const bias=clampLoad(Math.round(Number(offset)||0),-5,5);
+ // An intentionally conservative training *approximation*, not a physical grade/torque calibration.
+ // Every mode uses the same 1–24 step scale; actual physical response requires calibration.
+ const gain=mode==='mtb'?0.9:mode==='gravel'?1.05:mode==='downhill'?0.9:1.2;
+ return clampLoad(Math.round(baseline+clampLoad(grade,-12,18)*gain+bias),1,24);
+}
+function rampResistance(last,target,maxStep=1){
+ if(!Number.isFinite(target))return null;
+ if(!Number.isFinite(last))return clampLoad(Math.round(Math.min(target,RESISTANCE_LIMITS.initial)),1,24);
+ return clampLoad(Math.round(last)+clampLoad(Math.round(target)-Math.round(last),-maxStep,maxStep),1,24);
+}
+const RESISTANCE_PROTOCOL=Object.freeze({
+ service:0x1826,indoorBikeData:0x2AD2,feature:0x2ACC,controlPoint:0x2AD9,
+ requestControl:0x00,setTargetResistance:0x04,response:0x80,
+});
+function encodeResistance(level){
+ if(!Number.isInteger(level)||level<1||level>24)throw RangeError('Endast nivåerna 1–24 är tillåtna.');
+ const tenths=level*10;return Uint8Array.of(0x04,tenths&255,(tenths>>8)&255);
+}
+function parseControlResponse(value){
+ const v=value instanceof DataView?value:new DataView(value.buffer||value,value.byteOffset||0,value.byteLength);
+ if(v.byteLength<3||v.getUint8(0)!==0x80)return null;
+ return {opcode:v.getUint8(1),code:v.getUint8(2),ok:v.getUint8(2)===1};
+}
+const CONTROL_ERROR=Object.freeze({2:'Kommandot stöds inte av cykeln',3:'Ogiltig motståndsnivå',4:'Cykeln kunde inte utföra kommandot',5:'Cykeln vägrade fjärrstyrning'});
+
 /* module: ftms.js */
 
-const FM=0x1826, BIKE=0x2AD2;
+
+const FM=RESISTANCE_PROTOCOL.service, BIKE=RESISTANCE_PROTOCOL.indoorBikeData;
 function parseIndoorBike(value){let p=0;const flags=value.getUint16(p,true);p+=2;const output={power:null,cadence:null,speed:null,hr:null};function has(bytes){return p+bytes<=value.byteLength;}function u8(){if(!has(1))throw Error('Short packet');return value.getUint8(p++);}function u16(){if(!has(2))throw Error('Short packet');let x=value.getUint16(p,true);p+=2;return x;}function i16(){if(!has(2))throw Error('Short packet');let x=value.getInt16(p,true);p+=2;return x;}function u24(){if(!has(3))throw Error('Short packet');let x=value.getUint8(p)+(value.getUint8(p+1)<<8)+(value.getUint8(p+2)<<16);p+=3;return x;}
 try{if(!(flags&1))output.speed=u16()/100;if(flags&2)u16();if(flags&4)output.cadence=u16()/2;if(flags&8)u16();if(flags&16)u24();if(flags&32)i16();if(flags&64)output.power=i16();if(flags&128)i16();if(flags&256)u16();if(flags&512)u16();if(flags&1024)u8();if(flags&2048)output.hr=u8();}catch(e){throw Error('Ogiltigt/trunkerat FTMS-paket');}return output;}
-class BikeFTMS{constructor(onData,onStatus){this.onData=onData;this.onStatus=onStatus;this.device=null;this.characteristic=null;this._handler=e=>{try{this.onData(parseIndoorBike(e.target.value));}catch(err){this.onStatus(err.message);}};this._disconnect=()=>this.onStatus('Bluetooth frånkopplad');}
-async connect(){if(!navigator.bluetooth)throw Error('Web Bluetooth saknas. Använd Chrome på Mac via HTTPS eller localhost.');this.onStatus('Söker efter cykel …');const device=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:[FM]});this.device=device;device.addEventListener('gattserverdisconnected',this._disconnect);this.onStatus('Ansluter till '+device.name+' …');const server=await device.gatt.connect();const service=await server.getPrimaryService(FM);this.characteristic=await service.getCharacteristic(BIKE);await this.characteristic.startNotifications();this.characteristic.addEventListener('characteristicvaluechanged',this._handler);this.onStatus('FTMS ansluten: '+(device.name||'cykel'));return device.name||'FTMS';}
-disconnect(){if(this.characteristic)this.characteristic.removeEventListener('characteristicvaluechanged',this._handler);if(this.device){this.device.removeEventListener('gattserverdisconnected',this._disconnect);if(this.device.gatt?.connected)this.device.gatt.disconnect();}this.characteristic=null;this.device=null;this.onStatus('Frånkopplad');}}
+class BikeFTMS{
+ constructor(onData,onStatus){this.onData=onData;this.onStatus=onStatus;this.device=null;this.characteristic=null;this.controlPoint=null;this.controlled=false;this.pending=null;this.inFlight=false;this.deviceName='';this._generation=0;
+ this._handler=e=>{try{this.onData(parseIndoorBike(e.target.value));}catch(err){this.onStatus(err.message);}};
+ this._controlHandler=e=>{const response=parseControlResponse(e.target.value);if(!response||!this.pending||this.pending.opcode!==response.opcode)return;const p=this.pending;this.pending=null;clearTimeout(p.timer);if(response.ok)p.resolve(response);else p.reject(Error(CONTROL_ERROR[response.code]||'FTMS-styrning nekad (kod '+response.code+')'));};
+ this._disconnect=()=>{this._invalidate('Bluetooth frånkopplad. Automatiken avstängd.');};
+ }
+ get connected(){return !!this.device?.gatt?.connected&&!!this.characteristic;}
+ get canControl(){return this.connected&&!!this.controlPoint;}
+ _invalidate(message){this._generation++;this.controlled=false;this.inFlight=false;if(this.pending){const p=this.pending;this.pending=null;clearTimeout(p.timer);p.reject(Error(message));}this.onStatus(message);}
+ async connect(){
+  if(!navigator.bluetooth)throw Error('Web Bluetooth saknas. Använd Chrome på Mac via HTTPS.');
+  this.disconnect();this.onStatus('Söker efter cykel …');
+  try{
+   const device=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:[FM]});this.device=device;this.deviceName=device.name||'FTMS-cykel';
+   device.addEventListener('gattserverdisconnected',this._disconnect);
+   this.onStatus('Ansluter till '+this.deviceName+' …');const server=await device.gatt.connect();const service=await server.getPrimaryService(FM);
+   this.characteristic=await service.getCharacteristic(BIKE);await this.characteristic.startNotifications();this.characteristic.addEventListener('characteristicvaluechanged',this._handler);
+   try{const cp=await service.getCharacteristic(RESISTANCE_PROTOCOL.controlPoint);await cp.startNotifications();cp.addEventListener('characteristicvaluechanged',this._controlHandler);this.controlPoint=cp;}
+   catch(e){this.controlPoint=null;this.onStatus('FTMS-data fungerar. Cykeln exponerar inte skrivbar motståndsstyrning: '+(e.message||'okänt fel'));}
+   this.onStatus('FTMS ansluten: '+this.deviceName+(this.controlPoint?' · motståndskanal hittad':' · endast mätdata'));
+   return this.deviceName;
+  }catch(e){this.disconnect();throw e;}
+ }
+ async _request(opcode,buffer,timeout=3000){
+  if(!this.canControl)throw Error('Ingen skrivbar FTMS-motståndskanal.');
+  if(this.inFlight)throw Error('FTMS är upptagen med ett annat kommando.');
+  this.inFlight=true;
+  try{
+   const answer=new Promise((resolve,reject)=>{const timer=setTimeout(()=>{this.pending=null;reject(Error('Inget svar från cykeln (FTMS timeout)'));},timeout);this.pending={opcode,resolve,reject,timer};});
+   // Attach catch immediately to avoid an unhandled rejection when the indication arrives before write resolves.
+   const observed=answer.then(v=>v,e=>{throw e;});observed.catch(()=>{});
+   try{await (this.controlPoint.writeValueWithResponse?this.controlPoint.writeValueWithResponse(buffer):this.controlPoint.writeValue(buffer));}
+   catch(e){if(this.pending){clearTimeout(this.pending.timer);this.pending=null;}answer.catch(()=>{});throw e;}
+   return await observed;
+  }finally{this.inFlight=false;}
+ }
+ async activateControl(){
+  if(!this.canControl)throw Error('Cykeln erbjuder ingen FTMS-styrkanal.');
+  const generation=this._generation;
+  await this._request(RESISTANCE_PROTOCOL.requestControl,Uint8Array.of(0x00));
+  if(generation!==this._generation)throw Error('Automatiken hann stängas av.');
+  this.controlled=true;return true;
+ }
+ async setResistance(level){
+  if(!this.controlled)throw Error('Begär först kontroll över cykeln.');
+  const generation=this._generation;
+  const ack=await this._request(RESISTANCE_PROTOCOL.setTargetResistance,encodeResistance(level));
+  if(generation!==this._generation)throw Error('Automatiken har stängts av.');
+  return ack;
+ }
+ disableControl(){this._generation++;this.controlled=false;}
+ disconnect(){
+  this.disableControl();if(this.pending){const p=this.pending;this.pending=null;clearTimeout(p.timer);p.reject(Error('FTMS frånkopplad'));}
+  if(this.characteristic)try{this.characteristic.removeEventListener('characteristicvaluechanged',this._handler);}catch{}
+  if(this.controlPoint)try{this.controlPoint.removeEventListener('characteristicvaluechanged',this._controlHandler);}catch{}
+  if(this.device){try{this.device.removeEventListener('gattserverdisconnected',this._disconnect);}catch{}if(this.device.gatt?.connected)try{this.device.gatt.disconnect();}catch{}}
+  this.characteristic=null;this.controlPoint=null;this.device=null;this.deviceName='';this.onStatus('Frånkopplad');
+ }
+}
 
 /* module: renderer-capabilities.js */
 
@@ -794,13 +905,76 @@ const wasmCourseIndex=index;
 
 
 
+
 const $=id=>document.getElementById(id);
 const experience=new SyntractRaceState();
 let latestExperience=experience.lastSnapshot,lastExperienceMs=performance.now(),lastAudioAt=0,spokenEvent=0;
 let soundMode='off',visualMode='tactical';
 const S={mode:'road',tab:'explore',route:null,map:null,mapLayer:null,osmLayer:null,osmWays:[],source:'none',telemetry:{source:'none',power:null,cadence:null,speed:null,hr:null},running:false,elapsed:0,km:0,liveWatts:0,tick:0,graphWays:[],generatedRoutes:[],mixRoutes:[],localRoutes:[],discoveryTab:'near',heightAbort:null,plannerStart:null,pickingStart:false,startMarker:null};
+// SYNTRACT: one authentic course grade, one independently adjustable physical trainer load.
+// Not part of CHP, calculated race watts, route grade, or validated race rankings.
+const resState={enabled:false,offset:0,lastSent:null,target:null,lastSentAt:0,busy:false,error:'',sendCount:0};
+function updateResistanceUi(){
+ const grade=gradeAtProgress(),available=Number.isFinite(grade),real=S.source==='ftms'&&radio.connected;
+ const previewGrade=available?grade:(S.source==='demo'?2*Math.sin(S.elapsed/23):null);
+ const goal=Number.isFinite(previewGrade)?resistanceTarget({grade:previewGrade,offset:resState.offset,mode:S.mode}):null;
+ resState.target=goal;
+ $('autoResistance').checked=resState.enabled;
+ $('loadBias').value=String(resState.offset);
+ $('loadBiasReadout').textContent=(resState.offset>0?'+':'')+resState.offset+' nivåer';
+ $('loadBiasHint').textContent=resState.offset===0?'Originalkänsla':resState.offset<0?'Lättare än banans profil':'Tyngre än banans profil';
+ $('resGrade').textContent=available?grade.toFixed(1)+' %':S.source==='demo'?'SIMULERAD': '—';
+ $('resTarget').textContent=goal!==null?String(goal)+'/24':'—';
+ $('resApplied').textContent=real&&resState.lastSent!==null?String(resState.lastSent)+'/24': '—';
+ $('resistanceAvailability').textContent=real&&radio.canControl?'FTMS styrbar':real?'FTMS styrning saknas':S.source==='demo'?'Demo · simulering':'Ej ansluten';
+ $('resistanceIndicator').dataset.state=resState.enabled?(real?'on':S.source==='demo'?'demo':'waiting'):'off';
+ $('resistanceIndicator').textContent=resState.enabled?(real?'● AUTOMATISK':S.source==='demo'?'● DEMO':'◌ VÄNTAR'):'○ MANUELLT';
+ let message='Av: appen skickar inga motståndskommandon. Ändra manuellt på cykeln.';
+ if(resState.enabled){
+  if(resState.error)message='Automatiken stoppad: '+resState.error;
+  else if(S.source==='demo')message='Demoläge: nivån visas men inga Bluetooth-kommandon skickas.';
+  else if(!real)message='Anslut en FTMS-cykel för att styra motståndet.';
+  else if(!radio.canControl)message='Cykeln erbjuder ingen åtkomlig FTMS Control Point (0x2AD9).';
+  else if(!available)message='Höjdprofil saknas: ingen fysisk lutningsstyrning skickas förrän riktiga höjdvärden finns.';
+  else if(!S.running)message='Aktiverad. Starta racet för att skicka backanpassning till cykeln.';
+  else message='Backanpassning aktiv · begärd nivå '+goal+'/24. Ändringar begränsas till högst 1 nivå var 4:e sekund.';
+ }
+ if(!resState.enabled&&resState.error)message=resState.error;
+ $('resistanceStatus').textContent=message;
+}
+function disableAutoResistance(note=''){
+ resState.enabled=false;radio.disableControl();resState.lastSent=null;resState.lastSentAt=0;resState.error=note;
+ updateResistanceUi();
+}
+async function syncAutoResistance(force=false){
+ if(!resState.enabled||resState.busy||S.source!=='ftms'||!S.running)return;
+ if(!radio.connected||!radio.canControl){disableAutoResistance('Bluetooth FTMS-styrning saknas. Ingen last ändrades.');return;}
+ const grade=gradeAtProgress();if(!Number.isFinite(grade)){updateResistanceUi();return;}
+ const goal=resistanceTarget({grade,offset:resState.offset,mode:S.mode});
+ const now=Date.now();if(!force&&now-resState.lastSentAt<4000)return;
+ if(resState.lastSent===goal)return;
+ resState.busy=true;
+ try{
+  if(!radio.controlled)await radio.activateControl();
+  if(!resState.enabled)return;
+  const level=rampResistance(resState.lastSent,goal,1);
+  await radio.setResistance(level);
+  if(!resState.enabled)return;
+  resState.lastSent=level;resState.lastSentAt=Date.now();resState.error='';resState.sendCount++;
+ }catch(e){disableAutoResistance('FTMS nekade styrningen: '+(e?.message||e)+'. Använd cykelns manuella reglage.');}
+ finally{resState.busy=false;updateResistanceUi();}
+}
+$('autoResistance').addEventListener('change',e=>{
+ if(!e.target.checked){disableAutoResistance();return;}
+ resState.enabled=true;resState.error='';resState.lastSent=null;resState.lastSentAt=0;
+ updateResistanceUi();void syncAutoResistance(true);
+});
+$('loadBias').addEventListener('input',e=>{resState.offset=Math.min(RESISTANCE_LIMITS.offsetMax,Math.max(RESISTANCE_LIMITS.offsetMin,Number(e.target.value)||0));updateResistanceUi();void syncAutoResistance();});
+$('resLight').addEventListener('click',()=>{resState.offset=Math.max(-5,resState.offset-1);updateResistanceUi();void syncAutoResistance();});
+$('resHeavy').addEventListener('click',()=>{resState.offset=Math.min(5,resState.offset+1);updateResistanceUi();void syncAutoResistance();});
+$('resNeutral').addEventListener('click',()=>{resState.offset=0;updateResistanceUi();void syncAutoResistance();});
 const modeWords={road:'ROAD RACE',gravel:'GRAVEL CHALLENGE',mtb:'MTB TRAIL',downhill:'DOWNHILL EXPERIENCE'};
-const radio=new BikeFTMS(data=>{S.source='ftms';S.telemetry={...S.telemetry,...data,source:'ftms'};S.liveWatts=Number.isFinite(data.power)?Math.max(0,data.power):S.liveWatts; updateDevice('FTMS · livemätning');updateTelemetry();renderOracles();},status=>{updateDevice(status);});
+const radio=new BikeFTMS(data=>{S.source='ftms';S.telemetry={...S.telemetry,...data,source:'ftms'};S.liveWatts=Number.isFinite(data.power)?Math.max(0,data.power):S.liveWatts; updateDevice('FTMS · livemätning');updateTelemetry();renderOracles();},status=>{if(status.startsWith('Bluetooth frånkopplad')){S.source='none';disableAutoResistance('Cykeln kopplades från: automatiken är av.');}updateDevice(status);updateResistanceUi();});
 function updateDevice(msg){$('deviceText').textContent=msg;$('feedStatus').textContent=S.source==='ftms'?'CYKEL ANSLUTEN':S.source==='demo'?'SIMULERAD DATA':'EJ ANSLUTEN';$('dataStatus').textContent=S.source==='ftms'?'● FTMS LIVE':S.source==='demo'?'● DEMO · SIMULERAT':'● DEMO / LOKALT';$('btLight').classList.toggle('online',S.source==='ftms');document.querySelector('.led').classList.toggle('online',S.source==='ftms');}
 function changeTab(tab){S.tab=tab;document.querySelectorAll('.tab').forEach(n=>n.classList.toggle('active',n.dataset.tab===tab));document.querySelectorAll('.view').forEach(n=>n.classList.toggle('visible',n.id===tab));if(tab==='explore'&&S.map)setTimeout(()=>S.map.invalidateSize(),70);if(tab==='ride')resizeRace();if(tab==='oracles')renderOracles();if(tab==='league')updateLeague();}
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>changeTab(b.dataset.tab)));
@@ -848,9 +1022,9 @@ $('startGPS').addEventListener('click',()=>{
 function getInputs(){const ftp=Number($('ftp').value),weight=Number($('weight').value);return {ftp,weight,valid:Number.isFinite(ftp)&&ftp>=40&&ftp<=700&&Number.isFinite(weight)&&weight>=35&&weight<=250};}
 function updateHandicap(){const d=getInputs();const h=d.valid?chp(d.ftp,d.weight,S.mode):null;$('hcp').textContent=h===null?'—':h.toFixed(1);$('hcpLarge').textContent=h===null?'—':h.toFixed(1);$('hcpExplainer').textContent=d.valid?`${(d.ftp/d.weight).toFixed(2)} W/kg · uppskattad grundklass.`:'Ange FTP 40–700 W och vikt 35–250 kg.';renderOracles();}
 $('ftp').addEventListener('input',updateHandicap);$('weight').addEventListener('input',updateHandicap);
-$('connect').addEventListener('click',async()=>{try{await radio.connect();S.source='ftms';$('disconnect').hidden=false;$('demoBtn').textContent='▶ Testa demokälla';updateDevice('Cykel ansluten. Väntar på watt…');}catch(err){updateDevice('Anslutning misslyckades: '+(err.message||String(err)));}});
-$('demoBtn').addEventListener('click',()=>{radio.disconnect();S.source='demo';S.telemetry={source:'demo',power:115,cadence:78,speed:null,hr:null};S.liveWatts=115;updateDevice('SIMULERAD DATA · inte cykelmätning');$('disconnect').hidden=false;renderOracles();updateTelemetry();});
-$('disconnect').addEventListener('click',()=>{radio.disconnect();S.source='none';S.liveWatts=0;S.telemetry={source:'none',power:null,cadence:null,speed:null,hr:null};$('disconnect').hidden=true;updateDevice('Frånkopplad');renderOracles();updateTelemetry();});
+$('connect').addEventListener('click',async()=>{try{await radio.connect();S.source='ftms';disableAutoResistance();$('disconnect').hidden=false;$('demoBtn').textContent='▶ Testa demokälla';updateDevice('Cykel ansluten. Väntar på watt…');}catch(err){updateDevice('Anslutning misslyckades: '+(err.message||String(err)));}});
+$('demoBtn').addEventListener('click',()=>{radio.disconnect();disableAutoResistance();S.source='demo';S.telemetry={source:'demo',power:115,cadence:78,speed:null,hr:null};S.liveWatts=115;updateDevice('SIMULERAD DATA · inte cykelmätning');$('disconnect').hidden=false;renderOracles();updateTelemetry();});
+$('disconnect').addEventListener('click',()=>{radio.disconnect();disableAutoResistance();S.source='none';S.liveWatts=0;S.telemetry={source:'none',power:null,cadence:null,speed:null,hr:null};$('disconnect').hidden=true;updateDevice('Frånkopplad');renderOracles();updateTelemetry();});
 $('tvMode').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch(e){alert('TV-läge kräver att webbläsaren tillåter helskärm.');}});
 function initMap(){
  const el=$('map');
@@ -878,11 +1052,11 @@ function selectRoute(route){route.points=cleanRoute(route.points);if(route.point
  $('loadElevation').disabled=route.points.every(p=>Number.isFinite(p.ele));
  $('elevationStatus').textContent=route.points.every(p=>Number.isFinite(p.ele))?'Höjdvärden finns för rutten.': 'Höjdprofil saknas. Tryck Hämta verklig höjdprofil – DEM-data från extern tjänst.';
  $('routeKind').textContent=route.generated?`PRELIMINÄR OSM-TUR ${route.generatedType==='out-and-back'?'TUR & RETUR':route.generatedType==='loop'?'RUNDSLINGA':'EN VÄG'} · kontrollera tillträde`:route.source?.startsWith('Importerad GPX')?'IMPORTERAD GPX-RUTT':route.source?.includes('Egenritad')?'EGENRITAD · RAKA LINJER':'VERKLIG GPS-GEOMETRI';
- S.km=0;S.elapsed=0;S.lastSavedElapsed=-1;S.running=false;experience.reset();latestExperience=experience.snapshot();updateLeaderboard();updateExperienceUi();$('raceToggle').textContent='▶ Starta race';updateRoute();if(S.map&&window.L){S.mapLayer.clearLayers();const line=L.polyline(route.points.map(p=>[p.lat,p.lon]),{color:'#00b88c',weight:7,opacity:.95}).addTo(S.mapLayer);S.map.fitBounds(line.getBounds(),{padding:[30,30],maxZoom:15});}renderOracles();
+ S.km=0;S.elapsed=0;S.lastSavedElapsed=-1;S.running=false;radio.disableControl();resState.lastSent=null;experience.reset();latestExperience=experience.snapshot();updateLeaderboard();updateExperienceUi();$('raceToggle').textContent='▶ Starta race';updateRoute();if(S.map&&window.L){S.mapLayer.clearLayers();const line=L.polyline(route.points.map(p=>[p.lat,p.lon]),{color:'#00b88c',weight:7,opacity:.95}).addTo(S.mapLayer);S.map.fitBounds(line.getBounds(),{padding:[30,30],maxZoom:15});}renderOracles();
  // Auto-fetch only when a user selects a route, not on every map movement.
  if($('autoElevation').checked&&!route.points.every(p=>Number.isFinite(p.ele)))setTimeout(()=>{if(S.route===route&&!S.heightAbort)$('loadElevation').click();},120);
 }
-function updateRoute(){const r=S.route;const a=r?altitude(r.points):null;const dist=r?distanceKm(r.points):null;const idx=r?wasmCourseIndex(r,S.mode):null;$('routeName').textContent=r?.name||'Ingen bana vald';$('routeKm').textContent=dist===null?'—':dist.toFixed(2);$('routeClimb').textContent=a?.valid?a.climb:'—';$('routeIndex').textContent=idx===null?'—':idx;$('rideRouteName').textContent=r?.name||'Illustrerad testbana';$('rideLabel').textContent=r?.source||'ILLUSTRERAD TESTBANA';$('routeIndex').title= a?.valid?'Uppskattat experimentellt index':'Preliminärt index utan höjddata';$('routeClimb').title=a?.valid?(r?.elevationSource||'Källfilens höjddata, ej kvalitetsgranskade'):'Höjddata saknas';$('sourceLabel').textContent=r?`Källa: ${r.source} · ${r.points.length} koordinater · ${a?.valid?'höjdprofil: '+(r.elevationSource||'GPX'):'höjddata saknas'} · tillstånd ej validerat`:'Inga ruttdata inlästa.';$('rideRouteInfo').textContent=r?`Verkligt koordinatspår från ${r.source}. Spelvyn är illustrerad; återgivningen av terräng är ännu inte georefererad 3D.`:'Ladda en OSM-led eller GPX för att cykla efter riktiga spår. Den animerade spelvyn är en illustration, inte en geografisk 3D-rendering.';$('realAltitude').textContent=a?.valid?`${a.climb} m upp / ${a.drop} m ned`:'Ej inläst';updateLeague();drawProfile();}
+function updateRoute(){const r=S.route;const a=r?altitude(r.points):null;const dist=r?distanceKm(r.points):null;const idx=r?wasmCourseIndex(r,S.mode):null;$('routeName').textContent=r?.name||'Ingen bana vald';$('routeKm').textContent=dist===null?'—':dist.toFixed(2);$('routeClimb').textContent=a?.valid?a.climb:'—';$('routeIndex').textContent=idx===null?'—':idx;$('rideRouteName').textContent=r?.name||'Illustrerad testbana';$('rideLabel').textContent=r?.source||'ILLUSTRERAD TESTBANA';$('routeIndex').title= a?.valid?'Uppskattat experimentellt index':'Preliminärt index utan höjddata';$('routeClimb').title=a?.valid?(r?.elevationSource||'Källfilens höjddata, ej kvalitetsgranskade'):'Höjddata saknas';$('sourceLabel').textContent=r?`Källa: ${r.source} · ${r.points.length} koordinater · ${a?.valid?'höjdprofil: '+(r.elevationSource||'GPX'):'höjddata saknas'} · tillstånd ej validerat`:'Inga ruttdata inlästa.';$('rideRouteInfo').textContent=r?`Verkligt koordinatspår från ${r.source}. Spelvyn är illustrerad; återgivningen av terräng är ännu inte georefererad 3D.`:'Ladda en OSM-led eller GPX för att cykla efter riktiga spår. Den animerade spelvyn är en illustration, inte en geografisk 3D-rendering.';$('realAltitude').textContent=a?.valid?`${a.climb} m upp / ${a.drop} m ned`:'Ej inläst';updateLeague();drawProfile();updateResistanceUi();}
 function drawProfile(){
  const c=$('profile'),ctx=c.getContext('2d'),rect=c.getBoundingClientRect();
  const dpr=Math.min(2,window.devicePixelRatio||1),w=Math.max(280,Math.round(rect.width||300)),h=124;
@@ -998,7 +1172,7 @@ function renderRouteSuggestions(){
  const area=$('routeSuggestions');area.replaceChildren();
  if(!S.graphWays.length){S.generatedRoutes=[];S.mixRoutes=[];const p=document.createElement('p');p.className='empty-routes';p.textContent='Ingen nätverksdata laddad. Hämta OSM-vägar eller importera GPX.';area.append(p);renderDiscoveryCatalog();return;}
  const target=Number($('routeLength').value)||10;
-const routeType=$('routeType').value;
+ const routeType=$('routeType').value;
  const generated=generateConnectedRoutes(S.graphWays,{mode:S.mode,bounds:S.map?.getBounds(),targetKm:target,count:4,routeType,startCoord:S.plannerStart});
  S.generatedRoutes=generated.routes;
  // Mix modes/distances only where a real connected OSM network exists.
@@ -1149,7 +1323,7 @@ async function recordRide(finished=false){
  if(!localDB.db){$('rideNotice').textContent='Passet kunde inte sparas: lokal databas saknas.';return;}
  if(S.elapsed<3){$('rideNotice').textContent='Kör minst tre sekunder innan du sparar.';return;}
  if(S.lastSavedElapsed===S.elapsed){$('rideNotice').textContent='Passet är redan sparat.';return;}
- const row={id:newCyclingId(),date:new Date().toISOString(),name:S.route?.name||'Illustrerad testbana',routeId:S.route?.id||null,mode:S.mode,elapsedSeconds:S.elapsed,km:S.km,source:S.source,finished,ftp:Number($('ftp').value),weight:Number($('weight').value)};
+ const row={id:newCyclingId(),date:new Date().toISOString(),name:S.route?.name||'Illustrerad testbana',routeId:S.route?.id||null,mode:S.mode,elapsedSeconds:S.elapsed,km:S.km,source:S.source,finished,ftp:Number($('ftp').value),weight:Number($('weight').value),resistanceAuto:resState.enabled,resistanceOffset:resState.offset,resistanceLastCommanded:resState.lastSent};
  try{await localDB.putRide(row);S.lastSavedElapsed=S.elapsed;await refreshLibrary();$('rideNotice').textContent=(S.source==='demo'?'DEMO: ':'')+'Passet sparat lokalt. Det syns under Ruttstudio → Mina körpass.';}
  catch(e){$('rideNotice').textContent='Kunde inte spara passet: '+e.message;}
 }
@@ -1176,7 +1350,7 @@ function updateTelemetry(){
  $('speed').textContent=watts===null?'—':currentSpeedKmh().toFixed(1);
  $('position').textContent=`${latestExperience.position}/${latestExperience.total}`;
 }
-function gradeAtProgress(){const pts=S.route?.points;if(!pts||pts.length<2)return null;let i=Math.floor((S.km/Math.max(.1,distanceKm(pts)))*(pts.length-2));i=Math.max(0,Math.min(pts.length-2,i));const a=pts[i],b=pts[i+1];if(!Number.isFinite(a.ele)||!Number.isFinite(b.ele))return null;const d=distanceKm([a,b])*1000;return wasmGrade(b.ele-a.ele,d);}
+function gradeAtProgress(){return gradientOnRoute(S.route,S.km,distanceKm);}
 function renderRaceRadar(st){
  const root=$('raceRadar');root.replaceChildren();
  const marker=document.createElement('span');marker.className='radar-self';marker.title='DU';marker.textContent='▲';root.append(marker);
@@ -1229,11 +1403,11 @@ function raceTick(){
  }
  const kmh=currentSpeedKmh();S.km+=kmh/3600;
  const max=S.route?distanceKm(S.route.points):12.4;
- if(S.km>=max&&max>0){S.km=max;S.running=false;$('raceToggle').textContent='✓ Målgång';void recordRide(true);}
+ if(S.km>=max&&max>0){S.km=max;S.running=false;$('raceToggle').textContent='✓ Målgång';void recordRide(true);radio.disableControl();resState.lastSent=null;}
  latestExperience=experience.step({elapsed:S.elapsed,km:S.km,watts:S.liveWatts,speedKmh:kmh,grade:gradeAtProgress(),running:S.running});
  lastExperienceMs=performance.now();
  updateTelemetry();$('raceTime').textContent=`${String(Math.floor(S.elapsed/60)).padStart(2,'0')}:${String(S.elapsed%60).padStart(2,'0')}`;
- updateLeaderboard();updateExperienceUi({announce:true});
+ updateLeaderboard();updateExperienceUi({announce:true});updateResistanceUi();void syncAutoResistance();
 }
 $('raceToggle').addEventListener('click',()=>{
  if(S.source==='none'){$('rideNotice').textContent='Anslut cykeln eller tryck Kör demo direkt.';return;}
@@ -1241,17 +1415,17 @@ $('raceToggle').addEventListener('click',()=>{
  else {const max=S.route?distanceKm(S.route.points):12.4;if(S.km>=max){S.km=0;S.elapsed=0;S.lastSavedElapsed=-1;experience.reset();latestExperience=experience.snapshot();}
  S.running=true;$('raceToggle').textContent='Ⅱ Pausa race';$('rideNotice').textContent=S.source==='ftms'?'Verkliga watt från cykeln · motståndare simulerade.':'DEMOLÄGE · effekter, medspelare och resultat simulerade.';
  }
- updateExperienceUi();
+ updateExperienceUi();updateResistanceUi();if(S.running)void syncAutoResistance();
 });
 $('raceDemo').addEventListener('click',()=>{
- radio.disconnect();S.source='demo';S.telemetry={source:'demo',power:153,cadence:79,speed:null,hr:null};S.liveWatts=153;
+ radio.disconnect();disableAutoResistance();S.source='demo';S.telemetry={source:'demo',power:153,cadence:79,speed:null,hr:null};S.liveWatts=153;
  updateDevice('SIMULERAD DATA · inte cykelmätning');$('disconnect').hidden=false;
  if(!S.running)$('raceToggle').click();updateTelemetry();updateLeaderboard();
 });
 $('raceReset').addEventListener('click',()=>{
  S.running=false;S.km=0;S.elapsed=0;S.lastSavedElapsed=-1;experience.reset();latestExperience=experience.snapshot();
  $('raceToggle').textContent='▶ Starta race';$('raceTime').textContent='00:00';window.speechSynthesis?.cancel();
- updateTelemetry();updateLeaderboard();updateExperienceUi();
+ radio.disableControl();resState.lastSent=null;updateTelemetry();updateLeaderboard();updateExperienceUi();updateResistanceUi();
 });
 function updateLeaderboard(){
  const people=latestExperience.all;
@@ -1277,4 +1451,4 @@ function raceDraw(timestamp){requestAnimationFrame(raceDraw);if(!cw||!ch||S.tab!
 }
 initEngine().then(()=>{if($('wasmStatus'))$('wasmStatus').textContent=engineStatus();updateHandicap();updateRoute();});
 if($('graphicsStatus'))$('graphicsStatus').textContent='Canvas 2D aktiv · WebGPU förberett · DLSS 5 kräver RTX-native/SDK';
-setInterval(raceTick,1000);setInterval(()=>{if(S.source==='demo'&&!S.running){S.liveWatts=115;updateTelemetry();}},5000);updateDevice('Väntar på Bluetooth FTMS');updateHandicap();updateRoute();updateTelemetry();updateLeaderboard();initMap();requestAnimationFrame(raceDraw);resizeRace();updateExperienceUi();
+setInterval(raceTick,1000);setInterval(()=>{if(S.source==='demo'&&!S.running){S.liveWatts=115;updateTelemetry();}},5000);updateDevice('Väntar på Bluetooth FTMS');updateHandicap();updateRoute();updateTelemetry();updateLeaderboard();initMap();requestAnimationFrame(raceDraw);resizeRace();updateExperienceUi();updateResistanceUi();
