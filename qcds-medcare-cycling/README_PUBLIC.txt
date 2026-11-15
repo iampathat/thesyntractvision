@@ -1,5 +1,5 @@
-QCDS MedCare Cycling Intelligence v1.0.0 · public browser runtime
+QCDS MedCare Cycling Intelligence v1.1.0 · public browser runtime
 © 2026 Patrik Sundblom. All Rights Reserved. Proprietary.
-Native browser WebGL2 renderer: animated 3D road, ground surface, sky/clouds, tree geometry and cycling group. Classical explicit scene-oracle candidate synthesis across five dimensions, with source-aware GPS/OSM road preview and available elevation. Not claimed to be complete quantum QCDS implementation or photorealistic actual route reconstruction. Canvas 2.5D fallback provided.
+Offline synthetic Demo World: fully self-contained Canvas map, 3 rideable tracks, altitude profiles, solo peloton and physical resistance simulation; no OSM/DEM/network needed for demo. Native browser WebGL2 renderer: animated 3D road, ground surface, sky/clouds, tree geometry and cycling group. Classical explicit scene-oracle candidate synthesis across five dimensions, with source-aware GPS/OSM road preview and available elevation. Not claimed to be complete quantum QCDS implementation or photorealistic actual route reconstruction. Canvas 2.5D fallback provided.
 FTMS opt-in physical control and local-only IndexedDB preserved. No shared user races, no cross-device sync. Original C source and developer modules live in PRIVATE ZIP, not this distribution. Browser-bundled JavaScript and WASM intrinsically readable.
 No Lantmäteriet imagery included, no aerial photogrammetry, no NVIDIA DLSS 5. Third party Leaflet BSD-2-Clause and OSM ODbL attribution remain.

@@ -903,12 +903,13 @@ const PALETTES=Object.freeze({
  urban:{ground:[.28,.42,.31],grass:[.23,.35,.22],pine:[.13,.26,.19],leaf:[.28,.45,.27],road:[.20,.24,.28],shoulder:[.42,.46,.42],fog:[.67,.80,.87],sun:[1,.90,.75],terrainAmp:1.0},
 });
 function finite(n){return typeof n==='number'&&Number.isFinite(n);}
-const BIOMES=Object.keys(SCENE_LABELS),SURFACES=['asphalt','gravel','trail'],VEGETATION=['sparse','medium','dense'],ATMOSPHERE=['clear','hazy'],LIGHT=['day','late'];
-const QCDS_SCENE_DOMAIN=Object.freeze({biome:BIOMES,surface:SURFACES,vegetation:VEGETATION,atmosphere:ATMOSPHERE,lighting:LIGHT});
+const BIOMES=Object.keys(SCENE_LABELS),SURFACES=['asphalt','gravel','trail'],VEGETATION=['sparse','medium','dense'],ATMOSPHERE=['clear','hazy'],LIGHT=['day','late'],SEASONS=['summer','autumn','winter'],ROADSIDE=['open','barrier'];
+const QCDS_SCENE_DOMAIN=Object.freeze({biome:BIOMES,surface:SURFACES,vegetation:VEGETATION,atmosphere:ATMOSPHERE,lighting:LIGHT,season:SEASONS,roadside:ROADSIDE});
 
-function inferSyntractScene({route=null,mode='road',override='auto'}={}){
+function inferSyntractScene({route=null,mode='road',override='auto',seasonOverride='auto',roadsideOverride='auto',lightingOverride='auto',atmosphereOverride='auto'}={}){
  const raw=`${route?.surface||route?.tags?.surface||''} ${route?.highway||route?.tags?.highway||''}`.toLowerCase();
  const name=String(route?.name||'').toLowerCase();
+ const hasDemo=route?.demo===true;
  const heights=(route?.points||[]).map(p=>p.ele).filter(finite);
  const high=heights.length?Math.max(...heights)>=950:null;
  const grounded=Array.isArray(route?.points)&&route.points.length>1;
@@ -930,15 +931,22 @@ function inferSyntractScene({route=null,mode='road',override='auto'}={}){
   {id:'QC10',name:'Omgivning och vägsynlighet',source:'visuell läsbarhet',weight:1,accept:s=>s.vegetation!=='dense'||s.biome==='forest'},
   {id:'QC11',name:'Tydligt dagsljus',source:'standard (ej mätning)',weight:1,accept:s=>s.lighting==='day'},
   {id:'QC12',name:'Okänt väder – neutralt',source:'standard (ej väderdata)',weight:1,accept:s=>s.atmosphere==='clear'},
+  {id:'QC13',name:'Syntetisk sommargrund',source:'illustration (ej årstidsmätning)',weight:1,accept:s=>s.season==='summer'},
+  {id:'QC14',name:'Siktrensad vägkant',source:'illustration',weight:1,accept:s=>s.roadside==='open'},
+  {id:'QC15',name:'Barriär i alpin/urban miljö',source:mode==='road'?'grafikheuristik':null,weight:1.5,accept:s=>s.roadside==='barrier'&&(s.biome==='alpine'||s.biome==='urban')},
  ];
  const candidates=[];
  for(const biome of BIOMES)for(const surface of SURFACES)for(const vegetation of VEGETATION)
-  for(const atmosphere of ATMOSPHERE)for(const lighting of LIGHT){
-    const state={biome,surface,vegetation,atmosphere,lighting};let score=0,excluded=false;
+  for(const atmosphere of ATMOSPHERE)for(const lighting of LIGHT)for(const season of SEASONS)for(const roadside of ROADSIDE){
+    const state={biome,surface,vegetation,atmosphere,lighting,season,roadside};let score=0,excluded=false;
     for(const qc of qcs){if(qc.source===null)continue;const pass=qc.accept(state);if(!pass&&qc.hard){excluded=true;break;}
       if(pass)score+=qc.weight;
     }
     if(override!=='auto'&&Object.hasOwn(SCENE_LABELS,override)&&biome!==override)excluded=true;
+    if(seasonOverride!=='auto'&&season!==seasonOverride)excluded=true;
+    if(roadsideOverride!=='auto'&&roadside!==roadsideOverride)excluded=true;
+    if(lightingOverride!=='auto'&&lighting!==lightingOverride)excluded=true;
+    if(atmosphereOverride!=='auto'&&atmosphere!==atmosphereOverride)excluded=true;
     if(!excluded){
       // When evidence is absent, use clear, neutral defaults; these are illustrated, not asserted facts.
       score+=biome==='countryside'?1.1:0;
@@ -951,13 +959,15 @@ function inferSyntractScene({route=null,mode='road',override='auto'}={}){
  const winner=candidates[0];if(!winner)throw Error('Inga scenkandidater uppfyller oraklen');
  const checks=qcs.map(qc=>({id:qc.id,evidence:qc.name,known:qc.source!==null,met:qc.source!==null&&qc.accept(winner),hard:!!qc.hard,source:qc.source}));
  const palette={...PALETTES[winner.biome]};
- if(winner.atmosphere==='hazy')palette.fog=palette.fog.map(v=>v*.91);
+ if(winner.atmosphere==='hazy')palette.fog=palette.fog.map(v=>v*.82);
+ if(winner.season==='autumn'){palette.leaf=[.73,.40,.14];palette.grass=[.38,.36,.17];palette.ground=palette.ground.map((v,i)=>i===0?Math.min(1,v*1.18):v*.85);}
+ if(winner.season==='winter'){palette.leaf=[.39,.49,.48];palette.pine=[.12,.24,.24];palette.ground=[.52,.57,.56];palette.grass=[.38,.43,.40];palette.fog=[.73,.82,.89];}
  // We retain the complete candidate ranking for auditing, never claim this is quantum amplification.
  const mass=candidates.slice(0,5).map(c=>Math.exp((c.score-winner.score)/3)),total=mass.reduce((a,b)=>a+b,0);
  const entropy=-mass.reduce((a,m)=>{const p=m/total;return a+p*Math.log2(p);},0);
  return {biome:winner.biome,label:SCENE_LABELS[winner.biome],palette,state:winner,checks,matched:checks.filter(q=>q.met),
   candidateCount:candidates.length,topK:candidates.slice(0,5),entropy,score:winner.score,
-  evidence:grounded?'Ruttgeometri inläst':'Illustrerad demoskiss',realElevation:heights.length>0,
+  evidence:hasDemo?'Helt syntetisk demovärld':grounded?'Ruttgeometri inläst':'Illustrerad demoskiss',realElevation:heights.length>0&&!hasDemo,syntheticElevation:hasDemo,
   georeferenced:false,scope:'CYCLING ONLY',inference:'Klassisk orakelbaserad kandidatvärdering; ej full QCDS kvantinferens'};
 }
 
@@ -988,6 +998,7 @@ precision highp float;
 in vec3 vNorm;in vec3 vCol;in vec3 vWorld;in float vDepth;in float vMat;
 uniform vec3 uFog;
 uniform float uTime;
+uniform float uLate;
 out vec4 oColor;
 float noise2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
 void main(){
@@ -996,9 +1007,10 @@ void main(){
  float dif=max(dot(n,light),0.0);
  float ambient=.46+max(n.y,0.0)*.09;
  vec3 c=vCol*(ambient+.77*dif);
+ c=mix(c,c*vec3(1.15,.82,.70)*.92,uLate*.55);
  if(vMat<2.5){
    float a=noise2(floor(vWorld.xz*17.0));
-float b=noise2(floor(vWorld.xz*3.2));
+   float b=noise2(floor(vWorld.xz*3.2));
    c*=1.0+(a-.5)*.18+(b-.5)*.11;
  }
  if(vMat>2.3&&vMat<3.2){
@@ -1017,6 +1029,7 @@ in vec2 uv;
 uniform vec3 uFog;
 uniform float uTime;
 uniform float uAlpine;
+uniform float uLate;
 out vec4 oColor;
 float hsh(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float noiz(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hsh(i),hsh(i+vec2(1,0)),f.x),mix(hsh(i+vec2(0,1)),hsh(i+vec2(1,1)),f.x),f.y);}
@@ -1028,6 +1041,7 @@ void main(){
  float sun=exp(-pow(distance(uv,vec2(.79,.78))/.065,2.0)*2.0);
  float halo=exp(-pow(distance(uv,vec2(.79,.78))/.24,2.0)*3.0);
  sky+=vec3(1.0,.76,.46)*(sun*.68+halo*.15);
+ sky=mix(sky,vec3(.76,.40,.31)*(.55+.30*uv.y),uLate*.45);
  vec2 cloudp=uv*vec2(4.7,10.0)+vec2(uTime*.0006,0);
  float clouds=noiz(cloudp)*.55+noiz(cloudp*2.4)*.29+noiz(cloudp*5.7)*.16;
  float ca=smoothstep(.52,.72,clouds)*smoothstep(.59,.85,y)*.64;
@@ -1108,8 +1122,8 @@ class SyntractGraphics3D {
   this.gl=gl;this.canvas=canvas;this.p=program(gl,vert,frag);this.sky=program(gl,skyVert,skyFrag);
   this.buf=gl.createBuffer();this.skyBuffer=gl.createBuffer();this.lastKey='';this.lastBiome='';this.count=0;this.vertices=null;
   gl.bindBuffer(gl.ARRAY_BUFFER,this.skyBuffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
-  this.locs={aspect:gl.getUniformLocation(this.p,'uAspect'),pitch:gl.getUniformLocation(this.p,'uPitch'),camy:gl.getUniformLocation(this.p,'uCamY'),fog:gl.getUniformLocation(this.p,'uFog'),time:gl.getUniformLocation(this.p,'uTime')};
-  this.skyLoc={fog:gl.getUniformLocation(this.sky,'uFog'),time:gl.getUniformLocation(this.sky,'uTime'),alpine:gl.getUniformLocation(this.sky,'uAlpine')};
+  this.locs={aspect:gl.getUniformLocation(this.p,'uAspect'),pitch:gl.getUniformLocation(this.p,'uPitch'),camy:gl.getUniformLocation(this.p,'uCamY'),fog:gl.getUniformLocation(this.p,'uFog'),time:gl.getUniformLocation(this.p,'uTime'),late:gl.getUniformLocation(this.p,'uLate')};
+  this.skyLoc={fog:gl.getUniformLocation(this.sky,'uFog'),time:gl.getUniformLocation(this.sky,'uTime'),alpine:gl.getUniformLocation(this.sky,'uAlpine'),late:gl.getUniformLocation(this.sky,'uLate')};
   gl.disable(gl.CULL_FACE);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);
  }
  dispose(){const gl=this.gl;gl.deleteBuffer(this.buf);gl.deleteBuffer(this.skyBuffer);gl.deleteProgram(this.p);gl.deleteProgram(this.sky);}
@@ -1138,7 +1152,7 @@ class SyntractGraphics3D {
    m.quad(pos(ca-3.68,ha+.19,z),pos(ca+3.68,ha+.19,z),pos(cb+3.68,hb+.19,z2),pos(cb-3.68,hb+.19,z2),roadColor,2.7);
    if(Math.floor((z+progress)/13)%3!==0){m.quad(pos(ca-.065,ha+.225,z),pos(ca+.065,ha+.225,z),pos(cb+.065,hb+.225,z2),pos(cb-.065,hb+.225,z2),[.92,.87,.69],4);}
   }
-  const density=(quality==='low'?1.8:1)*(scene.state?.vegetation==='dense'?.75:scene.state?.vegetation==='sparse'?1.5:1);
+  const density=(quality==='low'?1.8:1)*(scene.state?.vegetation==='dense'?.67:scene.state?.vegetation==='sparse'?1.7:1)*(scene.state?.season==='winter'?1.25:1);
   for(let z=14;z<=545;z+=11*density){
    const seed=Math.floor((progress+z)/11),base=center(z),groundY=hill(z);
    for(const side of [-1,1]){
@@ -1153,20 +1167,27 @@ class SyntractGraphics3D {
    }
   }
   if(urban){for(let z=60;z<550;z+=80){for(const side of [-1,1]){const x=center(z)+side*(20+hash(z*2)*9),g=ground(x,z);m.prism(x,g,z,13,5+hash(z)*9,17,[.58,.54,.46]);m.cone(x,g+9,z,10,2.2,[.39,.22,.21],4);}}}
+  // Oracle-selected guardrails (synthetic placement: not assertions about actual safety barriers).
+  if(scene.state?.roadside==='barrier')for(let z=6;z<420;z+=13){
+   for(const side of [-1,1]){const x1=center(z)+side*5.6,x2=center(z+13)+side*5.6,y1=hill(z)+.95,y2=hill(z+13)+.95;
+    m.bar([x1,y1,z],[x2,y2,z+13],.065,[.66,.75,.77]);
+    m.bar([x1,hill(z)+.2,z],[x1,y1+.2,z],.07,[.44,.53,.59]);
+   }
+  }
   // Tactile roadside markers and occasional road signs.
   for(let z=40;z<480;z+=37){for(const side of [-1,1]){const x=center(z)+side*5,g=hill(z);m.prism(x,g,z,.12,1,.12,[.93,.95,.92]);m.prism(x,g+.65,z,.16,.13,.16,[.74,.16,.13]);}}
   return {vertices:new Float32Array(m.v),center,hill};
  }
  render({snapshot,scene,route=null,routeMeters=0,quality='high',time=0}){
   const gl=this.gl,progress=Number(snapshot?.player?.km||0)*1000||0;const routeView=makeRouteVisual(route,routeMeters);
-  const key=`${scene.biome}/${Math.floor(progress/9)}/${route?.id||route?.name||'none'}/${route?.points?.length||0}/${route?.elevationSource||'none'}/${Math.floor(routeMeters/18)}/${quality}`;
+  const key=`${scene.biome}/${scene.state?.season}/${scene.state?.vegetation}/${scene.state?.roadside}/${scene.state?.surface}/${Math.floor(progress/9)}/${route?.id||route?.name||'none'}/${route?.points?.length||0}/${route?.elevationSource||'none'}/${Math.floor(routeMeters/18)}/${quality}`;
   if(key!==this.lastKey){this.static=this.makeStatic(scene,progress,routeView,quality);this.lastKey=key;}
   gl.viewport(0,0,this.canvas.width,this.canvas.height);gl.disable(gl.DEPTH_TEST);
   gl.useProgram(this.sky);gl.bindBuffer(gl.ARRAY_BUFFER,this.skyBuffer);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
-  gl.uniform3fv(this.skyLoc.fog,new Float32Array(scene.palette.fog));gl.uniform1f(this.skyLoc.time,time);gl.uniform1f(this.skyLoc.alpine,scene.biome==='alpine'?1:0);
+  gl.uniform3fv(this.skyLoc.fog,new Float32Array(scene.palette.fog));gl.uniform1f(this.skyLoc.time,time);gl.uniform1f(this.skyLoc.alpine,scene.biome==='alpine'?1:0);gl.uniform1f(this.skyLoc.late,scene.state?.lighting==='late'?1:0);
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
   gl.enable(gl.DEPTH_TEST);gl.clear(gl.DEPTH_BUFFER_BIT);gl.useProgram(this.p);
-  gl.uniform1f(this.locs.aspect,this.canvas.width/Math.max(1,this.canvas.height));gl.uniform1f(this.locs.pitch,.13);gl.uniform1f(this.locs.camy,2.7);gl.uniform3fv(this.locs.fog,new Float32Array(scene.palette.fog));gl.uniform1f(this.locs.time,time);
+  gl.uniform1f(this.locs.aspect,this.canvas.width/Math.max(1,this.canvas.height));gl.uniform1f(this.locs.pitch,.13);gl.uniform1f(this.locs.camy,2.7);gl.uniform3fv(this.locs.fog,new Float32Array(scene.palette.fog));gl.uniform1f(this.locs.time,time);gl.uniform1f(this.locs.late,scene.state?.lighting==='late'?1:0);
   gl.bindBuffer(gl.ARRAY_BUFFER,this.buf);gl.bufferData(gl.ARRAY_BUFFER,this.static.vertices,gl.DYNAMIC_DRAW);
   for(const [loc,size,offset] of [[0,3,0],[1,3,12],[2,3,24],[3,1,36]]){gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,size,gl.FLOAT,false,40,offset);}
   gl.drawArrays(gl.TRIANGLES,0,this.static.vertices.length/10);
@@ -1180,8 +1201,50 @@ class SyntractGraphics3D {
  }
 }
 
+/* module: demo-world.js */
+
+const DC={lat:47.235,lon:10.125};
+const DS=[
+ {id:'alpine',name:'Syntract Alpine Circuit',mode:'road',biome:'alpine',surface:'asphalt',base:1150,rise:170,rx:3.7,ry:2.6,color:'#74ffe1',phase:.1,description:'Alpin klättring · kurvor · asfalt'},
+ {id:'forest',name:'Syntract Forest Trail',mode:'mtb',biome:'forest',surface:'trail',base:490,rise:95,rx:2.9,ry:1.7,color:'#ffc47a',phase:2.3,description:'Skogsstig · tekniska backar · MTB'},
+ {id:'lake',name:'Syntract Lakeside Gravel',mode:'gravel',biome:'countryside',surface:'gravel',base:330,rise:65,rx:5.0,ry:3.4,color:'#b6bbff',phase:4.1,description:'Sjökant · grusväg · varierad höjd'}
+];
+function buildRoute(s){
+ const pts=[];for(let i=0;i<=240;i++){const a=2*Math.PI*i/240,w=1+.11*Math.sin(3*a+s.phase)+.04*Math.sin(7*a+s.phase);
+ const x=s.rx*Math.cos(a+s.phase)*w,y=s.ry*Math.sin(a+s.phase)*w;
+ const ele=s.base+s.rise*(.52+.24*Math.sin(a+s.phase)+.16*Math.sin(3*a+s.phase)+.08*Math.cos(7*a+.4));
+ pts.push({lat:DC.lat+y/111.195,lon:DC.lon+x/(111.195*Math.cos(DC.lat*Math.PI/180)),ele:Math.round(ele*10)/10});}
+ pts[240]={...pts[0]};return {id:'syntract-demo-'+s.id,name:s.name,source:'SYNTRACT DEMO · SYNTHETIC',demo:true,simulated:true,biomeHint:s.biome,mode:s.mode,surface:s.surface,elevationSource:'Syntetisk demohöjd · ej uppmätt',elevationLicense:'Genererat demoexempel',points:pts};}
+const SYNTRACT_DEMO_ROUTES=Object.freeze(DS.map(s=>Object.freeze({...s,route:buildRoute(s)})));
+function getSyntractDemoRoute(id='alpine'){const s=SYNTRACT_DEMO_ROUTES.find(s=>s.id===id)||SYNTRACT_DEMO_ROUTES[0];return {...s.route,points:s.route.points.map(p=>({...p}))};}
+function syntractDemoRouteStats(route){let km=0,up=0,down=0;const pts=route.points;for(let i=1;i<pts.length;i++){
+ const a=pts[i-1],b=pts[i],d=b.ele-a.ele;km+=Math.hypot((b.lat-a.lat)*111.195,(b.lon-a.lon)*111.195*Math.cos(a.lat*Math.PI/180));if(d>0)up+=d;else down-=d;}
+ return {km,up,down,min:Math.min(...pts.map(p=>p.ele)),max:Math.max(...pts.map(p=>p.ele))};}
+const xx=(p,W)=>W/2+(p.lon-DC.lon)*111.195*Math.cos(DC.lat*Math.PI/180)*W/13.5;
+const yy=(p,H)=>H/2-(p.lat-DC.lat)*111.195*H/9.5;
+function paintSyntractDemoMap(canvas,selected='alpine'){
+ const r=canvas.getBoundingClientRect(),W=Math.max(320,r.width||850),H=Math.max(280,r.height||450),dpr=Math.min(2,window.devicePixelRatio||1);
+ canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);const c=canvas.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);
+ const grad=c.createLinearGradient(0,0,W,H);grad.addColorStop(0,'#1b3942');grad.addColorStop(.6,'#244f4d');grad.addColorStop(1,'#36584a');c.fillStyle=grad;c.fillRect(0,0,W,H);
+ for(let k=0;k<30;k++){c.beginPath();c.strokeStyle=k%4===0?'#aeceaa3c':'#d3d0ac1a';c.lineWidth=k%4===0?1.15:.65;
+ for(let x=0;x<=W;x+=7){const y=H*k/30+17*Math.sin(x/63+k*.7)+9*Math.sin(x/29+k*.39);x?c.lineTo(x,y):c.moveTo(x,y);}c.stroke();}
+ for(let n=0;n<190;n++){const rad=Math.sqrt((n+.3)/190),a=n*2.399963,x=W*(.5+.46*rad*Math.cos(a)),y=H*(.5+.46*rad*Math.sin(a));c.fillStyle=n%5?'#27604464':'#88a56e43';c.beginPath();c.arc(x,y,2+(n%5),0,6.283);c.fill();}
+ c.fillStyle='#1d5260';c.strokeStyle='#67aaa5';c.lineWidth=1.6;c.beginPath();
+ for(let k=0;k<=70;k++){const a=k*2*Math.PI/70,x=W*.79+W*.078*Math.cos(a)*(1+.18*Math.sin(5*a)),y=H*.77+H*.14*Math.sin(a);k?c.lineTo(x,y):c.moveTo(x,y);}c.closePath();c.fill();c.stroke();
+ for(const f of [t=>[t*W,H*(.63+.11*Math.sin(9*t))],t=>[W*(.1+.8*t),H*(.9-.7*t+.04*Math.sin(15*t))]]){c.beginPath();for(let i=0;i<=120;i++){const [x,y]=f(i/120);i?c.lineTo(x,y):c.moveTo(x,y);}c.lineWidth=7;c.strokeStyle='#8b9d92';c.stroke();c.lineWidth=3;c.strokeStyle='#c9c6aa';c.stroke();}
+ for(const s of SYNTRACT_DEMO_ROUTES){const active=s.id===selected;c.beginPath();s.route.points.forEach((p,i)=>i?c.lineTo(xx(p,W),yy(p,H)):c.moveTo(xx(p,W),yy(p,H)));
+ c.lineWidth=active?11:7;c.strokeStyle='#071d2ac0';c.stroke();c.lineWidth=active?5:2.5;c.globalAlpha=active?1:.55;c.strokeStyle=s.color;c.stroke();c.globalAlpha=1;
+ const p=s.route.points[0];c.beginPath();c.arc(xx(p,W),yy(p,H),active?7:5,0,6.283);c.fillStyle=s.color;c.fill();c.lineWidth=2;c.strokeStyle='#10252b';c.stroke();}
+ c.fillStyle='#f0fffa';c.font='bold 14px system-ui';c.fillText('SYNTRACT / DEMO WORLD',20,30);c.font='11px system-ui';c.fillStyle='#bbdacf';c.fillText('Illustrerad karta · 3 banor · komplett höjdprofil',20,48);
+ c.fillStyle='#0b2530da';c.fillRect(W-115,H-38,100,25);c.fillStyle='#b9efe5';c.fillText('DEMO · OFFLINE',W-109,H-21);
+}
+function nearestSyntractDemoRoute(canvas,x,y){const W=canvas.getBoundingClientRect().width||850,H=canvas.getBoundingClientRect().height||450;let closest=55,id=null;
+ for(const s of SYNTRACT_DEMO_ROUTES){let last=null;for(const p of s.route.points){const q={x:xx(p,W),y:yy(p,H)};if(last){const dx=q.x-last.x,dy=q.y-last.y,k=Math.max(0,Math.min(1,((x-last.x)*dx+(y-last.y)*dy)/(dx*dx+dy*dy||1)));const d=Math.hypot(last.x+k*dx-x,last.y+k*dy-y);if(d<closest){closest=d;id=s.id;}}last=q;}}
+ return id;}
+
 /* module: app.js */
 const wasmCourseIndex=index;
+
 
 
 
@@ -1201,7 +1264,7 @@ const $=id=>document.getElementById(id);
 const experience=new SyntractRaceState();
 let latestExperience=experience.lastSnapshot,lastExperienceMs=performance.now(),lastAudioAt=0,spokenEvent=0;
 let soundMode='off',visualMode='tactical';
-const S={mode:'road',tab:'explore',route:null,map:null,mapLayer:null,osmLayer:null,osmWays:[],source:'none',telemetry:{source:'none',power:null,cadence:null,speed:null,hr:null},running:false,elapsed:0,km:0,liveWatts:0,tick:0,graphWays:[],generatedRoutes:[],mixRoutes:[],localRoutes:[],discoveryTab:'near',heightAbort:null,plannerStart:null,pickingStart:false,startMarker:null};
+const S={mode:'road',tab:'explore',route:null,map:null,mapLayer:null,osmLayer:null,osmWays:[],source:'none',telemetry:{source:'none',power:null,cadence:null,speed:null,hr:null},running:false,elapsed:0,km:0,liveWatts:0,tick:0,graphWays:[],generatedRoutes:[],mixRoutes:[],localRoutes:[],discoveryTab:'near',heightAbort:null,plannerStart:null,pickingStart:false,startMarker:null,demoWorld:false,demoRouteId:'alpine'};
 // SYNTRACT: one authentic course grade, one independently adjustable physical trainer load.
 // Not part of CHP, calculated race watts, route grade, or validated race rankings.
 const resState={enabled:false,offset:0,lastSent:null,target:null,lastSentAt:0,busy:false,error:'',sendCount:0};
@@ -1238,7 +1301,7 @@ function disableAutoResistance(note=''){
  updateResistanceUi();
 }
 async function syncAutoResistance(force=false){
- if(!resState.enabled||resState.busy||S.source!=='ftms'||!S.running)return;
+ if(!resState.enabled||resState.busy||S.source!=='ftms'||!S.running||S.route?.demo)return;
  if(!radio.connected||!radio.canControl){disableAutoResistance('Bluetooth FTMS-styrning saknas. Ingen last ändrades.');return;}
  const grade=gradeAtProgress();if(!Number.isFinite(grade)){updateResistanceUi();return;}
  const goal=resistanceTarget({grade,offset:resState.offset,mode:S.mode});
@@ -1267,7 +1330,7 @@ $('resNeutral').addEventListener('click',()=>{resState.offset=0;updateResistance
 const modeWords={road:'ROAD RACE',gravel:'GRAVEL CHALLENGE',mtb:'MTB TRAIL',downhill:'DOWNHILL EXPERIENCE'};
 const radio=new BikeFTMS(data=>{S.source='ftms';S.telemetry={...S.telemetry,...data,source:'ftms'};S.liveWatts=Number.isFinite(data.power)?Math.max(0,data.power):S.liveWatts; updateDevice('FTMS · livemätning');updateTelemetry();renderOracles();},status=>{if(status.startsWith('Bluetooth frånkopplad')){S.source='none';disableAutoResistance('Cykeln kopplades från: automatiken är av.');}updateDevice(status);updateResistanceUi();});
 function updateDevice(msg){$('deviceText').textContent=msg;$('feedStatus').textContent=S.source==='ftms'?'CYKEL ANSLUTEN':S.source==='demo'?'SIMULERAD DATA':'EJ ANSLUTEN';$('dataStatus').textContent=S.source==='ftms'?'● FTMS LIVE':S.source==='demo'?'● DEMO · SIMULERAT':'● DEMO / LOKALT';$('btLight').classList.toggle('online',S.source==='ftms');document.querySelector('.led').classList.toggle('online',S.source==='ftms');}
-function changeTab(tab){S.tab=tab;document.querySelectorAll('.tab').forEach(n=>n.classList.toggle('active',n.dataset.tab===tab));document.querySelectorAll('.view').forEach(n=>n.classList.toggle('visible',n.id===tab));if(tab==='explore'&&S.map)setTimeout(()=>S.map.invalidateSize(),70);if(tab==='ride')resizeRace();if(tab==='oracles')renderOracles();if(tab==='league')updateLeague();}
+function changeTab(tab){S.tab=tab;document.querySelectorAll('.tab').forEach(n=>n.classList.toggle('active',n.dataset.tab===tab));document.querySelectorAll('.view').forEach(n=>n.classList.toggle('visible',n.id===tab));if(tab==='explore'){if(S.map)setTimeout(()=>S.map.invalidateSize(),70);if(S.demoWorld&&!$('demoWorldPanel').hidden)setTimeout(drawCompleteDemoMap,90);}if(tab==='ride')resizeRace();if(tab==='oracles')renderOracles();if(tab==='league')updateLeague();}
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>changeTab(b.dataset.tab)));
 document.querySelectorAll('.discipline').forEach(b=>b.addEventListener('click',()=>{S.mode=b.dataset.mode;document.querySelectorAll('.discipline').forEach(x=>x.classList.toggle('active',x===b));$('modeLabel').textContent=modeWords[S.mode];$('hcpMode').textContent=MODES[S.mode];$('leagueMode').textContent=MODES[S.mode];updateHandicap();updateRoute();renderOracles();if(S.graphWays.length)renderRouteSuggestions();else renderDiscoveryCatalog();}));
 const WORLD_DESTINATIONS=[
@@ -1278,7 +1341,7 @@ const WORLD_DESTINATIONS=[
  ['Cusco',-13.5319,-71.9675,12],['Tasmanien',-42.8821,147.3272,12],['Nya Zeeland · Rotorua',-38.1368,176.2497,12],['Boulder',40.0150,-105.2705,12]
 ];
 function flyToWorld(lat,lon,label,zoom=12){
- if(!S.map){$('worldStatus').textContent='Kartan är inte tillgänglig.';return;}
+ if(!S.map){$('worldStatus').textContent='Aktiverar livekartan …';void ensureLiveMap().then(()=>flyToWorld(lat,lon,label,zoom)).catch(e=>{$('worldStatus').textContent='Livekartan fungerar inte: '+e.message+'. Prova offline-demovärlden.';});return;}
  S.map.setView([lat,lon],zoom,{animate:true});$('worldStatus').textContent=label+' · kartan flyttad. Tryck ”Skapa rutter från OSM-vägar” för att hämta riktiga vägar.';
  S.graphWays=[];S.generatedRoutes=[];S.mixRoutes=[];$('routeSuggestions').replaceChildren();
  const p=document.createElement('p');p.className='empty-routes';p.textContent='Hämta vägar på den nya platsen för att bygga sammanhängande turer.';$('routeSuggestions').append(p);renderDiscoveryCatalog();
@@ -1317,6 +1380,88 @@ $('connect').addEventListener('click',async()=>{try{await radio.connect();S.sour
 $('demoBtn').addEventListener('click',()=>{radio.disconnect();disableAutoResistance();S.source='demo';S.telemetry={source:'demo',power:115,cadence:78,speed:null,hr:null};S.liveWatts=115;updateDevice('SIMULERAD DATA · inte cykelmätning');$('disconnect').hidden=false;renderOracles();updateTelemetry();});
 $('disconnect').addEventListener('click',()=>{radio.disconnect();disableAutoResistance();S.source='none';S.liveWatts=0;S.telemetry={source:'none',power:null,cadence:null,speed:null,hr:null};$('disconnect').hidden=true;updateDevice('Frånkopplad');renderOracles();updateTelemetry();});
 $('tvMode').addEventListener('click',async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch(e){alert('TV-läge kräver att webbläsaren tillåter helskärm.');}});
+// ---- SYNTRACT DEMO WORLD: self-contained map + routes + elevation + single race. ----
+function drawCompleteDemoMap(){
+ const canvas=$('demoWorldMap');if(!canvas||$('demoWorldPanel').hidden)return;
+ paintSyntractDemoMap(canvas,S.demoRouteId);
+}
+function demoCards(){
+ const box=$('demoWorldRoutes');box.replaceChildren();
+ for(const spec of SYNTRACT_DEMO_ROUTES){
+  const stats=syntractDemoRouteStats(spec.route),card=document.createElement('button');card.type='button';
+  card.className='demo-course'+(S.demoRouteId===spec.id?' active':'');
+  card.innerHTML=`<span class="demo-course-head"><span class="demo-course-dot"></span><strong></strong></span><small></small><span class="demo-course-stats"></span>`;
+  card.querySelector('strong').textContent=spec.name;card.querySelector('small').textContent=spec.description;
+  card.querySelector('.demo-course-stats').textContent=`${stats.km.toFixed(1)} km · +${Math.round(stats.up)} m · ${spec.mode.toUpperCase()}`;
+  card.style.setProperty('--course-color',spec.color);
+  card.addEventListener('click',()=>chooseCompleteDemoRoute(spec.id));box.append(card);
+ }
+}
+function chooseCompleteDemoRoute(id){
+ const spec=SYNTRACT_DEMO_ROUTES.find(r=>r.id===id)||SYNTRACT_DEMO_ROUTES[0];
+ // Entering any synthetic course is never allowed to control a physical trainer.
+ radio.disconnect();disableAutoResistance();S.source='demo';S.telemetry={source:'demo',power:153,cadence:79,speed:null,hr:null};S.liveWatts=153;updateDevice('SYNTRACT DEMO WORLD · simulerade cykelvärden');
+ S.demoRouteId=spec.id;S.demoWorld=true;S.mode=spec.mode;
+ document.querySelectorAll('.discipline').forEach(b=>b.classList.toggle('active',b.dataset.mode===spec.mode));
+ $('modeLabel').textContent=modeWords[spec.mode];$('hcpMode').textContent=MODES[spec.mode];$('leagueMode').textContent=MODES[spec.mode];
+ const route=getSyntractDemoRoute(spec.id);selectRoute(route);
+ $('demoWorldStatus').textContent=spec.name+' vald · '+syntractDemoRouteStats(route).km.toFixed(1)+' km · fullständig syntetisk höjdprofil. Klicka Kör vald banas race.';
+ $('worldStatus').textContent='Offline-demovärld. All geografi, höjd och vägdata är genererad – inte OSM.';
+ $('osmInfo').textContent='Demo world aktiv · inga OSM-servrar eller höjdservrar används.';
+ demoCards();drawCompleteDemoMap();updateHandicap();
+}
+function openCompleteDemoMap(){
+ S.demoWorld=true;$('demoWorldPanel').hidden=false;changeTab('explore');
+ chooseCompleteDemoRoute(S.demoRouteId);
+ requestAnimationFrame(drawCompleteDemoMap);
+ $('demoWorldPanel').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function launchCompleteDemoRace(){
+ if(!$('demoWorldPanel').hidden&&S.route?.demo&&S.route.id==='syntract-demo-'+S.demoRouteId){}
+ else {S.demoWorld=true;$('demoWorldPanel').hidden=false;chooseCompleteDemoRoute(S.demoRouteId);}
+ radio.disconnect();disableAutoResistance();S.source='demo';S.telemetry={source:'demo',power:153,cadence:79,speed:null,hr:null};S.liveWatts=153;
+ updateDevice('SYNTRACT DEMO WORLD · endast simulerade cykelvärden');$('disconnect').hidden=false;
+ $('graphicsMode').value='webgl';$('sceneBiome').value='auto';initializeRaceRenderer();
+ changeTab('ride');if(!S.running)$('raceToggle').click();
+ $('rideNotice').textContent='SYNTRACT DEMO WORLD: hela kartan, höjderna, banorna och motståndet är simulerade. Ingen fysisk cykel styrs.';
+ updateResistanceUi();
+}
+$('startFullDemo').addEventListener('click',launchCompleteDemoRace);
+$('openDemoWorld').addEventListener('click',openCompleteDemoMap);
+$('demoStartRace').addEventListener('click',launchCompleteDemoRace);
+$('raceDemoMap').addEventListener('click',openCompleteDemoMap);
+$('demoCloseMap').addEventListener('click',()=>{$('demoWorldPanel').hidden=true;});
+$('demoWorldMap').addEventListener('click',e=>{
+ const b=e.currentTarget.getBoundingClientRect(),id=nearestSyntractDemoRoute(e.currentTarget,e.clientX-b.left,e.clientY-b.top);
+ if(id)chooseCompleteDemoRoute(id);
+});
+$('demoWorldMap').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();chooseCompleteDemoRoute(S.demoRouteId==='alpine'?'forest':S.demoRouteId==='forest'?'lake':'alpine');}});
+window.addEventListener('resize',()=>{if(!$('demoWorldPanel').hidden)drawCompleteDemoMap();});
+let liveMapLoading=null;
+async function ensureLiveMap(){
+ if(S.map)return S.map;
+ if(liveMapLoading)return liveMapLoading;
+ liveMapLoading=(async()=>{
+  $('liveMapMessage').textContent='Laddar kartbibliotek från tillgänglig server …';
+  if(!window.L){
+   const sources=['https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js','https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'];
+   let last=null;
+   for(const url of sources){
+    try{await new Promise((resolve,reject)=>{
+     const script=document.createElement('script');script.src=url;script.async=true;const timer=setTimeout(()=>{script.remove();reject(Error('Tidsgräns för kartbiblioteket'));},8500);
+     script.onload=()=>{clearTimeout(timer);resolve();};script.onerror=()=>{clearTimeout(timer);script.remove();reject(Error('Servern svarar inte'));};document.head.append(script);
+    });if(window.L)break;}catch(e){last=e;}
+   }
+   if(!window.L)throw last||Error('Kartbiblioteket saknas');
+  }
+  initMap();if(!S.map)throw Error('Kartan kunde inte starta');
+  $('enableLiveMap').textContent='✓ Livekartan är aktiverad';
+  $('liveMapMessage').textContent='Livekarta online · väg- och terrängdata kan kräva separata servrar';
+  return S.map;
+ })().catch(e=>{liveMapLoading=null;$('liveMapMessage').textContent='Livekartan kunde inte laddas: '+e.message+'. Använd offline-demo ovan.';throw e;});
+ return liveMapLoading;
+}
+$('enableLiveMap').addEventListener('click',()=>{void ensureLiveMap().catch(()=>{});});
 function initMap(){
  const el=$('map');
  if(!window.L){$('osmInfo').textContent='Kartbiblioteket kunde inte laddas. GPX-import fungerar ändå.';el.replaceChildren();el.textContent='Kartbiblioteket saknas. Ladda om sidan eller importera GPX.';return;}
@@ -1338,16 +1483,16 @@ function initMap(){
  }catch(e){console.error('Map initialization failed',e);$('osmInfo').textContent='Kartan kunde inte startas: '+e.message;}
 }
 function cleanRoute(points){return points.filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lon)&&Math.abs(p.lat)<=90&&Math.abs(p.lon)<=180).slice(0,25000);}
-function selectRoute(route){route.points=cleanRoute(route.points);if(route.points.length<2){$('osmInfo').textContent='Den valda rutten saknar tillräckligt med koordinater.';return;}S.heightAbort?.abort();S.heightAbort=null;
+function selectRoute(route){if(route.demo)S.demoWorld=true;route.points=cleanRoute(route.points);if(route.points.length<2){$('osmInfo').textContent='Den valda rutten saknar tillräckligt med koordinater.';return;}S.heightAbort?.abort();S.heightAbort=null;
  S.route=route;
- $('loadElevation').disabled=route.points.every(p=>Number.isFinite(p.ele));
+ $('loadElevation').disabled=route.demo||route.points.every(p=>Number.isFinite(p.ele));
  $('elevationStatus').textContent=route.points.every(p=>Number.isFinite(p.ele))?'Höjdvärden finns för rutten.': 'Höjdprofil saknas. Tryck Hämta verklig höjdprofil – DEM-data från extern tjänst.';
- $('routeKind').textContent=route.generated?`PRELIMINÄR OSM-TUR ${route.generatedType==='out-and-back'?'TUR & RETUR':route.generatedType==='loop'?'RUNDSLINGA':'EN VÄG'} · kontrollera tillträde`:route.source?.startsWith('Importerad GPX')?'IMPORTERAD GPX-RUTT':route.source?.includes('Egenritad')?'EGENRITAD · RAKA LINJER':'VERKLIG GPS-GEOMETRI';
- S.km=0;S.elapsed=0;S.lastSavedElapsed=-1;S.running=false;radio.disableControl();resState.lastSent=null;experience.reset();latestExperience=experience.snapshot();updateLeaderboard();updateExperienceUi();$('raceToggle').textContent='▶ Starta race';updateRoute();if(S.map&&window.L){S.mapLayer.clearLayers();const line=L.polyline(route.points.map(p=>[p.lat,p.lon]),{color:'#00b88c',weight:7,opacity:.95}).addTo(S.mapLayer);S.map.fitBounds(line.getBounds(),{padding:[30,30],maxZoom:15});}renderOracles();
+ $('routeKind').textContent=route.generated?`PRELIMINÄR OSM-TUR ${route.generatedType==='out-and-back'?'TUR & RETUR':route.generatedType==='loop'?'RUNDSLINGA':'EN VÄG'} · kontrollera tillträde`:route.source?.startsWith('Importerad GPX')?'IMPORTERAD GPX-RUTT':route.source?.includes('Egenritad')?'EGENRITAD · RAKA LINJER':route.demo?'HELT SYNTETISK DEMOBANA · EJ VERKLIG GEOGRAFI':'VERKLIG GPS-GEOMETRI';
+ S.km=0;S.elapsed=0;S.lastSavedElapsed=-1;S.running=false;radio.disableControl();resState.lastSent=null;experience.reset();latestExperience=experience.snapshot();updateLeaderboard();updateExperienceUi();$('raceToggle').textContent='▶ Starta race';updateRoute();if(!route.demo&&S.map&&window.L){S.mapLayer.clearLayers();const line=L.polyline(route.points.map(p=>[p.lat,p.lon]),{color:'#00b88c',weight:7,opacity:.95}).addTo(S.mapLayer);S.map.fitBounds(line.getBounds(),{padding:[30,30],maxZoom:15});}renderOracles();
  // Auto-fetch only when a user selects a route, not on every map movement.
  if($('autoElevation').checked&&!route.points.every(p=>Number.isFinite(p.ele)))setTimeout(()=>{if(S.route===route&&!S.heightAbort)$('loadElevation').click();},120);
 }
-function updateRoute(){const r=S.route;const a=r?altitude(r.points):null;const dist=r?distanceKm(r.points):null;const idx=r?wasmCourseIndex(r,S.mode):null;$('routeName').textContent=r?.name||'Ingen bana vald';$('routeKm').textContent=dist===null?'—':dist.toFixed(2);$('routeClimb').textContent=a?.valid?a.climb:'—';$('routeIndex').textContent=idx===null?'—':idx;$('rideRouteName').textContent=r?.name||'Illustrerad testbana';$('rideLabel').textContent=r?.source||'ILLUSTRERAD TESTBANA';$('routeIndex').title= a?.valid?'Uppskattat experimentellt index':'Preliminärt index utan höjddata';$('routeClimb').title=a?.valid?(r?.elevationSource||'Källfilens höjddata, ej kvalitetsgranskade'):'Höjddata saknas';$('sourceLabel').textContent=r?`Källa: ${r.source} · ${r.points.length} koordinater · ${a?.valid?'höjdprofil: '+(r.elevationSource||'GPX'):'höjddata saknas'} · tillstånd ej validerat`:'Inga ruttdata inlästa.';$('rideRouteInfo').textContent=r?`Verkligt koordinatspår från ${r.source}. Spelvyn är illustrerad; återgivningen av terräng är ännu inte georefererad 3D.`:'Ladda en OSM-led eller GPX för att cykla efter riktiga spår. Den animerade spelvyn är en illustration, inte en geografisk 3D-rendering.';$('realAltitude').textContent=a?.valid?`${a.climb} m upp / ${a.drop} m ned`:'Ej inläst';updateLeague();drawProfile();updateResistanceUi();}
+function updateRoute(){const r=S.route;const a=r?altitude(r.points):null;const dist=r?distanceKm(r.points):null;const idx=r?wasmCourseIndex(r,S.mode):null;$('routeName').textContent=r?.name||'Ingen bana vald';$('routeKm').textContent=dist===null?'—':dist.toFixed(2);$('routeClimb').textContent=a?.valid?a.climb:'—';$('routeIndex').textContent=idx===null?'—':idx;$('rideRouteName').textContent=r?.name||'Illustrerad testbana';$('rideLabel').textContent=r?.source||'ILLUSTRERAD TESTBANA';$('routeIndex').title= a?.valid?'Uppskattat experimentellt index':'Preliminärt index utan höjddata';$('routeClimb').title=a?.valid?(r?.elevationSource||'Källfilens höjddata, ej kvalitetsgranskade'):'Höjddata saknas';$('sourceLabel').textContent=r?`Källa: ${r.source} · ${r.points.length} koordinater · ${a?.valid?'höjdprofil: '+(r.elevationSource||'GPX'):'höjddata saknas'} · tillstånd ej validerat`:'Inga ruttdata inlästa.';$('rideRouteInfo').textContent=r?r.demo?'Syntetisk bana med genererad karta, höjdprofil och kurvor. INGEN del är verklig geografi.':`Verkligt koordinatspår från ${r.source}. Spelvyn är illustrerad; återgivningen av terräng är ännu inte georefererad 3D.`:'Ladda en OSM-led eller GPX för att cykla efter riktiga spår. Den animerade spelvyn är en illustration, inte en geografisk 3D-rendering.';$('realAltitude').textContent=a?.valid?`${a.climb} m upp / ${a.drop} m ned`:'Ej inläst';updateLeague();drawProfile();updateResistanceUi();}
 function drawProfile(){
  const c=$('profile'),ctx=c.getContext('2d'),rect=c.getBoundingClientRect();
  const dpr=Math.min(2,window.devicePixelRatio||1),w=Math.max(280,Math.round(rect.width||300)),h=124;
@@ -1709,6 +1854,7 @@ $('raceToggle').addEventListener('click',()=>{
  updateExperienceUi();updateResistanceUi();if(S.running)void syncAutoResistance();
 });
 $('raceDemo').addEventListener('click',()=>{
+ if(!S.route){S.demoWorld=true;$('demoWorldPanel').hidden=false;chooseCompleteDemoRoute(S.demoRouteId);}
  radio.disconnect();disableAutoResistance();S.source='demo';S.telemetry={source:'demo',power:153,cadence:79,speed:null,hr:null};S.liveWatts=153;
  updateDevice('SIMULERAD DATA · inte cykelmätning');$('disconnect').hidden=false;
  if(!S.running)$('raceToggle').click();updateTelemetry();updateLeaderboard();
@@ -1752,25 +1898,35 @@ function initializeRaceRenderer(){
  resizeRace();
 }
 $('graphicsMode').addEventListener('change',initializeRaceRenderer);
-$('sceneBiome').addEventListener('change',()=>{if(sceneRenderer)sceneRenderer.lastKey='';});
+$('sceneBiome').addEventListener('change',()=>{latestSceneKey='';if(sceneRenderer)sceneRenderer.lastKey='';});
+$('sceneSeason').addEventListener('change',()=>{latestSceneKey='';if(sceneRenderer)sceneRenderer.lastKey='';});
+$('sceneRoadside').addEventListener('change',()=>{latestSceneKey='';if(sceneRenderer)sceneRenderer.lastKey='';});
+$('sceneLighting').addEventListener('change',()=>{latestSceneKey='';if(sceneRenderer)sceneRenderer.lastKey='';});
+$('sceneAtmosphere').addEventListener('change',()=>{latestSceneKey='';if(sceneRenderer)sceneRenderer.lastKey='';});
 $('sceneQuality').addEventListener('change',()=>{if(sceneRenderer)sceneRenderer.lastKey='';});
 window.addEventListener('resize',()=>{resizeRace();drawProfile();});
+let latestSceneResult=null,latestSceneKey='';
+function activeSceneResult(){
+ const key=[S.route?.id||S.route?.name||'none',S.mode,$('sceneBiome').value,$('sceneSeason').value,$('sceneRoadside').value,$('sceneLighting').value,$('sceneAtmosphere').value,S.route?.surface||'',S.route?.points?.length||0].join('|');
+ if(key!==latestSceneKey){latestSceneKey=key;latestSceneResult=inferSyntractScene({route:S.route,mode:S.mode,override:$('sceneBiome').value,seasonOverride:$('sceneSeason').value,roadsideOverride:$('sceneRoadside').value,lightingOverride:$('sceneLighting').value,atmosphereOverride:$('sceneAtmosphere').value});}
+ return latestSceneResult;
+}
 function raceDraw(timestamp){
  requestAnimationFrame(raceDraw);if(!cw||!ch||S.tab!=='ride')return;
  const now=timestamp||performance.now(),extra=S.running?Math.max(0,Math.min(950,now-lastExperienceMs))/3600000:0;
  const st=latestExperience;
  const drawState={...st,player:{...st.player,km:st.player.km+st.speedKmh*extra},others:st.others.map(b=>({...b,km:b.km+(b.speedKmh||20)*extra}))};
- const visual=inferSyntractScene({route:S.route,mode:S.mode,override:$('sceneBiome').value});
+ const visual=activeSceneResult();
  if(sceneRenderer){
   try{const quality=$('sceneQuality').value==='auto'?(cw<720?'low':'high'):$('sceneQuality').value;
    sceneRenderer.render({snapshot:drawState,scene:visual,route:S.route,routeMeters:S.km*1000,quality,time:now/1000});
   }catch(e){$('graphicsMessage').textContent='3D-rendering pausad: '+(e?.message||e)+'. Välj 2,5D som reservvy.';}
  }else if(raceCtx)paintSyntractRace(raceCtx,cw,ch,drawState,now/1000,S.mode,visualMode);
  if(now-(window._syntractSceneStatusAt||0)>2200){
-  $('sceneInfo').textContent=`${visual.label} · ${visual.matched.length} uppfyllda orakel · ${visual.realElevation?'höjddata inläst':'terränghöjd illustrerad'} · ${S.route?'banans GPS/OSM används för kurvförhandsvisning':'generisk demoslinga'}`;
+  $('sceneInfo').textContent=`${visual.label} · ${visual.matched.length} uppfyllda orakel / ${visual.candidateCount} giltiga syntestillstånd · ${visual.state.season} · ${visual.state.roadside} · ${visual.state.lighting} · ${visual.state.atmosphere} · ${visual.syntheticElevation?'syntetisk demohöjd':visual.realElevation?'höjddata inläst':'terränghöjd illustrerad'} · ${S.route?.demo?'syntetisk banprofil':''+(S.route?'banans GPS/OSM används för kurvförhandsvisning':'generisk demoslinga')}`;
   window._syntractSceneStatusAt=now;
  }
 }
 initEngine().then(()=>{if($('wasmStatus'))$('wasmStatus').textContent=engineStatus();updateHandicap();updateRoute();});
 initializeRaceRenderer();
-setInterval(raceTick,1000);setInterval(()=>{if(S.source==='demo'&&!S.running){S.liveWatts=115;updateTelemetry();}},5000);updateDevice('Väntar på Bluetooth FTMS');updateHandicap();updateRoute();updateTelemetry();updateLeaderboard();initMap();requestAnimationFrame(raceDraw);resizeRace();updateExperienceUi();updateResistanceUi();
+setInterval(raceTick,1000);setInterval(()=>{if(S.source==='demo'&&!S.running){S.liveWatts=115;updateTelemetry();}},5000);updateDevice('Väntar på Bluetooth FTMS');updateHandicap();updateRoute();updateTelemetry();updateLeaderboard();requestAnimationFrame(raceDraw);resizeRace();updateExperienceUi();updateResistanceUi();

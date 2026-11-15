@@ -132,3 +132,34 @@
 .scene-evidence{font-size:11px;color:#85a8b4;margin:7px 0 0;line-height:1.5}
 .arena{background:#13364a}
 @media(max-width:680px){.scene-studio{padding:16px}.scene-intro{flex-direction:column;gap:6px}.scene-pickers{grid-template-columns:1fr}.scene-mark{margin-bottom:10px}}
+
+/* Syntract Cycling v1.1.0 · Offline Demo World and multi-dimensional oracle control */
+.lead-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.demo-start{border-radius:14px;border:1px solid #7ef9d1;background:linear-gradient(110deg,#18d6b2,#69d8ee);color:#08202b;box-shadow:0 10px 35px #10d8b237;padding:13px 22px;min-width:220px;text-align:center;line-height:1.1;font-size:15px;font-weight:950;letter-spacing:.1px;cursor:pointer}
+.demo-start small{display:block;letter-spacing:.7px;margin-top:7px;font-size:10px;font-weight:850}
+.demo-explore-btn{display:block;width:100%;margin-bottom:15px;min-height:52px;border-color:#56e4c8!important;color:#a4f9e0!important}
+.demo-world-panel{border:1px solid #438a8c;border-radius:23px;padding:25px;background:radial-gradient(ellipse at 10% -30%,#35a09646,transparent 60%),linear-gradient(130deg,#103b40,#0a2132 70%);margin-bottom:27px;box-shadow:0 28px 60px #010e1666;scroll-margin-top:24px}
+.demo-world-panel[hidden]{display:none!important}
+.demo-world-header{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:18px}
+.demo-world-header h3{font-size:clamp(23px,3vw,37px);letter-spacing:-1.3px;margin:7px 0}.demo-world-header p{color:#b9d7d6;font-size:13px;line-height:1.65;max-width:760px;margin:0}.demo-online{font-size:10px;font-weight:900;color:#9ef7d9;white-space:nowrap;border:1px solid #3c7770;background:#0d3338;padding:9px 13px;border-radius:26px}
+.demo-world-grid{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(260px,.8fr);gap:16px}
+.demo-map-frame{min-height:400px;position:relative;border:1px solid #618c88;border-radius:16px;overflow:hidden;background:#214b40;isolation:isolate}
+#demoWorldMap{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair;touch-action:manipulation}
+#demoWorldMap:focus-visible{outline:3px solid #5be6d2;outline-offset:-4px}
+.demo-map-overlay{position:absolute;bottom:12px;left:12px;z-index:1;background:#051c27e3;border:1px solid #80ebd751;padding:8px 10px;border-radius:8px;color:#cdf9ed;font-size:10px;letter-spacing:.7px;pointer-events:none}
+.demo-map-side{display:flex;flex-direction:column;gap:10px;min-width:0}
+.demo-world-routes{display:flex;flex-direction:column;gap:9px}
+.demo-course{text-align:left;display:flex;flex-direction:column;gap:6px;min-height:96px;padding:13px 15px;border:1px solid #345f63;border-radius:13px;background:#0d2937;color:#efffff;cursor:pointer}
+.demo-course.active{border-color:var(--course-color);background:linear-gradient(110deg,#194248,#122d3d);box-shadow:inset 3px 0 var(--course-color)}
+.demo-course-head{display:flex;gap:9px;align-items:center}.demo-course-dot{width:9px;height:9px;border-radius:50%;background:var(--course-color)}
+.demo-course strong{font-size:14px}.demo-course small{font-size:11px;color:#afcbd3}.demo-course-stats{font-size:11px;font-weight:800;color:var(--course-color)}
+.demo-route-status{font-size:11px;line-height:1.45;color:#94cdc6;min-height:28px}
+.demo-cta{margin-top:0;min-height:58px;font-size:14px}
+#demoCloseMap{min-height:36px;font-size:12px}
+.scene-pickers{grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.scene-pickers label{min-width:0}.scene-pickers select{font-size:11px;padding:11px 7px;min-width:0}
+@media(max-width:1090px){.demo-world-grid{grid-template-columns:1fr}.demo-map-frame{min-height:350px}.demo-world-routes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}.scene-pickers{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){.lead-actions{justify-content:flex-start}.demo-start{width:100%}.demo-world-panel{padding:14px}.demo-world-header{flex-direction:column}.demo-online{white-space:normal}.demo-map-frame{min-height:310px}.demo-world-routes{grid-template-columns:1fr}.demo-world-header p{font-size:12px}.scene-pickers{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.live-map-access{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:18px 0 12px;border:1px solid #38596b;border-radius:13px;background:#102737;padding:12px 14px}
+.live-map-access button{min-height:43px;font-size:12px;white-space:normal}.live-map-access span{font-size:12px;color:#a6c9d2;flex:1;line-height:1.5}
