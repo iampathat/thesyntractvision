@@ -1195,6 +1195,7 @@ uniform sampler2D uGround;
 uniform float uGrassMix;
 uniform float uDemoBlend;
 uniform float uTrackOffset;
+uniform float uWorldScroll;
 out vec4 oColor;
 float noise2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
 void main(){
