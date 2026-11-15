@@ -4,7 +4,6 @@ const { chromium } = require('playwright-core');
 const { PNG } = require('pngjs');
 const fs = require('node:fs');
 const URL = process.env.QCDS_CYCLING_URL || 'http://127.0.0.1:8123/qcds-medcare-cycling/';
-const wait = ms => new Promise(r => setTimeout(r,ms));
 (async function run() {
  const errors = [];
  const browser = await chromium.launch({
@@ -29,10 +28,14 @@ const wait = ms => new Promise(r => setTimeout(r,ms));
     warning:document.querySelector('#graphicsMessage')?.textContent||'',
     scene:document.querySelector('#sceneInfo')?.textContent||'',
     route:document.querySelector('#rideLabel')?.textContent||'',
-    visible:!can.hidden && r.width>100 && r.height>100};
+    visible:!can.hidden && r.width>100 && r.height>100 && getComputedStyle(can).visibility==='visible',
+    cssVisibility:getComputedStyle(can).visibility,
+    presentation:document.querySelector('#cinematicArena').dataset.presentation,
+    photoCanvasVisible:!document.querySelector('#photoLiveCanvas').hidden};
   });
   if(status.context!=='webgl2')throw Error('No live WebGL2 context: '+JSON.stringify(status));
-  if(!status.visible)throw Error('WebGL canvas is hidden or collapsed');
+  if(!status.visible||status.presentation!=='realtime'||status.photoCanvasVisible)
+    throw Error('Refusing static or Photo Live pass: 3D WebGL canvas is hidden: '+JSON.stringify(status));
   if(status.warning.includes('3D-rendering pausad'))throw Error('Renderer exception: '+status.warning);
   await page.locator('#cinematicArena').scrollIntoViewIfNeeded();
   await page.waitForTimeout(700);
@@ -49,7 +52,7 @@ const wait = ms => new Promise(r => setTimeout(r,ms));
   mean/=n;const deviation=Math.sqrt(squares/n-mean*mean);
   const analysis={...status,shotWidth:png.width,shotHeight:png.height,colors:counts.size,mean,standardDeviation:deviation,nonBlackFraction:nonBlack/n,pageErrors:errors};
   console.log('QCDS_CYCLING_VISUAL_DIAGNOSTICS '+JSON.stringify(analysis));
-  const path='/tmp/cycling-qa-v2.3.2.png';
+  const path='/tmp/cycling-qa-v2.4.0.png';
   fs.writeFileSync(path,shot);console.log('QCDS_CYCLING_PNG_SAVED '+path+' bytes='+shot.length);
   if(counts.size<100||deviation<18||nonBlack/n<.18)throw Error('Renderer output failed pixel diversity / blank-screen checks');
   // The road and landscape must animate, not just the overlaid counters.
