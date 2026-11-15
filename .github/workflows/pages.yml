@@ -239,7 +239,9 @@ jobs:
           assert 'id="savedRoutes"' in html and 'id="savedRides"' in html and 'id="cancelOSM"' in html
           assert 'id="drawRoute"' in html and 'id="osmProvider"' in html and 'id="finishDraw"' in html
           assert 'id="worldPlaces"' in html and 'id="routeSuggestions"' in html and 'id="loadElevation"' in html
-          assert 'v1.0.0' in html
+          assert 'v1.1.0' in html
+          assert 'cycling.js?v=1.1.0' in html and 'cycling.css?v=1.1.0' in html
+          assert all(f'id="{id}"' in html for id in ('startFullDemo','openDemoWorld','demoWorldPanel','demoWorldMap','demoStartRace','enableLiveMap','sceneSeason','sceneRoadside','sceneLighting','sceneAtmosphere'))
           assert all(f'id="{id}"' in html for id in ('graphicsMode','sceneBiome','sceneQuality','sceneInfo','graphicsMessage'))
           assert all(f'id="{id}"' in html for id in ('autoResistance','loadBias','resLight','resHeavy','resApplied','resTarget','resGrade','resistanceStatus'))
           assert all(f'id="{id}"' in html for id in ('raceDemo','visualMode','audioMode','raceRadar','raceTicker','raceEvent','raceInfo'))
@@ -252,6 +254,9 @@ jobs:
           assert 'SyntractRaceState' in js and 'paintSyntractRace' in js and 'speechSynthesis' in js and 'renderRaceRadar' in js
           assert 'parseControlResponse' in js and 'activateControl' in js and 'encodeResistance' in js and 'syncAutoResistance' in js
           assert 'SyntractGraphics3D' in js and 'inferSyntractScene' in js and 'QCDS_SCENE_DOMAIN' in js
+          assert 'SYNTRACT_DEMO_ROUTES' in js and 'paintSyntractDemoMap' in js and 'getSyntractDemoRoute' in js
+          assert 'route?.demo' in js and 'if(!resState.enabled' in js
+          assert 'ensureLiveMap' in js and 'sceneRoadside' in js
           assert 'webgl2' in js and 'makeRouteVisual' in js
           assert 'routeViewportMetrics' in js and 'planViewportCoverage' in js and 'renderDiscoveryCatalog' in js
           assert 'out body geom 900' in js
@@ -293,6 +298,9 @@ jobs:
           current10 = directory / 'QCDS_Cycling_Runtime_v1.0.0.zip'
           shutil.copyfile(archive, current10)
           assert current10.stat().st_size > 5000
+          current11 = directory / 'QCDS_Cycling_Runtime_v1.1.0.zip'
+          shutil.copyfile(archive, current11)
+          assert current11.stat().st_size > 5000
           assert latest.stat().st_size > 500
           print('Downloadable public runtime ZIP:', latest, latest.stat().st_size)
           PYZIP
