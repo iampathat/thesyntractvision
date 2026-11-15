@@ -239,7 +239,8 @@ jobs:
           assert 'id="savedRoutes"' in html and 'id="savedRides"' in html and 'id="cancelOSM"' in html
           assert 'id="drawRoute"' in html and 'id="osmProvider"' in html and 'id="finishDraw"' in html
           assert 'id="worldPlaces"' in html and 'id="routeSuggestions"' in html and 'id="loadElevation"' in html
-          assert 'v0.9.0' in html
+          assert 'v1.0.0' in html
+          assert all(f'id="{id}"' in html for id in ('graphicsMode','sceneBiome','sceneQuality','sceneInfo','graphicsMessage'))
           assert all(f'id="{id}"' in html for id in ('autoResistance','loadBias','resLight','resHeavy','resApplied','resTarget','resGrade','resistanceStatus'))
           assert all(f'id="{id}"' in html for id in ('raceDemo','visualMode','audioMode','raceRadar','raceTicker','raceEvent','raceInfo'))
           assert 'id="routeType"' in html and 'id="startMap"' in html and 'id="startGPS"' in html and 'id="autoElevation"' in html
@@ -250,6 +251,8 @@ jobs:
           assert 'alternateReturn' in js and 'api.open-meteo.com/v1/elevation' in js and 'setPlannerStart' in js
           assert 'SyntractRaceState' in js and 'paintSyntractRace' in js and 'speechSynthesis' in js and 'renderRaceRadar' in js
           assert 'parseControlResponse' in js and 'activateControl' in js and 'encodeResistance' in js and 'syncAutoResistance' in js
+          assert 'SyntractGraphics3D' in js and 'inferSyntractScene' in js and 'QCDS_SCENE_DOMAIN' in js
+          assert 'webgl2' in js and 'makeRouteVisual' in js
           assert 'routeViewportMetrics' in js and 'planViewportCoverage' in js and 'renderDiscoveryCatalog' in js
           assert 'out body geom 900' in js
           assert 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css' not in html
@@ -287,6 +290,9 @@ jobs:
           current9 = directory / 'QCDS_Cycling_Runtime_v0.9.0.zip'
           shutil.copyfile(archive, current9)
           assert current9.stat().st_size > 2000
+          current10 = directory / 'QCDS_Cycling_Runtime_v1.0.0.zip'
+          shutil.copyfile(archive, current10)
+          assert current10.stat().st_size > 5000
           assert latest.stat().st_size > 500
           print('Downloadable public runtime ZIP:', latest, latest.stat().st_size)
           PYZIP
