@@ -1224,8 +1224,10 @@ void main(){
   c+=vec3(.027,.037,.038)*pow(max(dot(reflect(-light,n),normalize(vec3(.1,.8,-.85))),0.),36.);
  }else if(vMat>0.5&&vMat<1.6){
   vec3 terrain=texture(uGround,trackUV*vec2(.022,.020)).rgb;
-  c=mix(c,terrain*.92+c*.16,.84*uGrassMix);
-  c*=mix(vec3(.74),vec3(1.20),dot(terrain,vec3(.33)));
+  float luma=dot(terrain,vec3(.24,.64,.12));
+  vec3 meadow=mix(terrain,vec3(luma),.24)*vec3(.82,.79,.70);
+  c=mix(c,meadow*.84+c*.20,.84*uGrassMix);
+  c*=.90+.17*clamp(luma,0.,1.);
  }
  if(vMat<2.5){
    float a=noise2(floor(trackUV*17.0));
@@ -1292,7 +1294,8 @@ void main(){
  // no repeated peaks or full-height stretched strips.
  float panoY=clamp(y,0.002,.998);
  vec3 scenic=texture(uBackdrop,vec2(clamp(uv.x,0.002,.998),.52+.47*panoY)).rgb;
- float blend=uBackdropMix*smoothstep(.40,.67,y);
+ // Do not project foreground photographic branches over the zenith.
+ float blend=uBackdropMix*smoothstep(.42,.62,y)*(1.0-smoothstep(.74,.89,y));
  col=mix(col,scenic,blend);
  col=mix(col,uFog,clamp((.44-y)*.14,0.,.07)*uBackdropMix);
 
@@ -1441,7 +1444,7 @@ function addTree(mesh,x,y,z,height,palette,seed){
  else {for(const [dx,dy,dz] of [[0,.69,0],[-.22,.62,.08],[.24,.62,-.08]])mesh.ball(x+dx*height*.21,y+height*dy,z+dz*height*.19,height*.25,palette.leaf,8,12);}
 }
 
-/* QCDS Cycling v2.3.0: grounded volumetric foliage and continuously scrolling terrain. */
+/* QCDS Cycling v2.3.1: grounded forests, procedural grasses, natural terrain and daylight. */
 function qcdsPlantTexture(kind){
  const canvas=document.createElement('canvas');canvas.width=576;canvas.height=896;
  const ctx=canvas.getContext('2d',{alpha:true}),W=576,H=896;
@@ -1484,6 +1487,26 @@ function qcdsPlantTexture(kind){
  }
  ctx.globalAlpha=1;return canvas;
 }
+function qcdsMeadowTexture(){
+ // Wild grass, never a repeated strip of photo flowers, signs or road fragments.
+ const c=document.createElement('canvas');c.width=768;c.height=288;
+ const g=c.getContext('2d',{alpha:true});
+ let state=729871;const random=()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state/4294967296;};
+ const colors=['#314e25','#405c29','#557134','#667b3d','#75874b','#52683b','#879057'];
+ for(let cluster=0;cluster<250;cluster++){
+  const x=random()*c.width,baseY=275+random()*12;
+  const height=35+random()*123,spread=6+random()*32;
+  for(let b=0;b<9;b++){
+   const dx=(random()-.5)*spread,tip=x+dx*1.7+(random()-.5)*18;
+   const bladeH=height*(.31+random()*.81);
+   g.globalAlpha=.48+random()*.43;
+   g.lineWidth=.4+random()*2.6;g.strokeStyle=colors[Math.floor(random()*colors.length)];
+   g.beginPath();g.moveTo(x+(random()-.5)*spread,baseY);
+   g.quadraticCurveTo(tip+(random()-.5)*18,baseY-bladeH*.65,tip,baseY-bladeH);g.stroke();
+  }
+ }
+ g.globalAlpha=1;return c;
+}
 function qcdsRiderAlpha(im){
  const c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;
  const ctx=c.getContext('2d',{alpha:true});ctx.drawImage(im,0,0);
@@ -1510,9 +1533,10 @@ class SyntractGraphics3D {
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,kind==='road'||kind==='ground'?gl.REPEAT:gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,kind==='road'||kind==='ground'?gl.REPEAT:gl.CLAMP_TO_EDGE);
-    if(kind==='pine'||kind==='oak'){
+    if(kind==='pine'||kind==='oak'||kind==='meadow'){
      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
-     gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,qcdsPlantTexture(kind));
+     const plant=kind==='meadow'?qcdsMeadowTexture():qcdsPlantTexture(kind);
+     gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,plant);
      gl.generateMipmap(gl.TEXTURE_2D);
     }else{
      const im=new Image();im.onload=()=>{try{
@@ -1599,8 +1623,8 @@ class SyntractGraphics3D {
    for(let j=0;j<7;j++){
     const seed=tile*131+j*619;
     const xx=cz+(hash(seed*3)-.5)*6.9,zz=z+(hash(seed+91)-.5)*2.2;
-    const tone=hash(seed+13)>.52?[.52,.53,.53]:[.33,.35,.36];
-    const size=.018+hash(seed+47)*.075;
+    const tone=hash(seed+13)>.52?[.25,.26,.27]:[.15,.16,.17];
+    const size=.015+hash(seed+47)*.050;
     m.quad([xx-size,yy,zz],[xx+size,yy,zz],[xx+size,yy,zz+.18],[xx-size,yy,zz+.18],tone,3.2);
    }
   }
@@ -1639,7 +1663,7 @@ class SyntractGraphics3D {
   gl.useProgram(this.sky);gl.bindBuffer(gl.ARRAY_BUFFER,this.skyBuffer);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
   gl.uniform3fv(this.skyLoc.fog,new Float32Array(scene.palette.fog));gl.uniform1f(this.skyLoc.time,time);gl.uniform1f(this.skyLoc.alpine,scene.biome==='alpine'?1:0);gl.uniform1f(this.skyLoc.late,scene.state?.lighting==='late'?1:0);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,this.backdrop);
   gl.uniform1i(this.skyLoc.backdrop,0);
-  gl.uniform1f(this.skyLoc.backdropMix,this.backdropReady&&scene.state?.season!=='winter'&&route?.demo===true&&['alpine','countryside','forest'].includes(scene.biome)?0.97:0); // Generic illustrative backdrop: never a claim about geographic truth.
+  gl.uniform1f(this.skyLoc.backdropMix,this.backdropReady&&scene.state?.season!=='winter'&&route?.demo===true&&['alpine','countryside','forest'].includes(scene.biome)?0.84:0); // Generic illustrative backdrop: never a claim about geographic truth.
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
   gl.enable(gl.DEPTH_TEST);gl.clear(gl.DEPTH_BUFFER_BIT);gl.useProgram(this.p);
   gl.uniform1f(this.locs.aspect,this.canvas.width/Math.max(1,this.canvas.height));gl.uniform1f(this.locs.pitch,.11);gl.uniform1f(this.locs.camy,2.28);gl.uniform1f(this.locs.scroll,scroll);gl.uniform3fv(this.locs.fog,new Float32Array(scene.palette.fog));gl.uniform1f(this.locs.time,time);gl.uniform1f(this.locs.late,scene.state?.lighting==='late'?1:0);
@@ -1669,7 +1693,7 @@ class SyntractGraphics3D {
      const tall=(scene.biome==='forest'?9:7)+hash(seed+7)*11;
      const wide=tall*(hash(seed+88)>.63?.30:.25);
      const h=this.static.ground(x,zz+scroll)-.10;
-     const kind=hash(seed+17)>(scene.biome==='alpine'?.93:.82)&&scene.state?.season!=='winter'?'oak':'pine';
+     const kind=scene.biome==='countryside'&&hash(seed+17)>.84&&scene.state?.season!=='winter'?'oak':'pine';
      // Genuine transparent silhouette assets stay at world depth and do not contain scenery or UI pixels.
      const sway=Math.sin(time*.42+seed)*Math.min(.05,zz*.00015);
      const xx=x+sway;
