@@ -1199,7 +1199,7 @@ out vec4 oColor;
 float noise2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
 void main(){
  if(vMat>6.4 && vMat<6.9){
-  vec2 o=(vWorld.xz-vCol.xz)/vec2(.64,1.45);
+  vec2 o=(vWorld.xz-vec2(vCol.x,vCol.z-uWorldScroll))/vec2(.64,1.45);
   float fade=pow(max(0.0,1.0-dot(o,o)),2.0);
   oColor=vec4(vec3(.018,.024,.027),.26*fade);return;
  }
@@ -1228,6 +1228,9 @@ void main(){
   vec3 meadow=mix(terrain,vec3(luma),.24)*vec3(.82,.79,.70);
   c=mix(c,meadow*.84+c*.20,.84*uGrassMix);
   c*=.90+.17*clamp(luma,0.,1.);
+  float soilNoise=noise2(floor(trackUV*.17));
+  float surfaceNoise=noise2(floor(trackUV*.79));
+  c*=.86+.22*soilNoise+.08*surfaceNoise;
  }
  if(vMat<2.5){
    float a=noise2(floor(trackUV*17.0));
@@ -1444,7 +1447,7 @@ function addTree(mesh,x,y,z,height,palette,seed){
  else {for(const [dx,dy,dz] of [[0,.69,0],[-.22,.62,.08],[.24,.62,-.08]])mesh.ball(x+dx*height*.21,y+height*dy,z+dz*height*.19,height*.25,palette.leaf,8,12);}
 }
 
-/* QCDS Cycling v2.3.1: grounded forests, procedural grasses, natural terrain and daylight. */
+/* QCDS Cycling v2.3.2: coherent rough terrain, botanical contact shadows and stable grass. */
 function qcdsPlantTexture(kind){
  const canvas=document.createElement('canvas');canvas.width=576;canvas.height=896;
  const ctx=canvas.getContext('2d',{alpha:true}),W=576,H=896;
@@ -1575,10 +1578,15 @@ class SyntractGraphics3D {
   const ground=(x,z)=>{
    const dx=x-center(z);
    const rise=Math.max(0,(Math.abs(dx)-5.0)/27);
-   const sinuous=.38*Math.sin(x*.077+z*.019)+.43*Math.sin(z*.036+x*.029)+.19*Math.sin(x*.17-z*.048);
-   // Roadside ground falls towards the lake on the right of the synthetic alpine demo.
+   const worldZ=z+progress;
+   const sinuous=.38*Math.sin(x*.077+worldZ*.019)+.43*Math.sin(worldZ*.036+x*.029)+.19*Math.sin(x*.17-worldZ*.048);
+   // Small, coherent undulations stop distant shoulders looking like a golf course.
+   const rough=(Math.sin(x*.41+worldZ*.21)*Math.sin(x*.23-worldZ*.32))*.37+
+       Math.sin(x*.69-worldZ*.35)*Math.cos(worldZ*.17)*.18;
+   const wild=Math.min(1,Math.max(0,(Math.abs(dx)-7)/23));
+   // Lakes remain strictly illustrative on the synthetic alpine route.
    const lakeshore=alpine&&scene.demoWater?Math.max(0,(dx-14)/23):0;
-   return hill(z)+rise*p.terrainAmp*sinuous-2.35*Math.min(1.5,lakeshore);
+   return hill(z)+rise*p.terrainAmp*sinuous+wild*rough*(alpine?1.35:.68)-2.35*Math.min(1.5,lakeshore);
   };
   // Denser near terrain resolves valley edges, shoulders and distant silhouettes.
   const groundStep=quality==='ultra'?4:quality==='high'?5:7;
@@ -1646,6 +1654,24 @@ class SyntractGraphics3D {
   }
   // Tactile roadside markers and occasional road signs.
   for(let z=40;z<480;z+=37){for(const side of [-1,1]){const x=center(z)+side*5,g=hill(z);m.prism(x,g,z,.12,1,.12,[.93,.95,.92]);m.prism(x,g+.65,z,.16,.13,.16,[.74,.16,.13]);}}
+  // Long-lived world-space conifer contact shadows use exactly the same tile
+  // IDs as the real vegetation pass. This avoids drifting shadows on cached roads.
+  if(!urban&&quality!=='low'&&['alpine','forest','countryside'].includes(scene.biome)){
+   const stride=(quality==='ultra'?18:23)*
+      (scene.state?.vegetation==='dense'?.65:scene.state?.vegetation==='sparse'?1.65:1);
+   for(let tile=Math.ceil((progress+18)/stride);tile*stride-progress<145;tile++){
+    const z=tile*stride-progress;
+    for(const side of [-1,1])for(let rank=0;rank<(forest?3:2);rank++){
+     const seed=tile*131+side*457+rank*229;
+     if(hash(seed+49)<.18)continue;
+     const zz=z+(hash(seed+77)-.5)*stride*.72;if(zz<4)continue;
+     const x=center(zz)+side*(8.9+rank*8.5+hash(seed+33)*16);
+     const h=ground(x,zz)+.16,shadeX=x+.65,shadeZ=zz+1.05;
+     m.quad([shadeX-1.30,h,shadeZ-1.60],[shadeX+1.30,h,shadeZ-1.60],
+            [shadeX+1.30,h,shadeZ+1.60],[shadeX-1.30,h,shadeZ+1.60],[shadeX,0,shadeZ],6.6);
+    }
+   }
+  }
   return {vertices:new Float32Array(m.v),center,hill,ground};
  }
  render({snapshot,scene,route=null,routeMeters=0,quality='high',time=0}){
@@ -1720,7 +1746,7 @@ class SyntractGraphics3D {
     const count=visualPlan.meadowCount;
     for(let n=0;n<count;n++){
       const tile=Math.ceil((progress+7)/3.25)+n,seed=tile*211+173;
-      const z=tile*3.25-progress+hash(seed+4)*.65;
+      const z=tile*3.25-progress+(hash(seed+4)-.5)*2.8;
       const side=tile%2===0?1:-1;
       const x=this.static.center(z+scroll)+side*(5.0+hash(seed+20)*7.0);
       const hh=.55+hash(seed+8)*.95;
