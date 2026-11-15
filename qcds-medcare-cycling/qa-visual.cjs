@@ -49,9 +49,29 @@ const wait = ms => new Promise(r => setTimeout(r,ms));
   mean/=n;const deviation=Math.sqrt(squares/n-mean*mean);
   const analysis={...status,shotWidth:png.width,shotHeight:png.height,colors:counts.size,mean,standardDeviation:deviation,nonBlackFraction:nonBlack/n,pageErrors:errors};
   console.log('QCDS_CYCLING_VISUAL_DIAGNOSTICS '+JSON.stringify(analysis));
-  const path='/tmp/cycling-qa-v2.3.0.png';
+  const path='/tmp/cycling-qa-v2.3.2.png';
   fs.writeFileSync(path,shot);console.log('QCDS_CYCLING_PNG_SAVED '+path+' bytes='+shot.length);
   if(counts.size<100||deviation<18||nonBlack/n<.18)throw Error('Renderer output failed pixel diversity / blank-screen checks');
+  // The road and landscape must animate, not just the overlaid counters.
+  const sceneCanvas=page.locator('#raceCanvas');
+  const before=PNG.sync.read(await sceneCanvas.screenshot({type:'png'}));
+  await page.waitForTimeout(1650);
+  const moving=await sceneCanvas.screenshot({type:'png'});
+  const after=PNG.sync.read(moving);
+  if(before.width!==after.width||before.height!==after.height)throw Error('3D frame resized during motion');
+  let changed=0,delta=0,total=0;
+  for(let y=20;y<before.height-20;y+=8)for(let x=20;x<before.width-20;x+=8){
+   const k=4*(y*before.width+x);
+   const d=Math.abs(before.data[k]-after.data[k])+
+      Math.abs(before.data[k+1]-after.data[k+1])+
+      Math.abs(before.data[k+2]-after.data[k+2]);
+   if(d>32)changed++;
+   delta+=d/3;total++;
+  }
+  const motion={changedFraction:changed/total,meanAbsoluteChannelChange:delta/total,dimensions:[before.width,before.height]};
+  console.log('QCDS_CYCLING_MOTION_DIAGNOSTICS '+JSON.stringify(motion));
+  fs.writeFileSync('/tmp/cycling-qa-motion.png',moving);
+  if(motion.changedFraction<.04)throw Error('3D road/cyclists are not visibly moving: '+JSON.stringify(motion));
   if(errors.some(e=>/SyntaxError|ReferenceError|WebGL program|shader|INVALID_OPERATION/i.test(e)))throw Error('Browser JS errors: '+errors.join(' | '));
   // Retain the screenshot in GitHub Actions artifacts and logs for actual human review.
   if(process.env.QCDS_EMIT_SCREENSHOT_BASE64==='1')console.log('QCDS_VISUAL_PNG_B64:'+shot.toString('base64')+':QCDS_VISUAL_PNG_END');
