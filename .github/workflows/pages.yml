@@ -235,12 +235,16 @@ jobs:
           assert binary[:4] == bytes([0,97,115,109]), 'Invalid WASM magic header'
           assert binary[4:8] == bytes([1,0,0,0]), 'Unsupported WASM version'
           html = Path('_site/qcds-medcare-cycling/index.html').read_text(encoding='utf-8')
-          assert 'cycling.js' in html and 'cycling.css' in html and 'leaflet.css' in html
+          assert 'cycling.js' in html and 'cycling.css' in html
+          assert Path('_site/qcds-medcare-cycling/leaflet.css').stat().st_size > 1000
           assert 'id="savedRoutes"' in html and 'id="savedRides"' in html and 'id="cancelOSM"' in html
           assert 'id="drawRoute"' in html and 'id="osmProvider"' in html and 'id="finishDraw"' in html
           assert 'id="worldPlaces"' in html and 'id="routeSuggestions"' in html and 'id="loadElevation"' in html
-          assert 'v1.2.0' in html
-          assert 'cycling.js?v=1.2.0' in html and 'cycling.css?v=1.2.0' in html
+          import re
+          release_match = re.search(r'v(\d+\.\d+\.\d+)', html)
+          assert release_match, 'Missing semantic release version in cycling HTML'
+          release = release_match.group(1)
+          assert f'cycling.js?v={release}' in html and f'cycling.css?v={release}' in html, 'Release assets do not match HTML version'
           assert all(f'id="{id}"' in html for id in ('startFullDemo','openDemoWorld','demoWorldPanel','demoWorldMap','demoStartRace','enableLiveMap','sceneSeason','sceneRoadside','sceneLighting','sceneAtmosphere'))
           assert all(f'id="{id}"' in html for id in ('graphicsMode','sceneBiome','sceneQuality','sceneInfo','graphicsMessage'))
           assert all(f'id="{id}"' in html for id in ('autoResistance','loadBias','resLight','resHeavy','resApplied','resTarget','resGrade','resistanceStatus'))
@@ -309,6 +313,11 @@ jobs:
           current12 = directory / 'QCDS_Cycling_Runtime_v1.2.0.zip'
           shutil.copyfile(archive, current12)
           assert current12.stat().st_size > 15000
+          import re
+          release = re.search(r'v(\d+\.\d+\.\d+)', (directory / 'index.html').read_text(encoding='utf-8')).group(1)
+          release_archive = directory / ('QCDS_Cycling_Runtime_v' + release + '.zip')
+          shutil.copyfile(archive, release_archive)
+          assert release_archive.stat().st_size > 15000
           assert latest.stat().st_size > 500
           print('Downloadable public runtime ZIP:', latest, latest.stat().st_size)
           PYZIP
