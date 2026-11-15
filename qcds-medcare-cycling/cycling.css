@@ -118,3 +118,17 @@
 .resistance-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px}.resistance-metrics>div{border:1px solid #325669;background:#081b2bf0;border-radius:12px;padding:15px;min-width:0}.resistance-metrics span{display:block;color:#92b3c5;font-size:10px;letter-spacing:1px;font-weight:800;line-height:1.4}.resistance-metrics strong{display:block;font-size:clamp(22px,2.8vw,33px);margin-top:6px;font-variant-numeric:tabular-nums;color:#edf8ff}.resistance-metrics>div:nth-child(2) strong{color:#63ebd3}
 .resistance-status{margin:15px 0 0;color:#80e5d7;font-weight:750;font-size:12px;line-height:1.6}.resistance-fineprint{font-size:11px;color:#97b7c6;line-height:1.65;margin:9px 0 0}
 @media(max-width:620px){.resistance-panel{padding:15px}.resistance-head{flex-direction:column}.resistance-switchrow{flex-direction:column;align-items:flex-start}.resistance-heading h4{font-size:17px}.resistance-metrics{gap:6px}.resistance-metrics>div{padding:11px 8px}.resistance-metrics span{font-size:8px}.resistance-metrics strong{font-size:19px}.resistance-control{gap:8px}.resistance-scale{font-size:8px}}
+
+/* SYNTRACT GRAPHICS 3D controls: matches existing visual hierarchy. */
+.scene-studio{margin:16px 0 18px;padding:20px 24px 18px;border:1px solid #416979;border-radius:17px;background:radial-gradient(ellipse at 93% -50%,#256b6342,transparent 68%),linear-gradient(150deg,#123442,#0c1e2b);box-shadow:inset 0 1px 0 #b4f6e622}
+.scene-intro{display:flex;gap:18px;justify-content:space-between;align-items:flex-start}
+.scene-intro h3{font-size:23px;letter-spacing:-.65px;margin:6px 0}
+.scene-intro p{max-width:740px;color:#abc4cd;font-size:12px;line-height:1.65;margin:0 0 15px}
+.scene-mark{white-space:nowrap;font-size:11px;letter-spacing:1px;color:#a4f0e3;font-weight:850;border:1px solid #3b827f;border-radius:30px;padding:9px 12px;background:#082e33}
+.scene-pickers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.scene-pickers label{display:block;font-size:11px;color:#a6c7d5;font-weight:700}
+.scene-pickers select{margin-top:7px;display:block;width:100%;color:#f1ffff;padding:13px 12px;border-radius:10px;background:#092231;border:1px solid #3a6071;font:inherit}
+.scene-status{color:#94cfd7;font-size:12px;margin:14px 0 0}
+.scene-evidence{font-size:11px;color:#85a8b4;margin:7px 0 0;line-height:1.5}
+.arena{background:#13364a}
+@media(max-width:680px){.scene-studio{padding:16px}.scene-intro{flex-direction:column;gap:6px}.scene-pickers{grid-template-columns:1fr}.scene-mark{margin-bottom:10px}}

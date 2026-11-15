@@ -161,12 +161,13 @@ class BikeFTMS{
 
 
 const RENDERERS=Object.freeze({
+ webgl2:{label:'WebGL2 Syntract Graphics 3D',status:'available',platforms:['modern WebGL2 browser'],implementation:'src/syntract-graphics.js'},
  canvas:{label:'Canvas 2D',status:'available',platforms:['all modern browsers'],implementation:'src/app.js'},
  webgpu:{label:'WebGPU 3D',status:'planned',platforms:['supported browsers and GPUs'],implementation:null},
  nvidia_dlss5:{label:'NVIDIA DLSS 5',status:'integration-blocked',platforms:['supported GeForce RTX 50 / native runtime'],implementation:null,requires:['NVIDIA partner SDK / access','RTX-compatible native renderer','color/depth/motion vectors','SDK/license compliance']}
 });
 function graphicsStatus(){return {
- active:'canvas',
+ active:typeof document!=='undefined'&&!!document.createElement('canvas').getContext('webgl2')?'webgl2':'canvas',
  wasm:typeof WebAssembly!=='undefined',
  webgpu:typeof navigator!=='undefined'&&!!navigator.gpu,
  dlss5Active:false,
@@ -891,8 +892,298 @@ function paintSyntractRace(ctx,w,h,snapshot,clock,discipline='road',visual='tact
   }
 }
 
+/* module: syntract-scene-oracles.js */
+
+const SCENE_LABELS=Object.freeze({countryside:'Landsväg & fält',forest:'Skog & trail',alpine:'Alpin terräng',arid:'Torrt landskap',urban:'Stadsnära'});
+const PALETTES=Object.freeze({
+ countryside:{ground:[.29,.46,.24],grass:[.19,.38,.18],pine:[.08,.25,.18],leaf:[.21,.42,.19],road:[.19,.24,.27],shoulder:[.45,.39,.29],fog:[.64,.79,.82],sun:[1,.89,.71],terrainAmp:1.7},
+ forest:{ground:[.14,.31,.22],grass:[.11,.29,.18],pine:[.07,.20,.16],leaf:[.17,.35,.19],road:[.17,.23,.21],shoulder:[.37,.34,.24],fog:[.51,.72,.73],sun:[.96,.88,.69],terrainAmp:2.8},
+ alpine:{ground:[.30,.42,.29],grass:[.25,.40,.24],pine:[.08,.22,.19],leaf:[.26,.43,.22],road:[.20,.24,.29],shoulder:[.49,.49,.42],fog:[.68,.81,.92],sun:[1,.92,.77],terrainAmp:5.6},
+ arid:{ground:[.57,.37,.21],grass:[.45,.35,.23],pine:[.26,.32,.19],leaf:[.39,.37,.24],road:[.27,.23,.22],shoulder:[.70,.52,.30],fog:[.87,.70,.57],sun:[1,.85,.62],terrainAmp:3.5},
+ urban:{ground:[.28,.42,.31],grass:[.23,.35,.22],pine:[.13,.26,.19],leaf:[.28,.45,.27],road:[.20,.24,.28],shoulder:[.42,.46,.42],fog:[.67,.80,.87],sun:[1,.90,.75],terrainAmp:1.0},
+});
+function finite(n){return typeof n==='number'&&Number.isFinite(n);}
+const BIOMES=Object.keys(SCENE_LABELS),SURFACES=['asphalt','gravel','trail'],VEGETATION=['sparse','medium','dense'],ATMOSPHERE=['clear','hazy'],LIGHT=['day','late'];
+const QCDS_SCENE_DOMAIN=Object.freeze({biome:BIOMES,surface:SURFACES,vegetation:VEGETATION,atmosphere:ATMOSPHERE,lighting:LIGHT});
+
+function inferSyntractScene({route=null,mode='road',override='auto'}={}){
+ const raw=`${route?.surface||route?.tags?.surface||''} ${route?.highway||route?.tags?.highway||''}`.toLowerCase();
+ const name=String(route?.name||'').toLowerCase();
+ const heights=(route?.points||[]).map(p=>p.ele).filter(finite);
+ const high=heights.length?Math.max(...heights)>=950:null;
+ const grounded=Array.isArray(route?.points)&&route.points.length>1;
+ let sourceSurface=null;
+ if(/asphalt|paved|concrete|tarmac/.test(raw))sourceSurface='asphalt';
+ if(/gravel|unpaved|fine_gravel|compacted/.test(raw))sourceSurface='gravel';
+ if(/path|singletrack|trail|footway/.test(raw))sourceSurface='trail';
+ const forestTag=/forest|skog|woodland|trail/.test(name),desertTag=/desert|öken|moab/.test(name),urbanTag=/urban|city|stad|innerstad|residential/.test(name);
+ const qcs=[
+  {id:'QC01',name:'Verifierat underlag',source:sourceSurface,weight:8,hard:true,accept:s=>s.surface===sourceSurface},
+  {id:'QC02',name:'Disciplinens vägtyp',source:mode,weight:3,accept:s=>s.surface===(mode==='gravel'?'gravel':mode==='road'?'asphalt':'trail')},
+  {id:'QC03',name:'Inläst alpin höjd',source:high===true?'hög höjd':null,weight:7,accept:s=>s.biome==='alpine'},
+  {id:'QC04',name:'Namn anger skog/trail',source:forestTag?'namn':null,weight:5,accept:s=>s.biome==='forest'},
+  {id:'QC05',name:'Namn anger torrt landskap',source:desertTag?'namn':null,weight:5,accept:s=>s.biome==='arid'},
+  {id:'QC06',name:'Namn anger stadsnära',source:urbanTag?'namn':null,weight:5,accept:s=>s.biome==='urban'},
+  {id:'QC07',name:'Skogsdiciplin',source:mode==='mtb'||mode==='downhill'?'MTB':null,weight:3,accept:s=>s.biome==='forest'},
+  {id:'QC08',name:'Landsvägsgrundläge',source:mode==='road'?'väg':null,weight:3,accept:s=>s.biome==='countryside'},
+  {id:'QC09',name:'Grusmiljögrundläge',source:mode==='gravel'?'gravel':null,weight:3,accept:s=>s.biome==='arid'||s.biome==='countryside'},
+  {id:'QC10',name:'Omgivning och vägsynlighet',source:'visuell läsbarhet',weight:1,accept:s=>s.vegetation!=='dense'||s.biome==='forest'},
+  {id:'QC11',name:'Tydligt dagsljus',source:'standard (ej mätning)',weight:1,accept:s=>s.lighting==='day'},
+  {id:'QC12',name:'Okänt väder – neutralt',source:'standard (ej väderdata)',weight:1,accept:s=>s.atmosphere==='clear'},
+ ];
+ const candidates=[];
+ for(const biome of BIOMES)for(const surface of SURFACES)for(const vegetation of VEGETATION)
+  for(const atmosphere of ATMOSPHERE)for(const lighting of LIGHT){
+    const state={biome,surface,vegetation,atmosphere,lighting};let score=0,excluded=false;
+    for(const qc of qcs){if(qc.source===null)continue;const pass=qc.accept(state);if(!pass&&qc.hard){excluded=true;break;}
+      if(pass)score+=qc.weight;
+    }
+    if(override!=='auto'&&Object.hasOwn(SCENE_LABELS,override)&&biome!==override)excluded=true;
+    if(!excluded){
+      // When evidence is absent, use clear, neutral defaults; these are illustrated, not asserted facts.
+      score+=biome==='countryside'?1.1:0;
+      score+=surface==='asphalt'?.2:0;
+      score+=vegetation==='medium'?.4:0;
+      candidates.push({...state,score});
+    }
+  }
+ candidates.sort((a,b)=>b.score-a.score||a.biome.localeCompare(b.biome));
+ const winner=candidates[0];if(!winner)throw Error('Inga scenkandidater uppfyller oraklen');
+ const checks=qcs.map(qc=>({id:qc.id,evidence:qc.name,known:qc.source!==null,met:qc.source!==null&&qc.accept(winner),hard:!!qc.hard,source:qc.source}));
+ const palette={...PALETTES[winner.biome]};
+ if(winner.atmosphere==='hazy')palette.fog=palette.fog.map(v=>v*.91);
+ // We retain the complete candidate ranking for auditing, never claim this is quantum amplification.
+ const mass=candidates.slice(0,5).map(c=>Math.exp((c.score-winner.score)/3)),total=mass.reduce((a,b)=>a+b,0);
+ const entropy=-mass.reduce((a,m)=>{const p=m/total;return a+p*Math.log2(p);},0);
+ return {biome:winner.biome,label:SCENE_LABELS[winner.biome],palette,state:winner,checks,matched:checks.filter(q=>q.met),
+  candidateCount:candidates.length,topK:candidates.slice(0,5),entropy,score:winner.score,
+  evidence:grounded?'Ruttgeometri inläst':'Illustrerad demoskiss',realElevation:heights.length>0,
+  georeferenced:false,scope:'CYCLING ONLY',inference:'Klassisk orakelbaserad kandidatvärdering; ej full QCDS kvantinferens'};
+}
+
+/* module: syntract-graphics.js */
+
+const vert=`#version 300 es
+precision highp float;
+layout(location=0) in vec3 aPos;
+layout(location=1) in vec3 aNorm;
+layout(location=2) in vec3 aCol;
+layout(location=3) in float aMat;
+uniform float uAspect;
+uniform float uPitch;
+uniform float uCamY;
+out vec3 vNorm;
+out vec3 vCol;
+out vec3 vWorld;
+out float vDepth;
+out float vMat;
+void main(){
+ float z=max(0.16,aPos.z+7.0);
+ float f=1.64;
+ gl_Position=vec4(aPos.x*f/uAspect,(aPos.y-uCamY+uPitch*z)*f,(1000.2/999.8)*z-(400.0/999.8),z);
+ vNorm=aNorm;vCol=aCol;vWorld=aPos;vDepth=z;vMat=aMat;
+}`;
+const frag=`#version 300 es
+precision highp float;
+in vec3 vNorm;in vec3 vCol;in vec3 vWorld;in float vDepth;in float vMat;
+uniform vec3 uFog;
+uniform float uTime;
+out vec4 oColor;
+float noise2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
+void main(){
+ vec3 n=normalize(vNorm);
+ vec3 light=normalize(vec3(-.35,.86,-.43));
+ float dif=max(dot(n,light),0.0);
+ float ambient=.46+max(n.y,0.0)*.09;
+ vec3 c=vCol*(ambient+.77*dif);
+ if(vMat<2.5){
+   float a=noise2(floor(vWorld.xz*17.0));
+float b=noise2(floor(vWorld.xz*3.2));
+   c*=1.0+(a-.5)*.18+(b-.5)*.11;
+ }
+ if(vMat>2.3&&vMat<3.2){
+  float micro=noise2(floor(vWorld.xz*34.0));c*=.92+.10*micro;
+ }
+ float fog=1.0-exp(-pow(max(vDepth-28.0,0.0)/390.0,1.55));
+ oColor=vec4(mix(c,uFog,clamp(fog,0.0,.82)),1.0);
+}`;
+const skyVert=`#version 300 es
+precision mediump float;
+layout(location=0) in vec2 p;out vec2 uv;
+void main(){uv=(p+1.0)*.5;gl_Position=vec4(p,0.0,1.0);}`;
+const skyFrag=`#version 300 es
+precision highp float;
+in vec2 uv;
+uniform vec3 uFog;
+uniform float uTime;
+uniform float uAlpine;
+out vec4 oColor;
+float hsh(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float noiz(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hsh(i),hsh(i+vec2(1,0)),f.x),mix(hsh(i+vec2(0,1)),hsh(i+vec2(1,1)),f.x),f.y);}
+void main(){
+ float y=uv.y;
+ vec3 sky=mix(uFog*.92,vec3(.13,.30,.53),smoothstep(.28,1.0,y));
+ sky=mix(sky,vec3(.43,.62,.73),(1.0-smoothstep(.34,.58,y))*.13);
+ float x=uv.x;
+ float sun=exp(-pow(distance(uv,vec2(.79,.78))/.065,2.0)*2.0);
+ float halo=exp(-pow(distance(uv,vec2(.79,.78))/.24,2.0)*3.0);
+ sky+=vec3(1.0,.76,.46)*(sun*.68+halo*.15);
+ vec2 cloudp=uv*vec2(4.7,10.0)+vec2(uTime*.0006,0);
+ float clouds=noiz(cloudp)*.55+noiz(cloudp*2.4)*.29+noiz(cloudp*5.7)*.16;
+ float ca=smoothstep(.52,.72,clouds)*smoothstep(.59,.85,y)*.64;
+ sky=mix(sky,vec3(.97,.96,.89),ca);
+ float mount=.60 +(.055+.08*uAlpine)*sin(x*9.7+1.2)+(.033+.06*uAlpine)*sin(x*21.1+.7)+.022*sin(x*43.1+4.);
+ float mount2=.53 +(.045+.045*uAlpine)*sin(x*12.7+2.6)+.021*sin(x*39.0+2.7);
+ float peaks=smoothstep(mount-.007,mount+.007,y);
+ vec3 distant=mix(uFog*.57,vec3(.21,.37,.43),uAlpine*.6);
+ vec3 col=mix(distant,sky,peaks);
+ col=mix(uFog*.58,col,smoothstep(mount2-.006,mount2+.009,y));
+ oColor=vec4(col,1.);
+}`;
+const clip=(x,a,b)=>Math.max(a,Math.min(b,x));
+const lerp3d=(a,b,t)=>a+(b-a)*t;
+const dist=(a,b)=>Math.hypot(a.lat-b.lat,(a.lon-b.lon)*Math.cos(a.lat*Math.PI/180))*111194.9;
+const hash=n=>{const q=Math.sin(n*127.1)*43758.5453;return q-Math.floor(q);};
+class Mesh{
+ constructor(){this.v=[];}
+ tri(a,b,c,color,mat=1){const u=a.map((v,i)=>b[i]-v),v=a.map((v,i)=>c[i]-v);let n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];const l=Math.hypot(...n)||1;n=n.map(x=>x/l);for(const p of [a,b,c])this.v.push(...p,...n,...color,mat);}
+ quad(a,b,c,d,color,mat=1){this.tri(a,b,c,color,mat);this.tri(a,c,d,color,mat);}
+ bar(a,b,r,color){const axis=b.map((v,i)=>v-a[i]),l=Math.hypot(...axis);if(l<.0001)return;const n=axis.map(x=>x/l),base=Math.abs(n[1])<.8?[0,1,0]:[1,0,0];const x=[n[1]*base[2]-n[2]*base[1],n[2]*base[0]-n[0]*base[2],n[0]*base[1]-n[1]*base[0]];const q=Math.hypot(...x);for(let i=0;i<3;i++)x[i]/=q;const y=[n[1]*x[2]-n[2]*x[1],n[2]*x[0]-n[0]*x[2],n[0]*x[1]-n[1]*x[0]];let old=[];for(let i=0;i<5;i++){const t=i*Math.PI/2;const o=x.map((val,j)=>r*(Math.cos(t)*val+Math.sin(t)*y[j]));const p=a.map((val,j)=>val+o[j]),q=b.map((val,j)=>val+o[j]);if(i>0)this.quad(old[0],old[1],q,p,color,4);old=[p,q];}}
+ prism(x,y,z,w,h,d,color){const a=[x-w/2,y,z-d/2],b=[x+w/2,y,z-d/2],c=[x+w/2,y,z+d/2],e=[x-w/2,y,z+d/2],up=p=>[p[0],p[1]+h,p[2]];this.quad(a,b,up(b),up(a),color,4);this.quad(b,c,up(c),up(b),color,4);this.quad(c,e,up(e),up(c),color,4);this.quad(e,a,up(a),up(e),color,4);this.quad(up(a),up(b),up(c),up(e),color,4);}
+ cone(x,y,z,r,h,color,sides=7){const p=[x,y+h,z];for(let i=0;i<sides;i++){const a=i*2*Math.PI/sides,b=(i+1)*2*Math.PI/sides;this.tri([x+Math.cos(a)*r,y,z+Math.sin(a)*r],[x+Math.cos(b)*r,y,z+Math.sin(b)*r],p,color,4);}}
+ ball(x,y,z,r,color,rows=5,cols=9){for(let a=0;a<rows;a++){const lo=-Math.PI/2+a*Math.PI/rows,hi=-Math.PI/2+(a+1)*Math.PI/rows;for(let k=0;k<cols;k++){const t=k*Math.PI*2/cols,u=(k+1)*Math.PI*2/cols;const p=(alt,ang)=>[x+Math.cos(alt)*Math.cos(ang)*r,y+Math.sin(alt)*r,z+Math.cos(alt)*Math.sin(ang)*r];this.quad(p(lo,t),p(lo,u),p(hi,u),p(hi,t),color,4);}}}
+}
+const P=Object.freeze({v:3});
+function shader(gl,type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s;}
+function program(gl,vs,fs){const p=gl.createProgram();gl.attachShader(p,shader(gl,gl.VERTEX_SHADER,vs));gl.attachShader(p,shader(gl,gl.FRAGMENT_SHADER,fs));gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(p));return p;}
+function makeRouteVisual(route,meters=0){
+ const pts=route?.points;if(!Array.isArray(pts)||pts.length<2)return null;
+ const sums=[0];for(let i=1;i<pts.length;i++)sums.push(sums.at(-1)+dist(pts[i-1],pts[i]));
+ const total=sums.at(-1);if(total<40)return null;
+ const sample=m=>{const v=clip(m,0,total);let low=0,hi=sums.length-1;while(hi-low>1){const mid=(hi+low)>>1;if(sums[mid]<=v)low=mid;else hi=mid;}const a=pts[low],b=pts[hi],t=(v-sums[low])/Math.max(.001,sums[hi]-sums[low]);return {lat:lerp3d(a.lat,b.lat,t),lon:lerp3d(a.lon,b.lon,t),ele:Number.isFinite(a.ele)&&Number.isFinite(b.ele)?lerp3d(a.ele,b.ele,t):null};};
+ const zero=sample(meters),forward=sample(meters+20);
+ const dx=(forward.lon-zero.lon)*111194*Math.cos(zero.lat*Math.PI/180),dy=(forward.lat-zero.lat)*111194;
+ const norm=Math.hypot(dx,dy)||1;const e=dx/norm,n=dy/norm;
+ const center=z=>{const p=sample(meters+z);const ex=(p.lon-zero.lon)*111194*Math.cos(zero.lat*Math.PI/180),ny=(p.lat-zero.lat)*111194;
+ return clip((ex*n-ny*e)*.72,-28,28);};
+ const height=z=>{const p=sample(meters+z);return zero.ele!==null&&p.ele!==null?clip((p.ele-zero.ele)*.6,-22,22):null;};
+ return {total,center,height,hasElevation:zero.ele!==null,source:route.source||'GPX/OSM'};
+}
+function addBike(mesh,x,y,z,color,player=false,clock=0){
+ const dk=[.09,.12,.16],steel=[.21,.29,.33],skin=[.69,.47,.33];
+ const pos=(dx,dy,dz)=>[x+dx,y+dy,z+dz];
+ // side elevation of racing bicycles, twin spoked wheels
+ for(const wz of [-.72,.72]){
+  for(let i=0;i<18;i++){const a=i*2*Math.PI/18,b=(i+1)*2*Math.PI/18;
+   mesh.bar(pos(.02,.46+.40*Math.sin(a),wz+.40*Math.cos(a)),pos(.02,.46+.40*Math.sin(b),wz+.40*Math.cos(b)),.037,dk);
+  }
+  for(let i=0;i<8;i++){const a=i*Math.PI/4;mesh.bar(pos(0,.46,wz),pos(0,.46+.36*Math.sin(a),wz+.36*Math.cos(a)),.008,[.50,.56,.59]);}
+ }
+ const bottom=pos(.0,.68,.07),front=pos(.0,.70,.67),back=pos(0,.72,-.59),seat=pos(0,1.11,-.30),stem=pos(0,1.11,.53);
+ for(const [a,b] of [[bottom,front],[bottom,seat],[seat,back],[back,bottom],[seat,stem],[stem,front]])mesh.bar(a,b,.042,color);
+ mesh.bar(pos(-.22,1.1,.53),pos(.22,1.1,.53),.041,dk);
+ mesh.bar(pos(-.18,1.17,-.36),pos(.18,1.17,-.36),.032,dk);
+ // upper body in a realistic racing tuck; left/right shoulders, elbows and hands
+ mesh.ball(x,1.68+y,z-.15,.23,color,5,10);
+ mesh.bar(pos(0,1.36,-.27),pos(0,1.75,-.13),.18,color);
+ for(const side of [-1,1]){
+  const ped=clock*5+side*Math.PI;
+  mesh.bar(pos(side*.12,1.35,-.31),pos(side*.15,.94+.14*Math.sin(ped),-.30+.14*Math.cos(ped)),.095,[.20,.26,.35]);
+  mesh.bar(pos(side*.15,.94+.14*Math.sin(ped),-.30+.14*Math.cos(ped)),pos(side*.13,.75+.20*Math.sin(ped),-.17+.23*Math.cos(ped)),.065,skin);
+  mesh.bar(pos(side*.17,1.71,-.06),pos(side*.25,1.36,.22),.083,skin);
+  mesh.bar(pos(side*.25,1.36,.22),pos(side*.19,1.18,.49),.055,skin);
+ }
+ mesh.ball(x,1.96+y,z+.11,.16,[.16,.20,.21],6,10);
+ mesh.cone(x,y+2.05,z+.11,.18,.11,player?[.19,.91,.81]:color,9);
+}
+function addTree(mesh,x,y,z,height,palette,seed){
+ const bark=[.28,.21,.16],pine=seed<.77;
+ mesh.prism(x,y,z,.22*height/5,height*.38,.22*height/5,bark);
+ if(pine){for(let a=0;a<3;a++)mesh.cone(x,y+height*(.22+a*.18),z,height*(.26-a*.058),height*(.47-a*.04),palette.pine,8);}
+ else {for(const [dx,dy,dz] of [[0,.69,0],[-.22,.62,.08],[.24,.62,-.08]])mesh.ball(x+dx*height*.21,y+height*dy,z+dz*height*.19,height*.25,palette.leaf,5,9);}
+}
+class SyntractGraphics3D {
+ constructor(canvas){
+  const gl=canvas.getContext('webgl2',{alpha:false,antialias:true,depth:true,powerPreference:'high-performance'});if(!gl)throw Error('WebGL2 är inte tillgängligt');
+  this.gl=gl;this.canvas=canvas;this.p=program(gl,vert,frag);this.sky=program(gl,skyVert,skyFrag);
+  this.buf=gl.createBuffer();this.skyBuffer=gl.createBuffer();this.lastKey='';this.lastBiome='';this.count=0;this.vertices=null;
+  gl.bindBuffer(gl.ARRAY_BUFFER,this.skyBuffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
+  this.locs={aspect:gl.getUniformLocation(this.p,'uAspect'),pitch:gl.getUniformLocation(this.p,'uPitch'),camy:gl.getUniformLocation(this.p,'uCamY'),fog:gl.getUniformLocation(this.p,'uFog'),time:gl.getUniformLocation(this.p,'uTime')};
+  this.skyLoc={fog:gl.getUniformLocation(this.sky,'uFog'),time:gl.getUniformLocation(this.sky,'uTime'),alpine:gl.getUniformLocation(this.sky,'uAlpine')};
+  gl.disable(gl.CULL_FACE);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);
+ }
+ dispose(){const gl=this.gl;gl.deleteBuffer(this.buf);gl.deleteBuffer(this.skyBuffer);gl.deleteProgram(this.p);gl.deleteProgram(this.sky);}
+ resize(w,h,dpr){const ratio=Math.min(1.5,dpr||1);const width=Math.round(w*ratio),height=Math.round(h*ratio);if(this.canvas.width!==width||this.canvas.height!==height){this.canvas.width=width;this.canvas.height=height;}this.gl.viewport(0,0,width,height);}
+ makeStatic(scene,progress,routeView,quality='high'){
+  const m=new Mesh(),p=scene.palette,forest=scene.biome==='forest',urban=scene.biome==='urban',alpine=scene.biome==='alpine';
+  const center=z=>routeView?routeView.center(z):Math.sin((progress+z)/85)*4+Math.sin((progress+z)/170)*8-(Math.sin(progress/85)*4+Math.sin(progress/170)*8);
+  const hill=z=>{const routeHeight=routeView?.height(z);return routeHeight!==null&&routeHeight!==undefined?routeHeight:1.2*Math.sin((progress+z)/150)-1.2*Math.sin(progress/150);};
+  const ground=(x,z)=>hill(z)+Math.max(0,(Math.abs(x-center(z))-6)/36)*p.terrainAmp*(.34*Math.sin(x*.11+z*.03)+.43*Math.sin(z*.018+x*.031)+.27*Math.sin(x*.04));
+  for(let zi=0;zi<48;zi++){
+   const za=-6+zi*13,zb=za+13;
+   for(let xi=0;xi<38;xi++){
+    const xa=-190+xi*10,xb=xa+10;
+    const al=hash(xi*491+zi*331+31),color=p.ground.map(v=>clip(v*(.85+.26*al),0,1));
+    m.quad([xa,ground(xa,za)-.1,za],[xb,ground(xb,za)-.1,za],[xb,ground(xb,zb)-.1,zb],[xa,ground(xa,zb)-.1,zb],color,1);
+   }
+  }
+  const roadColor=scene.state?.surface==='gravel'?[.36,.31,.26]:scene.state?.surface==='trail'?[.21,.27,.23]:scene.biome==='arid'?[.38,.30,.23]:forest?[.26,.28,.27]:p.road;
+  for(let z=-6;z<600;z+=7){const z2=z+7,ca=center(z),cb=center(z2),ha=hill(z),hb=hill(z2),pos=(x,y,z)=>[x,y,z];
+   for(let side of [-1,1]){
+    // verges follow outside the asphalt with shoulder material
+    const x1=ca+side*4.3,x2=ca+side*6.7,y1=ha+.09,y2=hb+.09;
+    m.quad(pos(ca+side*3.65,ha+.17,z),pos(x2,y1,z),pos(cb+side*6.7,y2,z2),pos(cb+side*3.65,hb+.17,z2),p.shoulder,1);
+    m.quad(pos(ca+side*3.66,ha+.21,z),pos(ca+side*3.78,ha+.21,z),pos(cb+side*3.78,hb+.21,z2),pos(cb+side*3.66,hb+.21,z2),[.88,.86,.77],3.7);
+   }
+   m.quad(pos(ca-3.68,ha+.19,z),pos(ca+3.68,ha+.19,z),pos(cb+3.68,hb+.19,z2),pos(cb-3.68,hb+.19,z2),roadColor,2.7);
+   if(Math.floor((z+progress)/13)%3!==0){m.quad(pos(ca-.065,ha+.225,z),pos(ca+.065,ha+.225,z),pos(cb+.065,hb+.225,z2),pos(cb-.065,hb+.225,z2),[.92,.87,.69],4);}
+  }
+  const density=(quality==='low'?1.8:1)*(scene.state?.vegetation==='dense'?.75:scene.state?.vegetation==='sparse'?1.5:1);
+  for(let z=14;z<=545;z+=11*density){
+   const seed=Math.floor((progress+z)/11),base=center(z),groundY=hill(z);
+   for(const side of [-1,1]){
+    for(let j=0;j<(forest?3:2);j++){
+     const k=seed*17+j*107+(side+2)*1134;
+     if(hash(k)<(urban?.43:.16))continue;
+     const spread=7+Math.pow(hash(k+3),.85)*(forest?30:58),x=base+side*spread;
+     const zz=z+(hash(k+14)-.5)*8;if(zz<=1)continue;
+     const ht=(forest?8.5:6.2)+hash(k+8)*(forest?13:9);
+     addTree(m,x,ground(x,zz),zz,ht,p,hash(k+15));
+    }
+   }
+  }
+  if(urban){for(let z=60;z<550;z+=80){for(const side of [-1,1]){const x=center(z)+side*(20+hash(z*2)*9),g=ground(x,z);m.prism(x,g,z,13,5+hash(z)*9,17,[.58,.54,.46]);m.cone(x,g+9,z,10,2.2,[.39,.22,.21],4);}}}
+  // Tactile roadside markers and occasional road signs.
+  for(let z=40;z<480;z+=37){for(const side of [-1,1]){const x=center(z)+side*5,g=hill(z);m.prism(x,g,z,.12,1,.12,[.93,.95,.92]);m.prism(x,g+.65,z,.16,.13,.16,[.74,.16,.13]);}}
+  return {vertices:new Float32Array(m.v),center,hill};
+ }
+ render({snapshot,scene,route=null,routeMeters=0,quality='high',time=0}){
+  const gl=this.gl,progress=Number(snapshot?.player?.km||0)*1000||0;const routeView=makeRouteVisual(route,routeMeters);
+  const key=`${scene.biome}/${Math.floor(progress/9)}/${route?.id||route?.name||'none'}/${route?.points?.length||0}/${route?.elevationSource||'none'}/${Math.floor(routeMeters/18)}/${quality}`;
+  if(key!==this.lastKey){this.static=this.makeStatic(scene,progress,routeView,quality);this.lastKey=key;}
+  gl.viewport(0,0,this.canvas.width,this.canvas.height);gl.disable(gl.DEPTH_TEST);
+  gl.useProgram(this.sky);gl.bindBuffer(gl.ARRAY_BUFFER,this.skyBuffer);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
+  gl.uniform3fv(this.skyLoc.fog,new Float32Array(scene.palette.fog));gl.uniform1f(this.skyLoc.time,time);gl.uniform1f(this.skyLoc.alpine,scene.biome==='alpine'?1:0);
+  gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+  gl.enable(gl.DEPTH_TEST);gl.clear(gl.DEPTH_BUFFER_BIT);gl.useProgram(this.p);
+  gl.uniform1f(this.locs.aspect,this.canvas.width/Math.max(1,this.canvas.height));gl.uniform1f(this.locs.pitch,.13);gl.uniform1f(this.locs.camy,2.7);gl.uniform3fv(this.locs.fog,new Float32Array(scene.palette.fog));gl.uniform1f(this.locs.time,time);
+  gl.bindBuffer(gl.ARRAY_BUFFER,this.buf);gl.bufferData(gl.ARRAY_BUFFER,this.static.vertices,gl.DYNAMIC_DRAW);
+  for(const [loc,size,offset] of [[0,3,0],[1,3,12],[2,3,24],[3,1,36]]){gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,size,gl.FLOAT,false,40,offset);}
+  gl.drawArrays(gl.TRIANGLES,0,this.static.vertices.length/10);
+  const bikes=new Mesh();const player=snapshot?.player;
+  if(player){const meZ=3.5;addBike(bikes,this.static.center(meZ),this.static.hill(meZ)+.2,meZ,[.10,.88,.72],true,time);}
+  for(const rider of snapshot?.others||[]){const z=3.5+(Number(rider.km)-Number(player?.km||0))*1000;
+   if(z>=-3&&z<270){let hex=(rider.color||'#53bee5').replace('#','');if(hex.length===3)hex=hex.split('').map(s=>s+s).join('');const color=[0,2,4].map(i=>parseInt(hex.slice(i,i+2),16)/255||.4);const x=this.static.center(Math.max(0,z))+(rider.laneAnimated??rider.lane??0)*1.6;addBike(bikes,x,this.static.hill(Math.max(0,z))+.2,z,color,false,time+rider.offsetM);}
+  }
+  gl.bindBuffer(gl.ARRAY_BUFFER,this.buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(bikes.v),gl.DYNAMIC_DRAW);gl.drawArrays(gl.TRIANGLES,0,bikes.v.length/10);
+  return {renderer:'WebGL2',scene:scene.label,checkCount:scene.matched.length,riderCount:1+(snapshot?.others||[]).length};
+ }
+}
+
 /* module: app.js */
 const wasmCourseIndex=index;
+
+
 
 
 
@@ -1439,16 +1730,47 @@ function updateLeaderboard(){
  });
  $('position').textContent=`${latestExperience.position}/${latestExperience.total}`;
 }
-const canvas=$('raceCanvas');let cw=0,ch=0;
-function resizeRace(){const r=canvas.getBoundingClientRect();if(r.width<=0||r.height<=0)return;const dpr=Math.min(2,devicePixelRatio||1);cw=r.width;ch=r.height;canvas.width=Math.floor(cw*dpr);canvas.height=Math.floor(ch*dpr);canvas.getContext('2d').setTransform(dpr,0,0,dpr,0,0);}
+let canvas=$('raceCanvas'),cw=0,ch=0,sceneRenderer=null,raceCtx=null,activeGraphics='2d';
+function resizeRace(){
+ const r=canvas.getBoundingClientRect();if(r.width<=0||r.height<=0)return;
+ cw=r.width;ch=r.height;const dpr=Math.min(1.5,devicePixelRatio||1);
+ if(sceneRenderer)sceneRenderer.resize(cw,ch,dpr);
+ else{canvas.width=Math.floor(cw*dpr);canvas.height=Math.floor(ch*dpr);raceCtx=canvas.getContext('2d');if(raceCtx)raceCtx.setTransform(dpr,0,0,dpr,0,0);}
+}
+function initializeRaceRenderer(){
+ const current=$('graphicsMode').value;
+ if(sceneRenderer){sceneRenderer.dispose();sceneRenderer=null;}
+ // A canvas cannot use both 2D and WebGL; replace the element when changing modes.
+ const next=canvas.cloneNode(false);canvas.replaceWith(next);canvas=next;raceCtx=null;activeGraphics='2d';
+ if(current==='webgl'){
+  try{sceneRenderer=new SyntractGraphics3D(canvas);activeGraphics='webgl';}
+  catch(e){$('graphicsMessage').textContent='3D saknas på enheten. Stabil 2,5D används: '+(e.message||e);}
+ }
+ if(!sceneRenderer)raceCtx=canvas.getContext('2d');
+ if(sceneRenderer){$('graphicsMessage').textContent='3D WebGL2 aktiv · scener byggs från explicita Syntract-orakel. Ingen fotorealistisk platsrekonstruktion.';}
+ if($('graphicsStatus'))$('graphicsStatus').textContent=activeGraphics==='webgl'?'WebGL2 · Syntract Graphics 3D, orakelbaserad scen':'Canvas 2D · stabil reservrenderare';
+ resizeRace();
+}
+$('graphicsMode').addEventListener('change',initializeRaceRenderer);
+$('sceneBiome').addEventListener('change',()=>{if(sceneRenderer)sceneRenderer.lastKey='';});
+$('sceneQuality').addEventListener('change',()=>{if(sceneRenderer)sceneRenderer.lastKey='';});
 window.addEventListener('resize',()=>{resizeRace();drawProfile();});
-function raceDraw(timestamp){requestAnimationFrame(raceDraw);if(!cw||!ch||S.tab!=='ride')return;
- const ctx=canvas.getContext('2d');
+function raceDraw(timestamp){
+ requestAnimationFrame(raceDraw);if(!cw||!ch||S.tab!=='ride')return;
  const now=timestamp||performance.now(),extra=S.running?Math.max(0,Math.min(950,now-lastExperienceMs))/3600000:0;
  const st=latestExperience;
  const drawState={...st,player:{...st.player,km:st.player.km+st.speedKmh*extra},others:st.others.map(b=>({...b,km:b.km+(b.speedKmh||20)*extra}))};
- paintSyntractRace(ctx,cw,ch,drawState,now/1000,S.mode,visualMode);
+ const visual=inferSyntractScene({route:S.route,mode:S.mode,override:$('sceneBiome').value});
+ if(sceneRenderer){
+  try{const quality=$('sceneQuality').value==='auto'?(cw<720?'low':'high'):$('sceneQuality').value;
+   sceneRenderer.render({snapshot:drawState,scene:visual,route:S.route,routeMeters:S.km*1000,quality,time:now/1000});
+  }catch(e){$('graphicsMessage').textContent='3D-rendering pausad: '+(e?.message||e)+'. Välj 2,5D som reservvy.';}
+ }else if(raceCtx)paintSyntractRace(raceCtx,cw,ch,drawState,now/1000,S.mode,visualMode);
+ if(now-(window._syntractSceneStatusAt||0)>2200){
+  $('sceneInfo').textContent=`${visual.label} · ${visual.matched.length} uppfyllda orakel · ${visual.realElevation?'höjddata inläst':'terränghöjd illustrerad'} · ${S.route?'banans GPS/OSM används för kurvförhandsvisning':'generisk demoslinga'}`;
+  window._syntractSceneStatusAt=now;
+ }
 }
 initEngine().then(()=>{if($('wasmStatus'))$('wasmStatus').textContent=engineStatus();updateHandicap();updateRoute();});
-if($('graphicsStatus'))$('graphicsStatus').textContent='Canvas 2D aktiv · WebGPU förberett · DLSS 5 kräver RTX-native/SDK';
+initializeRaceRenderer();
 setInterval(raceTick,1000);setInterval(()=>{if(S.source==='demo'&&!S.running){S.liveWatts=115;updateTelemetry();}},5000);updateDevice('Väntar på Bluetooth FTMS');updateHandicap();updateRoute();updateTelemetry();updateLeaderboard();initMap();requestAnimationFrame(raceDraw);resizeRace();updateExperienceUi();updateResistanceUi();
