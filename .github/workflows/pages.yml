@@ -239,8 +239,8 @@ jobs:
           assert 'id="savedRoutes"' in html and 'id="savedRides"' in html and 'id="cancelOSM"' in html
           assert 'id="drawRoute"' in html and 'id="osmProvider"' in html and 'id="finishDraw"' in html
           assert 'id="worldPlaces"' in html and 'id="routeSuggestions"' in html and 'id="loadElevation"' in html
-          assert 'v1.1.0' in html
-          assert 'cycling.js?v=1.1.0' in html and 'cycling.css?v=1.1.0' in html
+          assert 'v1.2.0' in html
+          assert 'cycling.js?v=1.2.0' in html and 'cycling.css?v=1.2.0' in html
           assert all(f'id="{id}"' in html for id in ('startFullDemo','openDemoWorld','demoWorldPanel','demoWorldMap','demoStartRace','enableLiveMap','sceneSeason','sceneRoadside','sceneLighting','sceneAtmosphere'))
           assert all(f'id="{id}"' in html for id in ('graphicsMode','sceneBiome','sceneQuality','sceneInfo','graphicsMessage'))
           assert all(f'id="{id}"' in html for id in ('autoResistance','loadBias','resLight','resHeavy','resApplied','resTarget','resGrade','resistanceStatus'))
@@ -255,6 +255,11 @@ jobs:
           assert 'parseControlResponse' in js and 'activateControl' in js and 'encodeResistance' in js and 'syncAutoResistance' in js
           assert 'SyntractGraphics3D' in js and 'inferSyntractScene' in js and 'QCDS_SCENE_DOMAIN' in js
           assert 'SYNTRACT_DEMO_ROUTES' in js and 'paintSyntractDemoMap' in js and 'getSyntractDemoRoute' in js
+          assert 'function pedalPose' in js and 'CRANK_RADIUS' in js and 'syntract-graphics.js' in js
+          assert 'data:image/webp;base64,' in js and 'route?.demo===true' in js
+          assert 'id="pelotonStrip"' in html and 'id="tvExit"' in html and 'id="tvModeHeader"' in html
+          css = Path('_site/qcds-medcare-cycling/cycling.css').read_text(encoding='utf-8')
+          assert 'data:image/webp;base64,' in css and 'scenic-side-right' in css
           assert 'route?.demo' in js and 'if(!resState.enabled' in js
           assert 'ensureLiveMap' in js and 'sceneRoadside' in js
           assert 'webgl2' in js and 'makeRouteVisual' in js
@@ -301,6 +306,9 @@ jobs:
           current11 = directory / 'QCDS_Cycling_Runtime_v1.1.0.zip'
           shutil.copyfile(archive, current11)
           assert current11.stat().st_size > 5000
+          current12 = directory / 'QCDS_Cycling_Runtime_v1.2.0.zip'
+          shutil.copyfile(archive, current12)
+          assert current12.stat().st_size > 15000
           assert latest.stat().st_size > 500
           print('Downloadable public runtime ZIP:', latest, latest.stat().st_size)
           PYZIP
