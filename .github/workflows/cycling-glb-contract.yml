@@ -1,0 +1,37 @@
+name: QCDS Cycling - inspect CC0 3D model contract
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/cycling-glb-contract.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect_model:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          python3 - <<'PY'
+          import struct,json,collections
+          from pathlib import Path
+          raw=Path('qcds-medcare-cycling/assets/norway-spruce-cc0.glb').read_bytes()
+          n,t=struct.unpack_from('<II',raw,12); j=json.loads(raw[20:20+n])
+          print('MODEL_ASSET',j.get('asset'))
+          print('MODEL_SCENES',j.get('scenes'),'default',j.get('scene'))
+          print('MODEL_MATERIALS',j.get('materials'))
+          print('MODEL_TEXTURES',j.get('textures'))
+          print('MODEL_IMAGES',[{k:v for k,v in x.items() if k in ('mimeType','bufferView','uri')} for x in j.get('images',[])])
+          print('MODEL_SAMPLERS',j.get('samplers'))
+          p=[q for m in j.get('meshes',[]) for q in m['primitives']]
+          print('MODEL_PRIMITIVE_COUNT',len(p))
+          print('MODEL_PRIMITIVE_ATTRIBUTES',dict(collections.Counter(tuple(sorted(x.get('attributes',{}).keys())) for x in p)))
+          print('MODEL_PRIMITIVE_MODES',dict(collections.Counter(x.get('mode',4) for x in p)))
+          print('MODEL_PRIMITIVE_MATERIALS',dict(collections.Counter(x.get('material') for x in p)))
+          print('MODEL_ACCESSORS',{'count':len(j.get('accessors',[])),'types':dict(collections.Counter((a['type'],a['componentType']) for a in j.get('accessors',[])))})
+          print('MODEL_NODES_FIRST',j.get('nodes',[])[:6])
+          print('MODEL_TOTAL_INDICES',sum(j['accessors'][x['indices']]['count'] for x in p if 'indices' in x))
+          print('MODEL_TOTAL_VERTICES',sum(j['accessors'][x['attributes']['POSITION']]['count'] for x in p))
+          print('MODEL_EXTENSIONS',j.get('extensionsUsed',[]),j.get('extensionsRequired',[]))
+          PY
