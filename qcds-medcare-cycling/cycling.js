@@ -1172,16 +1172,17 @@ layout(location=3) in float aMat;
 uniform float uAspect;
 uniform float uPitch;
 uniform float uCamY;
+uniform float uWorldScroll;
 out vec3 vNorm;
 out vec3 vCol;
 out vec3 vWorld;
 out float vDepth;
 out float vMat;
 void main(){
- float z=max(0.18,aPos.z+5.0);
+ float z=max(0.18,aPos.z-uWorldScroll+5.0);
  float f=2.42;
  gl_Position=vec4(aPos.x*f/uAspect,(aPos.y-uCamY+uPitch*z)*f,(1000.2/999.8)*z-(400.0/999.8),z);
- vNorm=aNorm;vCol=aCol;vWorld=aPos;vDepth=z;vMat=aMat;
+ vNorm=aNorm;vCol=aCol;vWorld=vec3(aPos.xy,aPos.z-uWorldScroll);vDepth=z;vMat=aMat;
 }`;
 const frag=`#version 300 es
 precision highp float;
@@ -1193,6 +1194,7 @@ uniform sampler2D uAsphalt;
 uniform sampler2D uGround;
 uniform float uGrassMix;
 uniform float uDemoBlend;
+uniform float uTrackOffset;
 out vec4 oColor;
 float noise2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
 void main(){
@@ -1202,35 +1204,38 @@ void main(){
   oColor=vec4(vec3(.018,.024,.027),.26*fade);return;
  }
  vec3 n=normalize(vNorm);
+ // Terrain top is double-sided and most quads have a downward-facing winding.
+ if(vMat<4.0 && n.y<-.1)n=-n;
  vec3 light=normalize(vec3(-.35,.86,-.43));
  float dif=max(dot(n,light),0.0);
- float ambient=.52+max(n.y,0.0)*.10;
- vec3 c=vCol*(ambient+.83*dif);
+ float ambient=.44+max(n.y,0.0)*.24;
+ vec3 c=vCol*(ambient+.82*dif);
+ vec2 trackUV=vec2(vWorld.x,vWorld.z+uTrackOffset);
  float gloss=pow(max(dot(reflect(-light,n),normalize(vec3(.05,.60,-.95))),0.0),18.0);
  c+=vec3(.17,.22,.22)*gloss*clamp(vMat-2.0,0.0,1.0);
  c=mix(c,c*vec3(1.15,.82,.70)*.92,uLate*.55);
  // Surface-specific photo-derived microtexture. World coordinates track the actual GPX/OSM road mesh.
  if(vMat>2.55 && vMat<2.95){
-  vec3 asphalt=texture(uAsphalt,vWorld.xz*vec2(.057,.043)).rgb;
+  vec3 asphalt=texture(uAsphalt,trackUV*vec2(.057,.043)).rgb;
   asphalt=pow(asphalt,vec3(.88));
   float detail=dot(asphalt,vec3(.299,.587,.114));
-  c=mix(c,asphalt*.89+vec3(.028,.033,.038),.94);
+  c=mix(c,asphalt*(.66+.32*dif)+vec3(.028,.033,.038),.91);
   c*=mix(vec3(.83),vec3(1.17),detail);
   c+=vec3(.027,.037,.038)*pow(max(dot(reflect(-light,n),normalize(vec3(.1,.8,-.85))),0.),36.);
  }else if(vMat>0.5&&vMat<1.6){
-  vec3 terrain=texture(uGround,vWorld.xz*vec2(.022,.020)).rgb;
+  vec3 terrain=texture(uGround,trackUV*vec2(.022,.020)).rgb;
   c=mix(c,terrain*.92+c*.16,.84*uGrassMix);
   c*=mix(vec3(.74),vec3(1.20),dot(terrain,vec3(.33)));
  }
  if(vMat<2.5){
-   float a=noise2(floor(vWorld.xz*17.0));
-   float b=noise2(floor(vWorld.xz*3.2));
+   float a=noise2(floor(trackUV*17.0));
+   float b=noise2(floor(trackUV*3.2));
    c*=1.0+(a-.5)*.18+(b-.5)*.11;
  }
  if(vMat>2.3&&vMat<3.2){
-  float micro=noise2(floor(vWorld.xz*48.0));
-  float grain=noise2(floor(vWorld.xz*151.0));
-  float grooves=sin(vWorld.x*43.0+sin(vWorld.z*.30)*.5)*.012;
+  float micro=noise2(floor(trackUV*48.0));
+  float grain=noise2(floor(trackUV*151.0));
+  float grooves=sin(trackUV.x*43.0+sin(trackUV.y*.30)*.5)*.012;
   c*=.87+.13*micro+.045*grain+grooves;
  }
  // The foreground is genuine dynamic geometry; at a *synthetic demo* distance it
@@ -1243,14 +1248,8 @@ void main(){
   c+=vec3(.35,.32,.22)*glitter*.19;
  }
  float fog=1.0-exp(-pow(max(vDepth-24.0,0.0)/290.0,1.4));
- float alpha=1.0;
- if(uDemoBlend>.5){
-  if(vMat>.5 && vMat<1.6) alpha=1.0-.77*smoothstep(145.,395.,vDepth);
-  else if(vMat>2.55&&vMat<2.95) alpha=1.0-.92*smoothstep(100.,410.,vDepth);
-  else if(vMat>5.0&&vMat<5.9) alpha=.82-.45*smoothstep(85.,250.,vDepth);
-  else if(vMat>1.6&&vMat<2.5) alpha=1.0-.68*smoothstep(125.,350.,vDepth);
- }
- oColor=vec4(mix(c,uFog,clamp(fog,0.0,.70)),alpha);
+ // No photographic image can bleed through route asphalt or geometric terrain.
+ oColor=vec4(mix(c,uFog,clamp(fog,0.0,.70)),1.0);
 
 }`;
 const skyVert=`#version 300 es
@@ -1313,13 +1312,19 @@ in vec2 vUv;in float vDepth;uniform sampler2D uPhoto;uniform vec3 uTint;uniform 
 uniform float uBotanical;uniform vec3 uSkyFog;
 out vec4 oColor;
 void main(){
- vec4 s=texture(uPhoto,vUv);if(s.a<(uBotanical>.5?.20:.055))discard;
+ vec4 s=texture(uPhoto,vUv);
+ if(uBotanical>.5){
+  // Dithered cutout foliage writes depth without translucent sprite ghosting.
+  float d=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453);
+  if(s.a<(.18+.48*d))discard;
+  s.a=1.0;
+ }else if(s.a<.055)discard;
  // Only the athlete's teal jersey changes colour, preserving natural skin,
  // tyres, road-bike metal and helmet materials.
  float teal=smoothstep(.08,.24,s.g-s.r)*smoothstep(.01,.10,s.b-s.r)*smoothstep(.20,.52,s.g);
  float luminance=dot(s.rgb,vec3(.24,.64,.12));
  s.rgb=mix(s.rgb,uTint*(luminance*1.30),teal*uTintFactor*.94);
- if(uBotanical>.5){float f=smoothstep(65.,380.,vDepth)*.42;s.rgb=mix(s.rgb,uSkyFog,f);s.a=clamp(s.a*1.04,0.,1.);}
+ if(uBotanical>.5){float f=smoothstep(65.,380.,vDepth)*.42;s.rgb=mix(s.rgb,uSkyFog,f);s.a=1.0;}
  oColor=s;
 }`;
 const clip=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -1436,7 +1441,7 @@ function addTree(mesh,x,y,z,height,palette,seed){
  else {for(const [dx,dy,dz] of [[0,.69,0],[-.22,.62,.08],[.24,.62,-.08]])mesh.ball(x+dx*height*.21,y+height*dy,z+dz*height*.19,height*.25,palette.leaf,8,12);}
 }
 
-/* QCDS Cycling v2.2.0: genuinely transparent, generated alpha plants; never crop the HUD into scenery. */
+/* QCDS Cycling v2.3.0: grounded volumetric foliage and continuously scrolling terrain. */
 function qcdsPlantTexture(kind){
  const canvas=document.createElement('canvas');canvas.width=576;canvas.height=896;
  const ctx=canvas.getContext('2d',{alpha:true}),W=576,H=896;
@@ -1519,7 +1524,7 @@ class SyntractGraphics3D {
     }
   }
   this.photoLoc={aspect:gl.getUniformLocation(this.photo,'uAspect'),tex:gl.getUniformLocation(this.photo,'uPhoto'),tint:gl.getUniformLocation(this.photo,'uTint'),factor:gl.getUniformLocation(this.photo,'uTintFactor'),botanical:gl.getUniformLocation(this.photo,'uBotanical'),fog:gl.getUniformLocation(this.photo,'uSkyFog')};
-  this.surfaceLoc={road:gl.getUniformLocation(this.p,'uAsphalt'),ground:gl.getUniformLocation(this.p,'uGround'),grassMix:gl.getUniformLocation(this.p,'uGrassMix'),demoBlend:gl.getUniformLocation(this.p,'uDemoBlend')};
+  this.surfaceLoc={road:gl.getUniformLocation(this.p,'uAsphalt'),ground:gl.getUniformLocation(this.p,'uGround'),grassMix:gl.getUniformLocation(this.p,'uGrassMix'),demoBlend:gl.getUniformLocation(this.p,'uDemoBlend'),track:gl.getUniformLocation(this.p,'uTrackOffset')};
   this.backdrop=gl.createTexture();this.backdropReady=false;
   gl.bindTexture(gl.TEXTURE_2D,this.backdrop);
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([95,137,158,255]));
@@ -1533,7 +1538,7 @@ class SyntractGraphics3D {
   panorama.src=this.imageSources.lake; // undistorted photo, no overlaid interface
   this.buf=gl.createBuffer();this.skyBuffer=gl.createBuffer();this.lastKey='';this.lastBiome='';this.count=0;this.vertices=null;
   gl.bindBuffer(gl.ARRAY_BUFFER,this.skyBuffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
-  this.locs={aspect:gl.getUniformLocation(this.p,'uAspect'),pitch:gl.getUniformLocation(this.p,'uPitch'),camy:gl.getUniformLocation(this.p,'uCamY'),fog:gl.getUniformLocation(this.p,'uFog'),time:gl.getUniformLocation(this.p,'uTime'),late:gl.getUniformLocation(this.p,'uLate')};
+  this.locs={aspect:gl.getUniformLocation(this.p,'uAspect'),pitch:gl.getUniformLocation(this.p,'uPitch'),camy:gl.getUniformLocation(this.p,'uCamY'),scroll:gl.getUniformLocation(this.p,'uWorldScroll'),fog:gl.getUniformLocation(this.p,'uFog'),time:gl.getUniformLocation(this.p,'uTime'),late:gl.getUniformLocation(this.p,'uLate')};
   this.skyLoc={fog:gl.getUniformLocation(this.sky,'uFog'),time:gl.getUniformLocation(this.sky,'uTime'),alpine:gl.getUniformLocation(this.sky,'uAlpine'),late:gl.getUniformLocation(this.sky,'uLate'),backdrop:gl.getUniformLocation(this.sky,'uBackdrop'),backdropMix:gl.getUniformLocation(this.sky,'uBackdropMix')};
   gl.disable(gl.CULL_FACE);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);
  }
@@ -1614,16 +1619,17 @@ class SyntractGraphics3D {
   }
   // Tactile roadside markers and occasional road signs.
   for(let z=40;z<480;z+=37){for(const side of [-1,1]){const x=center(z)+side*5,g=hill(z);m.prism(x,g,z,.12,1,.12,[.93,.95,.92]);m.prism(x,g+.65,z,.16,.13,.16,[.74,.16,.13]);}}
-  return {vertices:new Float32Array(m.v),center,hill};
+  return {vertices:new Float32Array(m.v),center,hill,ground};
  }
  render({snapshot,scene,route=null,routeMeters=0,quality='high',time=0}){
   const gl=this.gl,progress=Number(snapshot?.player?.km||0)*1000||0;const routeView=makeRouteVisual(route,routeMeters);
   const visualPlan=planVisualBandwidth({scene,route,quality,routeGeometry:!!routeView});
-  const key=`${scene.biome}/${scene.state?.season}/${scene.state?.vegetation}/${scene.state?.roadside}/${scene.state?.surface}/${Math.floor(progress/9)}/${route?.id||route?.name||'none'}/${route?.points?.length||0}/${route?.elevationSource||'none'}/${Math.floor(routeMeters/18)}/${quality}`;
+  const staticProgress=Math.floor(progress/8)*8,scroll=progress-staticProgress;
+  const key=`${scene.biome}/${scene.state?.season}/${scene.state?.vegetation}/${scene.state?.roadside}/${scene.state?.surface}/${Math.floor(progress/8)}/${route?.id||route?.name||'none'}/${route?.points?.length||0}/${route?.elevationSource||'none'}/${Math.floor(routeMeters/8)}/${quality}`;
   if(key!==this.lastKey){
    // Geo provenance is decisive: only fictional Alpine demo routes may have an
    // illustrated lake; real GPX/OSM imagery must not be misrepresented.
-   this.static=this.makeStatic({...scene,demoWater:route?.demo===true && /alpine/i.test(String(route.id||''))},progress,routeView,visualPlan.geometryQuality);
+   this.static=this.makeStatic({...scene,demoWater:route?.demo===true && /alpine/i.test(String(route.id||''))},staticProgress,routeView,visualPlan.geometryQuality);
    this.lastKey=key;
   }
   gl.viewport(0,0,this.canvas.width,this.canvas.height);gl.disable(gl.DEPTH_TEST);
@@ -1633,11 +1639,11 @@ class SyntractGraphics3D {
   gl.uniform1f(this.skyLoc.backdropMix,this.backdropReady&&scene.state?.season!=='winter'&&route?.demo===true&&['alpine','countryside','forest'].includes(scene.biome)?0.97:0); // Generic illustrative backdrop: never a claim about geographic truth.
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
   gl.enable(gl.DEPTH_TEST);gl.clear(gl.DEPTH_BUFFER_BIT);gl.useProgram(this.p);
-  gl.uniform1f(this.locs.aspect,this.canvas.width/Math.max(1,this.canvas.height));gl.uniform1f(this.locs.pitch,.11);gl.uniform1f(this.locs.camy,2.28);gl.uniform3fv(this.locs.fog,new Float32Array(scene.palette.fog));gl.uniform1f(this.locs.time,time);gl.uniform1f(this.locs.late,scene.state?.lighting==='late'?1:0);
+  gl.uniform1f(this.locs.aspect,this.canvas.width/Math.max(1,this.canvas.height));gl.uniform1f(this.locs.pitch,.11);gl.uniform1f(this.locs.camy,2.28);gl.uniform1f(this.locs.scroll,scroll);gl.uniform3fv(this.locs.fog,new Float32Array(scene.palette.fog));gl.uniform1f(this.locs.time,time);gl.uniform1f(this.locs.late,scene.state?.lighting==='late'?1:0);
   gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,this.materialTex.road);gl.uniform1i(this.surfaceLoc.road,1);
   gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,this.materialTex.ground);gl.uniform1i(this.surfaceLoc.ground,2);
   gl.uniform1f(this.surfaceLoc.grassMix,['alpine','forest','countryside'].includes(scene.biome)?(scene.state?.season==='winter'?0:scene.state?.season==='autumn'?.38:1):0);
-  gl.uniform1f(this.surfaceLoc.demoBlend,this.backdropReady&&route?.demo===true?1:0);
+  gl.uniform1f(this.surfaceLoc.demoBlend,this.backdropReady&&route?.demo===true?1:0);gl.uniform1f(this.surfaceLoc.track,progress);
   gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
   gl.bindBuffer(gl.ARRAY_BUFFER,this.buf);gl.bufferData(gl.ARRAY_BUFFER,this.static.vertices,gl.DYNAMIC_DRAW);
   for(const [loc,size,offset] of [[0,3,0],[1,3,12],[2,3,24],[3,1,36]]){gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,size,gl.FLOAT,false,40,offset);}
@@ -1649,16 +1655,17 @@ class SyntractGraphics3D {
   if(visualPlan.foliageCount>0){
    const layers=[];const length=visualPlan.vegetationRange;
    const stride=visualPlan.treeStride;
-   for(let z=18;z<=length;z+=stride){
-    const absoluteBucket=Math.floor((progress+z)/stride);
+   // World buckets keep individual trees fixed in the landscape while riding.
+   for(let tile=Math.ceil((progress+18)/stride);tile*stride-progress<=length;tile++){
+    const z=tile*stride-progress,absoluteBucket=tile;
     for(const side of [-1,1])for(let rank=0;rank<(scene.biome==='forest'?3:2);rank++){
      const seed=absoluteBucket*131+side*457+rank*229;
      if(hash(seed+49)<(scene.biome==='arid'?.73:.18))continue;
      const zz=z+(hash(seed+77)-.5)*stride*.72;if(zz<4)continue;
-     const x=this.static.center(zz)+side*(8.9+rank*8.5+hash(seed+33)*16);
+     const x=this.static.center(zz+scroll)+side*(8.9+rank*8.5+hash(seed+33)*16);
      const tall=(scene.biome==='forest'?9:7)+hash(seed+7)*11;
      const wide=tall*(hash(seed+88)>.63?.30:.25);
-     const h=this.static.hill(zz)+.15;
+     const h=this.static.ground(x,zz+scroll)-.10;
      const kind=hash(seed+17)>(scene.biome==='alpine'?.93:.82)&&scene.state?.season!=='winter'?'oak':'pine';
      // Genuine transparent silhouette assets stay at world depth and do not contain scenery or UI pixels.
      const sway=Math.sin(time*.42+seed)*Math.min(.05,zz*.00015);
@@ -1708,9 +1715,10 @@ class SyntractGraphics3D {
    gl.disable(gl.BLEND);gl.depthMask(true);gl.useProgram(this.p);
   }
   const bikes=new Mesh();const player=snapshot?.player;
-  if(player){const meZ=1.5;addBike(bikes,this.static.center(meZ),this.static.hill(meZ)+.2,meZ,[.10,.88,.72],true,time,Number(snapshot?.cadence||82));}
+   gl.uniform1f(this.locs.scroll,0);
+  if(player){const meZ=1.5;addBike(bikes,this.static.center(meZ+scroll),this.static.hill(meZ+scroll)+.2,meZ,[.10,.88,.72],true,time,Number(snapshot?.cadence||82));}
   for(const rider of snapshot?.others||[]){const z=1.5+(Number(rider.km)-Number(player?.km||0))*1000;
-   if(z>=-3&&z<270){let hex=(rider.color||'#53bee5').replace('#','');if(hex.length===3)hex=hex.split('').map(s=>s+s).join('');const color=[0,2,4].map(i=>parseInt(hex.slice(i,i+2),16)/255||.4);const x=this.static.center(Math.max(0,z))+(rider.laneAnimated??rider.lane??0)*2.6;addBike(bikes,x,this.static.hill(Math.max(0,z))+.2,z,color,false,time,Number(rider.cadence||75+Math.round(rider.speedKmh||20)*.20),rider.offsetM*.09);}
+   if(z>=-3&&z<270){let hex=(rider.color||'#53bee5').replace('#','');if(hex.length===3)hex=hex.split('').map(s=>s+s).join('');const color=[0,2,4].map(i=>parseInt(hex.slice(i,i+2),16)/255||.4);const x=this.static.center(Math.max(0,z)+scroll)+(rider.laneAnimated??rider.lane??0)*2.6;addBike(bikes,x,this.static.hill(Math.max(0,z)+scroll)+.2,z,color,false,time,Number(rider.cadence||75+Math.round(rider.speedKmh||20)*.20),rider.offsetM*.09);}
   }
   gl.disable(gl.BLEND);
   // The foliage pass used an independent interleaved VBO. Restore all four mesh
@@ -1741,7 +1749,7 @@ class SyntractGraphics3D {
     const x=this.static.center(z)+(rider.laneAnimated??rider.lane??0)*2.6;
     riderCard(x,this.static.hill(z)+.2,z,Number(rider.cadence||80),tint,1);
    }
-   const xx=this.static.center(1.5),yy=this.static.hill(1.5)+.2;
+   const xx=this.static.center(1.5+scroll),yy=this.static.hill(1.5+scroll)+.2;
    riderCard(xx,yy,1.5,Number(snapshot?.cadence||82),[.13,.92,.78],0);
    cards.sort((a,b)=>b.depth-a.depth);
    gl.useProgram(this.photo);
