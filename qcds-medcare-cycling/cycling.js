@@ -1248,6 +1248,12 @@ void main(){
   float blades=worldFbm(position*2.9);
   c*=1.0+(blades-.45)*.16*(1.0-smoothstep(65.,220.,vDepth));
  }
+ if(vMat>7.0 && vMat<7.9){
+  float grain=worldFbm(vWorld.xz*vec2(2.4,2.7));
+  float lichen=worldFbm(vWorld.xz*.41+vWorld.y*1.1);
+  c*=.83+.24*grain;
+  c=mix(c,c*vec3(.72,.98,.71),smoothstep(.57,.80,lichen)*.25);
+ }
  if(vMat<2.5){
    float a=noise2(floor(trackUV*17.0));
    float b=noise2(floor(trackUV*3.2));
@@ -1392,6 +1398,23 @@ class Mesh{
    this.quad(p(lo,t),p(lo,u),p(hi,u),p(hi,t),color,4);
   }
  }
+ boulder(x,y,z,rx,ry,rz,seed){
+  const palette=[[.39,.42,.41],[.41,.39,.32],[.32,.38,.37],[.45,.46,.40]];
+  const slices=11,bands=5,base=palette[Math.floor(hash(seed*97)*palette.length)];
+  const point=(layer,i)=>{
+   const phi=layer*(Math.PI*.5)/bands,theta=2*Math.PI*i/slices;
+   const rough=.84+.21*hash(seed*131+i*23+layer*37),spread=Math.cos(phi)*rough;
+   return [x+Math.cos(theta)*rx*spread,
+           y+ry*Math.sin(phi)*(.78+.14*hash(seed*281+layer*17+i*13)),
+           z+Math.sin(theta)*rz*spread];
+  };
+  for(let band=0;band<bands;band++)for(let side=0;side<slices;side++){
+   const v=(hash(seed+side*3+band*11)-.5)*.14;
+   const tone=base.map(n=>Math.max(.02,Math.min(.94,n+v)));
+   this.quad(point(band,side),point(band,(side+1)%slices),
+      point(band+1,(side+1)%slices),point(band+1,side),tone,7.4);
+  }
+ }
  prism(x,y,z,w,h,d,color){const a=[x-w/2,y,z-d/2],b=[x+w/2,y,z-d/2],c=[x+w/2,y,z+d/2],e=[x-w/2,y,z+d/2],up=p=>[p[0],p[1]+h,p[2]];this.quad(a,b,up(b),up(a),color,4);this.quad(b,c,up(c),up(b),color,4);this.quad(c,e,up(e),up(c),color,4);this.quad(e,a,up(a),up(e),color,4);this.quad(up(a),up(b),up(c),up(e),color,4);}
  cone(x,y,z,r,h,color,sides=7){const p=[x,y+h,z];for(let i=0;i<sides;i++){const a=i*2*Math.PI/sides,b=(i+1)*2*Math.PI/sides;this.tri([x+Math.cos(a)*r,y,z+Math.sin(a)*r],[x+Math.cos(b)*r,y,z+Math.sin(b)*r],p,color,4);}}
  ball(x,y,z,r,color,rows=5,cols=9){for(let a=0;a<rows;a++){const lo=-Math.PI/2+a*Math.PI/rows,hi=-Math.PI/2+(a+1)*Math.PI/rows;for(let k=0;k<cols;k++){const t=k*Math.PI*2/cols,u=(k+1)*Math.PI*2/cols;const p=(alt,ang)=>[x+Math.cos(alt)*Math.cos(ang)*r,y+Math.sin(alt)*r,z+Math.cos(alt)*Math.sin(ang)*r];this.quad(p(lo,t),p(lo,u),p(hi,u),p(hi,t),color,4);}}}
@@ -1520,6 +1543,32 @@ function qcdsPlantTexture(kind){
  }
  ctx.globalAlpha=1;return canvas;
 }
+function qcdsBushTexture(){
+ // Offline undergrowth atlas: leaf/branch layers with transparent silhouettes.
+ const cv=document.createElement('canvas');cv.width=640;cv.height=448;
+ const ctx=cv.getContext('2d',{alpha:true}),W=cv.width,H=cv.height;
+ let state=1018849;const rand=()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state/4294967296;};
+ const tips=[];ctx.lineCap='round';
+ for(let i=0;i<145;i++){
+  const base=W*.5+(rand()-.5)*95,reach=(rand()-.5)*510,high=50+rand()*250;
+  const x=base+reach*.8,y=H-high;
+  ctx.strokeStyle=i%3?'#39402b':'#45412f';ctx.globalAlpha=.45+.3*rand();
+  ctx.lineWidth=1+rand()*3.6;
+  ctx.beginPath();ctx.moveTo(base,H-6);ctx.quadraticCurveTo(base+reach*.24,H-high*.48,x,y);ctx.stroke();
+  tips.push([x,y]);
+ }
+ const leaves=['#223c27','#315438','#3d603b','#3e6840','#567345','#648053','#768956','#81945b','#263b2d','#334b32'];
+ for(let i=0;i<6500;i++){
+  const tip=tips[Math.floor(rand()*tips.length)],a=rand()*Math.PI*2,reach=5+rand()*38;
+  const x=tip[0]+Math.cos(a)*reach+(rand()-.5)*22;
+  const y=tip[1]+Math.sin(a)*reach*.60+(rand()-.5)*13;
+  if(x<8||x>W-8||y<18||y>H-10)continue;
+  const r=2+rand()*8;
+  ctx.globalAlpha=.47+.48*rand();ctx.fillStyle=leaves[Math.floor(rand()*leaves.length)];
+  ctx.beginPath();ctx.ellipse(x,y,r,r*(.32+.35*rand()),(rand()-.5)*1.7,0,Math.PI*2);ctx.fill();
+ }
+ ctx.globalAlpha=1;return cv;
+}
 function qcdsMeadowTexture(){
  // Wild grass, never a repeated strip of photo flowers, signs or road fragments.
  const c=document.createElement('canvas');c.width=768;c.height=288;
@@ -1580,6 +1629,16 @@ class SyntractGraphics3D {
      im.src=filename;
     }
   }
+  // Grounded botanical atlas, generated locally; no external assets or network.
+  this.materialTex.bush=gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D,this.materialTex.bush);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+  gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,qcdsBushTexture());
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  gl.generateMipmap(gl.TEXTURE_2D);
   this.photoLoc={aspect:gl.getUniformLocation(this.photo,'uAspect'),tex:gl.getUniformLocation(this.photo,'uPhoto'),tint:gl.getUniformLocation(this.photo,'uTint'),factor:gl.getUniformLocation(this.photo,'uTintFactor'),botanical:gl.getUniformLocation(this.photo,'uBotanical'),fog:gl.getUniformLocation(this.photo,'uSkyFog')};
   this.surfaceLoc={road:gl.getUniformLocation(this.p,'uAsphalt'),ground:gl.getUniformLocation(this.p,'uGround'),grassMix:gl.getUniformLocation(this.p,'uGrassMix'),demoBlend:gl.getUniformLocation(this.p,'uDemoBlend'),track:gl.getUniformLocation(this.p,'uTrackOffset')};
   this.backdrop=gl.createTexture();this.backdropReady=false;
