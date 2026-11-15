@@ -1196,6 +1196,11 @@ uniform float uDemoBlend;
 out vec4 oColor;
 float noise2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
 void main(){
+ if(vMat>6.4 && vMat<6.9){
+  vec2 o=(vWorld.xz-vCol.xz)/vec2(.64,1.45);
+  float fade=pow(max(0.0,1.0-dot(o,o)),2.0);
+  oColor=vec4(vec3(.018,.024,.027),.26*fade);return;
+ }
  vec3 n=normalize(vNorm);
  vec3 light=normalize(vec3(-.35,.86,-.43));
  float dif=max(dot(n,light),0.0);
@@ -1299,20 +1304,22 @@ precision highp float;
 layout(location=0) in vec3 aPos;
 layout(location=1) in vec2 aUv;
 uniform float uAspect;
-out vec2 vUv;
+out vec2 vUv;out float vDepth;
 void main(){float z=max(.18,aPos.z+5.0);float f=2.42;
- gl_Position=vec4(aPos.x*f/uAspect,(aPos.y-2.28+.11*z)*f,(1000.2/999.8)*z-(400.0/999.8),z);vUv=aUv;}`;
+ gl_Position=vec4(aPos.x*f/uAspect,(aPos.y-2.28+.11*z)*f,(1000.2/999.8)*z-(400.0/999.8),z);vUv=aUv;vDepth=z;}`;
 const photoFrag=`#version 300 es
 precision highp float;
-in vec2 vUv;uniform sampler2D uPhoto;uniform vec3 uTint;uniform float uTintFactor;
+in vec2 vUv;in float vDepth;uniform sampler2D uPhoto;uniform vec3 uTint;uniform float uTintFactor;
+uniform float uBotanical;uniform vec3 uSkyFog;
 out vec4 oColor;
 void main(){
- vec4 s=texture(uPhoto,vUv);if(s.a<.055)discard;
+ vec4 s=texture(uPhoto,vUv);if(s.a<(uBotanical>.5?.20:.055))discard;
  // Only the athlete's teal jersey changes colour, preserving natural skin,
  // tyres, road-bike metal and helmet materials.
  float teal=smoothstep(.08,.24,s.g-s.r)*smoothstep(.01,.10,s.b-s.r)*smoothstep(.20,.52,s.g);
  float luminance=dot(s.rgb,vec3(.24,.64,.12));
  s.rgb=mix(s.rgb,uTint*(luminance*1.30),teal*uTintFactor*.94);
+ if(uBotanical>.5){float f=smoothstep(65.,380.,vDepth)*.42;s.rgb=mix(s.rgb,uSkyFog,f);s.a=clamp(s.a*1.04,0.,1.);}
  oColor=s;
 }`;
 const clip=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -1420,7 +1427,7 @@ function addBike(mesh,x,y,z,color,player=false,clock=0,cadence=82,phase=0){
  mesh.ellipsoid(x,y+2.23,z+.14,.185,.115,.21,player?[.075,.095,.12]:[.105,.12,.13],14,24);
  for(const side of [-1,1])mesh.bar(pos(side*.085,2.34,.16),pos(side*.10,2.28,.30),.029,player?[.13,.88,.76]:[.75,.81,.83]);
  // Shadow follows rider: deliberate stylization, not measured contact shadow.
- mesh.quad(pos(-.37,.026,-.94),pos(.37,.026,-.94),pos(.37,.026,1.04),pos(-.37,.026,1.04),[.072,.091,.105],2.8);
+ mesh.quad(pos(-.48,.026,-1.18),pos(.48,.026,-1.18),pos(.48,.026,1.15),pos(-.48,.026,1.15),[x,0,z],6.6);
 }
 function addTree(mesh,x,y,z,height,palette,seed){
  const bark=[.28,.21,.16],pine=seed<.77;
@@ -1511,7 +1518,7 @@ class SyntractGraphics3D {
      im.src=filename;
     }
   }
-  this.photoLoc={aspect:gl.getUniformLocation(this.photo,'uAspect'),tex:gl.getUniformLocation(this.photo,'uPhoto'),tint:gl.getUniformLocation(this.photo,'uTint'),factor:gl.getUniformLocation(this.photo,'uTintFactor')};
+  this.photoLoc={aspect:gl.getUniformLocation(this.photo,'uAspect'),tex:gl.getUniformLocation(this.photo,'uPhoto'),tint:gl.getUniformLocation(this.photo,'uTint'),factor:gl.getUniformLocation(this.photo,'uTintFactor'),botanical:gl.getUniformLocation(this.photo,'uBotanical'),fog:gl.getUniformLocation(this.photo,'uSkyFog')};
   this.surfaceLoc={road:gl.getUniformLocation(this.p,'uAsphalt'),ground:gl.getUniformLocation(this.p,'uGround'),grassMix:gl.getUniformLocation(this.p,'uGrassMix'),demoBlend:gl.getUniformLocation(this.p,'uDemoBlend')};
   this.backdrop=gl.createTexture();this.backdropReady=false;
   gl.bindTexture(gl.TEXTURE_2D,this.backdrop);
@@ -1652,7 +1659,13 @@ class SyntractGraphics3D {
      const xx=x+sway;
      const row=[xx-wide,h,zz,0,0,xx+wide,h,zz,1,0,xx+wide,h+tall,zz,1,1,
                 xx-wide,h,zz,0,0,xx+wide,h+tall,zz,1,1,xx-wide,h+tall,zz,0,1];
-     layers.push({kind,row,z:zz});
+     if(zz<130 && quality!=='low'){
+       const angle=.68+(hash(seed+81)-.5)*.31;
+       const dx=Math.cos(angle)*wide*.93,dz=Math.sin(angle)*wide*.93;
+       row.push(xx-dx,h,zz-dz,0,0, xx+dx,h,zz+dz,1,0,xx+dx,h+tall,zz+dz,1,1,
+                xx-dx,h,zz-dz,0,0, xx+dx,h+tall,zz+dz,1,1,xx-dx,h+tall,zz-dz,0,1);
+      }
+      layers.push({kind,row,z:zz});
     }
    }
    // Draw-call budgeting: batch hundreds of branches into TWO material passes.
@@ -1674,6 +1687,7 @@ class SyntractGraphics3D {
     }
    }
    gl.useProgram(this.photo);gl.uniform1f(this.photoLoc.aspect,this.canvas.width/Math.max(1,this.canvas.height));
+    gl.uniform1f(this.photoLoc.botanical,1);gl.uniform3fv(this.photoLoc.fog,new Float32Array(scene.palette.fog));
    gl.uniform3fv(this.photoLoc.tint,new Float32Array([.17,.88,.77]));gl.uniform1f(this.photoLoc.factor,0);
    gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);
    gl.bindBuffer(gl.ARRAY_BUFFER,this.photoBuf);
@@ -1697,7 +1711,8 @@ class SyntractGraphics3D {
   // attributes before drawing bikes; otherwise WebGL reads outside the billboard VBO.
   gl.useProgram(this.p);gl.bindBuffer(gl.ARRAY_BUFFER,this.buf);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(bikes.v),gl.DYNAMIC_DRAW);
   for(const [loc,size,offset] of [[0,3,0],[1,3,12],[2,3,24],[3,1,36]]){gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,size,gl.FLOAT,false,40,offset);}
-  gl.drawArrays(gl.TRIANGLES,0,bikes.v.length/10);
+  gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
+  gl.drawArrays(gl.TRIANGLES,0,bikes.v.length/10);gl.disable(gl.BLEND);
   // The high-resolution athlete decal has transparent gaps and is placed in the
   // *same perspective-space as the fully animated 3D bicycle frame, route, and
   // other riders*. Near and far riders have real depth and separate cadence.
@@ -1724,6 +1739,7 @@ class SyntractGraphics3D {
    riderCard(xx,yy,1.5,Number(snapshot?.cadence||82),[.13,.92,.78],0);
    cards.sort((a,b)=>b.depth-a.depth);
    gl.useProgram(this.photo);
+   gl.uniform1f(this.photoLoc.botanical,0);gl.uniform3fv(this.photoLoc.fog,new Float32Array(scene.palette.fog));
    gl.uniform1f(this.photoLoc.aspect,this.canvas.width/Math.max(1,this.canvas.height));
    gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,this.materialTex.rider);gl.uniform1i(this.photoLoc.tex,0);
    gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);
