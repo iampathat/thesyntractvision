@@ -1,10 +1,20 @@
-QCDS MedCare Cycling Intelligence v2.2.0 · public browser runtime
+QCDS MedCare Cycling Intelligence v2.3.0 · public browser runtime
 © 2026 Patrik Sundblom. All Rights Reserved. Proprietary.
 Theory and creation by Patrik Sundblom. OpenAI / ChatGPT research and development support.
 
-The offline browser demo contains WebGL2 route-relative 3D, procedural transparent conifer/deciduous vegetation, corrected near-ground coverage, separately masked photograph-assisted cyclists, an illustrative distant photo, roadway materials, synthetic route elevation, and a real-time local demo peloton.
-The new trees deliberately contain no screenshot, road or HUD fragments. The generated rider cutout remains view-dependent and is NOT a fully volumetric character.
-World geometry, pedalling, cadence and speed continue to update as the race progresses. Maps, GPX, optional Bluetooth FTMS, local route storage, audio, accessibility and Canvas fallback are retained.
+V2.3.0 (2026-11-15) advances the original WebGL2 runtime without replacing the FTMS, map, GPX, racing, audio, storage or fallback logic.
+- World-space scrolling keeps the road moving continuously, even when large terrain meshes are cached between updates.
+- Procedural conifers and deciduous trees are rooted to the terrain elevation at their world positions rather than the centerline height.
+- Alpha-tested botanical cards write depth for correct foreground/background occlusion; nearby trees use multiple crossed planes for parallax.
+- Road and terrain now remain opaque instead of revealing an unrelated distant photograph through the rideable ground.
+- Asphalt/ground microtextures track the traveled distance, avoiding stationary-looking materials.
+- Road surface normals are oriented toward daylight, improving directional lighting on visible geometry.
+- Higher-grade terrain tessellation and stable road/grass detail reduce visual snapping.
+- Photo-assisted cyclist sprites remain view-dependent, although the geometric bikes and rider kinematics move independently.
 
-IMPORTANT: This release is still an experimental graphical renderer. Procedural botanical textures and rider cutouts are not photogrammetry, cinematic game assets or photographic reconstruction. It is NOT verified to match the provided reference image. Synthetic demo lakes and landscape details are fictional, never survey-grade geographic fact. Real-route graphics render approximate inferred biome, not verified street-level scenery. Demo routes must not command real physical resistance.
-Original C and source modules are not open-licensed; JS/WASM public bundles are inherently inspectable.
+Synthetic demo landscapes and any backdrop photography are illustrative and NOT GPS-accurate visual surveys. Real OSM/GPX routes drive road position and known grade but do not carry street-level photogrammetry. The result is a substantial engineering update, NOT a claim of reference-image photorealism. Visual screenshot review remains required.
+
+The QCDS visual oracle planner is explicit, classical and auditable; it does not claim quantum hardware execution.
+Original C/source modules remain proprietary. Public HTML, JS and WASM bundles are browser-readable.
+
+All safety limits for hardware resistance, especially synthetic routes, remain in force.
