@@ -1198,6 +1198,11 @@ uniform float uTrackOffset;
 uniform float uWorldScroll;
 out vec4 oColor;
 float noise2(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
+float smoothNoise(vec2 p){
+ vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+ return mix(mix(noise2(i),noise2(i+vec2(1,0)),f.x),mix(noise2(i+vec2(0,1)),noise2(i+1.),f.x),f.y);
+}
+float worldFbm(vec2 p){float a=.5,r=0.;for(int i=0;i<4;i++){r+=a*smoothNoise(p);p=p*2.07+vec2(13.2,9.7);a*=.5;}return r;}
 void main(){
  if(vMat>6.4 && vMat<6.9){
   vec2 o=(vWorld.xz-vec2(vCol.x,vCol.z-uWorldScroll))/vec2(.64,1.45);
@@ -1220,18 +1225,28 @@ void main(){
   vec3 asphalt=texture(uAsphalt,trackUV*vec2(.057,.043)).rgb;
   asphalt=pow(asphalt,vec3(.88));
   float detail=dot(asphalt,vec3(.299,.587,.114));
-  c=mix(c,asphalt*(.66+.32*dif)+vec3(.028,.033,.038),.91);
-  c*=mix(vec3(.83),vec3(1.17),detail);
+  float grain3=worldFbm(trackUV*3.3),patched=worldFbm(trackUV*.09);
+  vec3 tarmac=asphalt*(.72+.23*dif)+vec3(.022,.027,.031);
+  tarmac*=.82+.25*grain3+.10*patched;
+  c=mix(c,tarmac,.91);
+  c*=mix(vec3(.88),vec3(1.11),detail);
   c+=vec3(.027,.037,.038)*pow(max(dot(reflect(-light,n),normalize(vec3(.1,.8,-.85))),0.),36.);
  }else if(vMat>0.5&&vMat<1.6){
-  vec3 terrain=texture(uGround,trackUV*vec2(.022,.020)).rgb;
+  vec2 position=trackUV;
+  float hillPatch=worldFbm(position*.015);
+  float midPatch=worldFbm(position*.065+vec2(7.41,1.7));
+  vec2 warped=position+vec2(worldFbm(position*.043),worldFbm(position*.051+12.0))*3.7;
+  vec3 terrainA=texture(uGround,warped*vec2(.019,.018)).rgb;
+  vec3 terrainB=texture(uGround,warped.yx*vec2(.024,.023)+vec2(.31,.53)).rgb;
+  vec3 terrain=mix(terrainA,terrainB,smoothstep(.24,.79,midPatch)*.37);
   float luma=dot(terrain,vec3(.24,.64,.12));
-  vec3 meadow=mix(terrain,vec3(luma),.24)*vec3(.82,.79,.70);
-  c=mix(c,meadow*.84+c*.20,.84*uGrassMix);
-  c*=.90+.17*clamp(luma,0.,1.);
-  float soilNoise=noise2(floor(trackUV*.17));
-  float surfaceNoise=noise2(floor(trackUV*.79));
-  c*=.86+.22*soilNoise+.08*surfaceNoise;
+  vec3 meadow=mix(terrain,vec3(luma),.21)*vec3(.81,.80,.74);
+  float dry=smoothstep(.45,.72,hillPatch+.22*midPatch);
+  meadow=mix(meadow,vec3(.34,.32,.20),dry*.22);
+  c=mix(c,meadow*.80+c*.24,.91*uGrassMix);
+  c*=.85+.27*hillPatch+.12*midPatch;
+  float blades=worldFbm(position*2.9);
+  c*=1.0+(blades-.45)*.16*(1.0-smoothstep(65.,220.,vDepth));
  }
  if(vMat<2.5){
    float a=noise2(floor(trackUV*17.0));
@@ -1253,9 +1268,12 @@ void main(){
   c=mix(vec3(.042,.20,.28),vec3(.27,.49,.58),.32+.25*ripple);
   c+=vec3(.35,.32,.22)*glitter*.19;
  }
- float fog=1.0-exp(-pow(max(vDepth-24.0,0.0)/290.0,1.4));
- // No photographic image can bleed through route asphalt or geometric terrain.
- oColor=vec4(mix(c,uFog,clamp(fog,0.0,.70)),1.0);
+ float fog=1.0-exp(-pow(max(vDepth-24.0,0.0)/255.0,1.5));
+ float heightHaze=(1.0-smoothstep(.0,14.,max(vWorld.y,0.)))*.075*smoothstep(90.,450.,vDepth);
+ vec3 radiance=mix(c,uFog,clamp(fog+heightHaze,0.0,.81));
+ radiance=radiance/(radiance+vec3(.075));
+ radiance=pow(max(radiance,0.),vec3(1.06));
+ oColor=vec4(clamp(radiance,0.,1.),1.0);
 
 }`;
 const skyVert=`#version 300 es
@@ -1331,7 +1349,12 @@ void main(){
  float teal=smoothstep(.08,.24,s.g-s.r)*smoothstep(.01,.10,s.b-s.r)*smoothstep(.20,.52,s.g);
  float luminance=dot(s.rgb,vec3(.24,.64,.12));
  s.rgb=mix(s.rgb,uTint*(luminance*1.30),teal*uTintFactor*.94);
- if(uBotanical>.5){float f=smoothstep(65.,380.,vDepth)*.42;s.rgb=mix(s.rgb,uSkyFog,f);s.a=1.0;}
+ if(uBotanical>.5){
+ float f=smoothstep(55.,330.,vDepth)*.51;
+ s.rgb=mix(s.rgb,uSkyFog,f);
+ s.rgb=mix(s.rgb,vec3(dot(s.rgb,vec3(.26,.64,.10))),.065);
+ s.a=1.0;
+}
  oColor=s;
 }`;
 const clip=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -1342,6 +1365,11 @@ class Mesh{
  constructor(){this.v=[];}
  tri(a,b,c,color,mat=1){const u=a.map((v,i)=>b[i]-v),v=a.map((v,i)=>c[i]-v);let n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];const l=Math.hypot(...n)||1;n=n.map(x=>x/l);for(const p of [a,b,c])this.v.push(...p,...n,...color,mat);}
  quad(a,b,c,d,color,mat=1){this.tri(a,b,c,color,mat);this.tri(a,c,d,color,mat);}
+ triSmooth(a,b,c,na,nb,nc,color,mat=1){for(const [p,n] of [[a,na],[b,nb],[c,nc]])this.v.push(...p,...n,...color,mat);}
+ quadSmooth(a,b,c,d,na,nb,nc,nd,color,mat=1){
+  this.triSmooth(a,b,c,na,nb,nc,color,mat);
+  this.triSmooth(a,c,d,na,nc,nd,color,mat);
+ }
  bar(a,b,r,color){this.taper(a,b,r,r,color,12);}
  taper(a,b,rA,rB,color,segments=14){
   const axis=b.map((v,i)=>v-a[i]),l=Math.hypot(...axis);if(l<.0001)return;
@@ -1592,14 +1620,23 @@ class SyntractGraphics3D {
   // Denser near terrain resolves valley edges, shoulders and distant silhouettes.
   const groundStep=quality==='ultra'?4:quality==='high'?5:7;
   const depthStep=quality==='ultra'?5:quality==='high'?7:10;
-  for(let zi=0;zi<Math.ceil(604/depthStep);zi++){
-   const za=-4+zi*depthStep,zb=za+depthStep;
-   for(let xi=0;xi<Math.ceil(168/groundStep);xi++){
-    const xa=-84+xi*groundStep,xb=xa+groundStep;
-    const al=hash(xi*491+zi*331+31),color=p.ground.map(v=>clip(v*(.85+.26*al),0,1));
-    m.quad([xa,ground(xa,za)-.1,za],[xb,ground(xb,za)-.1,za],[xb,ground(xb,zb)-.1,zb],[xa,ground(xa,zb)-.1,zb],color,1);
-
+  // Reuse smooth terrain normals across adjacent triangles; no checkerboard quads.
+  const terrainNormal=(x,z)=>{
+   const e=1.1,dx=(ground(x+e,z)-ground(x-e,z))/(2*e),dz=(ground(x,z+e)-ground(x,z-e))/(2*e);
+   const len=1/Math.hypot(dx,1,dz);return [-dx*len,len,-dz*len];
+  };
+  const cellsX=Math.ceil(168/groundStep),cellsZ=Math.ceil(604/depthStep),nodes=[];
+  for(let zi=0;zi<=cellsZ;zi++){
+   const z=-4+zi*depthStep,row=[];
+   for(let xi=0;xi<=cellsX;xi++){
+    const x=-84+xi*groundStep;
+    row.push({p:[x,ground(x,z)-.10,z],n:terrainNormal(x,z)});
    }
+   nodes.push(row);
+  }
+  for(let zi=0;zi<cellsZ;zi++)for(let xi=0;xi<cellsX;xi++){
+   const a=nodes[zi][xi],b=nodes[zi][xi+1],cc=nodes[zi+1][xi+1],d=nodes[zi+1][xi];
+   m.quadSmooth(a.p,b.p,cc.p,d.p,a.n,b.n,cc.n,d.n,p.ground,1);
   }
   if(scene.demoWater && scene.biome==='alpine'){
     // Illustrative *demo only* shoreline. Never invent water on a real GPS route.
