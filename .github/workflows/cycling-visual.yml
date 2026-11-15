@@ -1,0 +1,36 @@
+name: QCDS Cycling 3D visual smoke test
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'qcds-medcare-cycling/cycling.js'
+      - 'qcds-medcare-cycling/index.html'
+      - 'qcds-medcare-cycling/qa-visual.cjs'
+      - '.github/workflows/cycling-visual.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser_3d:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated browser QA dependencies
+        run: npm install --no-save --no-package-lock --ignore-scripts playwright-core@1.56.1 pngjs@7.0.0
+      - name: Render live 3D in headless Chromium and inspect actual pixels
+        env:
+          QCDS_EMIT_SCREENSHOT_BASE64: '1'
+        run: |
+          python3 -m http.server 8123 --bind 127.0.0.1 > /tmp/cycling-qa-server.log 2>&1 &
+          node qcds-medcare-cycling/qa-visual.cjs
+      - name: Preserve browser screenshot and diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qcds-cycling-webgl-visual-qa
+          path: /tmp/cycling-qa-*.png
+          if-no-files-found: warn
