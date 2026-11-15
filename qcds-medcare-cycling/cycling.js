@@ -1738,6 +1738,23 @@ class SyntractGraphics3D {
   // Never bring back the retro polygon pines on mobile/TV fallback.
   const density=(quality==='low'?1.8:quality==='ultra'?.75:1)*(scene.state?.vegetation==='dense'?.67:scene.state?.vegetation==='sparse'?1.7:1)*(scene.state?.season==='winter'?1.25:1);
   if(urban){for(let z=60;z<550;z+=80){for(const side of [-1,1]){const x=center(z)+side*(20+hash(z*2)*9),g=ground(x,z);m.prism(x,g,z,13,5+hash(z)*9,17,[.58,.54,.46]);m.cone(x,g+9,z,10,2.2,[.39,.22,.21],4);}}}
+  // Rock outcrops have irregular physical 3D geometry and fixed world coordinates.
+  // They are illustrative only, not surveyed geographic claims.
+  if(alpine||forest)for(let tile=Math.ceil((progress+12)/11);tile*11-progress<145;tile++){
+   const z=tile*11-progress;
+   for(const side of [-1,1]){
+    const seed=tile*107+side*63;
+    if(hash(seed+17)<.26)continue;
+    const centerX=center(z),x=centerX+side*(7.2+hash(seed+13)*22);
+    if(scene.demoWater&&side>0&&x>centerX+16)continue;
+    const rr=.32+hash(seed+46)*1.07,base=ground(x,z)-rr*.18;
+    m.boulder(x,base,z,rr,rr*(.44+.25*hash(seed+18)),rr*(.57+hash(seed+81)*.65),seed);
+    if(hash(seed+71)>.73){
+     const small=rr*.42,smallX=x+side*(rr*.9);
+     m.boulder(smallX,ground(smallX,z+rr*.7)-small*.15,z+rr*.7,small,small*.55,small*.88,seed+39);
+    }
+   }
+  }
   // Oracle-selected guardrails (synthetic placement: not assertions about actual safety barriers).
   if(scene.state?.roadside==='barrier')for(let z=6;z<420;z+=10){
    for(const side of [-1,1]){
@@ -1838,7 +1855,7 @@ class SyntractGraphics3D {
    }
    // Draw-call budgeting: batch hundreds of branches into TWO material passes.
    // Explicit material oracle branches, no per-tree WebGL state churn.
-   const groups={pine:[],oak:[],meadow:[]};
+   const groups={pine:[],oak:[],meadow:[],bush:[]};
    for(const item of layers){groups[item.kind].push(...item.row);}
    if(visualPlan.meadowCount>0){
     const count=visualPlan.meadowCount;
@@ -1854,6 +1871,28 @@ class SyntractGraphics3D {
                         x-ww,y,z,0,0,x+ww,y+hh,z,1,1,x-ww,y+hh,z,0,1);
     }
    }
+   // Intersecting alpha-tested leaf surfaces introduce parallax behind roadside.
+   if(scene.state?.season!=='winter'){
+    const stride=scene.biome==='forest'?4.8:scene.biome==='alpine'?7.4:9.5;
+    for(let tile=Math.ceil((progress+9)/stride);tile*stride-progress<155;tile++){
+     const z=tile*stride-progress;
+     for(const side of [-1,1]){
+      const seed=tile*317+side*883;
+      if(hash(seed+18)<.24)continue;
+      const zz=z+(hash(seed+7)-.5)*stride*.52;
+      const x=this.static.center(zz+scroll)+side*(6.8+hash(seed+34)*12.7);
+      const height=.73+hash(seed+58)*1.52,wide=height*(.63+hash(seed+19)*.24);
+      const y=this.static.ground(x,zz+scroll)-.04;
+      for(const angle of [0,Math.PI*.57]){
+       const dx=Math.cos(angle)*wide,dz=Math.sin(angle)*wide;
+       groups.bush.push(x-dx,y,zz-dz,0,0,x+dx,y,zz+dz,1,0,
+                        x+dx,y+height,zz+dz,1,1,
+                        x-dx,y,zz-dz,0,0,x+dx,y+height,zz+dz,1,1,
+                        x-dx,y+height,zz-dz,0,1);
+      }
+     }
+    }
+   }
    gl.useProgram(this.photo);gl.uniform1f(this.photoLoc.aspect,this.canvas.width/Math.max(1,this.canvas.height));
     gl.uniform1f(this.photoLoc.botanical,1);gl.uniform3fv(this.photoLoc.fog,new Float32Array(scene.palette.fog));
    gl.uniform3fv(this.photoLoc.tint,new Float32Array([.17,.88,.77]));gl.uniform1f(this.photoLoc.factor,0);
@@ -1862,7 +1901,7 @@ class SyntractGraphics3D {
    gl.bindBuffer(gl.ARRAY_BUFFER,this.photoBuf);
    gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,3,gl.FLOAT,false,20,0);
    gl.enableVertexAttribArray(1);gl.vertexAttribPointer(1,2,gl.FLOAT,false,20,12);
-   for(const kind of ['pine','oak','meadow']){
+   for(const kind of ['pine','oak','bush','meadow']){
     const row=groups[kind];if(!row.length)continue;
     gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,this.materialTex[kind]);gl.uniform1i(this.photoLoc.tex,0);
     gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(row),gl.DYNAMIC_DRAW);
