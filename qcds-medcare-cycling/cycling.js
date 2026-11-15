@@ -1271,8 +1271,9 @@ void main(){
  float fog=1.0-exp(-pow(max(vDepth-24.0,0.0)/255.0,1.5));
  float heightHaze=(1.0-smoothstep(.0,14.,max(vWorld.y,0.)))*.075*smoothstep(90.,450.,vDepth);
  vec3 radiance=mix(c,uFog,clamp(fog+heightHaze,0.0,.81));
- radiance=radiance/(radiance+vec3(.075));
- radiance=pow(max(radiance,0.),vec3(1.06));
+ // Preserve real-world midtones: the earlier / (radiance+.075) curve
+ // blew green grass into near-white and washed out mountain-road materials.
+ radiance=pow(clamp(radiance*vec3(.92,.94,.96),0.,1.),vec3(.98));
  oColor=vec4(clamp(radiance,0.,1.),1.0);
 
 }`;
