@@ -1577,11 +1577,17 @@ class SyntractGraphics3D {
     m.quad(pos(ca+side*3.66,ha+.21,z),pos(ca+side*3.78,ha+.21,z),pos(cb+side*3.78,hb+.21,z2),pos(cb+side*3.66,hb+.21,z2),[.88,.86,.77],3.7);
    }
    m.quad(pos(ca-3.68,ha+.19,z),pos(ca+3.68,ha+.19,z),pos(cb+3.68,hb+.19,z2),pos(cb-3.68,hb+.19,z2),roadColor,2.7);
-   if(z>9 && Math.floor((z+progress)/7)%5===1){m.quad(pos(ca-.18,ha+.268,z),pos(ca+.18,ha+.268,z),pos(cb+.18,hb+.268,z2),pos(cb-.18,hb+.268,z2),[.94,.95,.90],4);}
+   // Centre-line markings are added at true 12 m world intervals after the road mesh.
+  }
+  // Three metre lane dashes every twelve metres, correctly grounded and world-space stable.
+  if(scene.state?.surface==='asphalt')for(let z=9-((progress%12)+12)%12;z<590;z+=12){
+    const front=Math.max(9,z),back=front+3.35;
+    const c1=center(front),c2=center(back),y1=hill(front)+.199,y2=hill(back)+.199;
+    m.quad([c1-.115,y1,front],[c1+.115,y1,front],[c2+.115,y2,back],[c2-.115,y2,back],[.91,.92,.86],3.7);
   }
   // Close-up aggregate, irregular patching and small road repair seams, spatially stable.
   if(quality==='ultra')for(let z=7;z<190;z+=2.8){
-   const cz=center(z),yy=hill(z)+.237;
+   const cz=center(z),yy=hill(z)+.198;
    for(let j=0;j<7;j++){
     const seed=Math.floor((progress+z)*17)+j*619;
     const xx=cz+(hash(seed*3)-.5)*6.9,zz=z+(hash(seed+91)-.5)*2.2;
