@@ -1,0 +1,54 @@
+name: QCDS Cycling - import verified CC0 spruce asset
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/cycling-asset-import.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  import_norway_spruce:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Fetch explicitly CC0-licensed glTF model
+        run: |
+          mkdir -p qcds-medcare-cycling/assets
+          curl --retry 3 --max-time 90 -fL 'https://files.innerscene.com/library/mature-norway-spruce-tree-48c2566f/a285b3017c941e802efc/mature-norway-spruce-tree.glb' -o qcds-medcare-cycling/assets/norway-spruce-cc0.glb
+          python3 - <<'PY'
+          import json,struct
+          from pathlib import Path
+          path=Path('qcds-medcare-cycling/assets/norway-spruce-cc0.glb')
+          data=path.read_bytes()
+          assert 10000<len(data)<8_000_000,(len(data),'unexpected size')
+          magic,version,total=struct.unpack_from('<III',data)
+          assert magic==0x46546c67 and version==2 and total==len(data)
+          size,typ=struct.unpack_from('<II',data,12)
+          assert typ==0x4E4F534A,'missing glTF JSON'
+          obj=json.loads(data[20:20+size].decode('utf8'))
+          assert obj['asset']['version'].startswith('2'),'not glTF 2'
+          print('QCDS_CC0_MODEL_INSPECT',{'bytes':len(data),'meshes':len(obj.get('meshes',[])),'nodes':len(obj.get('nodes',[])),'materials':len(obj.get('materials',[])),'images':len(obj.get('images',[])),'extensionsRequired':obj.get('extensionsRequired',[])})
+          assert len(obj.get('meshes',[]))>=1
+          PY
+          cat > qcds-medcare-cycling/assets/CC0_SPRUCE_ASSET.txt <<'EOF'
+          Norway Spruce 3D model: Innerscene Mature Norway spruce tree (CC0 1.0 Universal)
+          https://www.innerscene.com/tools/library/3d-parts/mature-norway-spruce-tree-48c2566f
+          Source model is publicly dedicated to CC0, free for commercial use.
+          Author/creator of external tree asset: Innerscene, not Patrik Sundblom.
+          The QCDS Cycling app and original source remain © 2026 Patrik Sundblom, All Rights Reserved.
+          This asset is illustrative, never georeferenced evidence of actual roadside vegetation.
+          EOF
+          sha256sum qcds-medcare-cycling/assets/norway-spruce-cc0.glb
+      - name: Commit content-addressed CC0 model into original application
+        run: |
+          git config user.name 'QCDS Cycling asset importer'
+          git config user.email 'actions@users.noreply.github.com'
+          git add qcds-medcare-cycling/assets/norway-spruce-cc0.glb qcds-medcare-cycling/assets/CC0_SPRUCE_ASSET.txt
+          if ! git diff --cached --quiet; then
+            git commit -m 'QCDS Cycling: add documented CC0 Norway spruce volumetric 3D model'
+            git push origin HEAD:main
+          fi
