@@ -1999,10 +1999,15 @@ setArenaView(arenaView);
 
 // Presentation channel is deliberately separate from route physics and FTMS.
 // The cinematic image is a user-provided illustration, not live GPS reconstruction.
-let cinematicPreference='photolive';
+let cinematicPreference='realtime';
 function refreshPresentation(){
  const demo=!!S.route?.demo;
  const usePhoto=demo && (cinematicPreference==='photolive'||!sceneRenderer);
+ // Presentation is part of renderer selection: the WebGL canvas must never
+ // remain CSS-hidden under a reference still when 3D mode is selected.
+ if(!usePhoto && sceneRenderer && $('graphicsMode').value==='webgl'){
+  $('cinematicArena').classList.remove('reference-only');
+ }
  $('cinematicArena').dataset.presentation=usePhoto?'photolive':'realtime';
  $('presentationQuick').textContent=usePhoto?'▣ FOTO LIVE':'◈ 3D LIVE';
  $('presentationQuick').setAttribute('aria-pressed',String(usePhoto));
@@ -2237,7 +2242,7 @@ function launchCompleteDemoRace(){
  else {S.demoWorld=true;$('demoWorldPanel').hidden=false;chooseCompleteDemoRoute(S.demoRouteId);}
  radio.disconnect();disableAutoResistance();S.source='demo';S.telemetry={source:'demo',power:153,cadence:79,speed:null,hr:null};S.liveWatts=153;
  updateDevice('SYNTRACT DEMO WORLD · endast simulerade cykelvärden');$('disconnect').hidden=false;
- $('graphicsMode').value='webgl';$('sceneBiome').value='auto';initializeRaceRenderer();
+ $('graphicsMode').value='webgl';$('sceneBiome').value='auto';cinematicPreference='realtime';initializeRaceRenderer();
  changeTab('ride');if(!S.running)$('raceToggle').click();
  $('rideNotice').textContent='SYNTRACT DEMO WORLD: hela kartan, höjderna, banorna och motståndet är simulerade. Ingen fysisk cykel styrs.';
  updateResistanceUi();
@@ -2748,9 +2753,10 @@ function initializeRaceRenderer(){
   catch(e){$('graphicsMessage').textContent='3D saknas på enheten. Stabil 2,5D används: '+(e.message||e);}
  }
  if(!sceneRenderer)raceCtx=canvas.getContext('2d');
- if(sceneRenderer){$('graphicsMessage').textContent='3D Live Ultra · ruttstyrd terräng, fotobaserade material och cyklister med 3D-djup. Miljöerna är illustrationer, inte geografiska fotorekonstruktioner.';if(!S.running)cinematicPreference='realtime';}else if(!S.running){cinematicPreference='photolive';}
+ if(sceneRenderer){$('graphicsMessage').textContent='3D Live Ultra · ruttstyrd terräng, fotobaserade material och cyklister med 3D-djup. Miljöerna är illustrationer, inte geografiska fotorekonstruktioner.';cinematicPreference='realtime';}else if(!S.running){cinematicPreference='photolive';}
  if($('graphicsStatus'))$('graphicsStatus').textContent=activeGraphics==='webgl'?'WebGL2 · Syntract Graphics 3D, orakelbaserad scen':'Canvas 2D · stabil reservrenderare';
  resizeRace();
+ refreshPresentation();
 }
 async function toggleCinematicFullscreen(){
  const arena=$('cinematicArena');
