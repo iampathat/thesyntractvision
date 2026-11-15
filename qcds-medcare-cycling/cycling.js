@@ -1556,10 +1556,13 @@ class SyntractGraphics3D {
    const lakeshore=alpine&&scene.demoWater?Math.max(0,(dx-14)/23):0;
    return hill(z)+rise*p.terrainAmp*sinuous-2.35*Math.min(1.5,lakeshore);
   };
-  for(let zi=0;zi<63;zi++){
-   const za=-4+zi*9,zb=za+9;
-   for(let xi=0;xi<28;xi++){
-    const xa=-84+xi*6,xb=xa+6;
+  // Denser near terrain resolves valley edges, shoulders and distant silhouettes.
+  const groundStep=quality==='ultra'?4:quality==='high'?5:7;
+  const depthStep=quality==='ultra'?5:quality==='high'?7:10;
+  for(let zi=0;zi<Math.ceil(604/depthStep);zi++){
+   const za=-4+zi*depthStep,zb=za+depthStep;
+   for(let xi=0;xi<Math.ceil(168/groundStep);xi++){
+    const xa=-84+xi*groundStep,xb=xa+groundStep;
     const al=hash(xi*491+zi*331+31),color=p.ground.map(v=>clip(v*(.85+.26*al),0,1));
     m.quad([xa,ground(xa,za)-.1,za],[xb,ground(xb,za)-.1,za],[xb,ground(xb,zb)-.1,zb],[xa,ground(xa,zb)-.1,zb],color,1);
 
@@ -1591,10 +1594,10 @@ class SyntractGraphics3D {
     m.quad([c1-.115,y1,front],[c1+.115,y1,front],[c2+.115,y2,back],[c2-.115,y2,back],[.91,.92,.86],3.7);
   }
   // Close-up aggregate, irregular patching and small road repair seams, spatially stable.
-  if(quality==='ultra')for(let z=7;z<190;z+=2.8){
-   const cz=center(z),yy=hill(z)+.198;
+  if(quality==='ultra')for(let tile=Math.ceil((progress+7)/2.8);tile*2.8-progress<190;tile++){
+   const z=tile*2.8-progress,cz=center(z),yy=hill(z)+.205;
    for(let j=0;j<7;j++){
-    const seed=Math.floor((progress+z)*17)+j*619;
+    const seed=tile*131+j*619;
     const xx=cz+(hash(seed*3)-.5)*6.9,zz=z+(hash(seed+91)-.5)*2.2;
     const tone=hash(seed+13)>.52?[.52,.53,.53]:[.33,.35,.36];
     const size=.018+hash(seed+47)*.075;
@@ -1672,11 +1675,15 @@ class SyntractGraphics3D {
      const xx=x+sway;
      const row=[xx-wide,h,zz,0,0,xx+wide,h,zz,1,0,xx+wide,h+tall,zz,1,1,
                 xx-wide,h,zz,0,0,xx+wide,h+tall,zz,1,1,xx-wide,h+tall,zz,0,1];
-     if(zz<130 && quality!=='low'){
-       const angle=.68+(hash(seed+81)-.5)*.31;
-       const dx=Math.cos(angle)*wide*.93,dz=Math.sin(angle)*wide*.93;
-       row.push(xx-dx,h,zz-dz,0,0, xx+dx,h,zz+dz,1,0,xx+dx,h+tall,zz+dz,1,1,
-                xx-dx,h,zz-dz,0,0, xx+dx,h+tall,zz+dz,1,1,xx-dx,h+tall,zz-dz,0,1);
+     if(zz<300 && quality!=='low'){
+       // Parallax foliage is represented by crossed planes, not a single flat sign.
+       const planes=zz<110&&quality==='ultra'?3:2;
+       for(let plane=0;plane<planes;plane++){
+        const angle=(plane+.45)*Math.PI/(planes+.4)+(hash(seed+81+plane)-.5)*.16;
+        const dx=Math.cos(angle)*wide*.93,dz=Math.sin(angle)*wide*.93;
+        row.push(xx-dx,h,zz-dz,0,0, xx+dx,h,zz+dz,1,0,xx+dx,h+tall,zz+dz,1,1,
+                 xx-dx,h,zz-dz,0,0, xx+dx,h+tall,zz+dz,1,1,xx-dx,h+tall,zz-dz,0,1);
+       }
       }
       layers.push({kind,row,z:zz});
     }
@@ -1688,13 +1695,13 @@ class SyntractGraphics3D {
    if(visualPlan.meadowCount>0){
     const count=visualPlan.meadowCount;
     for(let n=0;n<count;n++){
-      const seed=Math.floor(progress/8)*211+n*173;
-      const z=7+n*2.9+hash(seed+4)*5;
-      const side=n%2===0?1:-1;
-      const x=this.static.center(z)+side*(5.0+hash(seed+20)*7.0);
+      const tile=Math.ceil((progress+7)/3.25)+n,seed=tile*211+173;
+      const z=tile*3.25-progress+hash(seed+4)*.65;
+      const side=tile%2===0?1:-1;
+      const x=this.static.center(z+scroll)+side*(5.0+hash(seed+20)*7.0);
       const hh=.55+hash(seed+8)*.95;
       const ww=1.5+hash(seed+47)*1.15;
-      const y=this.static.hill(z)+.12;
+      const y=this.static.ground(x,z+scroll)-.08;
       groups.meadow.push(x-ww,y,z,0,0,x+ww,y,z,1,0,x+ww,y+hh,z,1,1,
                         x-ww,y,z,0,0,x+ww,y+hh,z,1,1,x-ww,y+hh,z,0,1);
     }
@@ -1702,7 +1709,8 @@ class SyntractGraphics3D {
    gl.useProgram(this.photo);gl.uniform1f(this.photoLoc.aspect,this.canvas.width/Math.max(1,this.canvas.height));
     gl.uniform1f(this.photoLoc.botanical,1);gl.uniform3fv(this.photoLoc.fog,new Float32Array(scene.palette.fog));
    gl.uniform3fv(this.photoLoc.tint,new Float32Array([.17,.88,.77]));gl.uniform1f(this.photoLoc.factor,0);
-   gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);
+   // Alpha-cutout botanical pass writes depth: near branches hide distant ones.
+   gl.disable(gl.BLEND);gl.depthMask(true);
    gl.bindBuffer(gl.ARRAY_BUFFER,this.photoBuf);
    gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,3,gl.FLOAT,false,20,0);
    gl.enableVertexAttribArray(1);gl.vertexAttribPointer(1,2,gl.FLOAT,false,20,12);
@@ -1746,8 +1754,8 @@ class SyntractGraphics3D {
     if(z<1.6||z>175)continue;
     const hex=String(rider.color||'#71a4dd').replace('#','').padEnd(6,'8');
     const tint=[0,2,4].map(i=>parseInt(hex.slice(i,i+2),16)/255||.3);
-    const x=this.static.center(z)+(rider.laneAnimated??rider.lane??0)*2.6;
-    riderCard(x,this.static.hill(z)+.2,z,Number(rider.cadence||80),tint,1);
+    const x=this.static.center(z+scroll)+(rider.laneAnimated??rider.lane??0)*2.6;
+    riderCard(x,this.static.hill(z+scroll)+.2,z,Number(rider.cadence||80),tint,1);
    }
    const xx=this.static.center(1.5+scroll),yy=this.static.hill(1.5+scroll)+.2;
    riderCard(xx,yy,1.5,Number(snapshot?.cadence||82),[.13,.92,.78],0);
