@@ -1194,6 +1194,7 @@ uniform sampler2D uAsphalt;
 uniform sampler2D uGround;
 uniform float uGrassMix;
 uniform float uDemoBlend;
+uniform float uAlpineRidge;
 uniform float uTrackOffset;
 uniform float uWorldScroll;
 out vec4 oColor;
@@ -1247,6 +1248,13 @@ void main(){
   c*=.85+.27*hillPatch+.12*midPatch;
   float blades=worldFbm(position*2.9);
   c*=1.0+(blades-.45)*.16*(1.0-smoothstep(65.,220.,vDepth));
+  // Alpine rocky outcrops occupy slope-side only, never imported terrain.
+  float ridgeZone=uAlpineRidge*smoothstep(11.,61.,-position.x);
+  float stonePatch=worldFbm(position*.18+vec2(4.7,7.3));
+  float rocky=clamp(ridgeZone*(.36+.55*stonePatch),0.,.80);
+  vec3 granite=vec3(.32,.33,.31)*(.77+.39*worldFbm(position*.64));
+  granite=mix(granite,vec3(.29,.34,.30),stonePatch*.22);
+  c=mix(c,granite,rocky);
  }
  if(vMat>7.0 && vMat<7.9){
   float grain=worldFbm(vWorld.xz*vec2(2.4,2.7));
@@ -1328,7 +1336,8 @@ void main(){
  vec3 scenic=texture(uBackdrop,mountainUV).rgb;
  float blend=uBackdropMix*smoothstep(.43,.62,y)*(1.0-smoothstep(.75,.89,y));
  // Blend mountain photography through atmospheric depth instead of opaque cards.
- col=mix(col,scenic,blend*.82);
+ float luminous=dot(scenic,vec3(.299,.587,.114));
+ col=mix(col,scenic,blend*.78*(1.-smoothstep(.73,1.0,luminous)*.42));
  col=mix(col,uFog,clamp((.44-y)*.14,0.,.07)*uBackdropMix);
 
  oColor=vec4(col,1.);
@@ -1648,7 +1657,7 @@ class SyntractGraphics3D {
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
   gl.generateMipmap(gl.TEXTURE_2D);
   this.photoLoc={aspect:gl.getUniformLocation(this.photo,'uAspect'),tex:gl.getUniformLocation(this.photo,'uPhoto'),tint:gl.getUniformLocation(this.photo,'uTint'),factor:gl.getUniformLocation(this.photo,'uTintFactor'),botanical:gl.getUniformLocation(this.photo,'uBotanical'),fog:gl.getUniformLocation(this.photo,'uSkyFog')};
-  this.surfaceLoc={road:gl.getUniformLocation(this.p,'uAsphalt'),ground:gl.getUniformLocation(this.p,'uGround'),grassMix:gl.getUniformLocation(this.p,'uGrassMix'),demoBlend:gl.getUniformLocation(this.p,'uDemoBlend'),track:gl.getUniformLocation(this.p,'uTrackOffset')};
+  this.surfaceLoc={road:gl.getUniformLocation(this.p,'uAsphalt'),ground:gl.getUniformLocation(this.p,'uGround'),grassMix:gl.getUniformLocation(this.p,'uGrassMix'),demoBlend:gl.getUniformLocation(this.p,'uDemoBlend'),alpineRidge:gl.getUniformLocation(this.p,'uAlpineRidge'),track:gl.getUniformLocation(this.p,'uTrackOffset')};
   this.backdrop=gl.createTexture();this.backdropReady=false;
   gl.bindTexture(gl.TEXTURE_2D,this.backdrop);
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([95,137,158,255]));
@@ -1681,9 +1690,15 @@ class SyntractGraphics3D {
    const rough=(Math.sin(x*.41+worldZ*.21)*Math.sin(x*.23-worldZ*.32))*.37+
        Math.sin(x*.69-worldZ*.35)*Math.cos(worldZ*.17)*.18;
    const wild=Math.min(1,Math.max(0,(Math.abs(dx)-7)/23));
+   // Sculpt a near-side Alpine road cut with rising irregular bedrock rather
+   // than a flat painted green carpet. This exists ONLY on the synthetic demo.
+   const leftDist=Math.max(0,(-dx-6)/18);
+   const leftMountain=alpine&&scene.demoWater?Math.pow(leftDist,1.18)*2.6*
+     (1+.23*Math.sin(worldZ*.027+x*.061)+.11*Math.sin(worldZ*.083-x*.071)):0;
    // Lakes remain strictly illustrative on the synthetic alpine route.
    const lakeshore=alpine&&scene.demoWater?Math.max(0,(dx-14)/23):0;
-   return hill(z)+rise*p.terrainAmp*sinuous+wild*rough*(alpine?1.35:.68)-2.35*Math.min(1.5,lakeshore);
+   return hill(z)+rise*p.terrainAmp*sinuous+wild*rough*(alpine?1.35:.68)
+      +leftMountain-2.35*Math.min(1.5,lakeshore);
   };
   // Denser near terrain resolves valley edges, shoulders and distant silhouettes.
   const groundStep=quality==='ultra'?4:quality==='high'?5:7;
@@ -1819,7 +1834,9 @@ class SyntractGraphics3D {
   gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,this.materialTex.road);gl.uniform1i(this.surfaceLoc.road,1);
   gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,this.materialTex.ground);gl.uniform1i(this.surfaceLoc.ground,2);
   gl.uniform1f(this.surfaceLoc.grassMix,['alpine','forest','countryside'].includes(scene.biome)?(scene.state?.season==='winter'?0:scene.state?.season==='autumn'?.38:1):0);
-  gl.uniform1f(this.surfaceLoc.demoBlend,this.backdropReady&&route?.demo===true?1:0);gl.uniform1f(this.surfaceLoc.track,progress);
+  gl.uniform1f(this.surfaceLoc.demoBlend,this.backdropReady&&route?.demo===true?1:0);
+  gl.uniform1f(this.surfaceLoc.alpineRidge,scene.biome==='alpine'&&route?.demo===true?1:0);
+  gl.uniform1f(this.surfaceLoc.track,progress);
   gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
   gl.bindBuffer(gl.ARRAY_BUFFER,this.buf);gl.bufferData(gl.ARRAY_BUFFER,this.static.vertices,gl.DYNAMIC_DRAW);
   for(const [loc,size,offset] of [[0,3,0],[1,3,12],[2,3,24],[3,1,36]]){gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,size,gl.FLOAT,false,40,offset);}
@@ -1851,7 +1868,8 @@ class SyntractGraphics3D {
      const kind=oak?(spec>.52?'oak2':'oak'):(spec<.34?'pine':spec<.68?'pine2':'pine3');
      if(this.cc0Forest?.ready&&kind.startsWith('pine')&&zz<135&&this.cc0Instances.length<nativeBudget){
        this.cc0Instances.push({x,y:h,z:zz,height:tall,rotation:hash(seed+29)*Math.PI*2});
-       continue;
+       // Keep the alpha-cutout foliage around the true 3D branch skeleton:
+       // the CC0 geometry supplies parallax and bark, the cards supply crown density.
      }
      // Genuine transparent silhouette assets stay at world depth and do not contain scenery or UI pixels.
      const sway=Math.sin(time*.42+seed)*Math.min(.05,zz*.00015);
