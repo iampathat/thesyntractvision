@@ -37,9 +37,13 @@ const URL = process.env.QCDS_CYCLING_URL || 'http://127.0.0.1:8123/qcds-medcare-
   if(!status.visible||status.presentation!=='realtime'||status.photoCanvasVisible)
     throw Error('Refusing static or Photo Live pass: 3D WebGL canvas is hidden: '+JSON.stringify(status));
   if(status.warning.includes('3D-rendering pausad'))throw Error('Renderer exception: '+status.warning);
-  await page.locator('#cinematicArena').scrollIntoViewIfNeeded();
+  // WebGL redraws every frame; Playwright's stability-based locator scrolling
+  // can time out indefinitely even while the canvas is healthy and animating.
+  await page.evaluate(() => document.querySelector('#cinematicArena').scrollIntoView({block:'center',inline:'nearest',behavior:'instant'}));
   await page.waitForTimeout(700);
-  const shot=await page.locator('#cinematicArena').screenshot({type:'png',animations:'disabled'});
+  const arena=await page.locator('#cinematicArena').boundingBox();
+  if(!arena || arena.width<200 || arena.height<100)throw Error('No stable arena geometry: '+JSON.stringify(arena));
+  const shot=await page.screenshot({type:'png',clip:{x:Math.max(0,arena.x),y:Math.max(0,arena.y),width:Math.min(arena.width,1440-Math.max(0,arena.x)),height:Math.min(arena.height,900-Math.max(0,arena.y))},animations:'disabled'});
   const png=PNG.sync.read(shot);
   const counts=new Map(), samples=[];
   let mean=0,squares=0,n=0,nonBlack=0;
