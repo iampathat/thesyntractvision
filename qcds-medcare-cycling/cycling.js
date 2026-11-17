@@ -1248,13 +1248,18 @@ void main(){
   c*=.85+.27*hillPatch+.12*midPatch;
   float blades=worldFbm(position*2.9);
   c*=1.0+(blades-.45)*.16*(1.0-smoothstep(65.,220.,vDepth));
-  // Alpine rocky outcrops occupy slope-side only, never imported terrain.
+  // The rock treatment is confined to an Alpine road cut. In particular,
+  // avoid computing two 4-octave FBM fields for every foreground grass pixel:
+  // on software WebGL2 that can stall rendering and even screenshot capture.
   float ridgeZone=uAlpineRidge*smoothstep(11.,61.,-position.x);
-  float stonePatch=worldFbm(position*.18+vec2(4.7,7.3));
-  float rocky=clamp(ridgeZone*(.36+.55*stonePatch),0.,.80);
-  vec3 granite=vec3(.32,.33,.31)*(.77+.39*worldFbm(position*.64));
-  granite=mix(granite,vec3(.29,.34,.30),stonePatch*.22);
-  c=mix(c,granite,rocky);
+  if(ridgeZone>.012){
+   float stonePatch=smoothNoise(position*.18+vec2(4.7,7.3));
+   float fine=smoothNoise(position*.64);
+   float rocky=clamp(ridgeZone*(.36+.55*stonePatch),0.,.80);
+   vec3 granite=vec3(.32,.33,.31)*(.77+.39*fine);
+   granite=mix(granite,vec3(.29,.34,.30),stonePatch*.22);
+   c=mix(c,granite,rocky);
+  }
  }
  if(vMat>7.0 && vMat<7.9){
   float grain=worldFbm(vWorld.xz*vec2(2.4,2.7));
