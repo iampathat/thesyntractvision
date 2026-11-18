@@ -44,3 +44,65 @@ export function evaluateWorldOracles({scene={},route=null,routeGeometry=false,qu
   scope:'EXPLICIT CLASSICAL WORLD ORACLES, NOT VERIFIED QUANTUM QCDS'
  });
 }
+
+/**
+ * Joint QCDS world selection. Every candidate is a COMPLETE configuration:
+ * road grade, terrain relief, shoulder blend, vegetation density, sunlight,
+ * fog, surface wetness and rider lean are evaluated in one shared state.
+ * Hard constraints reject inconsistent candidates before weighted ranking.
+ * This is deterministic classical oracle evaluation, not quantum execution.
+ */
+export function selectWorldConfiguration(input={}){
+ const scene=input.scene||{},st=scene.state||{};
+ const base=evaluateWorldOracles(input);
+ const alpine=/alpine|mountain/i.test(String(scene.biome||''));
+ const wet=/rain|storm/i.test(String(st.weather||''));
+ const foggy=base.foggy;
+ const late=/late|sunset|dawn/i.test(String(st.lighting||''));
+ const speed=base.speedKmh,grade=base.grade;
+ const choices=[];
+ const reliefs=alpine?[24,36,48]:[8,14,22];
+ const shoulderWidths=[4,7,11];
+ const hazeLevels=foggy?[.48,.7]:[.1,.22];
+ const sun=late?[.78,.3,-.54]:[-.35,.86,-.43];
+ const sunLength=Math.hypot(...sun);
+ for(const relief of reliefs)for(const shoulder of shoulderWidths)for(const haze of hazeLevels){
+  const forestDensity=alpine?Math.max(.3,1-relief/100):.85;
+  const candidate={
+   relief,shoulderWidth:shoulder,roadWidth:6.6,roadGradeSmoothing:shoulder>=7?14:8,
+   forestDensity,vegetationRange:base.vegetationRange,
+   sunDirection:sun.map(x=>x/sunLength),fogDensity:haze,
+   surfaceRoughness:wet?.48:.83,roadWetness:wet?1:0,
+   riderLeanLimit:Math.max(3,14-speed*.08),
+   shadowStrength:base.shadowStrength,
+   cadenceHz:base.riderMotionHz,
+   provenance:base.renderingIsSynthetic?'synthetic':'route-derived'
+  };
+  const constraints=[
+   {id:'QC-GEOMETRY-CONTINUITY',met:shoulder>=relief/7},
+   {id:'QC-ROAD-CLEARANCE',met:shoulder>=candidate.roadWidth*.5},
+   {id:'QC-WEATHER-MATERIAL',met:!wet||candidate.surfaceRoughness<=.55},
+   {id:'QC-ATMOSPHERE-VISIBILITY',met:!foggy||haze>=.45},
+   {id:'QC-RIDER-SAFETY',met:candidate.riderLeanLimit>=3},
+   {id:'QC-PROVENANCE',met:!base.renderingIsSynthetic||candidate.provenance==='synthetic'}
+  ];
+  const valid=constraints.every(x=>x.met);
+  const targetRelief=alpine?36:14;
+  const score=100-Math.abs(relief-targetRelief)*.75-Math.abs(shoulder-7)*1.5-
+   Math.abs(haze-(foggy?.6:.1))*16-
+   Math.abs(forestDensity-(alpine?.65:.85))*12;
+  choices.push({candidate,valid,score,constraints});
+ }
+ const ranked=choices.filter(x=>x.valid).sort((a,b)=>b.score-a.score||
+  a.candidate.relief-b.candidate.relief||a.candidate.shoulderWidth-b.candidate.shoulderWidth);
+ if(!ranked.length)throw Error('No QCDS world configuration satisfies joint constraints');
+ const winner=ranked[0];
+ return Object.freeze({...winner.candidate,
+  score:winner.score,checks:winner.constraints,
+  evaluated:choices.length,accepted:ranked.length,
+  rejected:choices.length-ranked.length,
+  topK:ranked.slice(0,3).map(x=>({score:x.score,relief:x.candidate.relief,shoulderWidth:x.candidate.shoulderWidth,fogDensity:x.candidate.fogDensity})),
+  oracleIds:winner.constraints.map(x=>x.id),
+  scope:'DETERMINISTIC JOINT QCDS ORACLE SELECTION'
+ });
+}
