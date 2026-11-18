@@ -33,7 +33,31 @@ function lookAt(eye,target){let z=eye.map((v,i)=>v-target[i]);let n=Math.hypot(.
 function multiply(a,b){const o=new Float32Array(16);for(let c=0;c<4;c++)for(let r=0;r<4;r++)for(let k=0;k<4;k++)o[c*4+r]+=a[k*4+r]*b[c*4+k];return o;}
 function mesh(gl,positions,normals,indices){const vao=gl.createVertexArray();gl.bindVertexArray(vao);const buffers=[];for(const [data,loc] of [[positions,0],[normals,1]]){const b=gl.createBuffer();buffers.push(b);gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,data,gl.STATIC_DRAW);gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,3,gl.FLOAT,false,0,0);}const ib=gl.createBuffer();buffers.push(ib);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,indices,gl.STATIC_DRAW);gl.bindVertexArray(null);return {vao,buffers,count:indices.length};}
 function roadNormals(positions){const normals=new Float32Array(positions.length);for(let i=0;i<normals.length;i+=3)normals[i+1]=1;return normals;}
-function ridgeMesh(field,seed){const positions=[],normals=[],indices=[],count=120;for(let j=0;j<=count;j++){const x=-250+j*500/count,z=300+Math.sin(j*.13+seed)*8;const ridge=field.height(x,z)+30+35*(.5+.5*Math.sin(j*.075+seed*.1))*Math.sin(Math.PI*j/count)**2;positions.push(x,field.height(x,z),z,x,ridge,z);normals.push(0,0,-1,0,0,-1);if(j<count){const k=j*2;indices.push(k,k+1,k+2,k+1,k+3,k+2);}}return {positions:new Float32Array(positions),normals:new Float32Array(normals),indices:new Uint32Array(indices)};}
+function ridgeMesh(field,seed){
+ // A distant mountain is a connected 2D heightfield, not a vertical billboard.
+ // Ridge heights rise from the same deterministic world field as the foreground.
+ const positions=[],normals=[],indices=[],cols=100,rows=16;
+ for(let z=0;z<=rows;z++)for(let x=0;x<=cols;x++){
+  const px=-320+x*640/cols,pz=270+z*320/rows;
+  const envelope=Math.pow(Math.sin(Math.PI*x/cols),1.6);
+  const ridge=22+48*envelope*(.65+.35*Math.sin(x*.14+seed*.1));
+  const depthFade=Math.sin(Math.PI*z/rows);
+  const py=field.height(px,pz)+ridge*depthFade;
+  positions.push(px,py,pz);
+ }
+ for(let z=0;z<=rows;z++)for(let x=0;x<=cols;x++){
+  const i=(z*(cols+1)+x)*3;
+  const l=(z*(cols+1)+Math.max(0,x-1))*3,r=(z*(cols+1)+Math.min(cols,x+1))*3;
+  const b=(Math.max(0,z-1)*(cols+1)+x)*3,t=(Math.min(rows,z+1)*(cols+1)+x)*3;
+  const dx=(positions[r+1]-positions[l+1])/Math.max(.01,positions[r]-positions[l]);
+  const dz=(positions[t+1]-positions[b+1])/Math.max(.01,positions[t+2]-positions[b+2]);
+  const m=Math.hypot(dx,1,dz);normals.push(-dx/m,1/m,-dz/m);
+ }
+ for(let z=0;z<rows;z++)for(let x=0;x<cols;x++){
+  const i=z*(cols+1)+x,j=i+cols+1;indices.push(i,j,i+1,i+1,j,j+1);
+ }
+ return {positions:new Float32Array(positions),normals:new Float32Array(normals),indices:new Uint32Array(indices)};
+}
 export class QcdsWorldWebGL{
  constructor(canvas){this.canvas=canvas;this.gl=canvas.getContext('webgl2',{antialias:true,alpha:false});if(!this.gl)throw Error('WebGL2 unavailable');this.program=program(this.gl);this.meshes=[];this.active=false;this.frame=0;}
  rebuild(options){const gl=this.gl;for(const m of this.meshes)for(const b of m.mesh.buffers)gl.deleteBuffer(b);for(const m of this.meshes)gl.deleteVertexArray(m.mesh.vao);this.meshes=[];const world=buildWorldMesh({...options,step:5,halfWidth:110,length:300});this.field=world.field;const add=(data,color,road=0)=>this.meshes.push({mesh:mesh(gl,data.positions,data.normals||roadNormals(data.positions),data.indices),color,road});add(world.terrain,[.28,.38,.23]);add(ridgeMesh(world.field,world.field.seed),[.35,.39,.39]);add(world.road,[.19,.2,.21],1);this.options=options;this.render();}
