@@ -154,7 +154,7 @@
  }
  window.addEventListener('error',e=>report((e.message||'Resursfel')+' @ '+(e.filename||e.target?.src||'okänd')+':'+(e.lineno||0)));
  window.addEventListener('unhandledrejection',e=>report(e.reason?.stack||e.reason?.message||String(e.reason)));
- setTimeout(()=>{if(!document.querySelector('.view.active, .view.is-active, .view[aria-hidden="false"]')&&!window.__cyclingReady){report('Appens startstatus kunde inte verifieras. Kontrollera konsolen och felraden ovan.');}},8000);
+ setTimeout(()=>{if(!document.querySelector('.view.visible, .view.active, .view.is-active, .view[aria-hidden="false"]')&&!window.__cyclingReady){report('Appens startstatus kunde inte verifieras. Kontrollera konsolen och felraden ovan.');}},8000);
 })();
 </script>
 <script type="module" src="cycling.js?v=20261118-hotfix2"></script>
