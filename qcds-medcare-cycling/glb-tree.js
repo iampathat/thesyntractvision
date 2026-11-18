@@ -117,8 +117,11 @@ void main(){
  vec4 base=texture(uColor,vUv);
  if(base.a<.30)discard;
  vec3 light=normalize(vec3(-.35,.86,-.43)),n=normalize(vN);
- float lambert=max(0.,dot(n,light)),sky=.49+.12*n.y;
- vec3 albedo=base.rgb*(sky+.74*lambert);
+ float lambert=max(0.,dot(n,light));
+ // Hemispherical sky/ground illumination prevents flat, uniformly bright foliage.
+ float hemi=clamp(n.y*.5+.5,0.,1.);
+ vec3 skyLight=mix(vec3(.23,.24,.19),vec3(.48,.55,.62),hemi);
+ vec3 albedo=base.rgb*(skyLight+vec3(.72,.67,.57)*lambert);
  if(uMaterial<.5)albedo*=vec3(.89,.97,.88);
  albedo=mix(albedo,albedo*vec3(1.13,.86,.73),uLate*.25);
  float fog=1.-exp(-pow(max(vDepth-22.,0.)/270.,1.5));
