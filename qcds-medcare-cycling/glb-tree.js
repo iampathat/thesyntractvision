@@ -251,11 +251,11 @@ export class Cc0SpruceForest {
   this.status.height=this.height;
   this.status.ready=true;this.ready=true;
  }
- render(instances,canvas,scene){
+ render(instances,canvas,scene,quality='high'){
   if(!this.ready||!instances.length||this.disposed)return 0;
   // Keep the nearest visible trees rather than arbitrarily truncating the first 18.
   // Far-away meshes are both expensive and too small to contribute useful detail.
-  const decision=evaluateForestOracles(scene,instances,'ultra');
+  const decision=evaluateForestOracles(scene,instances,quality);
   const visible=decision.trees;
   this.status.oracles={ids:decision.oracleIds,accepted:decision.accepted,rejected:decision.rejected};
   const gl=this.gl,amount=visible.length;
