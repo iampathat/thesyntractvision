@@ -18,6 +18,7 @@ jobs:
         run: |
           npm install --no-save --no-package-lock --ignore-scripts playwright@1.56.1
           npx playwright install --with-deps chromium
+          npx playwright --version
       - name: Verify browser dependencies before launching the app
         run: |
           node -e "import('playwright').then(async ({chromium}) => { const browser=await chromium.launch({headless:true,args:['--no-sandbox']}); console.log('Chromium launched:',browser.version()); await browser.close(); }).catch(e=>{console.error(e);process.exit(1)})"
@@ -27,6 +28,14 @@ jobs:
           echo $! > /tmp/cycling-server.pid
       - name: Start demo, toggle QCDS WebGL and capture evidence
         run: node qcds-medcare-cycling/visual-smoke.mjs
+      - name: Preserve browser install and server diagnostics
+        if: failure()
+        run: |
+          mkdir -p qcds-medcare-cycling/visual-evidence
+          cp -f /tmp/cycling-server.log qcds-medcare-cycling/visual-evidence/server.log 2>/dev/null || true
+          find "$HOME/.npm/_logs" -maxdepth 1 -name '*debug-0.log' -type f -print -exec cp {} qcds-medcare-cycling/visual-evidence/ \; 2>/dev/null || true
+          df -h > qcds-medcare-cycling/visual-evidence/disk.txt
+          node --version > qcds-medcare-cycling/visual-evidence/node.txt
       - name: Upload screenshots and runtime errors
         if: always()
         uses: actions/upload-artifact@v4
