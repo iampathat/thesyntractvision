@@ -62,7 +62,7 @@ const URL = process.env.QCDS_CYCLING_URL || 'http://127.0.0.1:8123/qcds-medcare-
   if(status.spruceStatus)console.log('QCDS_CYCLING_TREE_DIAGNOSTICS '+JSON.stringify(status.spruceStatus));
   if(status.spruceStatus?.error)throw Error('3D spruce asset failed: '+status.spruceStatus.error);
   if(status.spruceStatus?.ready && status.spruceStatus.instances===0)throw Error('3D spruce asset loaded but no tree instances were drawn');
-  else console.warn('QCDS_CYCLING_TREE_DIAGNOSTICS unavailable: tree renderer not initialized');
+  if(!status.spruceStatus)console.warn('QCDS_CYCLING_TREE_DIAGNOSTICS unavailable: tree renderer not initialized');
   const path='/tmp/cycling-qa-v2.4.0.png';
   fs.writeFileSync(path,shot);console.log('QCDS_CYCLING_PNG_SAVED '+path+' bytes='+shot.length);
   if(counts.size<100||deviation<18||nonBlack/n<.18)throw Error('Renderer output failed pixel diversity / blank-screen checks');
