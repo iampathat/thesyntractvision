@@ -24,8 +24,35 @@ export function evaluateForestOracles(scene={},instances=[],quality='ultra'){
   if(failed){rejected[failed.id]=(rejected[failed.id]||0)+1;continue;}
   accepted.push(t);
  }
- accepted.sort((a,b)=>a.z-b.z);
- return {trees:accepted.slice(0,maxTrees),windStrength:.025+.012*wind,windSpeed:wind,
+ // Preserve depth continuity: a nearest-only budget strips distant hillsides bare.
+ // Deterministic depth bands keep foreground detail, middle-distance woodland and
+ // background silhouettes present together without frame-to-frame random popping.
+ accepted.sort((a,b)=>a.z-b.z||a.x-b.x||a.y-b.y);
+ const bands=[[],[],[]];
+ for(const tree of accepted){
+  const band=tree.z<65?0:tree.z<145?1:2;
+  bands[band].push(tree);
+ }
+ const weights=[0.5,0.32,0.18];
+ const quotas=weights.map(w=>Math.floor(maxTrees*w));
+ let spare=maxTrees-quotas.reduce((a,b)=>a+b,0);
+ for(let i=0;spare>0;i=(i+1)%3,spare--)quotas[i]++;
+ const selected=[];
+ for(let i=0;i<3;i++){
+  const band=bands[i],n=Math.min(quotas[i],band.length);
+  if(!n)continue;
+  // Even spatial/depth sampling avoids clumps of identical near trees.
+  for(let j=0;j<n;j++)selected.push(band[Math.min(band.length-1,Math.floor((j+0.5)*band.length/n))]);
+ }
+ if(selected.length<maxTrees){
+  const picked=new Set(selected);
+  for(const tree of accepted){
+   if(selected.length>=maxTrees)break;
+   if(!picked.has(tree)){selected.push(tree);picked.add(tree);}
+  }
+ }
+ selected.sort((a,b)=>a.z-b.z);
+ return {trees:selected,windStrength:.025+.012*wind,windSpeed:wind,
   fogDensity:fog,late:lighting==='late'||lighting==='sunset',
   oracleIds:oracles.map(o=>o.id),accepted:accepted.length,rejected,capacity:maxTrees};
 }
