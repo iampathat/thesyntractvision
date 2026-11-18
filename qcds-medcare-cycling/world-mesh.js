@@ -19,7 +19,12 @@ export function createWorldField(options={}){
  const center=z=>Math.sin(z*.007+seed*.1)*8+Math.sin(z*.019+seed*.03)*2.4;
  const raw=(x,z)=>amplitude*((noise(x/160,z/160,seed)-.5)*1.6+(noise(x/47,z/47,seed+9)-.5)*.48)
    +(noise(x/12,z/12,seed+27)-.5)*1.4;
- const roadHeight=z=>{const x=center(z);return .5*raw(x,z)+.25*(raw(x,z-12)+raw(x,z+12));};
+ const roadHeight=z=>{
+  const x=center(z),radius=oracle.roadGradeSmoothing;
+  // The jointly selected grade-smoothing radius changes the actual road and
+  // the terrain carved beneath it, rather than remaining unused metadata.
+  return .5*raw(x,z)+.25*(raw(center(z-radius),z-radius)+raw(center(z+radius),z+radius));
+ };
  const width=oracle.roadWidth;
  const height=(x,z)=>{
   const distance=Math.abs(x-center(z));
