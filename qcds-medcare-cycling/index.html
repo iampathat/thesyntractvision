@@ -154,6 +154,9 @@
  }
  window.addEventListener('error',e=>report((e.message||'Resursfel')+' @ '+(e.filename||e.target?.src||'okänd')+':'+(e.lineno||0)));
  window.addEventListener('unhandledrejection',e=>report(e.reason?.stack||e.reason?.message||String(e.reason)));
+ const mainScript=document.querySelector('script[src*="cycling.js"]');
+ mainScript?.addEventListener('error',()=>report('Kunde inte hämta cycling.js. Kontrollera GitHub Pages-publiceringen och försök ladda om.'));
+ window.addEventListener('load',()=>{const script=document.querySelector('script[src*="cycling.js"]');if(script&&!script.src.includes('hotfix'))report('En äldre cachad appversion laddades.');});
  setTimeout(()=>{if(!document.querySelector('.view.visible, .view.active, .view.is-active, .view[aria-hidden="false"]')&&!window.__cyclingReady){report('Appens startstatus kunde inte verifieras. Kontrollera konsolen och felraden ovan.');}},8000);
 })();
 </script>
