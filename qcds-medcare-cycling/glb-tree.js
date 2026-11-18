@@ -230,10 +230,15 @@ export class Cc0SpruceForest {
  }
  render(instances,canvas,scene){
   if(!this.ready||!instances.length||this.disposed)return 0;
-  const gl=this.gl,amount=Math.min(18,instances.length);
+  // Keep the nearest visible trees rather than arbitrarily truncating the first 18.
+  // Far-away meshes are both expensive and too small to contribute useful detail.
+  const visible=instances.filter(o=>Number.isFinite(o.x)&&Number.isFinite(o.y)&&Number.isFinite(o.z)&&Number.isFinite(o.height)&&o.height>0&&o.z>-4&&o.z<260&&Math.abs(o.x)<Math.max(35,o.z*1.25));
+  visible.sort((a,b)=>a.z-b.z);
+  const gl=this.gl,amount=Math.min(48,visible.length);
+  if(!amount){this.status.instances=0;return 0;}
   const data=new Float32Array(amount*6);
   for(let i=0;i<amount;i++){
-   const o=instances[i],a=6*i,ang=o.rotation||0;
+   const o=visible[i],a=6*i,ang=o.rotation||0;
    data[a]=o.x;data[a+1]=o.y;data[a+2]=o.z;data[a+3]=o.height/this.height;
    data[a+4]=Math.sin(ang);data[a+5]=Math.cos(ang);
   }
