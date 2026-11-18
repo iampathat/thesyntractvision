@@ -16,8 +16,11 @@ jobs:
           node-version: '22'
       - name: Install headless Chromium and Playwright
         run: |
-          npm install --no-save --no-package-lock playwright@1.58.2
+          npm install --no-save --no-package-lock --ignore-scripts playwright@1.56.1
           npx playwright install --with-deps chromium
+      - name: Verify browser dependencies before launching the app
+        run: |
+          node -e "import('playwright').then(async ({chromium}) => { const browser=await chromium.launch({headless:true,args:['--no-sandbox']}); console.log('Chromium launched:',browser.version()); await browser.close(); }).catch(e=>{console.error(e);process.exit(1)})"
       - name: Start local cycling website
         run: |
           python3 -m http.server 8765 --directory qcds-medcare-cycling > /tmp/cycling-server.log 2>&1 &
