@@ -157,7 +157,7 @@
  const mainScript=document.querySelector('script[src*="cycling.js"]');
  mainScript?.addEventListener('error',()=>report('Kunde inte hämta cycling.js. Kontrollera GitHub Pages-publiceringen och försök ladda om.'));
  window.addEventListener('load',()=>{const script=document.querySelector('script[src*="cycling.js"]');if(script&&!script.src.includes('hotfix'))report('En äldre cachad appversion laddades.');});
- setTimeout(()=>{if(!document.querySelector('.view.visible, .view.active, .view.is-active, .view[aria-hidden="false"]')&&!window.__cyclingReady){report('Appens startstatus kunde inte verifieras. Kontrollera konsolen och felraden ovan.');}},8000);
+ setTimeout(()=>{if(!window.__cyclingReady){report('Appens JavaScript slutförde inte uppstarten; knapparna kan sakna händelsehanterare. Kontrollera felraden ovan.');}},8000);
 })();
 </script>
 <script type="module" src="cycling.js?v=20261118-hotfix2"></script>
