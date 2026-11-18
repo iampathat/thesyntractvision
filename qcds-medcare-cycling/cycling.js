@@ -1381,8 +1381,9 @@ void main(){
  sky+=vec3(1.0,.76,.46)*(sun*.68+halo*.15);
  sky=mix(sky,vec3(.76,.40,.31)*(.55+.30*uv.y),uLate*.45);
  vec2 cloudp=uv*vec2(4.7,10.0)+vec2(uTime*.0006,0);
+ // Continuous multi-octave cloud coverage; soften the hard horizon cutoff.
  float clouds=noiz(cloudp)*.55+noiz(cloudp*2.4)*.29+noiz(cloudp*5.7)*.16;
- float ca=smoothstep(.52,.72,clouds)*smoothstep(.59,.85,y)*.64;
+ float ca=smoothstep(.48,.73,clouds)*smoothstep(.44,.80,y)*.52;
  sky=mix(sky,vec3(.97,.96,.89),ca);
  float mount=.60 +(.055+.08*uAlpine)*sin(x*9.7+1.2)+(.033+.06*uAlpine)*sin(x*21.1+.7)+.022*sin(x*43.1+4.);
  float mount2=.53 +(.045+.045*uAlpine)*sin(x*12.7+2.6)+.021*sin(x*39.0+2.7);
@@ -1398,7 +1399,10 @@ void main(){
  // lake surface, or branches. The left 70% of the original is clean scenery.
  vec2 mountainUV=vec2(.035+.665*clamp(uv.x,0.0,1.0),.825+.166*panoY);
  vec3 scenic=texture(uBackdrop,mountainUV).rgb;
- float blend=uBackdropMix*smoothstep(.43,.62,y)*(1.0-smoothstep(.75,.89,y));
+ // Remove rectangular panorama bands: fade the photo in BOTH image axes,
+ // leaving the continuous procedural atmosphere visible at the crop edges.
+ float photoFeather=smoothstep(.01,.18,uv.x)*(1.0-smoothstep(.81,.99,uv.x));
+ float blend=uBackdropMix*photoFeather*smoothstep(.46,.66,y)*(1.0-smoothstep(.71,.86,y));
  // Blend mountain photography through atmospheric depth instead of opaque cards.
  float luminous=dot(scenic,vec3(.299,.587,.114));
  col=mix(col,scenic,blend*.78*(1.-smoothstep(.73,1.0,luminous)*.42));
