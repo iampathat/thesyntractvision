@@ -125,10 +125,14 @@ void main(){
  if(base.a<.30)discard;
  vec3 light=normalize(vec3(-.35,.86,-.43)),n=normalize(vN);
  float lambert=max(0.,dot(n,light));
- // Hemispherical sky/ground illumination prevents flat, uniformly bright foliage.
+ // Foliage is thin: back-lit needles transmit a small amount of warm sunlight.
+ // Bark remains opaque and receives only reflected sky and direct illumination.
+ float backLight=pow(max(0.,dot(-n,light)),2.0);
  float hemi=clamp(n.y*.5+.5,0.,1.);
  vec3 skyLight=mix(vec3(.23,.24,.19),vec3(.48,.55,.62),hemi);
- vec3 albedo=base.rgb*(skyLight+vec3(.72,.67,.57)*lambert);
+ vec3 direct=vec3(.72,.67,.57)*lambert;
+ vec3 transmission=vec3(.20,.16,.065)*backLight;
+ vec3 albedo=base.rgb*(skyLight+direct+(uMaterial>.5?transmission:vec3(0.)));
  // Stable world-space variation breaks up identical instanced silhouettes without
  // shimmering as the camera moves; retain the original photographic albedo.
  float grain=fract(sin(dot(floor(vWorld.xz*1.7),vec2(127.1,311.7)))*43758.5453);
