@@ -2,7 +2,7 @@
  * Deterministic, executable terrain/road mesh generation for QCDS Cycling.
  * Coordinates are local metres; real-world elevation must come from a sourced route.
  */
-import {evaluateWorldOracles} from './world-oracles.js';
+import {selectWorldConfiguration} from './world-oracles.js';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const lerp=(a,b,t)=>a+(b-a)*t;
 const smooth=t=>t*t*(3-2*t);
@@ -12,18 +12,18 @@ function noise(x,z,seed){
  return lerp(lerp(hash(i,j,seed),hash(i+1,j,seed),u),lerp(hash(i,j+1,seed),hash(i+1,j+1,seed),u),v);
 }
 export function createWorldField(options={}){
- const oracle=evaluateWorldOracles(options);
+ const oracle=selectWorldConfiguration(options);
  const seed=Number.isFinite(options.seed)?options.seed:17;
  const alpine=String(options.scene?.biome||'').includes('alpine');
- const amplitude=alpine?42:17;
+ const amplitude=oracle.relief;
  const center=z=>Math.sin(z*.007+seed*.1)*8+Math.sin(z*.019+seed*.03)*2.4;
  const raw=(x,z)=>amplitude*((noise(x/160,z/160,seed)-.5)*1.6+(noise(x/47,z/47,seed+9)-.5)*.48)
    +(noise(x/12,z/12,seed+27)-.5)*1.4;
  const roadHeight=z=>{const x=center(z);return .5*raw(x,z)+.25*(raw(x,z-12)+raw(x,z+12));};
- const width=6.6;
+ const width=oracle.roadWidth;
  const height=(x,z)=>{
   const distance=Math.abs(x-center(z));
-  const t=smooth(clamp((distance-width/2)/6,0,1));
+  const t=smooth(clamp((distance-width/2)/oracle.shoulderWidth,0,1));
   return lerp(roadHeight(z),raw(x,z),t);
  };
  const road=z=>{
