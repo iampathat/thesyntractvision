@@ -2,8 +2,6 @@
    Third-party tree mesh and its two materials: Innerscene Norway Spruce, CC0 1.0 Universal.
    Model provenance: assets/CC0_SPRUCE_ASSET.txt. Not georeferenced imagery. */
 
-import {evaluateForestOracles} from './forest-oracles.js';
-
 const identity4=()=>new Float32Array([1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1]);
 function multiply4(a,b){
  const o=new Float32Array(16);
@@ -252,10 +250,9 @@ export class Cc0SpruceForest {
   if(!this.ready||!instances.length||this.disposed)return 0;
   // Keep the nearest visible trees rather than arbitrarily truncating the first 18.
   // Far-away meshes are both expensive and too small to contribute useful detail.
-  const inference=evaluateForestOracles(scene,instances,scene.quality||'ultra');
-  const visible=inference.trees;
-  this.status.oracles={ids:inference.oracleIds,accepted:inference.accepted,rejected:inference.rejected,capacity:inference.capacity};
-  const gl=this.gl,amount=visible.length;
+  const visible=instances.filter(o=>Number.isFinite(o.x)&&Number.isFinite(o.y)&&Number.isFinite(o.z)&&Number.isFinite(o.height)&&o.height>0&&o.z>-4&&o.z<260&&Math.abs(o.x)<Math.max(35,o.z*1.25));
+  visible.sort((a,b)=>a.z-b.z);
+  const gl=this.gl,amount=Math.min(48,visible.length);
   if(!amount){this.status.instances=0;return 0;}
   const data=new Float32Array(amount*6);
   for(let i=0;i<amount;i++){
@@ -269,7 +266,9 @@ export class Cc0SpruceForest {
   gl.uniform1f(this.uniforms.aspect,canvas.width/Math.max(1,canvas.height));
   gl.uniform1f(this.uniforms.windTime,performance.now()*0.001);
   // QCDS scene-state oracle: wind is a bounded physical driver, not random camera bobbing.
-  gl.uniform1f(this.uniforms.windStrength,inference.windStrength);
+  const wind=Number(scene.state?.windSpeed ?? scene.state?.wind ?? scene.windSpeed ?? 4);
+  const windMps=Number.isFinite(wind)?Math.max(0,Math.min(25,wind)):4;
+  gl.uniform1f(this.uniforms.windStrength,0.025+0.012*windMps);
   gl.uniform3fv(this.uniforms.base,this.center);
   gl.uniform3fv(this.uniforms.fog,new Float32Array(scene.palette.fog));
   gl.uniform1f(this.uniforms.late,scene.state?.lighting==='late'?1:0);
