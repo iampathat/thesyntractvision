@@ -234,9 +234,10 @@ jobs:
           fi
           test -s _site/qcds-medcare-cycling/forest-oracles.js
           test -s _site/qcds-medcare-cycling/glb-tree.js
-          cp qcds-medcare-cycling/world-oracles.js qcds-medcare-cycling/world-mesh.js _site/qcds-medcare-cycling/
+          cp qcds-medcare-cycling/world-oracles.js qcds-medcare-cycling/world-mesh.js qcds-medcare-cycling/qcds-world-webgl.js _site/qcds-medcare-cycling/
           node --test qcds-medcare-cycling/world-oracles.test.mjs qcds-medcare-cycling/world-mesh.test.mjs
           node --check _site/qcds-medcare-cycling/world-mesh.js
+          node --check _site/qcds-medcare-cycling/qcds-world-webgl.js
           test -s _site/qcds-medcare-cycling/index.html
           test -s _site/qcds-medcare-cycling/cycling.js
           test -s _site/qcds-medcare-cycling/cycling.css
