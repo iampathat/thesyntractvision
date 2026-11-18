@@ -1,4 +1,5 @@
 /* © 2026 Patrik Sundblom. All Rights Reserved. Proprietary executable distribution. */
+import {evaluateWorldOracles} from './world-oracles.js';
 /* module: oracles.js */
 
 const MODES={road:'Landsväg',gravel:'Gravel',mtb:'MTB / trail',downhill:'Downhill'};
@@ -1820,6 +1821,12 @@ class SyntractGraphics3D {
  render({snapshot,scene,route=null,routeMeters=0,quality='high',time=0}){
   const gl=this.gl,progress=Number(snapshot?.player?.km||0)*1000||0;const routeView=makeRouteVisual(route,routeMeters);
   const visualPlan=planVisualBandwidth({scene,route,quality,routeGeometry:!!routeView});
+  // Additive unified world-oracle evaluation: preserve the proven render plan
+  // and all existing input handlers, FTMS, geometry and frame scheduling.
+  const worldOracles=evaluateWorldOracles({scene,route,quality,routeGeometry:!!routeView,snapshot,time});
+  visualPlan.world=worldOracles;
+  visualPlan.checks=[...visualPlan.checks,...worldOracles.checks];
+  visualPlan.topK=visualPlan.checks.filter(d=>d.met).slice(0,5);
   const staticProgress=Math.floor(progress/8)*8,scroll=progress-staticProgress;
   const key=`${scene.biome}/${scene.state?.season}/${scene.state?.vegetation}/${scene.state?.roadside}/${scene.state?.surface}/${Math.floor(progress/8)}/${route?.id||route?.name||'none'}/${route?.points?.length||0}/${route?.elevationSource||'none'}/${Math.floor(routeMeters/8)}/${quality}`;
   if(key!==this.lastKey){
