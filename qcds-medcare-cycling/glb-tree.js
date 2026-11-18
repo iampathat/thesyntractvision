@@ -122,6 +122,11 @@ void main(){
  float hemi=clamp(n.y*.5+.5,0.,1.);
  vec3 skyLight=mix(vec3(.23,.24,.19),vec3(.48,.55,.62),hemi);
  vec3 albedo=base.rgb*(skyLight+vec3(.72,.67,.57)*lambert);
+ // Stable world-space variation breaks up identical instanced silhouettes without
+ // shimmering as the camera moves; retain the original photographic albedo.
+ float grain=fract(sin(dot(floor(vWorld.xz*1.7),vec2(127.1,311.7)))*43758.5453);
+ float dapple=0.90+0.16*smoothstep(.18,.86,grain);
+ albedo*=dapple;
  if(uMaterial<.5)albedo*=vec3(.89,.97,.88);
  albedo=mix(albedo,albedo*vec3(1.13,.86,.73),uLate*.25);
  float fog=1.-exp(-pow(max(vDepth-22.,0.)/270.,1.5));
