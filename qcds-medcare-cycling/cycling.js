@@ -1237,6 +1237,8 @@ in vec3 vNorm;in vec3 vCol;in vec3 vWorld;in float vDepth;in float vMat;
 uniform vec3 uFog;
 uniform float uTime;
 uniform float uLate;
+uniform float uWorldShadow;
+uniform float uWorldHaze;
 uniform sampler2D uAsphalt;
 uniform sampler2D uGround;
 uniform float uGrassMix;
@@ -1263,7 +1265,11 @@ void main(){
  vec3 light=normalize(vec3(-.35,.86,-.43));
  float dif=max(dot(n,light),0.0);
  float ambient=.44+max(n.y,0.0)*.24;
- vec3 c=vCol*(ambient+.82*dif);
+ // Shared world oracle: light-dependent shadow contrast, with no extra draw pass.
+ float shadowMix=clamp(uWorldShadow,0.0,1.0);
+ float terrainOcclusion=(vMat<2.0?1.0:0.35)*smoothstep(.08,.92,1.0-n.y);
+ float shade=1.0-shadowMix*.24*terrainOcclusion;
+ vec3 c=vCol*(ambient+.82*dif)*shade;
  vec2 trackUV=vec2(vWorld.x,vWorld.z+uTrackOffset);
  float gloss=pow(max(dot(reflect(-light,n),normalize(vec3(.05,.60,-.95))),0.0),18.0);
  c+=vec3(.17,.22,.22)*gloss*clamp(vMat-2.0,0.0,1.0);
@@ -1334,7 +1340,7 @@ void main(){
   c=mix(vec3(.042,.20,.28),vec3(.27,.49,.58),.32+.25*ripple);
   c+=vec3(.35,.32,.22)*glitter*.19;
  }
- float fog=1.0-exp(-pow(max(vDepth-24.0,0.0)/255.0,1.5));
+ float fog=1.0-exp(-pow(max(vDepth-24.0,0.0)/mix(255.0,155.0,clamp(uWorldHaze,0.0,1.0)),1.5));
  float heightHaze=(1.0-smoothstep(.0,14.,max(vWorld.y,0.)))*.075*smoothstep(90.,450.,vDepth);
  vec3 radiance=mix(c,uFog,clamp(fog+heightHaze,0.0,.81));
  // Preserve real-world midtones: the earlier / (radiance+.075) curve
@@ -1723,7 +1729,7 @@ class SyntractGraphics3D {
   panorama.src=this.imageSources.lake; // undistorted photo, no overlaid interface
   this.buf=gl.createBuffer();this.skyBuffer=gl.createBuffer();this.lastKey='';this.lastBiome='';this.count=0;this.vertices=null;
   gl.bindBuffer(gl.ARRAY_BUFFER,this.skyBuffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);
-  this.locs={aspect:gl.getUniformLocation(this.p,'uAspect'),pitch:gl.getUniformLocation(this.p,'uPitch'),camy:gl.getUniformLocation(this.p,'uCamY'),scroll:gl.getUniformLocation(this.p,'uWorldScroll'),fog:gl.getUniformLocation(this.p,'uFog'),time:gl.getUniformLocation(this.p,'uTime'),late:gl.getUniformLocation(this.p,'uLate')};
+  this.locs={aspect:gl.getUniformLocation(this.p,'uAspect'),pitch:gl.getUniformLocation(this.p,'uPitch'),camy:gl.getUniformLocation(this.p,'uCamY'),scroll:gl.getUniformLocation(this.p,'uWorldScroll'),fog:gl.getUniformLocation(this.p,'uFog'),time:gl.getUniformLocation(this.p,'uTime'),late:gl.getUniformLocation(this.p,'uLate'),worldShadow:gl.getUniformLocation(this.p,'uWorldShadow'),worldHaze:gl.getUniformLocation(this.p,'uWorldHaze')};
   this.skyLoc={fog:gl.getUniformLocation(this.sky,'uFog'),time:gl.getUniformLocation(this.sky,'uTime'),alpine:gl.getUniformLocation(this.sky,'uAlpine'),late:gl.getUniformLocation(this.sky,'uLate'),backdrop:gl.getUniformLocation(this.sky,'uBackdrop'),backdropMix:gl.getUniformLocation(this.sky,'uBackdropMix')};
   gl.disable(gl.CULL_FACE);gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);
  }
@@ -1888,7 +1894,7 @@ class SyntractGraphics3D {
   gl.uniform1f(this.skyLoc.backdropMix,this.backdropReady&&scene.state?.season!=='winter'&&route?.demo===true&&['alpine','countryside','forest'].includes(scene.biome)?0.84:0); // Generic illustrative backdrop: never a claim about geographic truth.
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
   gl.enable(gl.DEPTH_TEST);gl.clear(gl.DEPTH_BUFFER_BIT);gl.useProgram(this.p);
-  gl.uniform1f(this.locs.aspect,this.canvas.width/Math.max(1,this.canvas.height));gl.uniform1f(this.locs.pitch,.11);gl.uniform1f(this.locs.camy,2.28);gl.uniform1f(this.locs.scroll,scroll);gl.uniform3fv(this.locs.fog,new Float32Array(scene.palette.fog));gl.uniform1f(this.locs.time,time);gl.uniform1f(this.locs.late,scene.state?.lighting==='late'?1:0);
+  gl.uniform1f(this.locs.aspect,this.canvas.width/Math.max(1,this.canvas.height));gl.uniform1f(this.locs.pitch,.11);gl.uniform1f(this.locs.camy,2.28);gl.uniform1f(this.locs.scroll,scroll);gl.uniform3fv(this.locs.fog,new Float32Array(scene.palette.fog));gl.uniform1f(this.locs.time,time);gl.uniform1f(this.locs.late,scene.state?.lighting==='late'?1:0);gl.uniform1f(this.locs.worldShadow,worldOracles.shadowStrength);gl.uniform1f(this.locs.worldHaze,worldOracles.foggy?1:0);
   gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,this.materialTex.road);gl.uniform1i(this.surfaceLoc.road,1);
   gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,this.materialTex.ground);gl.uniform1i(this.surfaceLoc.ground,2);
   gl.uniform1f(this.surfaceLoc.grassMix,['alpine','forest','countryside'].includes(scene.biome)?(scene.state?.season==='winter'?0:scene.state?.season==='autumn'?.38:1):0);
