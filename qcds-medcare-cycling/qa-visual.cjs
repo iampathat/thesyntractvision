@@ -102,21 +102,21 @@ const URL = process.env.QCDS_CYCLING_URL || 'http://127.0.0.1:8123/qcds-medcare-
   const x=Math.max(0,sceneBox.x),y=Math.max(0,sceneBox.y);
   const clip={x,y,width:Math.min(sceneBox.width,viewport.width-x),height:Math.min(sceneBox.height,viewport.height-y)};
   if(clip.width<100||clip.height<100)throw Error('3D canvas outside viewport: '+JSON.stringify(clip));
-  const before=PNG.sync.read(await page.screenshot({type:'png',clip,animations:'disabled',timeout:15000}));
+  const frameBefore=PNG.sync.read(await page.screenshot({type:'png',clip,animations:'disabled',timeout:15000}));
   await page.waitForTimeout(1650);
   const moving=await page.screenshot({type:'png',clip,animations:'disabled',timeout:15000});
-  const after=PNG.sync.read(moving);
-  if(before.width!==after.width||before.height!==after.height)throw Error('3D frame resized during motion');
+  const frameAfter=PNG.sync.read(moving);
+  if(frameBefore.width!==frameAfter.width||frameBefore.height!==frameAfter.height)throw Error('3D frame resized during motion');
   let changed=0,delta=0,total=0;
-  for(let y=20;y<before.height-20;y+=8)for(let x=20;x<before.width-20;x+=8){
-   const k=4*(y*before.width+x);
-   const d=Math.abs(before.data[k]-after.data[k])+
-      Math.abs(before.data[k+1]-after.data[k+1])+
-      Math.abs(before.data[k+2]-after.data[k+2]);
+  for(let y=20;y<frameBefore.height-20;y+=8)for(let x=20;x<frameBefore.width-20;x+=8){
+   const k=4*(y*frameBefore.width+x);
+   const d=Math.abs(frameBefore.data[k]-frameAfter.data[k])+
+      Math.abs(frameBefore.data[k+1]-frameAfter.data[k+1])+
+      Math.abs(frameBefore.data[k+2]-frameAfter.data[k+2]);
    if(d>32)changed++;
    delta+=d/3;total++;
   }
-  const motion={changedFraction:changed/total,meanAbsoluteChannelChange:delta/total,dimensions:[before.width,before.height]};
+  const motion={changedFraction:changed/total,meanAbsoluteChannelChange:delta/total,dimensions:[frameBefore.width,frameBefore.height]};
   console.log('QCDS_CYCLING_MOTION_DIAGNOSTICS '+JSON.stringify(motion));
   fs.writeFileSync('/tmp/cycling-qa-motion.png',moving);
   if(motion.changedFraction<.04)throw Error('3D road/cyclists are not visibly moving: '+JSON.stringify(motion));
