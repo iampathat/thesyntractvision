@@ -84,7 +84,7 @@ export function selectWorldConfiguration(input={}){
    {id:'QC-GEOMETRY-CONTINUITY',met:shoulder>=relief/7},
    {id:'QC-ROAD-CLEARANCE',met:shoulder>=candidate.roadWidth*.5},
    {id:'QC-WEATHER-MATERIAL',met:(!wet||candidate.surfaceRoughness<=.55)&&(!wet||roadWetness>=.65)},
-   {id:'QC-FOREST-RELIEF',met:!alpine||forestDensity<=Math.max(.35,1-relief/90)},
+   {id:'QC-FOREST-RELIEF',met:!alpine||forestDensity<=Math.max(.35,1-relief/200)},
    {id:'QC-VEGETATION-STATE',met:st.vegetation!=='dense'||forestDensity>=.85},
    {id:'QC-ATMOSPHERE-VISIBILITY',met:!foggy||haze>=.45},
    {id:'QC-RIDER-SAFETY',met:candidate.riderLeanLimit>=3},
