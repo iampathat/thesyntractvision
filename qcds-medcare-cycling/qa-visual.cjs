@@ -31,7 +31,8 @@ const URL = process.env.QCDS_CYCLING_URL || 'http://127.0.0.1:8123/qcds-medcare-
     visible:!can.hidden && r.width>100 && r.height>100 && getComputedStyle(can).visibility==='visible',
     cssVisibility:getComputedStyle(can).visibility,
     presentation:document.querySelector('#cinematicArena').dataset.presentation,
-    photoCanvasVisible:!document.querySelector('#photoLiveCanvas').hidden};
+    photoCanvasVisible:!document.querySelector('#photoLiveCanvas').hidden,
+    spruceStatus:window.__qcdsSpruceStatus ? {...window.__qcdsSpruceStatus} : null};
   });
   if(status.context!=='webgl2')throw Error('No live WebGL2 context: '+JSON.stringify(status));
   if(!status.visible||status.presentation!=='realtime'||status.photoCanvasVisible)
@@ -56,6 +57,10 @@ const URL = process.env.QCDS_CYCLING_URL || 'http://127.0.0.1:8123/qcds-medcare-
   mean/=n;const deviation=Math.sqrt(squares/n-mean*mean);
   const analysis={...status,shotWidth:png.width,shotHeight:png.height,colors:counts.size,mean,standardDeviation:deviation,nonBlackFraction:nonBlack/n,pageErrors:errors};
   console.log('QCDS_CYCLING_VISUAL_DIAGNOSTICS '+JSON.stringify(analysis));
+  // A passing pixel-diversity check is not proof of photorealism.
+  // Report whether the textured 3D spruce asset actually loaded and rendered.
+  if(status.spruceStatus)console.log('QCDS_CYCLING_TREE_DIAGNOSTICS '+JSON.stringify(status.spruceStatus));
+  else console.warn('QCDS_CYCLING_TREE_DIAGNOSTICS unavailable: tree renderer not initialized');
   const path='/tmp/cycling-qa-v2.4.0.png';
   fs.writeFileSync(path,shot);console.log('QCDS_CYCLING_PNG_SAVED '+path+' bytes='+shot.length);
   if(counts.size<100||deviation<18||nonBlack/n<.18)throw Error('Renderer output failed pixel diversity / blank-screen checks');
