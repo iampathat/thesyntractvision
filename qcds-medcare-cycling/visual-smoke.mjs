@@ -39,7 +39,14 @@ try{
  await shot('03-qcds-webgl');
  await fs.writeFile(out+'/results.json',JSON.stringify({steps,result,errors,consoleErrors},null,2));
  if(!result.visible||!result.webgl2||result.width<100||result.height<100)throw Error('QCDS world canvas failed visible WebGL smoke');
+ if(result.webglError!==0)throw Error('WebGL reported GL error '+result.webglError);
  if(errors.length)throw Error('Runtime errors: '+errors.join(' | '));
+ if(consoleErrors.length)throw Error('Browser console errors: '+consoleErrors.join(' | '));
+ for(const name of ['01-initial','02-demo','03-qcds-webgl']){
+  const png=await fs.readFile(out+'/'+name+'.png');
+  if(png.length<1024||png.subarray(0,8).toString('hex')!=='89504e470d0a1a0a')
+   throw Error('Missing, truncated or invalid PNG evidence: '+name);
+ }
  console.log('QCDS browser smoke PASS; screenshots require visual quality review',result);
 }catch(e){
  await shot('failure').catch(()=>{});
