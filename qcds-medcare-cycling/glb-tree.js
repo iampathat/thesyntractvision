@@ -120,11 +120,13 @@ uniform sampler2D uColor;
 uniform vec3 uFog;
 uniform float uLate;
 uniform float uMaterial;
+uniform vec3 uSunDirection;
+uniform float uHaze;
 out vec4 oColor;
 void main(){
  vec4 base=texture(uColor,vUv);
  if(base.a<.30)discard;
- vec3 light=normalize(vec3(-.35,.86,-.43)),n=normalize(vN);
+ vec3 light=normalize(uSunDirection),n=normalize(vN);
  float lambert=max(0.,dot(n,light));
  // Foliage is thin: back-lit needles transmit a small amount of warm sunlight.
  // Bark remains opaque and receives only reflected sky and direct illumination.
@@ -141,7 +143,7 @@ void main(){
  albedo*=dapple;
  if(uMaterial<.5)albedo*=vec3(.89,.97,.88);
  albedo=mix(albedo,albedo*vec3(1.13,.86,.73),uLate*.25);
- float fog=1.-exp(-pow(max(vDepth-22.,0.)/270.,1.5));
+ float fog=1.-exp(-pow(max(vDepth-22.,0.)/mix(310.,105.,clamp(uHaze,0.,1.)),1.5));
  albedo=mix(albedo,uFog,clamp(fog,0.,.74));
  oColor=vec4(albedo,1.);
 }`;
@@ -157,6 +159,8 @@ export class Cc0SpruceForest {
    base:gl.getUniformLocation(this.program,'uBase'),
    fog:gl.getUniformLocation(this.program,'uFog'),
    late:gl.getUniformLocation(this.program,'uLate'),
+   sunDirection:gl.getUniformLocation(this.program,'uSunDirection'),
+   haze:gl.getUniformLocation(this.program,'uHaze'),
    color:gl.getUniformLocation(this.program,'uColor'),
    material:gl.getUniformLocation(this.program,'uMaterial')
   };
@@ -271,7 +275,11 @@ export class Cc0SpruceForest {
   gl.uniform1f(this.uniforms.windStrength,decision.windStrength);
   gl.uniform3fv(this.uniforms.base,this.center);
   gl.uniform3fv(this.uniforms.fog,new Float32Array(scene.palette.fog));
-  gl.uniform1f(this.uniforms.late,scene.state?.lighting==='late'?1:0);
+  const lighting=String(scene.state?.lighting||'day').toLowerCase();
+  const sun=lighting==='late'||lighting==='sunset'?[.78,.27,-.56]:lighting==='dawn'?[.62,.24,-.74]:lighting==='night'?[.1,.5,-.86]:[-.35,.86,-.43];
+  gl.uniform3fv(this.uniforms.sunDirection,new Float32Array(sun));
+  gl.uniform1f(this.uniforms.haze,decision.fogDensity);
+  gl.uniform1f(this.uniforms.late,decision.late?1:0);
   gl.uniform1i(this.uniforms.color,4);
   gl.enable(gl.DEPTH_TEST);gl.depthMask(true);gl.disable(gl.BLEND);
   for(const mesh of this.meshes){
