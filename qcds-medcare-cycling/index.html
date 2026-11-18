@@ -133,5 +133,29 @@
 <footer><span>© 2026 Patrik Sundblom. All Rights Reserved. · Theory and creation by Patrik Sundblom · OpenAI/ChatGPT R&D support</span><span>QCDS LIFE SCIENCE / MEDCARE / CYCLING</span></footer>
 </main></div></div>
 <!-- Leaflet loads only when user explicitly requests the live map. Demo has zero external dependencies. -->
-<script type="module" src="cycling.js?v=2.4.1"></script>
+<script>
+/* Startup diagnostics run independently of the main application module. */
+(function(){
+ const issues=[];
+ function report(message){
+  issues.push(String(message));
+  let panel=document.getElementById('cyclingStartupError');
+  if(!panel){
+   panel=document.createElement('aside');panel.id='cyclingStartupError';
+   panel.setAttribute('role','alert');
+   panel.style.cssText='position:fixed;z-index:2147483647;left:12px;right:12px;bottom:12px;max-height:45vh;overflow:auto;background:#3a1220;color:white;padding:14px;border:2px solid #ff9aa5;border-radius:12px;font:14px system-ui;box-shadow:0 6px 32px #0009';
+   const title=document.createElement('strong');title.textContent='QCDS Cycling – startfel';panel.append(title);
+   const details=document.createElement('pre');details.id='cyclingStartupDetails';details.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;font:12px monospace';panel.append(details);
+   const copy=document.createElement('button');copy.type='button';copy.textContent='Kopiera felrapport';copy.style.cssText='padding:9px;margin-right:8px';copy.addEventListener('click',()=>navigator.clipboard?.writeText(issues.join('\n')).catch(()=>{}));panel.append(copy);
+   const reload=document.createElement('button');reload.type='button';reload.textContent='Ladda om';reload.style.cssText='padding:9px';reload.addEventListener('click',()=>location.reload());panel.append(reload);
+   document.body.append(panel);
+  }
+  document.getElementById('cyclingStartupDetails').textContent=issues.join('\n');
+ }
+ window.addEventListener('error',e=>report((e.message||'Resursfel')+' @ '+(e.filename||e.target?.src||'okänd')+':'+(e.lineno||0)));
+ window.addEventListener('unhandledrejection',e=>report(e.reason?.stack||e.reason?.message||String(e.reason)));
+ setTimeout(()=>{if(!document.querySelector('.view.active, .view.is-active, .view[aria-hidden="false"]')&&!window.__cyclingReady){report('Appens startstatus kunde inte verifieras. Kontrollera konsolen och felraden ovan.');}},8000);
+})();
+</script>
+<script type="module" src="cycling.js?v=20261118-hotfix2"></script>
 </body></html>
