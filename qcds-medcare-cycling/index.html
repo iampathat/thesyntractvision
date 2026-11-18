@@ -166,14 +166,17 @@ import {QcdsWorldWebGL} from './qcds-world-webgl.js';
 const button=document.getElementById('qcdsWorldToggle');
 const canvas=document.getElementById('qcdsWorldCanvas');
 let renderer=null;
+let animationFrame=0;
+const animate=()=>{if(canvas.hidden){animationFrame=0;return;}renderer?.render();animationFrame=requestAnimationFrame(animate);};
 button?.addEventListener('click',()=>{
- if(!canvas.hidden){canvas.hidden=true;button.setAttribute('aria-pressed','false');button.textContent='QCDS TERRÄNG 3D';return;}
+ if(!canvas.hidden){canvas.hidden=true;cancelAnimationFrame(animationFrame);animationFrame=0;button.setAttribute('aria-pressed','false');button.textContent='QCDS TERRÄNG 3D';return;}
  try{
   renderer??=new QcdsWorldWebGL(canvas);
   canvas.hidden=false;
   const biome=document.getElementById('sceneBiome')?.value||'alpine';
   const lighting=document.getElementById('sceneLighting')?.value||'day';
   renderer.rebuild({scene:{biome,state:{lighting}},route:{demo:true},quality:'high'});
+  if(!animationFrame)animationFrame=requestAnimationFrame(animate);
   button.setAttribute('aria-pressed','true');button.textContent='STÄNG QCDS TERRÄNG';
  }catch(error){canvas.hidden=true;console.error('QCDS world mesh:',error);button.textContent='WEBGL-FEL – FÖRSÖK IGEN';}
 });
