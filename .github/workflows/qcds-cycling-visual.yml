@@ -59,7 +59,7 @@ jobs:
             '',
             '| Field | Value |',
             '| --- | --- |',
-            '| Commit | \`'+process.env.GITHUB_SHA+'\` |',
+            '| Commit | `'+process.env.GITHUB_SHA+'` |',
             '| Run | '+process.env.GITHUB_RUN_ID+' (attempt '+process.env.GITHUB_RUN_ATTEMPT+') |',
             '| Event | '+process.env.GITHUB_EVENT_NAME+' |',
             '| Job status | '+process.env.QCDS_JOB_STATUS+' |',
@@ -72,11 +72,11 @@ jobs:
             ...((result?.steps||[]).map(x=>'- '+String(x))),
             '',
             '### Errors',
-            ...((result?.errors||[]).concat(result?.consoleErrors||[],result?.failure?[result.failure]:[]).map(x=>'- '+String(x).replace(/\\n/g,' '))),
+            ...((result?.errors||[]).concat(result?.consoleErrors||[],result?.failure?[result.failure]:[]).map(x=>'- '+String(x).replace(/\n/g,' '))),
             '',
             'Screenshots and results.json are attached in the **qcds-cycling-visual-evidence** artifact, when produced.'
           ];
-          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join('\\n')+'\\n');
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join('\n')+'\n');
           NODE
       - name: Upload screenshots and runtime errors
         if: always()
