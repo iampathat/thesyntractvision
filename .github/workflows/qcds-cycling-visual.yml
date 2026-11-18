@@ -22,7 +22,7 @@ jobs:
           npm install --no-audit --no-fund --ignore-scripts playwright@1.56.1
           ./node_modules/.bin/playwright install --with-deps chromium
           ./node_modules/.bin/playwright --version
-          ln -s /tmp/qcds-browser-qa/node_modules qcds-medcare-cycling/node_modules
+          ln -sfn /tmp/qcds-browser-qa/node_modules "$GITHUB_WORKSPACE/qcds-medcare-cycling/node_modules"
       - name: Verify browser dependencies before launching the app
         run: |
           node -e "const {chromium}=require('/tmp/qcds-browser-qa/node_modules/playwright'); (async()=>{const browser=await chromium.launch({headless:true,args:['--no-sandbox']});console.log('Chromium launched:',browser.version());await browser.close()})().catch(e=>{console.error(e);process.exit(1)})"
