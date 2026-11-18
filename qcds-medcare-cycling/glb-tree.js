@@ -95,6 +95,7 @@ layout(location=3) in vec4 aInstance;
 layout(location=4) in vec2 aRotation;
 uniform float uAspect;
 uniform float uWindTime;
+uniform float uWindStrength;
 uniform vec3 uBase;
 out vec2 vUv;out vec3 vN;out float vDepth;out vec3 vWorld;
 void main(){
@@ -104,8 +105,8 @@ void main(){
  // Low-amplitude crown sway: anchored trunk, coherent per-tree phase.
  float crown=clamp((p.y-1.4)/max(2.0,aInstance.w*9.0),0.0,1.0);
  float gust=sin(uWindTime*0.63+aInstance.x*0.17+aInstance.z*0.11);
- world.x+=crown*crown*0.095*gust;
- world.z+=crown*crown*0.045*sin(uWindTime*0.48+aInstance.z*0.19);
+ world.x+=crown*crown*uWindStrength*gust;
+ world.z+=crown*crown*uWindStrength*.48*sin(uWindTime*0.48+aInstance.z*0.19);
  float z=max(.18,world.z+5.0),f=2.42;
  gl_Position=vec4(world.x*f/uAspect,(world.y-2.28+.11*z)*f,(1000.2/999.8)*z-(400.0/999.8),z);
  vN=normalize(vec3(aN.x*aRotation.y-aN.z*aRotation.x,aN.y,aN.x*aRotation.x+aN.z*aRotation.y));
@@ -147,6 +148,7 @@ export class Cc0SpruceForest {
   this.uniforms={
    aspect:gl.getUniformLocation(this.program,'uAspect'),
    windTime:gl.getUniformLocation(this.program,'uWindTime'),
+   windStrength:gl.getUniformLocation(this.program,'uWindStrength'),
    base:gl.getUniformLocation(this.program,'uBase'),
    fog:gl.getUniformLocation(this.program,'uFog'),
    late:gl.getUniformLocation(this.program,'uLate'),
@@ -259,6 +261,10 @@ export class Cc0SpruceForest {
   gl.useProgram(this.program);
   gl.uniform1f(this.uniforms.aspect,canvas.width/Math.max(1,canvas.height));
   gl.uniform1f(this.uniforms.windTime,performance.now()*0.001);
+  // QCDS scene-state oracle: wind is a bounded physical driver, not random camera bobbing.
+  const wind=Number(scene.state?.windSpeed ?? scene.state?.wind ?? scene.windSpeed ?? 4);
+  const windMps=Number.isFinite(wind)?Math.max(0,Math.min(25,wind)):4;
+  gl.uniform1f(this.uniforms.windStrength,0.025+0.012*windMps);
   gl.uniform3fv(this.uniforms.base,this.center);
   gl.uniform3fv(this.uniforms.fog,new Float32Array(scene.palette.fog));
   gl.uniform1f(this.uniforms.late,scene.state?.lighting==='late'?1:0);
