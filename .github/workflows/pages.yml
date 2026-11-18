@@ -223,6 +223,17 @@ jobs:
         run: |
           mkdir -p _site/qcds-medcare-cycling
           cp qcds-medcare-cycling/index.html qcds-medcare-cycling/cycling.js qcds-medcare-cycling/cycling.css qcds-medcare-cycling/leaflet.css qcds-medcare-cycling/LEAFLET_LICENSE.txt qcds-medcare-cycling/core.wasm qcds-medcare-cycling/README_PUBLIC.txt _site/qcds-medcare-cycling/
+          # Ship the browser-side scene modules and their licensed 3D assets.
+          # Do not copy the entire source directory (private/native sources stay excluded).
+          for module in forest-oracles.js glb-tree.js; do
+            test -s "qcds-medcare-cycling/$module"
+            cp "qcds-medcare-cycling/$module" "_site/qcds-medcare-cycling/$module"
+          done
+          if [ -d qcds-medcare-cycling/assets ]; then
+            cp -a qcds-medcare-cycling/assets _site/qcds-medcare-cycling/assets
+          fi
+          test -s _site/qcds-medcare-cycling/forest-oracles.js
+          test -s _site/qcds-medcare-cycling/glb-tree.js
           test -s _site/qcds-medcare-cycling/index.html
           test -s _site/qcds-medcare-cycling/cycling.js
           test -s _site/qcds-medcare-cycling/cycling.css
