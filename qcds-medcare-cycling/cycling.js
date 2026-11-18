@@ -1765,6 +1765,7 @@ class SyntractGraphics3D {
   const m=new Mesh(),p=scene.palette,forest=scene.biome==='forest',urban=scene.biome==='urban',alpine=scene.biome==='alpine';
   const center=z=>routeView?routeView.center(z):Math.sin((progress+z)/85)*4+Math.sin((progress+z)/170)*8-(Math.sin(progress/85)*4+Math.sin(progress/170)*8);
   const hill=z=>{const routeHeight=routeView?.height(z);return routeHeight!==null&&routeHeight!==undefined?routeHeight:1.2*Math.sin((progress+z)/150)-1.2*Math.sin(progress/150);};
+  const smoothstepJS=(a,b,x)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t);};
   const ground=(x,z)=>{
    const dx=x-center(z);
    const rise=Math.max(0,(Math.abs(dx)-5.0)/27);
@@ -1781,7 +1782,11 @@ class SyntractGraphics3D {
      (1+.23*Math.sin(worldZ*.027+x*.061)+.11*Math.sin(worldZ*.083-x*.071)):0;
    // Lakes remain strictly illustrative on the synthetic alpine route.
    const lakeshore=alpine&&scene.demoWater?Math.max(0,(dx-14)/23):0;
-   return hill(z)+rise*p.terrainAmp*sinuous+wild*rough*(alpine?1.35:.68)
+   // Road-bed oracle: grade, shoulders and the terrain mesh share the same
+   // elevation datum. Keep the asphalt 6 cm above the compacted bed rather
+   // than visibly hovering 29 cm above the surrounding ground.
+   const roadBed=.23*(1-smoothstepJS(3.6,9.0,Math.abs(dx)));
+   return hill(z)+roadBed+rise*p.terrainAmp*sinuous+wild*rough*(alpine?1.35:.68)
       +leftMountain-2.35*Math.min(1.5,lakeshore);
   };
   // Denser near terrain resolves valley edges, shoulders and distant silhouettes.
