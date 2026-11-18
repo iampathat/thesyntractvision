@@ -53,7 +53,12 @@ export function buildWorldMesh(options={}){
  for(let z=0;z<=rows;z++){
   const p=field.road(length*z/rows),tx=p.tangent[0],tz=p.tangent[2],m=Math.hypot(tx,tz);
   const side=[tz/m,-tx/m];
-  for(const edge of [-1,1])roadPositions.push(p.x+side[0]*field.width*.5*edge,p.y+.035,p.z+side[1]*field.width*.5*edge);
+  for(const edge of [-1,1]){
+   const ex=p.x+side[0]*field.width*.5*edge,ez=p.z+side[1]*field.width*.5*edge;
+   // Sample the SAME continuous world height field at each road edge.
+   // A constant centerline Y makes curved, sloping roads float above or cut through terrain.
+   roadPositions.push(ex,field.height(ex,ez)+.035,ez);
+  }
   if(z<rows){const a=z*2;roadIndices.push(a,a+2,a+1,a+1,a+2,a+3);}
  }
  return {field,terrain:{positions:new Float32Array(positions),normals:new Float32Array(normals),indices:new Uint32Array(indices)},
