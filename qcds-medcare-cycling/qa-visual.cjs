@@ -53,6 +53,13 @@ const URL = process.env.QCDS_CYCLING_URL || 'http://127.0.0.1:8123/qcds-medcare-
     photoCanvasVisible:!document.querySelector('#photoLiveCanvas').hidden,
     spruceStatus:window.__qcdsSpruceStatus ? {...window.__qcdsSpruceStatus} : null};
   });
+  // Preserve an actual browser image even when initialization fails; previously
+  // the CI job exited before uploading any evidence of the broken scene.
+  try {
+   await page.screenshot({path:'/tmp/cycling-qa-startup.png',fullPage:false,timeout:12000,animations:'disabled'});
+   console.log('QCDS_CYCLING_STARTUP_SCREENSHOT /tmp/cycling-qa-startup.png');
+  } catch(e) {console.warn('QCDS_CYCLING_STARTUP_SCREENSHOT_FAILED',String(e));}
+  console.log('QCDS_CYCLING_STARTUP_STATUS '+JSON.stringify({...status,pageErrors:errors}));
   if(status.context!=='webgl2')throw Error('No live WebGL2 context: '+JSON.stringify(status));
   if(!status.visible||status.presentation!=='realtime'||status.photoCanvasVisible)
     throw Error('Refusing static or Photo Live pass: 3D WebGL canvas is hidden: '+JSON.stringify(status));
