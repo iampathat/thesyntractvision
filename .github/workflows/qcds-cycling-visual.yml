@@ -1,0 +1,33 @@
+name: QCDS Cycling visual test loop
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'qcds-medcare-cycling/**'
+      - '.github/workflows/qcds-cycling-visual.yml'
+jobs:
+  visual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install headless Chromium and Playwright
+        run: |
+          npm install --no-save --no-package-lock playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Start local cycling website
+        run: |
+          python3 -m http.server 8765 --directory qcds-medcare-cycling > /tmp/cycling-server.log 2>&1 &
+          echo $! > /tmp/cycling-server.pid
+      - name: Start demo, toggle QCDS WebGL and capture evidence
+        run: node qcds-medcare-cycling/visual-smoke.mjs
+      - name: Upload screenshots and runtime errors
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qcds-cycling-visual-evidence
+          path: qcds-medcare-cycling/visual-evidence/
+          if-no-files-found: warn
