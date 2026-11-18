@@ -3056,3 +3056,5 @@ function raceDraw(timestamp){
 initEngine().then(()=>{if($('wasmStatus'))$('wasmStatus').textContent=engineStatus();updateHandicap();updateRoute();});
 initializeRaceRenderer();
 setInterval(raceTick,1000);setInterval(()=>{if(S.source==='demo'&&!S.running){S.liveWatts=115;updateTelemetry();}},5000);updateDevice('Väntar på Bluetooth FTMS');updateHandicap();updateRoute();updateTelemetry();updateLeaderboard();requestAnimationFrame(raceDraw);resizeRace();updateExperienceUi();updateResistanceUi();
+// Set only after every synchronous UI handler and initial state has been installed.
+window.__cyclingReady=true;
