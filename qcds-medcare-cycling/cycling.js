@@ -1285,6 +1285,12 @@ void main(){
   c=mix(c,tarmac,.91);
   c*=mix(vec3(.88),vec3(1.11),detail);
   c+=vec3(.027,.037,.038)*pow(max(dot(reflect(-light,n),normalize(vec3(.1,.8,-.85))),0.),36.);
+  // Oracle-controlled microaggregate: subtle world-locked stone, no screen-space shimmer.
+  float aggregate=smoothNoise(trackUV*vec2(23.0,18.0));
+  float pore=smoothNoise(trackUV*vec2(8.5,11.0)+vec2(4.1,9.2));
+  c*=mix(.89,1.09,aggregate)*mix(.94,1.035,pore);
+  float worn=smoothstep(.66,.89,worldFbm(trackUV*.035));
+  c=mix(c,c*vec3(.84,.86,.87),worn*.11);
  }else if(vMat>0.5&&vMat<1.6){
   vec2 position=trackUV;
   float hillPatch=worldFbm(position*.015);
@@ -1555,11 +1561,23 @@ function addBike(mesh,x,y,z,color,player=false,clock=0,cadence=82,phase=0){
  }
  mesh.ellipsoid(x,y+1.992,z+.115,.12,.045,.119,[.064,.086,.092],7,16);
  mesh.taper(pos(.08,.89,.14),pos(.084,1.03,.20),.045,.038,[.85,.89,.88],10);
+ // Real geometry details remain anchored to the animated rider skeleton.
+ // Reflective shoe clips, brake levers and bidon add legible depth under TV lighting.
+ for(const side of [-1,1]){
+  mesh.bar(pos(side*.19,1.17,.60),pos(side*.19,1.31,.67),.017,metal);
+  mesh.ellipsoid(x+side*.11,y+1.87,z+.135,.046,.028,.056,[.90,.93,.91],6,10);
+ }
+ mesh.bar(pos(.083,1.025,.20),pos(.09,.94,.22),.034,[.92,.94,.92]);
  // Neck, helmet, aerodynamic vents and protective glasses.
  mesh.bar(pos(0,1.88,.08),pos(0,1.99,.17),.085,skin);
  mesh.ellipsoid(x,y+2.11,z+.17,.14,.16,.15,skin,12,22);
  mesh.ellipsoid(x,y+2.23,z+.14,.185,.115,.21,player?[.075,.095,.12]:[.105,.12,.13],14,24);
  for(const side of [-1,1])mesh.bar(pos(side*.085,2.34,.16),pos(side*.10,2.28,.30),.029,player?[.13,.88,.76]:[.75,.81,.83]);
+ // Helmet ventilation channels and side glasses: physical mesh, not photo overlays.
+ for(const side of [-1,1]){
+  mesh.bar(pos(side*.115,2.27,.005),pos(side*.13,2.27,.235),.014,[.025,.035,.043]);
+  mesh.ellipsoid(x+side*.127,y+2.105,z+.255,.019,.053,.082,[.075,.12,.15],7,10);
+ }
  // Shadow follows rider: deliberate stylization, not measured contact shadow.
  mesh.quad(pos(-.48,.026,-1.18),pos(.48,.026,-1.18),pos(.48,.026,1.15),pos(-.48,.026,1.15),[x,0,z],6.6);
 }
