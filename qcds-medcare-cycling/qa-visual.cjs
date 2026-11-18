@@ -68,9 +68,17 @@ const URL = process.env.QCDS_CYCLING_URL || 'http://127.0.0.1:8123/qcds-medcare-
   if(counts.size<100||deviation<18||nonBlack/n<.18)throw Error('Renderer output failed pixel diversity / blank-screen checks');
   // The road and landscape must animate, not just the overlaid counters.
   const sceneCanvas=page.locator('#raceCanvas');
-  const before=PNG.sync.read(await sceneCanvas.screenshot({type:'png'}));
+  // A continuously animated WebGL canvas may never satisfy locator stability.
+  // Screenshot a fixed viewport clip instead of scrolling/waiting for a stable element.
+  const sceneBox=await sceneCanvas.boundingBox();
+  if(!sceneBox||sceneBox.width<100||sceneBox.height<100)throw Error('3D canvas geometry missing');
+  const viewport=page.viewportSize();
+  const x=Math.max(0,sceneBox.x),y=Math.max(0,sceneBox.y);
+  const clip={x,y,width:Math.min(sceneBox.width,viewport.width-x),height:Math.min(sceneBox.height,viewport.height-y)};
+  if(clip.width<100||clip.height<100)throw Error('3D canvas outside viewport: '+JSON.stringify(clip));
+  const before=PNG.sync.read(await page.screenshot({type:'png',clip,animations:'disabled',timeout:15000}));
   await page.waitForTimeout(1650);
-  const moving=await sceneCanvas.screenshot({type:'png'});
+  const moving=await page.screenshot({type:'png',clip,animations:'disabled',timeout:15000});
   const after=PNG.sync.read(moving);
   if(before.width!==after.width||before.height!==after.height)throw Error('3D frame resized during motion');
   let changed=0,delta=0,total=0;
