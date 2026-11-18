@@ -16,8 +16,25 @@ const URL = process.env.QCDS_CYCLING_URL || 'http://127.0.0.1:8123/qcds-medcare-
   page.on('pageerror',error=>{errors.push(String(error));console.error('QCDS_BROWSER_PAGEERROR',String(error),error.stack||'');});
   page.on('console',msg=>{if(msg.type()==='error')console.error('QCDS_BROWSER_CONSOLE',msg.text());});
   await page.goto(URL,{waitUntil:'load',timeout:30000});
+  // UI smoke gate: distinguish a Playwright click from a working application.
+  const before=await page.evaluate(()=>({
+   tab:document.querySelector('.view.visible')?.id||'none',
+   demo:document.querySelector('#demoBtn')?.textContent,
+   startupError:document.querySelector('#cyclingStartupDetails')?.textContent||''
+  }));
+  if(errors.length)throw Error('Startup JS errors before interaction: '+JSON.stringify(errors));
   await page.locator('#startFullDemo').click({timeout:15000});
-  if(errors.length)throw Error('Startup JS errors: '+JSON.stringify(errors));
+  await page.waitForTimeout(700);
+  const after=await page.evaluate(()=>({
+   tab:document.querySelector('.view.visible')?.id||'none',
+   route:document.querySelector('#rideRouteName')?.textContent,
+   source:document.querySelector('#deviceText')?.textContent,
+   startupError:document.querySelector('#cyclingStartupDetails')?.textContent||'',
+   presentation:document.querySelector('#cinematicArena')?.dataset.presentation
+  }));
+  console.log('QCDS_CYCLING_UI_SMOKE '+JSON.stringify({before,after,pageErrors:errors}));
+  if(errors.length||after.startupError)throw Error('Startup runtime failure: '+JSON.stringify({errors,after}));
+  if(before.tab===after.tab && !/demo/i.test(after.source||''))throw Error('Demo click did not change tab or source: '+JSON.stringify({before,after}));
   await page.evaluate(() => {
    const q=document.querySelector('#sceneQuality');q.value='ultra';q.dispatchEvent(new Event('change',{bubbles:true}));
   });
