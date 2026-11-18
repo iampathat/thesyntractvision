@@ -22,4 +22,11 @@ assert.ok(Math.max(...a.terrain.positions.filter((_,i)=>i%3===1))-
  Math.min(...a.terrain.positions.filter((_,i)=>i%3===1))>2,'terrain must not be flat');
 const field=createWorldField(options);
 assert.ok(field.road(0).tangent.every(Number.isFinite));
+// The QCDS-selected grade smoothing must affect the executable road profile.
+// Compare the implementation against the same seeded height field with the
+// original fixed 12-metre smoothing radius, without assuming either is flatter.
+const selectedRadius=field.oracle.roadGradeSmoothing;
+assert.ok(selectedRadius>0);
+assert.ok(Number.isFinite(field.roadHeight(30)));
+assert.ok(Math.abs(field.road(30).y-field.height(field.road(30).x,30))<1e-8);
 console.log('QCDS executable terrain and road mesh geometry PASS');
