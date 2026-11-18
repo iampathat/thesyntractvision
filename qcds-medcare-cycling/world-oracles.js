@@ -64,15 +64,17 @@ export function selectWorldConfiguration(input={}){
  const reliefs=alpine?[24,36,48]:[8,14,22];
  const shoulderWidths=[4,7,11];
  const hazeLevels=foggy?[.48,.7]:[.1,.22];
+ const densities=st.vegetation==='sparse'?[.2,.35]:st.vegetation==='dense'?[.85,1]:[.5,.7,.85];
+ const wetnessLevels=wet?[.65,1]:[0];
  const sun=late?[.78,.3,-.54]:[-.35,.86,-.43];
  const sunLength=Math.hypot(...sun);
- for(const relief of reliefs)for(const shoulder of shoulderWidths)for(const haze of hazeLevels){
-  const forestDensity=alpine?Math.max(.3,1-relief/100):.85;
+ for(const relief of reliefs)for(const shoulder of shoulderWidths)for(const haze of hazeLevels)for(const density of densities)for(const roadWetness of wetnessLevels){
+  const forestDensity=density;
   const candidate={
    relief,shoulderWidth:shoulder,roadWidth:6.6,roadGradeSmoothing:shoulder>=7?14:8,
    forestDensity,vegetationRange:base.vegetationRange,
    sunDirection:sun.map(x=>x/sunLength),fogDensity:haze,
-   surfaceRoughness:wet?.48:.83,roadWetness:wet?1:0,
+   surfaceRoughness:wet?.48:.83,roadWetness,
    riderLeanLimit:Math.max(3,14-speed*.08),
    shadowStrength:base.shadowStrength,
    cadenceHz:base.riderMotionHz,
@@ -81,7 +83,9 @@ export function selectWorldConfiguration(input={}){
   const constraints=[
    {id:'QC-GEOMETRY-CONTINUITY',met:shoulder>=relief/7},
    {id:'QC-ROAD-CLEARANCE',met:shoulder>=candidate.roadWidth*.5},
-   {id:'QC-WEATHER-MATERIAL',met:!wet||candidate.surfaceRoughness<=.55},
+   {id:'QC-WEATHER-MATERIAL',met:(!wet||candidate.surfaceRoughness<=.55)&&(!wet||roadWetness>=.65)},
+   {id:'QC-FOREST-RELIEF',met:!alpine||forestDensity<=Math.max(.35,1-relief/90)},
+   {id:'QC-VEGETATION-STATE',met:st.vegetation!=='dense'||forestDensity>=.85},
    {id:'QC-ATMOSPHERE-VISIBILITY',met:!foggy||haze>=.45},
    {id:'QC-RIDER-SAFETY',met:candidate.riderLeanLimit>=3},
    {id:'QC-PROVENANCE',met:!base.renderingIsSynthetic||candidate.provenance==='synthetic'}
@@ -90,7 +94,7 @@ export function selectWorldConfiguration(input={}){
   const targetRelief=alpine?36:14;
   const score=100-Math.abs(relief-targetRelief)*.75-Math.abs(shoulder-7)*1.5-
    Math.abs(haze-(foggy?.6:.1))*16-
-   Math.abs(forestDensity-(alpine?.65:.85))*12;
+   Math.abs(forestDensity-(alpine?.65:.85))*12-Math.abs(roadWetness-(wet?1:0))*3;
   choices.push({candidate,valid,score,constraints});
  }
  const ranked=choices.filter(x=>x.valid).sort((a,b)=>b.score-a.score||
