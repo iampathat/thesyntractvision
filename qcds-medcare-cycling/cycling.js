@@ -3,8 +3,8 @@
  * Unified scene decisions for the existing QCDS Cycling WebGL renderer.
  * Explicit classical oracles: unknown provenance is never invented.
  */
-const number=(v,f=0)=>Number.isFinite(Number(v))?Number(v):f;
-const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const worldNumber=(v,f=0)=>Number.isFinite(Number(v))?Number(v):f;
+const worldClamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function evaluateWorldOracles({scene={},route=null,routeGeometry=false,quality='high',snapshot=null,time=0}={}){
  const st=scene.state||{},q=['low','medium','high','ultra'].indexOf(quality);
  const level=Math.max(0,q),demo=route?.demo===true,real=!!route&&!demo;
@@ -13,10 +13,10 @@ function evaluateWorldOracles({scene={},route=null,routeGeometry=false,quality='
  const surface=String(st.surface||'unknown');
  const light=String(st.lighting||'day');
  const foggy=st.atmosphere==='hazy'||/fog|mist/i.test(String(st.weather||''));
- const progressKm=clamp(number(snapshot?.player?.km),0,1e6);
- const speedKmh=clamp(number(snapshot?.player?.speedKmh),0,150);
- const watts=clamp(number(snapshot?.player?.watts),0,3000);
- const grade=clamp(number(snapshot?.player?.grade??st.grade),-35,35);
+ const progressKm=worldClamp(worldNumber(snapshot?.player?.km),0,1e6);
+ const speedKmh=worldClamp(worldNumber(snapshot?.player?.speedKmh),0,150);
+ const watts=worldClamp(worldNumber(snapshot?.player?.watts),0,3000);
+ const grade=worldClamp(worldNumber(snapshot?.player?.grade??st.grade),-35,35);
  const forest=['forest','alpine','countryside'].includes(biome);
  const decisions=[
   {id:'QC-WORLD-ROAD',met:routeGeometry,reason:'Road curvature follows available route coordinates'},
@@ -39,7 +39,7 @@ function evaluateWorldOracles({scene={},route=null,routeGeometry=false,quality='
   meadowCount:forest?Math.min([12,32,98,136][level],Math.floor(range/3)):0,
   cinematicBlend:demo,waterIllustration:demo&&/alpine/i.test(String(route?.id||'')),
   surface,light,foggy,grade,progressKm,speedKmh,watts,
-  riderMotionHz:clamp(number(snapshot?.player?.cadence,0)/60,0,3),
+  riderMotionHz:worldClamp(worldNumber(snapshot?.player?.cadence,0)/60,0,3),
   shadowStrength:light==='late'?.74:light==='night'?.12:.48,
   checks:decisions,topK:decisions.filter(d=>d.met).slice(0,5),
   scope:'EXPLICIT CLASSICAL WORLD ORACLES, NOT VERIFIED QUANTUM QCDS'
