@@ -1385,8 +1385,12 @@ void main(){
  float clouds=noiz(cloudp)*.55+noiz(cloudp*2.4)*.29+noiz(cloudp*5.7)*.16;
  float ca=smoothstep(.48,.73,clouds)*smoothstep(.44,.80,y)*.52;
  sky=mix(sky,vec3(.97,.96,.89),ca);
- float mount=.60 +(.055+.08*uAlpine)*sin(x*9.7+1.2)+(.033+.06*uAlpine)*sin(x*21.1+.7)+.022*sin(x*43.1+4.);
- float mount2=.53 +(.045+.045*uAlpine)*sin(x*12.7+2.6)+.021*sin(x*39.0+2.7);
+ // Continuous ridgeline instead of isolated triangular mountain impostors.
+ // Multiple bounded frequencies create broad massifs and small rocky silhouettes.
+ float ridge=noiz(vec2(x*3.1,1.7))*.105+noiz(vec2(x*9.8,4.3))*.051;
+ float crags=abs(noiz(vec2(x*34.0,7.2))-.5)*.055;
+ float mount=.53+uAlpine*.055+ridge+crags;
+ float mount2=.47+noiz(vec2(x*4.9,8.1))*.095+noiz(vec2(x*19.0,3.3))*.026;
  float peaks=smoothstep(mount-.007,mount+.007,y);
  vec3 distant=mix(uFog*.57,vec3(.21,.37,.43),uAlpine*.6);
  vec3 col=mix(distant,sky,peaks);
@@ -1913,7 +1917,10 @@ class SyntractGraphics3D {
   gl.useProgram(this.sky);gl.bindBuffer(gl.ARRAY_BUFFER,this.skyBuffer);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,2,gl.FLOAT,false,0,0);
   gl.uniform3fv(this.skyLoc.fog,new Float32Array(scene.palette.fog));gl.uniform1f(this.skyLoc.time,time);gl.uniform1f(this.skyLoc.alpine,scene.biome==='alpine'?1:0);gl.uniform1f(this.skyLoc.late,scene.state?.lighting==='late'?1:0);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,this.backdrop);
   gl.uniform1i(this.skyLoc.backdrop,0);
-  gl.uniform1f(this.skyLoc.backdropMix,this.backdropReady&&scene.state?.season!=='winter'&&route?.demo===true&&['alpine','countryside','forest'].includes(scene.biome)?0.84:0); // Generic illustrative backdrop: never a claim about geographic truth.
+  // The cropped static panorama caused visible horizontal bands and mismatched
+  // mountains in the real 3D world. Disable that layer until a seamless
+  // geometry-aligned sky asset exists; preserve the renderer and photo assets.
+  gl.uniform1f(this.skyLoc.backdropMix,0);
   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
   gl.enable(gl.DEPTH_TEST);gl.clear(gl.DEPTH_BUFFER_BIT);gl.useProgram(this.p);
   gl.uniform1f(this.locs.aspect,this.canvas.width/Math.max(1,this.canvas.height));gl.uniform1f(this.locs.pitch,.11);gl.uniform1f(this.locs.camy,2.28);gl.uniform1f(this.locs.scroll,scroll);gl.uniform3fv(this.locs.fog,new Float32Array(scene.palette.fog));gl.uniform1f(this.locs.time,time);gl.uniform1f(this.locs.late,scene.state?.lighting==='late'?1:0);gl.uniform1f(this.locs.worldShadow,worldOracles.shadowStrength);gl.uniform1f(this.locs.worldHaze,worldOracles.foggy?1:0);
