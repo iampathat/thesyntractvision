@@ -2046,7 +2046,7 @@ class SyntractGraphics3D {
   // Mesh is physically 3D and uses glTF material textures, alpha-tested
   // needles, depth-buffer occlusion and correct instance yaw variation.
   if(this.cc0Forest?.ready&&this.cc0Instances.length){
-    try{this.cc0Forest.render(this.cc0Instances,this.canvas,scene);}
+    try{this.cc0Forest.render(this.cc0Instances,this.canvas,scene,quality);}
     catch(e){console.warn('CC0 forest rendering fallback',e);}
   }
   const bikes=new Mesh();const player=snapshot?.player;
