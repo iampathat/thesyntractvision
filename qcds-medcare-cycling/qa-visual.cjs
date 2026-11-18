@@ -13,9 +13,11 @@ const URL = process.env.QCDS_CYCLING_URL || 'http://127.0.0.1:8123/qcds-medcare-
  });
  try {
   const page = await browser.newPage({viewport:{width:1440,height:900},deviceScaleFactor:1});
-  page.on('pageerror',error=>errors.push(String(error)));
+  page.on('pageerror',error=>{errors.push(String(error));console.error('QCDS_BROWSER_PAGEERROR',String(error),error.stack||'');});
+  page.on('console',msg=>{if(msg.type()==='error')console.error('QCDS_BROWSER_CONSOLE',msg.text());});
   await page.goto(URL,{waitUntil:'load',timeout:30000});
   await page.locator('#startFullDemo').click({timeout:15000});
+  if(errors.length)throw Error('Startup JS errors: '+JSON.stringify(errors));
   await page.evaluate(() => {
    const q=document.querySelector('#sceneQuality');q.value='ultra';q.dispatchEvent(new Event('change',{bubbles:true}));
   });
