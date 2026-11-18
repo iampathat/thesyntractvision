@@ -45,6 +45,39 @@ jobs:
           df -h > qcds-medcare-cycling/visual-evidence/disk.txt
           node --version > qcds-medcare-cycling/visual-evidence/node.txt
           ls -la /tmp/qcds-browser-qa > qcds-medcare-cycling/visual-evidence/browser-install.txt 2>&1 || true
+      - name: Publish auditable CI and visual evidence summary
+        if: always()
+        env:
+          QCDS_JOB_STATUS: ${{ job.status }}
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs');
+          const path='qcds-medcare-cycling/visual-evidence/results.json';
+          const result=fs.existsSync(path)?JSON.parse(fs.readFileSync(path,'utf8')):null;
+          const lines=[
+            '# QCDS Cycling — CI and visual evidence',
+            '',
+            '| Field | Value |',
+            '| --- | --- |',
+            '| Commit | \`'+process.env.GITHUB_SHA+'\` |',
+            '| Run | '+process.env.GITHUB_RUN_ID+' (attempt '+process.env.GITHUB_RUN_ATTEMPT+') |',
+            '| Event | '+process.env.GITHUB_EVENT_NAME+' |',
+            '| Job status | '+process.env.QCDS_JOB_STATUS+' |',
+            '| Browser evidence | '+(result?'results.json produced':'MISSING — browser smoke did not produce results.json')+' |',
+            '| WebGL2 | '+(result?.result?.webgl2===true?'confirmed': 'not confirmed')+' |',
+            '| Canvas visible | '+(result?.result?.visible===true?'confirmed':'not confirmed')+' |',
+            '| Visual realism | NOT VERIFIED — screenshots require comparison with reference |',
+            '',
+            '### Browser steps',
+            ...((result?.steps||[]).map(x=>'- '+String(x))),
+            '',
+            '### Errors',
+            ...((result?.errors||[]).concat(result?.consoleErrors||[],result?.failure?[result.failure]:[]).map(x=>'- '+String(x).replace(/\\n/g,' '))),
+            '',
+            'Screenshots and results.json are attached in the **qcds-cycling-visual-evidence** artifact, when produced.'
+          ];
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join('\\n')+'\\n');
+          NODE
       - name: Upload screenshots and runtime errors
         if: always()
         uses: actions/upload-artifact@v4
