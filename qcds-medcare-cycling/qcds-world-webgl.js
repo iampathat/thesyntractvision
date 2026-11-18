@@ -2,6 +2,7 @@
  * Opt-in QCDS world mesh renderer. No changes to the existing FTMS/game engine.
  */
 import {buildWorldMesh} from './world-mesh.js';
+import {buildRiderMesh} from './rider-mesh.js';
 const VERT=`#version 300 es
 precision highp float;
 layout(location=0) in vec3 position;
@@ -36,6 +37,21 @@ function ridgeMesh(field,seed){const positions=[],normals=[],indices=[],count=12
 export class QcdsWorldWebGL{
  constructor(canvas){this.canvas=canvas;this.gl=canvas.getContext('webgl2',{antialias:true,alpha:false});if(!this.gl)throw Error('WebGL2 unavailable');this.program=program(this.gl);this.meshes=[];this.active=false;this.frame=0;}
  rebuild(options){const gl=this.gl;for(const m of this.meshes)for(const b of m.mesh.buffers)gl.deleteBuffer(b);for(const m of this.meshes)gl.deleteVertexArray(m.mesh.vao);this.meshes=[];const world=buildWorldMesh({...options,step:5,halfWidth:110,length:300});this.field=world.field;const add=(data,color,road=0)=>this.meshes.push({mesh:mesh(gl,data.positions,data.normals||roadNormals(data.positions),data.indices),color,road});add(world.terrain,[.28,.38,.23]);add(ridgeMesh(world.field,world.field.seed),[.35,.39,.39]);add(world.road,[.19,.2,.21],1);this.options=options;this.render();}
- render(){const gl=this.gl,canvas=this.canvas;const w=Math.max(2,Math.round(canvas.clientWidth*devicePixelRatio)),h=Math.max(2,Math.round(canvas.clientHeight*devicePixelRatio));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}gl.viewport(0,0,w,h);gl.enable(gl.DEPTH_TEST);gl.clearColor(.63,.73,.81,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(this.program);const start=this.field.road(0),look=this.field.road(90);const camera=[start.x,start.y+3.4,-14];const target=[look.x,look.y+1,look.z];const vp=multiply(perspective(Math.PI/3,w/h,.1,900),lookAt(camera,target));const loc=n=>gl.getUniformLocation(this.program,n);gl.uniformMatrix4fv(loc('uViewProjection'),false,vp);const late=this.options.scene?.state?.lighting==='late';gl.uniform3fv(loc('uSun'),new Float32Array(late?[.8,.3,-.5]:[-.4,.85,-.35]));gl.uniform3fv(loc('uFog'),new Float32Array(late?[.79,.65,.54]:[.65,.74,.82]));gl.uniform1f(loc('uHaze'),this.options.scene?.state?.atmosphere==='hazy'?.7:.12);for(const item of this.meshes){gl.uniform3fv(loc('uAlbedo'),new Float32Array(item.color));gl.uniform1f(loc('uRoad'),item.road);gl.bindVertexArray(item.mesh.vao);gl.drawElements(gl.TRIANGLES,item.mesh.count,gl.UNSIGNED_INT,0);}gl.bindVertexArray(null);}
+ render(){const gl=this.gl,canvas=this.canvas;const w=Math.max(2,Math.round(canvas.clientWidth*devicePixelRatio)),h=Math.max(2,Math.round(canvas.clientHeight*devicePixelRatio));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}gl.viewport(0,0,w,h);gl.enable(gl.DEPTH_TEST);gl.clearColor(.63,.73,.81,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(this.program);const start=this.field.road(0),look=this.field.road(90);const camera=[start.x,start.y+3.4,-14];const target=[look.x,look.y+1,look.z];const vp=multiply(perspective(Math.PI/3,w/h,.1,900),lookAt(camera,target));const loc=n=>gl.getUniformLocation(this.program,n);gl.uniformMatrix4fv(loc('uViewProjection'),false,vp);const late=this.options.scene?.state?.lighting==='late';gl.uniform3fv(loc('uSun'),new Float32Array(late?[.8,.3,-.5]:[-.4,.85,-.35]));gl.uniform3fv(loc('uFog'),new Float32Array(late?[.79,.65,.54]:[.65,.74,.82]));gl.uniform1f(loc('uHaze'),this.options.scene?.state?.atmosphere==='hazy'?.7:.12);for(const item of this.meshes){gl.uniform3fv(loc('uAlbedo'),new Float32Array(item.color));gl.uniform1f(loc('uRoad'),item.road);gl.bindVertexArray(item.mesh.vao);gl.drawElements(gl.TRIANGLES,item.mesh.count,gl.UNSIGNED_INT,0);}
+ // Riders and road share the same terrain field, sun, fog and depth buffer.
+ // Update only the small articulated meshes; the terrain stays GPU resident.
+ const time=performance.now()/1000,cadence=Number(this.options.cadence)||80;
+ for(let rider=0;rider<3;rider++){
+  const z=18+rider*7,point=this.field.road(z),body=buildRiderMesh({cadence,time,offset:rider*1.1,roadHeight:point.y+.05});
+  const dx=(rider-1)*.72;
+  for(let i=0;i<body.positions.length;i+=3){body.positions[i]+=point.x+dx;body.positions[i+2]+=z;}
+  const riderMesh=mesh(gl,body.positions,body.normals,body.indices);
+  gl.uniform3fv(loc('uAlbedo'),new Float32Array(rider===0?[.12,.34,.66]:rider===1?[.77,.22,.13]:[.16,.22,.27]));
+  gl.uniform1f(loc('uRoad'),0);
+  gl.bindVertexArray(riderMesh.vao);gl.drawElements(gl.TRIANGLES,riderMesh.count,gl.UNSIGNED_INT,0);
+  for(const b of riderMesh.buffers)gl.deleteBuffer(b);
+  gl.deleteVertexArray(riderMesh.vao);
+ }
+ gl.bindVertexArray(null);}
  dispose(){const gl=this.gl;for(const item of this.meshes){for(const b of item.mesh.buffers)gl.deleteBuffer(b);gl.deleteVertexArray(item.mesh.vao);}gl.deleteProgram(this.program);}
 }
