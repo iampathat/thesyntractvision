@@ -102,6 +102,20 @@ jobs:
         env:
           QCDS_JOB_STATUS: ${{ job.status }}
         run: node qcds-medcare-cycling/ci-evidence.mjs
+      - name: Fail closed if WebGL or two-camera evidence is incomplete
+        run: |
+          node <<'NODE'
+          const fs=require('node:fs');
+          const assert=require('node:assert/strict');
+          const p='qcds-medcare-cycling/visual-evidence/run-metadata.json';
+          const m=JSON.parse(fs.readFileSync(p,'utf8'));
+          assert.equal(m.browserEvidenceComplete,true,'WebGL browser evidence incomplete');
+          assert.equal(m.twoCameraEvidenceComplete,true,'Two-camera screenshots or seeds not verified');
+          assert.ok(m.commit && /^[0-9a-f]{40}$/.test(m.commit),'Commit SHA missing');
+          assert.equal(m.commit,process.env.GITHUB_SHA,'Evidence commit does not match checkout');
+          assert.ok(m.screenshots.every(s=>s.validPng && s.sha256),'Screenshot integrity failed');
+          console.log('QCDS evidence gate PASS',m.commit,m.runId);
+          NODE
       - name: Bundle exact checked-out QCDS source for local reproducibility
         if: always()
         run: |
