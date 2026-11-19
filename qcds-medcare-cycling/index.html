@@ -171,7 +171,7 @@ const animate=()=>{if(canvas.hidden){animationFrame=0;return;}renderer?.render()
 button?.addEventListener('click',()=>{
  if(!canvas.hidden){canvas.hidden=true;cancelAnimationFrame(animationFrame);animationFrame=0;button.setAttribute('aria-pressed','false');button.textContent='QCDS TERRÄNG 3D';return;}
  try{
-  renderer??=new QcdsWorldWebGL(canvas);
+  renderer??=new QcdsWorldWebGL(canvas);window.__qcdsWorldRenderer=renderer;
   canvas.hidden=false;
   const biome=document.getElementById('sceneBiome')?.value||'alpine';
   const lighting=document.getElementById('sceneLighting')?.value||'day';
