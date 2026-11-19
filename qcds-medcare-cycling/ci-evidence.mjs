@@ -1,6 +1,7 @@
 /* © 2026 Patrik Sundblom. All Rights Reserved. */
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 const dir = process.env.QCDS_EVIDENCE_DIR || 'qcds-medcare-cycling/visual-evidence';
 fs.mkdirSync(dir,{recursive:true});
 const file=path.join(dir,'results.json');
@@ -10,7 +11,7 @@ catch(error) { parseError=error.message; }
 const id=process.env.GITHUB_RUN_ID||null;
 const repo=process.env.GITHUB_REPOSITORY||null;
 const meta={
- schemaVersion:1,
+ schemaVersion:2,
  commit:process.env.GITHUB_SHA||null,
  event:process.env.GITHUB_EVENT_NAME||null,
  runId:id,
@@ -37,7 +38,9 @@ const meta={
  runtimeErrorCount:Array.isArray(evidence?.errors)?evidence.errors.length:null,
  consoleErrorCount:Array.isArray(evidence?.consoleErrors)?evidence.consoleErrors.length:null,
  failure:evidence?.failure||null,
- screenshots:['01-initial.png','02-demo.png','03-qcds-webgl.png'].map(name=>{
+ cameraEvidence:evidence?.cameraMetadata||null,
+ randomEvidence:evidence?.randomEvidence||null,
+ screenshots:['01-initial.png','02-demo.png','03-qcds-webgl.png','04-fixed-camera.png','05-random-camera.png','06-two-camera-checkpoint.png'].map(name=>{
   const p=path.join(dir,name);
   return {name,bytes:fs.existsSync(p)?fs.statSync(p).size:null};
  })
@@ -56,9 +59,24 @@ meta.screenshots=meta.screenshots.map(shot=>{
     shot.bytes>=1024;
   } finally { fs.closeSync(fd); }
  } catch {}
- return {...shot,validPng};
+ let sha256=null;
+ if(validPng)sha256=crypto.createHash('sha256').update(fs.readFileSync(filename)).digest('hex');
+ return {...shot,validPng,sha256};
 });
+const fixed=meta.screenshots.find(s=>s.name==='04-fixed-camera.png');
+const random=meta.screenshots.find(s=>s.name==='05-random-camera.png');
+const pair=meta.screenshots.find(s=>s.name==='06-two-camera-checkpoint.png');
+meta.twoCameraEvidenceComplete=!!(
+ fixed?.validPng && random?.validPng && pair?.validPng &&
+ fixed.sha256!==random.sha256 &&
+ evidence?.cameraMetadata?.worldSeed &&
+ evidence?.cameraMetadata?.worldSeed===evidence?.randomEvidence?.worldSeed &&
+ evidence?.cameraMetadata?.cameraSeed===evidence?.randomEvidence?.cameraSeed &&
+ Array.isArray(evidence?.cameraMetadata?.fixed?.position) &&
+ Array.isArray(evidence?.randomEvidence?.random?.position) &&
+ JSON.stringify(evidence.cameraMetadata.fixed.position)!==JSON.stringify(evidence.randomEvidence.random.position)
+);
 meta.browserEvidenceComplete=meta.browserEvidenceComplete &&
- meta.screenshots.every(shot=>shot.validPng);
+ meta.screenshots.every(shot=>shot.validPng) && meta.twoCameraEvidenceComplete;
 fs.writeFileSync(path.join(dir,'run-metadata.json'),JSON.stringify(meta,null,2)+'\n');
 console.log('QCDS CI metadata:',meta.runUrl||'local run',meta.jobStatus||'unknown');
