@@ -55,7 +55,9 @@ export function evaluateWorldOracles({scene={},route=null,routeGeometry=false,qu
 export function selectWorldConfiguration(input={}){
  const scene=input.scene||{},st=scene.state||{};
  const base=evaluateWorldOracles(input);
- const alpine=/alpine|mountain/i.test(String(scene.biome||''));
+ const biome=String(scene.biome||'countryside').toLowerCase();
+ const alpine=/alpine|mountain/.test(biome);
+ const supportsForest=/alpine|mountain|forest|countryside|woodland/.test(biome);
  const wet=/rain|storm/i.test(String(st.weather||''));
  const foggy=base.foggy;
  const late=/late|sunset|dawn/i.test(String(st.lighting||''));
@@ -69,7 +71,7 @@ export function selectWorldConfiguration(input={}){
  const sun=late?[.78,.3,-.54]:[-.35,.86,-.43];
  const sunLength=Math.hypot(...sun);
  for(const relief of reliefs)for(const shoulder of shoulderWidths)for(const haze of hazeLevels)for(const density of densities)for(const roadWetness of wetnessLevels){
-  const forestDensity=density;
+  const forestDensity=supportsForest?density:0;
   const candidate={
    relief,shoulderWidth:shoulder,roadWidth:6.6,roadGradeSmoothing:shoulder>=7?14:8,
    forestDensity,vegetationRange:base.vegetationRange,
@@ -85,7 +87,8 @@ export function selectWorldConfiguration(input={}){
    {id:'QC-ROAD-CLEARANCE',met:shoulder>=candidate.roadWidth*.5},
    {id:'QC-WEATHER-MATERIAL',met:(!wet||candidate.surfaceRoughness<=.55)&&(!wet||roadWetness>=.65)},
    {id:'QC-FOREST-RELIEF',met:!alpine||forestDensity<=Math.max(.35,1-relief/200)},
-   {id:'QC-VEGETATION-STATE',met:st.vegetation!=='dense'||forestDensity>=.85},
+   {id:'QC-BIOME-FOREST',met:supportsForest||forestDensity===0},
+   {id:'QC-VEGETATION-STATE',met:!supportsForest||st.vegetation!=='dense'||forestDensity>=.85},
    {id:'QC-ATMOSPHERE-VISIBILITY',met:!foggy||haze>=.45},
    {id:'QC-RIDER-SAFETY',met:candidate.riderLeanLimit>=3},
    {id:'QC-PROVENANCE',met:!base.renderingIsSynthetic||candidate.provenance==='synthetic'}
