@@ -15,15 +15,25 @@ const FRAG=`#version 300 es
 precision highp float;
 in vec3 vNormal;in vec3 vPosition;in float vDepth;
 uniform vec3 uSun;uniform vec3 uFog;uniform vec3 uAlbedo;
-uniform float uHaze;uniform float uRoad;
+uniform float uHaze;uniform float uRoad;uniform float uWetness;uniform float uShadowStrength;uniform vec3 uCamera;
 out vec4 color;
 void main(){
  vec3 n=normalize(vNormal);
  float direct=max(0.,dot(n,normalize(uSun)));
  float ambient=.35+.23*clamp(n.y,0.,1.);
+ // The same joint world oracle controls sunlight contrast and surface wetness.
+ direct*=mix(.68,1.0,clamp(uShadowStrength,0.,1.));
  float detail=.94+.06*sin(vPosition.x*1.7)*sin(vPosition.z*1.3);
  vec3 surface=uAlbedo*(ambient+.6*direct)*detail;
- if(uRoad>.5){float edge=0.015*sin(vPosition.z*.12);surface*=.96+edge;}
+ if(uRoad>.5){
+  float wet=clamp(uWetness,0.,1.);
+  vec3 viewDir=normalize(uCamera-vPosition);
+  vec3 reflected=reflect(-normalize(uSun),n);
+  float spec=pow(max(dot(viewDir,reflected),0.),mix(32.,90.,wet));
+  float edge=0.015*sin(vPosition.z*.12);
+  surface*=mix(.96+edge,.67+edge,wet);
+  surface+=vec3(.26,.29,.32)*spec*wet;
+ }
  float fog=1.-exp(-pow(max(vDepth-15.,0.)/mix(360.,125.,uHaze),1.45));
  color=vec4(mix(surface,uFog,clamp(fog,0.,.86)),1.);
 }`;
@@ -64,7 +74,7 @@ export class QcdsWorldWebGL{
  rebuild(options){const gl=this.gl;for(const m of this.meshes)for(const b of m.mesh.buffers)gl.deleteBuffer(b);for(const m of this.meshes)gl.deleteVertexArray(m.mesh.vao);this.meshes=[];const world=buildWorldMesh({...options,step:5,halfWidth:110,length:300});this.field=world.field;this.worldDecision=world.field.oracle;const add=(data,color,road=0)=>this.meshes.push({mesh:mesh(gl,data.positions,data.normals||roadNormals(data.positions),data.indices),color,road});add(world.terrain,[.28,.38,.23]);add(ridgeMesh(world.field,world.field.seed),[.35,.39,.39]);add(world.road,[.19,.2,.21],1);add(world.forest.trunks,[.29,.20,.13]);add(world.forest.crowns,[.12,.29,.15]);this.options=options;this.worldSeed=String(options.worldSeed||'qcds-baseline');this.render();}
  setCamera(mode='fixed',cameraSeed='camera-001'){if(mode!=='fixed'&&mode!=='random')throw Error('Unknown QCDS camera mode');this.cameraMode=mode;this.cameraSeed=String(cameraSeed);this.render();}
  cameraEvidence(){return {...cameraPair({worldSeed:this.worldSeed,cameraSeed:this.cameraSeed,field:this.field}),mode:this.cameraMode};}
- render(){const gl=this.gl,canvas=this.canvas;const w=Math.max(2,Math.round(canvas.clientWidth*devicePixelRatio)),h=Math.max(2,Math.round(canvas.clientHeight*devicePixelRatio));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}gl.viewport(0,0,w,h);gl.enable(gl.DEPTH_TEST);gl.clearColor(.63,.73,.81,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(this.program);const pair=this.cameraEvidence(),selected=pair[this.cameraMode];const camera=this.cameraMode==='fixed'?(()=>{const p=this.field.road(0),t=this.field.road(90);return {position:[p.x,p.y+3.4,-14],target:[t.x,t.y+1,t.z],fov:65};})():selected;const vp=multiply(perspective(camera.fov*Math.PI/180,w/h,.1,900),lookAt(camera.position,camera.target));const loc=n=>gl.getUniformLocation(this.program,n);gl.uniformMatrix4fv(loc('uViewProjection'),false,vp);const decision=this.worldDecision;const late=this.options.scene?.state?.lighting==='late';gl.uniform3fv(loc('uSun'),new Float32Array(decision.sunDirection));gl.uniform3fv(loc('uFog'),new Float32Array(late?[.79,.65,.54]:[.65,.74,.82]));gl.uniform1f(loc('uHaze'),decision.fogDensity);for(const item of this.meshes){gl.uniform3fv(loc('uAlbedo'),new Float32Array(item.color));gl.uniform1f(loc('uRoad'),item.road);gl.bindVertexArray(item.mesh.vao);gl.drawElements(gl.TRIANGLES,item.mesh.count,gl.UNSIGNED_INT,0);}
+ render(){const gl=this.gl,canvas=this.canvas;const w=Math.max(2,Math.round(canvas.clientWidth*devicePixelRatio)),h=Math.max(2,Math.round(canvas.clientHeight*devicePixelRatio));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}gl.viewport(0,0,w,h);gl.enable(gl.DEPTH_TEST);gl.clearColor(.63,.73,.81,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(this.program);const pair=this.cameraEvidence(),selected=pair[this.cameraMode];const camera=this.cameraMode==='fixed'?(()=>{const p=this.field.road(0),t=this.field.road(90);return {position:[p.x,p.y+3.4,-14],target:[t.x,t.y+1,t.z],fov:65};})():selected;const vp=multiply(perspective(camera.fov*Math.PI/180,w/h,.1,900),lookAt(camera.position,camera.target));const loc=n=>gl.getUniformLocation(this.program,n);gl.uniformMatrix4fv(loc('uViewProjection'),false,vp);const decision=this.worldDecision;const late=this.options.scene?.state?.lighting==='late';gl.uniform3fv(loc('uSun'),new Float32Array(decision.sunDirection));gl.uniform3fv(loc('uFog'),new Float32Array(late?[.79,.65,.54]:[.65,.74,.82]));gl.uniform1f(loc('uHaze'),decision.fogDensity);gl.uniform1f(loc('uWetness'),decision.roadWetness);gl.uniform1f(loc('uShadowStrength'),decision.shadowStrength);gl.uniform3fv(loc('uCamera'),new Float32Array(camera.position));for(const item of this.meshes){gl.uniform3fv(loc('uAlbedo'),new Float32Array(item.color));gl.uniform1f(loc('uRoad'),item.road);gl.bindVertexArray(item.mesh.vao);gl.drawElements(gl.TRIANGLES,item.mesh.count,gl.UNSIGNED_INT,0);}
  // Riders and road share the same terrain field, sun, fog and depth buffer.
  // Update only the small articulated meshes; the terrain stays GPU resident.
  const time=performance.now()/1000,cadence=Number(this.options.cadence)||80;
