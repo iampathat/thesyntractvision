@@ -39,6 +39,42 @@ export function createWorldField(options={}){
  };
  return {oracle,seed,width,height,road,center,roadHeight};
 }
+/** Jointly constrained tree instances: the SAME height field, road clearance,
+ * vegetation density and selected world oracle control every placement. */
+export function buildWorldForest(field,{length=300,halfWidth=110}={}){
+ const trunks={positions:[],normals:[],indices:[]},crowns={positions:[],normals:[],indices:[]};
+ const density=field.oracle.forestDensity;
+ const spacing=14+(1-density)*18;
+ const ring=(mesh,cx,cy,cz,radius,height,sides=6)=>{
+  const base=mesh.positions.length/3;
+  for(let y=0;y<2;y++)for(let k=0;k<sides;k++){
+   const angle=2*Math.PI*k/sides,x=Math.cos(angle),z=Math.sin(angle);
+   mesh.positions.push(cx+x*radius*(y?.14:1),cy+y*height,cz+z*radius*(y?.14:1));
+   const n=Math.hypot(x,.18,z);mesh.normals.push(x/n,.18/n,z/n);
+  }
+  for(let k=0;k<sides;k++){
+   const a=base+k,b=base+(k+1)%sides,c=a+sides,d=b+sides;
+   mesh.indices.push(a,b,c,b,d,c);
+  }
+ };
+ let count=0;
+ for(let z=14;z<length-12;z+=spacing){
+  for(let side of [-1,1])for(let lane=0;lane<2;lane++){
+   const jitter=noise(side*9+lane,z*.14,field.seed+103);
+   const zz=z+(jitter-.5)*spacing*.7;
+   const road=field.road(zz),x=road.x+side*(field.width*.5+field.oracle.shoulderWidth+6+lane*15+jitter*7);
+   if(Math.abs(x)>halfWidth-5)continue;
+   // Trees cannot occupy the road or its QCDS-selected graded shoulder.
+   if(Math.abs(x-field.center(zz))<field.width*.5+field.oracle.shoulderWidth+2)continue;
+   const ground=field.height(x,zz),height=7+noise(x*.1,zz*.1,field.seed+55)*9;
+   ring(trunks,x,ground,zz,.24+height*.012,height*.34);
+   ring(crowns,x,ground+height*.24,zz,1.4+height*.16,height*.76);
+   count++;
+  }
+ }
+ const packed=m=>({positions:new Float32Array(m.positions),normals:new Float32Array(m.normals),indices:new Uint32Array(m.indices)});
+ return {trunks:packed(trunks),crowns:packed(crowns),count,spacing,oracleIds:['QC-GEOMETRY-CONTINUITY','QC-ROAD-CLEARANCE','QC-FOREST-RELIEF']};
+}
 export function buildWorldMesh(options={}){
  const field=createWorldField(options),step=clamp(options.step||6,1,24);
  const halfWidth=clamp(options.halfWidth||96,12,1000),length=clamp(options.length||240,24,4000);
@@ -80,7 +116,7 @@ export function buildWorldMesh(options={}){
   }
   if(z<rows){const a=z*2;roadIndices.push(a,a+2,a+1,a+1,a+2,a+3);}
  }
- return {field,terrain:{positions:new Float32Array(positions),normals:new Float32Array(normals),indices:new Uint32Array(indices)},
+ return {field,forest:buildWorldForest(field,{length,halfWidth}),terrain:{positions:new Float32Array(positions),normals:new Float32Array(normals),indices:new Uint32Array(indices)},
   road:{positions:new Float32Array(roadPositions),normals:new Float32Array(roadNormals),indices:new Uint32Array(roadIndices),
    path:{positions:new Float32Array(pathPositions),tangents:new Float32Array(pathTangents),curvatures:new Float32Array(pathCurvatures)}},
   dimensions:{cols,rows,length,halfWidth},synthetic:true};
