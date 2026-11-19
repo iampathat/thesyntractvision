@@ -18,6 +18,7 @@ jobs:
         run: |
           node qcds-medcare-cycling/world-oracles.test.mjs
           node qcds-medcare-cycling/world-mesh.test.mjs
+          node qcds-medcare-cycling/forest-oracles.test.mjs
           node qcds-medcare-cycling/camera-rig.test.mjs
       - name: Install headless Chromium and Playwright
         run: |
