@@ -94,6 +94,11 @@ jobs:
           ];
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,lines.join('\n')+'\n');
           NODE
+      - name: Export machine-readable CI run metadata even on failure
+        if: always()
+        env:
+          QCDS_JOB_STATUS: ${{ job.status }}
+        run: node qcds-medcare-cycling/ci-evidence.mjs
       - name: Upload screenshots and runtime errors
         if: always()
         uses: actions/upload-artifact@v4
