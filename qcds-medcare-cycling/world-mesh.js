@@ -44,6 +44,7 @@ export function buildWorldMesh(options={}){
  const halfWidth=clamp(options.halfWidth||96,12,1000),length=clamp(options.length||240,24,4000);
  const cols=Math.ceil(2*halfWidth/step),rows=Math.ceil(length/step);
  const positions=[],normals=[],indices=[],roadPositions=[],roadNormals=[],roadIndices=[];
+ const pathPositions=[],pathTangents=[],pathCurvatures=[];
  for(let z=0;z<=rows;z++)for(let x=0;x<=cols;x++){
   const px=-halfWidth+2*halfWidth*x/cols,pz=length*z/rows,py=field.height(px,pz);
   const dx=(field.height(px+.5,pz)-field.height(px-.5,pz));
@@ -57,6 +58,13 @@ export function buildWorldMesh(options={}){
  }
  for(let z=0;z<=rows;z++){
   const p=field.road(length*z/rows),tx=p.tangent[0],tz=p.tangent[2],m=Math.hypot(tx,tz);
+  // Shared rider/camera/road frame: same QCDS-selected grade and geometry.
+  pathPositions.push(p.x,p.y+.035,p.z);
+  pathTangents.push(...p.tangent);
+  const ds=.75,prev=field.road(p.z-ds).tangent,next=field.road(p.z+ds).tangent;
+  const cross=prev[0]*next[2]-prev[2]*next[0];
+  const dot=prev[0]*next[0]+prev[2]*next[2];
+  pathCurvatures.push(Math.atan2(cross,dot)/(2*ds));
   const side=[tz/m,-tx/m];
   for(const edge of [-1,1]){
    const ex=p.x+side[0]*field.width*.5*edge,ez=p.z+side[1]*field.width*.5*edge;
@@ -73,6 +81,7 @@ export function buildWorldMesh(options={}){
   if(z<rows){const a=z*2;roadIndices.push(a,a+2,a+1,a+1,a+2,a+3);}
  }
  return {field,terrain:{positions:new Float32Array(positions),normals:new Float32Array(normals),indices:new Uint32Array(indices)},
-  road:{positions:new Float32Array(roadPositions),normals:new Float32Array(roadNormals),indices:new Uint32Array(roadIndices)},
+  road:{positions:new Float32Array(roadPositions),normals:new Float32Array(roadNormals),indices:new Uint32Array(roadIndices),
+   path:{positions:new Float32Array(pathPositions),tangents:new Float32Array(pathTangents),curvatures:new Float32Array(pathCurvatures)}},
   dimensions:{cols,rows,length,halfWidth},synthetic:true};
 }
