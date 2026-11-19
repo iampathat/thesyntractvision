@@ -43,7 +43,7 @@ export function buildWorldMesh(options={}){
  const field=createWorldField(options),step=clamp(options.step||6,1,24);
  const halfWidth=clamp(options.halfWidth||96,12,1000),length=clamp(options.length||240,24,4000);
  const cols=Math.ceil(2*halfWidth/step),rows=Math.ceil(length/step);
- const positions=[],normals=[],indices=[],roadPositions=[],roadIndices=[];
+ const positions=[],normals=[],indices=[],roadPositions=[],roadNormals=[],roadIndices=[];
  for(let z=0;z<=rows;z++)for(let x=0;x<=cols;x++){
   const px=-halfWidth+2*halfWidth*x/cols,pz=length*z/rows,py=field.height(px,pz);
   const dx=(field.height(px+.5,pz)-field.height(px-.5,pz));
@@ -62,11 +62,17 @@ export function buildWorldMesh(options={}){
    const ex=p.x+side[0]*field.width*.5*edge,ez=p.z+side[1]*field.width*.5*edge;
    // Sample the SAME continuous world height field at each road edge.
    // A constant centerline Y makes curved, sloping roads float above or cut through terrain.
-   roadPositions.push(ex,field.height(ex,ez)+.035,ez);
+   const roadY=field.height(ex,ez)+.035;
+   roadPositions.push(ex,roadY,ez);
+   // Match road lighting to the shared terrain field, including slopes and bends.
+   const gx=field.height(ex+.5,ez)-field.height(ex-.5,ez);
+   const gz=field.height(ex,ez+.5)-field.height(ex,ez-.5);
+   const norm=Math.hypot(gx,2,gz);
+   roadNormals.push(-gx/norm,2/norm,-gz/norm);
   }
   if(z<rows){const a=z*2;roadIndices.push(a,a+2,a+1,a+1,a+2,a+3);}
  }
  return {field,terrain:{positions:new Float32Array(positions),normals:new Float32Array(normals),indices:new Uint32Array(indices)},
-  road:{positions:new Float32Array(roadPositions),indices:new Uint32Array(roadIndices)},
+  road:{positions:new Float32Array(roadPositions),normals:new Float32Array(roadNormals),indices:new Uint32Array(roadIndices)},
   dimensions:{cols,rows,length,halfWidth},synthetic:true};
 }
