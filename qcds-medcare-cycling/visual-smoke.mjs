@@ -9,6 +9,7 @@ await fs.mkdir(out,{recursive:true});
 const browser=await chromium.launch({headless:true,args:['--use-gl=angle','--use-angle=swiftshader','--enable-webgl','--ignore-gpu-blocklist']});
 const page=await browser.newPage({viewport:{width:1600,height:900},deviceScaleFactor:1});
 const errors=[],consoleErrors=[],steps=[];
+let lastResult=null;
 page.on('pageerror',e=>errors.push(e.stack||String(e)));
 page.on('console',m=>{if(m.type()==='error')consoleErrors.push(m.text());});
 page.on('response',r=>{if(r.status()>=400&&new URL(r.url()).origin==='http://127.0.0.1:8765')errors.push('HTTP '+r.status()+' '+r.url());});
@@ -41,6 +42,7 @@ try{
    webgl2:!!gl,webglError:gl?.getError(),ready:!!window.__cyclingReady,
    button:document.querySelector('#qcdsWorldToggle')?.textContent};
  });
+ lastResult=result;
  await shot('03-qcds-webgl');
  await fs.writeFile(out+'/results.json',JSON.stringify({steps,result,errors,consoleErrors},null,2));
  if(!result.visible||!result.webgl2||result.width<100||result.height<100)throw Error('QCDS world canvas failed viewport-visible WebGL smoke: '+JSON.stringify(result));
@@ -55,6 +57,6 @@ try{
  console.log('QCDS browser smoke PASS; screenshots require visual quality review',result);
 }catch(e){
  await shot('failure').catch(()=>{});
- await fs.writeFile(out+'/results.json',JSON.stringify({steps,errors,consoleErrors,failure:String(e)},null,2));
+ await fs.writeFile(out+'/results.json',JSON.stringify({steps,result:lastResult,errors,consoleErrors,failure:String(e),stack:e?.stack||null},null,2));
  throw e;
 }finally{await browser.close();}
