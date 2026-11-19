@@ -117,6 +117,11 @@ jobs:
           assert.ok(m.screenshots.every(s=>s.validPng && s.sha256),'Screenshot integrity failed');
           console.log('QCDS evidence gate PASS',m.commit,m.runId);
           NODE
+      - name: Verify decoded pixels differ across QCDS camera captures
+        run: |
+          node qcds-medcare-cycling/png-pixel-evidence.mjs \
+            qcds-medcare-cycling/visual-evidence/04-fixed-camera.png \
+            qcds-medcare-cycling/visual-evidence/05-random-camera.png
       - name: Bundle exact checked-out QCDS source for local reproducibility
         if: always()
         run: |
