@@ -5,6 +5,19 @@ const options={scene:{biome:'alpine',state:{lighting:'late'}},route:{demo:true},
 const a=buildWorldMesh(options),b=buildWorldMesh(options);
 assert.deepEqual(a.terrain.positions,b.terrain.positions,'terrain must be deterministic');
 assert.deepEqual(a.road.positions,b.road.positions,'road must be deterministic');
+assert.ok(a.forest.count>10,'joint forest must produce real 3D tree meshes');
+assert.deepEqual(a.forest.crowns.positions,b.forest.crowns.positions,'forest must be deterministic');
+assert.equal(a.forest.crowns.positions.length/3,a.forest.count*12);
+for(const part of [a.forest.trunks,a.forest.crowns]){
+ assert.ok(part.positions.every(Number.isFinite));
+ assert.ok(part.normals.every(Number.isFinite));
+ assert.ok(part.indices.every(i=>i<part.positions.length/3));
+}
+for(let i=0;i<a.forest.trunks.positions.length;i+=36){
+ const x=a.forest.trunks.positions[i],z=a.forest.trunks.positions[i+2];
+ assert.ok(Math.abs(x-a.field.center(z))>a.field.width/2+a.field.oracle.shoulderWidth,
+  'tree must remain outside road and shoulder');
+}
 assert.equal(a.terrain.indices.length,a.dimensions.rows*a.dimensions.cols*6);
 assert.equal(a.road.indices.length,a.dimensions.rows*6);
 assert.ok(a.terrain.positions.every(Number.isFinite));
