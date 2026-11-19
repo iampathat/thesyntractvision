@@ -62,3 +62,14 @@ for(let i=0;i<a.terrain.normals.length;i+=3){
  assert.ok(Math.abs(length-1)<1e-5,'terrain normal not unit length at '+i/3);
 }
 console.log('QCDS executable terrain and road mesh geometry PASS');
+
+// Complete world configuration controls executable vegetation across biomes.
+const desert=buildWorldMesh({scene:{biome:'desert',state:{vegetation:'dense'}}});
+assert.equal(desert.field.oracle.forestDensity,0);
+assert.equal(desert.forest.count,0,'desert must not render a temperate forest');
+assert.equal(desert.forest.crowns.indices.length,0);
+const dense=buildWorldMesh({scene:{biome:'forest',state:{vegetation:'dense'}}});
+const sparse=buildWorldMesh({scene:{biome:'forest',state:{vegetation:'sparse'}}});
+assert.ok(dense.forest.count>sparse.forest.count,'joint forest density must affect GPU geometry');
+assert.deepEqual(dense.forest.crowns.positions,buildWorldMesh({scene:{biome:'forest',state:{vegetation:'dense'}}}).forest.crowns.positions);
+console.log('QCDS joint biome/forest GPU geometry PASS');
