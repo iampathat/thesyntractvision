@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {cameraPair} from './camera-rig.mjs';
+const field={road:z=>({x:Math.sin(z/30)*2,y:1}),height:(x,z)=>Math.cos(z/25)+1};
+const a=cameraPair({worldSeed:'w1',cameraSeed:'c1',field});
+assert.deepEqual(a,cameraPair({worldSeed:'w1',cameraSeed:'c1',field}));
+assert.notDeepEqual(a.random,cameraPair({worldSeed:'w1',cameraSeed:'c2',field}).random);
+assert.notDeepEqual(a.fixed,a.random);
+assert.ok(a.random.position[1]>field.height(a.random.position[0],a.random.position[2]));
+assert.deepEqual(a.fixed,cameraPair({worldSeed:'w2',cameraSeed:'c3',field}).fixed);
+assert.ok(a.random.position.concat(a.random.target).every(Number.isFinite));
+console.log('QCDS deterministic dual-camera contract PASS');
