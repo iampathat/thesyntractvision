@@ -20,6 +20,7 @@ jobs:
           node qcds-medcare-cycling/world-mesh.test.mjs
           node qcds-medcare-cycling/forest-oracles.test.mjs
           node qcds-medcare-cycling/camera-rig.test.mjs
+          node qcds-medcare-cycling/ci-evidence.regression.test.mjs
       - name: Install headless Chromium and Playwright
         run: |
           mkdir -p /tmp/qcds-browser-qa
