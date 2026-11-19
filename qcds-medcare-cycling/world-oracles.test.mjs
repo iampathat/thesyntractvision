@@ -30,3 +30,10 @@ assert.deepEqual(joint,selectWorldConfiguration({scene:{biome:'alpine',state:{li
 const fogWorld=selectWorldConfiguration({scene:{state:{weather:'fog'}}});
 assert.ok(fogWorld.fogDensity>=.45);
 console.log('QCDS joint world configuration PASS');
+
+// Shared material/lighting contract: road appearance derives from the same winner.
+const rainy=selectWorldConfiguration({scene:{state:{weather:'rain',lighting:'late'}}});
+const dry=selectWorldConfiguration({scene:{state:{weather:'clear',lighting:'day'}}});
+assert.equal(rainy.roadWetness,1);
+assert.equal(dry.roadWetness,0);
+assert.ok(rainy.shadowStrength>dry.shadowStrength);
