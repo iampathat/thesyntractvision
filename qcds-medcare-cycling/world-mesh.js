@@ -45,6 +45,9 @@ export function buildWorldForest(field,{length=300,halfWidth=110}={}){
  const trunks={positions:[],normals:[],indices:[]},crowns={positions:[],normals:[],indices:[]};
  const density=field.oracle.forestDensity;
  const spacing=14+(1-density)*18;
+ // Forest geometry is forbidden in biomes rejected by the joint world oracle.
+ // For valid forest biomes, density controls actual instance count, not only metadata.
+ const enabled=density>0;
  const ring=(mesh,cx,cy,cz,radius,height,sides=6)=>{
   const base=mesh.positions.length/3;
   for(let y=0;y<2;y++)for(let k=0;k<sides;k++){
@@ -58,9 +61,10 @@ export function buildWorldForest(field,{length=300,halfWidth=110}={}){
   }
  };
  let count=0;
- for(let z=14;z<length-12;z+=spacing){
+ for(let z=14;enabled&&z<length-12;z+=spacing){
   for(let side of [-1,1])for(let lane=0;lane<2;lane++){
    const jitter=noise(side*9+lane,z*.14,field.seed+103);
+   if(jitter>density)continue;
    const zz=z+(jitter-.5)*spacing*.7;
    const road=field.road(zz),x=road.x+side*(field.width*.5+field.oracle.shoulderWidth+6+lane*15+jitter*7);
    if(Math.abs(x)>halfWidth-5)continue;
