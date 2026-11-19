@@ -32,13 +32,18 @@ try{
  const result=await page.evaluate(()=>{
   const canvas=document.querySelector('#qcdsWorldCanvas');
   const gl=canvas?.getContext('webgl2');
-  return {visible:!!canvas&&!canvas.hidden,width:canvas?.width,height:canvas?.height,
+  const rect=canvas?.getBoundingClientRect();
+  const style=canvas?getComputedStyle(canvas):null;
+  const viewportVisible=!!rect&&rect.width>=100&&rect.height>=100&&rect.right>0&&rect.bottom>0&&rect.left<innerWidth&&rect.top<innerHeight;
+  const painted=!!style&&style.display!=='none'&&style.visibility!=='hidden'&&Number(style.opacity)>0;
+  return {visible:!!canvas&&!canvas.hidden&&viewportVisible&&painted,viewportVisible,painted,
+   cssWidth:rect?.width,cssHeight:rect?.height,width:canvas?.width,height:canvas?.height,
    webgl2:!!gl,webglError:gl?.getError(),ready:!!window.__cyclingReady,
    button:document.querySelector('#qcdsWorldToggle')?.textContent};
  });
  await shot('03-qcds-webgl');
  await fs.writeFile(out+'/results.json',JSON.stringify({steps,result,errors,consoleErrors},null,2));
- if(!result.visible||!result.webgl2||result.width<100||result.height<100)throw Error('QCDS world canvas failed visible WebGL smoke');
+ if(!result.visible||!result.webgl2||result.width<100||result.height<100)throw Error('QCDS world canvas failed viewport-visible WebGL smoke: '+JSON.stringify(result));
  if(result.webglError!==0)throw Error('WebGL reported GL error '+result.webglError);
  if(errors.length)throw Error('Runtime errors: '+errors.join(' | '));
  if(consoleErrors.length)throw Error('Browser console errors: '+consoleErrors.join(' | '));
