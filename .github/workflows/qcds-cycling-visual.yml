@@ -59,7 +59,7 @@ jobs:
             if(fs.existsSync(path)) result=JSON.parse(fs.readFileSync(path,'utf8'));
             else evidenceError='results.json missing';
           } catch(e) { evidenceError='results.json unreadable: '+e.message; }
-          const evidenceFiles=['01-initial.png','02-demo.png','03-qcds-webgl.png'];
+          const evidenceFiles=['01-initial.png','02-demo.png','03-qcds-webgl.png','04-fixed-camera.png','05-random-camera.png','06-two-camera-checkpoint.png'];
           const evidence=evidenceFiles.map(name=>{
             const file='qcds-medcare-cycling/visual-evidence/'+name;
             return name+': '+(fs.existsSync(file)?fs.statSync(file).size+' bytes':'MISSING');
@@ -79,6 +79,8 @@ jobs:
             '| Runtime errors | '+(result?.errors?.length ?? 'unknown')+' |',
             '| Console errors | '+(result?.consoleErrors?.length ?? 'unknown')+' |',
             '| Canvas visible | '+(result?.result?.visible===true?'confirmed':'not confirmed')+' |',
+            '| Dual camera | '+(result?.cameraMetadata&&result?.randomEvidence?'fixed + seeded random captured':'not confirmed')+' |',
+            '| Camera seed | '+String(result?.cameraMetadata?.cameraSeed||'missing')+' |',
             '| Visual realism | NOT VERIFIED — screenshots require comparison with reference |',
             '',
             '### Browser steps',
