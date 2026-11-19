@@ -53,7 +53,16 @@ jobs:
           node <<'NODE'
           const fs=require('node:fs');
           const path='qcds-medcare-cycling/visual-evidence/results.json';
-          const result=fs.existsSync(path)?JSON.parse(fs.readFileSync(path,'utf8')):null;
+          let result=null, evidenceError='';
+          try {
+            if(fs.existsSync(path)) result=JSON.parse(fs.readFileSync(path,'utf8'));
+            else evidenceError='results.json missing';
+          } catch(e) { evidenceError='results.json unreadable: '+e.message; }
+          const evidenceFiles=['01-initial.png','02-demo.png','03-qcds-webgl.png'];
+          const evidence=evidenceFiles.map(name=>{
+            const file='qcds-medcare-cycling/visual-evidence/'+name;
+            return name+': '+(fs.existsSync(file)?fs.statSync(file).size+' bytes':'MISSING');
+          });
           const lines=[
             '# QCDS Cycling — CI and visual evidence',
             '',
@@ -65,13 +74,20 @@ jobs:
             '| Job status | '+process.env.QCDS_JOB_STATUS+' |',
             '| Browser evidence | '+(result?'results.json produced':'MISSING — browser smoke did not produce results.json')+' |',
             '| WebGL2 | '+(result?.result?.webgl2===true?'confirmed': 'not confirmed')+' |',
+            '| WebGL error | '+(result?.result?.webglError===0?'GL_NO_ERROR':'not confirmed / '+String(result?.result?.webglError ?? 'missing'))+' |',
+            '| Runtime errors | '+(result?.errors?.length ?? 'unknown')+' |',
+            '| Console errors | '+(result?.consoleErrors?.length ?? 'unknown')+' |',
             '| Canvas visible | '+(result?.result?.visible===true?'confirmed':'not confirmed')+' |',
             '| Visual realism | NOT VERIFIED — screenshots require comparison with reference |',
             '',
             '### Browser steps',
             ...((result?.steps||[]).map(x=>'- '+String(x))),
             '',
+            '### Screenshot files',
+            ...evidence.map(x=>'- '+x),
+            '',
             '### Errors',
+            ...(evidenceError?['- '+evidenceError]:[]),
             ...((result?.errors||[]).concat(result?.consoleErrors||[],result?.failure?[result.failure]:[]).map(x=>'- '+String(x).replace(/\n/g,' '))),
             '',
             'Screenshots and results.json are attached in the **qcds-cycling-visual-evidence** artifact, when produced.'
