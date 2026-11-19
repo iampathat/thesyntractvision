@@ -102,6 +102,13 @@ jobs:
         env:
           QCDS_JOB_STATUS: ${{ job.status }}
         run: node qcds-medcare-cycling/ci-evidence.mjs
+      - name: Bundle exact checked-out QCDS source for local reproducibility
+        if: always()
+        run: |
+          mkdir -p qcds-medcare-cycling/visual-evidence
+          tar --exclude='node_modules' --exclude='visual-evidence' -czf qcds-medcare-cycling/visual-evidence/qcds-source.tar.gz -C qcds-medcare-cycling .
+          sha256sum qcds-medcare-cycling/visual-evidence/qcds-source.tar.gz > qcds-medcare-cycling/visual-evidence/qcds-source.sha256
+          printf '%s\n' "$GITHUB_SHA" > qcds-medcare-cycling/visual-evidence/source-commit.txt
       - name: Upload screenshots and runtime errors
         if: always()
         uses: actions/upload-artifact@v4
