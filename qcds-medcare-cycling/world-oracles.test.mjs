@@ -37,3 +37,13 @@ const dry=selectWorldConfiguration({scene:{state:{weather:'clear',lighting:'day'
 assert.equal(rainy.roadWetness,1);
 assert.equal(dry.roadWetness,0);
 assert.ok(rainy.shadowStrength>dry.shadowStrength);
+
+// World seed must influence the jointly selected world, not merely camera metadata.
+const seedA=selectWorldConfiguration({worldSeed:'qcds-baseline',scene:{biome:'forest'}});
+const seedB=selectWorldConfiguration({worldSeed:'qcds-other',scene:{biome:'forest'}});
+assert.equal(seedA.worldSeed,'qcds-baseline');
+assert.notEqual(seedA.seedNumber,seedB.seedNumber);
+assert.notEqual(seedA.relief,seedB.relief);
+assert.deepEqual(seedA,selectWorldConfiguration({worldSeed:'qcds-baseline',scene:{biome:'forest'}}));
+assert.ok(seedA.checks.every(x=>x.met)&&seedB.checks.every(x=>x.met));
+console.log('QCDS seeded joint world selection PASS');
