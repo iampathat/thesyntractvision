@@ -2,6 +2,7 @@
  * Unified scene decisions for the existing QCDS Cycling WebGL renderer.
  * Explicit classical oracles: unknown provenance is never invented.
  */
+function worldSeedNumber(value){const text=String(value??'qcds-baseline');let h=2166136261;for(let i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0)%1000000+1;}
 const number=(v,f=0)=>Number.isFinite(Number(v))?Number(v):f;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export function evaluateWorldOracles({scene={},route=null,routeGeometry=false,quality='high',snapshot=null,time=0}={}){
@@ -62,6 +63,8 @@ export function selectWorldConfiguration(input={}){
  const foggy=base.foggy;
  const late=/late|sunset|dawn/i.test(String(st.lighting||''));
  const speed=base.speedKmh,grade=base.grade;
+ const worldSeed=String(input.worldSeed??'qcds-baseline');
+ const seedNumber=worldSeedNumber(worldSeed);
  const choices=[];
  const reliefs=alpine?[24,36,48]:[8,14,22];
  const shoulderWidths=[4,7,11];
@@ -94,7 +97,7 @@ export function selectWorldConfiguration(input={}){
    {id:'QC-PROVENANCE',met:!base.renderingIsSynthetic||candidate.provenance==='synthetic'}
   ];
   const valid=constraints.every(x=>x.met);
-  const targetRelief=alpine?36:14;
+  const targetRelief=reliefs[seedNumber%reliefs.length];
   const score=100-Math.abs(relief-targetRelief)*.75-Math.abs(shoulder-7)*1.5-
    Math.abs(haze-(foggy?.6:.1))*16-
    Math.abs(forestDensity-(alpine?.65:.85))*12-Math.abs(roadWetness-(wet?1:0))*3;
@@ -105,6 +108,7 @@ export function selectWorldConfiguration(input={}){
  if(!ranked.length)throw Error('No QCDS world configuration satisfies joint constraints');
  const winner=ranked[0];
  return Object.freeze({...winner.candidate,
+  worldSeed,seedNumber,
   score:winner.score,checks:winner.constraints,
   evaluated:choices.length,accepted:ranked.length,
   rejected:choices.length-ranked.length,
