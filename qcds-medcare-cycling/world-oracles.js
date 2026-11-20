@@ -8,7 +8,10 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 export function evaluateWorldOracles({scene={},route=null,routeGeometry=false,quality='high',snapshot=null,time=0}={}){
  const st=scene.state||{},q=['low','medium','high','ultra'].indexOf(quality);
  const level=Math.max(0,q),demo=route?.demo===true,real=!!route&&!demo;
- const biome=String(scene.biome||'countryside');
+ const requestedBiome=String(scene.biome||'countryside').toLowerCase();
+ // Auto is a selection request, not a literal biome: keep the joint oracle
+ // decision coherent across forest, terrain, material and render geometry.
+ const biome=requestedBiome==='auto'?(demo?'forest':'countryside'):requestedBiome;
  const vegetation=String(st.vegetation||'medium');
  const surface=String(st.surface||'unknown');
  const light=String(st.lighting||'day');
@@ -56,7 +59,8 @@ export function evaluateWorldOracles({scene={},route=null,routeGeometry=false,qu
 export function selectWorldConfiguration(input={}){
  const scene=input.scene||{},st=scene.state||{};
  const base=evaluateWorldOracles(input);
- const biome=String(scene.biome||'countryside').toLowerCase();
+ const requestedBiome=String(scene.biome||'countryside').toLowerCase();
+ const biome=requestedBiome==='auto'?(input.route?.demo===true?'forest':'countryside'):requestedBiome;
  const alpine=/alpine|mountain/.test(biome);
  const supportsForest=/alpine|mountain|forest|countryside|woodland/.test(biome);
  const wet=/rain|storm/i.test(String(st.weather||''));
