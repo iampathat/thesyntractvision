@@ -73,3 +73,17 @@ const sparse=buildWorldMesh({scene:{biome:'forest',state:{vegetation:'sparse'}}}
 assert.ok(dense.forest.count>sparse.forest.count,'joint forest density must affect GPU geometry');
 assert.deepEqual(dense.forest.crowns.positions,buildWorldMesh({scene:{biome:'forest',state:{vegetation:'dense'}}}).forest.crowns.positions);
 console.log('QCDS joint biome/forest GPU geometry PASS');
+
+ // Riders follow the selected world road rather than an independent straight track.
+import {worldRiderPose} from './world-mesh.js';
+const seeded=buildWorldMesh({worldSeed:'qcds-baseline',scene:{biome:'forest'},length:120,halfWidth:70});
+const riderA=worldRiderPose(seeded.field,45,{lane:0,cadence:92,speedKmh:35});
+const riderB=worldRiderPose(seeded.field,45,{lane:0,cadence:92,speedKmh:35});
+assert.deepEqual(riderA,riderB);
+assert.equal(riderA.worldSeed,'qcds-baseline');
+assert.ok(Math.abs(riderA.heading)>0.0001);
+assert.ok(Math.abs(riderA.y-seeded.field.height(riderA.x,riderA.z)-.05)<1e-6);
+assert.ok(Math.abs(riderA.lean)<=seeded.field.oracle.riderLeanLimit*Math.PI/180+1e-9);
+const other=buildWorldMesh({worldSeed:'qcds-other',scene:{biome:'forest'},length:120,halfWidth:70});
+assert.notEqual(riderA.x,worldRiderPose(other.field,45).x);
+console.log('QCDS unified rider road-frame PASS');
