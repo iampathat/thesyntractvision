@@ -61,6 +61,41 @@ try{
     (!forestGeometry.trunkTriangles||!forestGeometry.crownTriangles))
   throw Error('QCDS forest oracle selected vegetation but live WebGL forest meshes are empty: '+JSON.stringify(forestGeometry));
  steps.push('live WebGL forest geometry inventory: '+JSON.stringify(forestGeometry));
+ // Prove that the *rendered forest* changes pixels in the fixed camera,
+ // not merely that non-empty triangle buffers exist. Keep the same world,
+ // camera, sun, road and riders for both captures.
+ const forestPixelEvidence=await page.evaluate(async()=>{
+  const renderer=window.__qcdsWorldRenderer;
+  const canvas=renderer?.canvas;
+  if(!renderer||!canvas)throw Error('Forest visibility: live renderer unavailable');
+  renderer.setCamera('fixed','camera-001');
+  const all=renderer.meshes;
+  const trunks=all[3],crowns=all[4];
+  if(!trunks||!crowns)throw Error('Forest visibility: expected GPU meshes missing');
+  const capture=()=>{
+   renderer.render();
+   const gl=renderer.gl,w=canvas.width,h=canvas.height;
+   const pixels=new Uint8Array(w*h*4);
+   gl.finish();gl.readPixels(0,0,w,h,gl.RGBA,gl.UNSIGNED_BYTE,pixels);
+   if(gl.getError()!==gl.NO_ERROR)throw Error('Forest visibility: WebGL readPixels failed');
+   return pixels;
+  };
+  let bare,forested;
+  try{
+   renderer.meshes=all.filter((_,i)=>i!==3&&i!==4);
+   bare=capture();
+  }finally{renderer.meshes=all;}
+  forested=capture();
+  let changed=0;
+  for(let i=0;i<bare.length;i+=4){
+   if(Math.abs(bare[i]-forested[i])+Math.abs(bare[i+1]-forested[i+1])+Math.abs(bare[i+2]-forested[i+2])>35)changed++;
+  }
+  return {changedPixels:changed,totalPixels:canvas.width*canvas.height,
+   ratio:changed/(canvas.width*canvas.height),trunkTriangles:trunks.mesh.count/3,crownTriangles:crowns.mesh.count/3};
+ });
+ if(forestGeometry.forestDensity>0&&forestPixelEvidence.changedPixels<100)
+  throw Error('QCDS forest meshes exist but are not visible in fixed-camera pixels: '+JSON.stringify(forestPixelEvidence));
+ steps.push('forest ON/OFF WebGL pixel comparison: '+JSON.stringify(forestPixelEvidence));
  await shot('03-qcds-webgl');
  // Both frames are captured from the same live WebGL canvas and the same QCDS field.
  // The random camera is reproducible from the recorded seed, never an image substitute.
@@ -92,7 +127,7 @@ try{
  await composite.close();
  steps.push('fixed and seeded random QCDS WebGL cameras captured');
 
- await fs.writeFile(out+'/results.json',JSON.stringify({steps,result,forestGeometry,cameraMetadata,randomEvidence,errors,consoleErrors},null,2));
+ await fs.writeFile(out+'/results.json',JSON.stringify({steps,result,forestGeometry,forestPixelEvidence,cameraMetadata,randomEvidence,errors,consoleErrors},null,2));
  if(!result.visible||!result.webgl2||result.width<100||result.height<100)throw Error('QCDS world canvas failed viewport-visible WebGL smoke: '+JSON.stringify(result));
  if(result.webglError!==0)throw Error('WebGL reported GL error '+result.webglError);
  if(errors.length)throw Error('Runtime errors: '+errors.join(' | '));
