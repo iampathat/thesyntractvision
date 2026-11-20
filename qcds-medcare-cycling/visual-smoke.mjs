@@ -80,20 +80,24 @@ try{
    if(gl.getError()!==gl.NO_ERROR)throw Error('Forest visibility: WebGL readPixels failed');
    return pixels;
   };
-  let bare,forested;
+  let bare,bareRepeat,forested;
   try{
    renderer.meshes=all.filter((_,i)=>i!==3&&i!==4);
    bare=capture();
+   bareRepeat=capture();
   }finally{renderer.meshes=all;}
   forested=capture();
-  let changed=0;
-  for(let i=0;i<bare.length;i+=4){
-   if(Math.abs(bare[i]-forested[i])+Math.abs(bare[i+1]-forested[i+1])+Math.abs(bare[i+2]-forested[i+2])>35)changed++;
-  }
-  return {changedPixels:changed,totalPixels:canvas.width*canvas.height,
+  const difference=(a,b)=>{
+   let changed=0;
+   for(let i=0;i<a.length;i+=4)
+    if(Math.abs(a[i]-b[i])+Math.abs(a[i+1]-b[i+1])+Math.abs(a[i+2]-b[i+2])>35)changed++;
+   return changed;
+  };
+  const changed=difference(bareRepeat,forested),baselineNoise=difference(bare,bareRepeat);
+  return {changedPixels:changed,baselineNoise,forestOnlyPixels:Math.max(0,changed-baselineNoise),totalPixels:canvas.width*canvas.height,
    ratio:changed/(canvas.width*canvas.height),trunkTriangles:trunks.mesh.count/3,crownTriangles:crowns.mesh.count/3};
  });
- if(forestGeometry.forestDensity>0&&forestPixelEvidence.changedPixels<100)
+ if(forestGeometry.forestDensity>0&&forestPixelEvidence.forestOnlyPixels<100)
   throw Error('QCDS forest meshes exist but are not visible in fixed-camera pixels: '+JSON.stringify(forestPixelEvidence));
  steps.push('forest ON/OFF WebGL pixel comparison: '+JSON.stringify(forestPixelEvidence));
  await shot('03-qcds-webgl');
