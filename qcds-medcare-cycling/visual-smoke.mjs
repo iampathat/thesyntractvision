@@ -117,6 +117,21 @@ try{
  await page.waitForTimeout(250);
  await worldCanvas.screenshot({path:out+'/05-random-camera.png'});
  const randomEvidence=await page.evaluate(()=>window.__qcdsWorldRenderer.cameraEvidence());
+ const randomClearance=await page.evaluate(()=>{
+  const renderer=window.__qcdsWorldRenderer;
+  const evidence=renderer?.cameraEvidence();
+  const position=evidence?.random?.position;
+  if(!position||position.length!==3||!renderer?.field?.height)
+   throw Error('Random-camera clearance: missing live QCDS camera or terrain field');
+  const ground=renderer.field.height(position[0],position[2]);
+  const clearance=position[1]-ground;
+  if(!Number.isFinite(clearance))
+   throw Error('Random-camera clearance: non-finite camera or terrain elevation');
+  return {clearance,position,ground};
+ });
+ if(randomClearance.clearance<20)
+  throw Error('Seeded random camera intersects the QCDS forest canopy: '+JSON.stringify(randomClearance));
+ steps.push('seeded random camera terrain clearance: '+JSON.stringify(randomClearance));
  if(JSON.stringify(cameraMetadata.fixed)===JSON.stringify(randomEvidence.random))
   throw Error('Two camera positions are identical');
  // Compose the two *actual* WebGL screenshots into a single labeled image.
