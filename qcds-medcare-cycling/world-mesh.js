@@ -3,6 +3,7 @@
  * Coordinates are local metres; real-world elevation must come from a sourced route.
  */
 import {selectWorldConfiguration} from './world-oracles.js';
+import {buildWorldWater} from './world-water.js';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const lerp=(a,b,t)=>a+(b-a)*t;
 const smooth=t=>t*t*(3-2*t);
@@ -41,7 +42,13 @@ export function createWorldField(options={}){
 }
 /** Jointly constrained tree instances: the SAME height field, road clearance,
  * vegetation density and selected world oracle control every placement. */
-export function buildWorldForest(field,{length=300,halfWidth=110}={}){
+export function buildWorldForest(field,{length=300,halfWidth=110,water=null}={}){
+ // Water is selected from the same world field before vegetation is placed.
+ // Reject trunks whose footprints intersect flooded cells, including shore edges.
+ const flooded=[];
+ if(water?.count)for(let i=0;i<water.positions.length;i+=12){
+  const p=water.positions;flooded.push([Math.min(p[i],p[i+3]),Math.max(p[i],p[i+3]),Math.min(p[i+2],p[i+8]),Math.max(p[i+2],p[i+8])]);
+ }
  const trunks={positions:[],normals:[],indices:[]},crowns={positions:[],normals:[],indices:[]};
  const density=field.oracle.forestDensity;
  const spacing=14+(1-density)*18;
@@ -71,8 +78,10 @@ export function buildWorldForest(field,{length=300,halfWidth=110}={}){
    // Trees cannot occupy the road or its QCDS-selected graded shoulder.
    if(Math.abs(x-field.center(zz))<field.width*.5+field.oracle.shoulderWidth+2)continue;
    const ground=field.height(x,zz),height=7+noise(x*.1,zz*.1,field.seed+55)*9;
+   const crownRadius=1.4+height*.16;
+   if(flooded.some(([x0,x1,z0,z1])=>x+crownRadius>x0&&x-crownRadius<x1&&zz+crownRadius>z0&&zz-crownRadius<z1))continue;
    ring(trunks,x,ground,zz,.24+height*.012,height*.34);
-   ring(crowns,x,ground+height*.24,zz,1.4+height*.16,height*.76);
+   ring(crowns,x,ground+height*.24,zz,crownRadius,height*.76);
    count++;
   }
  }
@@ -135,7 +144,8 @@ export function buildWorldMesh(options={}){
   }
   if(z<rows){const a=z*2;roadIndices.push(a,a+2,a+1,a+1,a+2,a+3);}
  }
- return {field,forest:buildWorldForest(field,{length,halfWidth}),terrain:{positions:new Float32Array(positions),normals:new Float32Array(normals),indices:new Uint32Array(indices)},
+ const water=buildWorldWater(field,{length,halfWidth,enabled:options.route?.demo===true&&/alpine/i.test(String(options.route?.id||''))});
+ return {field,water,forest:buildWorldForest(field,{length,halfWidth,water}),terrain:{positions:new Float32Array(positions),normals:new Float32Array(normals),indices:new Uint32Array(indices)},
   road:{positions:new Float32Array(roadPositions),normals:new Float32Array(roadNormals),indices:new Uint32Array(roadIndices),
    path:{positions:new Float32Array(pathPositions),tangents:new Float32Array(pathTangents),curvatures:new Float32Array(pathCurvatures)}},
   dimensions:{cols,rows,length,halfWidth},synthetic:true};
