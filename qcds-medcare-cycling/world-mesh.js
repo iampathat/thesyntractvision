@@ -13,7 +13,7 @@ function noise(x,z,seed){
 }
 export function createWorldField(options={}){
  const oracle=selectWorldConfiguration(options);
- const seed=Number.isFinite(options.seed)?options.seed:17;
+ const seed=Number.isFinite(options.seed)?options.seed:oracle.seedNumber;
  const alpine=String(options.scene?.biome||'').includes('alpine');
  const amplitude=oracle.relief;
  const center=z=>Math.sin(z*.007+seed*.1)*8+Math.sin(z*.019+seed*.03)*2.4;
