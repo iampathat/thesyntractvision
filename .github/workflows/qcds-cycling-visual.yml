@@ -46,6 +46,7 @@ jobs:
       - name: Build and verify real offline WASM diagnostic
         run: |
           node qcds-medcare-cycling/build-offline-wasm.mjs
+          node qcds-medcare-cycling/offline-artifact-integrity.test.mjs
           node qcds-medcare-cycling/offline-wasm-smoke.mjs
       - name: Preserve browser install and server diagnostics
         if: failure()
