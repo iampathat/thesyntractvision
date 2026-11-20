@@ -22,8 +22,13 @@ export function buildWorldWater(field,{length=300,halfWidth=110,step=6,enabled=f
   const radial=((x-basinX)/radiusX)**2+((z-basinZ)/radiusZ)**2;
   if(radial>=1)continue;
   // Exclude road, shoulder and any cell whose ground rises above water.
-  if(Math.abs(x-field.center(z))<margin||field.height(x,z)>=datum-.08)continue;
-  const base=positions.length/3,h=spacing*.49;
+  const h=spacing*.49;
+  // A flooded cell is valid only when its ENTIRE footprint clears the
+  // selected road corridor and lies below the shared water datum.
+  // Centre-only tests allow dry terrain to pierce the water at corners.
+  const corners=[[x-h,z-h],[x+h,z-h],[x-h,z+h],[x+h,z+h]];
+  if(corners.some(([cx,cz])=>Math.abs(cx-field.center(cz))<margin||field.height(cx,cz)>=datum-.08))continue;
+  const base=positions.length/3;
   positions.push(x-h,datum,z-h,x+h,datum,z-h,x-h,datum,z+h,x+h,datum,z+h);
   for(let i=0;i<4;i++)normals.push(0,1,0);
   indices.push(base,base+2,base+1,base+1,base+2,base+3);count++;
