@@ -13,6 +13,10 @@ export function validateVisualWorld(result) {
   const fixed=result.cameraMetadata?.fixed, random=result.randomEvidence?.random;
   if (!fixed || !random || !Array.isArray(fixed.position) || !Array.isArray(random.position)) fail('both live camera poses required');
   if (fixed.position.length!==3 || random.position.length!==3 || ![...fixed.position,...random.position].every(Number.isFinite)) fail('invalid camera coordinates');
+  const fixedMeta=result.cameraMetadata, randomMeta=result.randomEvidence;
+  if (typeof fixedMeta.worldSeed!=='string' || !fixedMeta.worldSeed || fixedMeta.worldSeed!==randomMeta.worldSeed) fail('camera captures use mismatched or missing world seeds');
+  if (typeof fixedMeta.cameraSeed!=='string' || !fixedMeta.cameraSeed || fixedMeta.cameraSeed!==randomMeta.cameraSeed) fail('camera captures use mismatched or missing camera seeds');
+  if (g.worldSeed!==fixedMeta.worldSeed) fail('forest geometry and camera captures have different world seeds');
   const distance=Math.hypot(...fixed.position.map((v,i)=>v-random.position[i]));
   if (distance<2) fail('cameras are not spatially distinct');
   return {forestPixels:p.forestOnlyPixels,forestTriangles:g.trunkTriangles+g.crownTriangles,cameraSeparation:distance};
