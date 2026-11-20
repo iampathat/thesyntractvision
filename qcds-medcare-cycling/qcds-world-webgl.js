@@ -1,7 +1,7 @@
 /* © 2026 Patrik Sundblom. All Rights Reserved.
  * Opt-in QCDS world mesh renderer. No changes to the existing FTMS/game engine.
  */
-import {buildWorldMesh} from './world-mesh.js';
+import {buildWorldMesh,worldRiderPose} from './world-mesh.js';
 import {buildRiderMesh} from './rider-mesh.js';
 import {cameraPair} from './camera-rig.mjs';
 const VERT=`#version 300 es
@@ -79,9 +79,11 @@ export class QcdsWorldWebGL{
  // Update only the small articulated meshes; the terrain stays GPU resident.
  const time=performance.now()/1000,cadence=Number(this.options.cadence)||80;
  for(let rider=0;rider<3;rider++){
-  const z=18+rider*7,point=this.field.road(z),body=buildRiderMesh({cadence,time,offset:rider*1.1,roadHeight:point.y+.05});
-  const dx=(rider-1)*.72;
-  for(let i=0;i<body.positions.length;i+=3){body.positions[i]+=point.x+dx;body.positions[i+2]+=z;}
+  const z=18+rider*7,pose=worldRiderPose(this.field,z,{lane:(rider-1)*.72,cadence,speedKmh:Number(this.options.speedKmh)||28});
+  const body=buildRiderMesh({cadence:pose.cadence,time,offset:rider*1.1,roadHeight:0,lean:pose.lean});
+  const c=Math.cos(pose.heading),s=Math.sin(pose.heading);
+  for(let i=0;i<body.positions.length;i+=3){const x=body.positions[i],zz=body.positions[i+2];body.positions[i]=pose.x+c*x+s*zz;body.positions[i+1]+=pose.y;body.positions[i+2]=pose.z-s*x+c*zz;}
+  for(let i=0;i<body.normals.length;i+=3){const x=body.normals[i],zz=body.normals[i+2];body.normals[i]=c*x+s*zz;body.normals[i+2]=-s*x+c*zz;}
   const riderMesh=mesh(gl,body.positions,body.normals,body.indices);
   gl.uniform3fv(loc('uAlbedo'),new Float32Array(rider===0?[.12,.34,.66]:rider===1?[.77,.22,.13]:[.16,.22,.27]));
   gl.uniform1f(loc('uRoad'),0);
