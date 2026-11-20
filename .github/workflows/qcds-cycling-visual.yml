@@ -25,6 +25,7 @@ jobs:
           node qcds-medcare-cycling/forest-oracles.test.mjs
           node qcds-medcare-cycling/camera-rig.test.mjs
           node qcds-medcare-cycling/ci-evidence.regression.test.mjs
+          node qcds-medcare-cycling/visual-world-contract.test.mjs
       - name: Install headless Chromium and Playwright
         run: |
           mkdir -p /tmp/qcds-browser-qa
@@ -43,6 +44,8 @@ jobs:
           echo $! > /tmp/cycling-server.pid
       - name: Start demo, toggle QCDS WebGL and capture evidence
         run: node qcds-medcare-cycling/visual-smoke.mjs
+      - name: Fail closed on forest pixels and independent live camera poses
+        run: node qcds-medcare-cycling/visual-world-contract.mjs
       - name: Build and verify real offline WASM diagnostic
         run: |
           node qcds-medcare-cycling/build-offline-wasm.mjs
