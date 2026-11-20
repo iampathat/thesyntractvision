@@ -43,6 +43,10 @@ jobs:
           echo $! > /tmp/cycling-server.pid
       - name: Start demo, toggle QCDS WebGL and capture evidence
         run: node qcds-medcare-cycling/visual-smoke.mjs
+      - name: Build and verify real offline WASM diagnostic
+        run: |
+          node qcds-medcare-cycling/build-offline-wasm.mjs
+          node qcds-medcare-cycling/offline-wasm-smoke.mjs
       - name: Preserve browser install and server diagnostics
         if: failure()
         run: |
