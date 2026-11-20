@@ -13,6 +13,8 @@ assert.ok(a.positions.every(Number.isFinite));
 for(let i=0;i<a.positions.length;i+=3){
  assert.ok(Math.abs(a.positions[i]-field.center(a.positions[i+2]))>field.width/2+field.oracle.shoulderWidth,'water cannot occupy road/shoulder');
  assert.ok(Math.abs(a.positions[i+1]-a.waterLevel)<1e-5,'water must be level');
+ assert.ok(field.height(a.positions[i],a.positions[i+2])<a.waterLevel-.08,'water corners must not pierce terrain');
+ assert.ok(Math.abs(a.positions[i]-field.center(a.positions[i+2]))>=field.width/2+field.oracle.shoulderWidth+12,'water corners must clear road corridor');
 }
 const off=buildWorldWater(field,{enabled:false});assert.equal(off.count,0);
 const real=createWorldField({...options,route:{demo:false},routeGeometry:true});
