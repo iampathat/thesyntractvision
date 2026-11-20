@@ -79,6 +79,21 @@ export function buildWorldForest(field,{length=300,halfWidth=110}={}){
  const packed=m=>({positions:new Float32Array(m.positions),normals:new Float32Array(m.normals),indices:new Uint32Array(m.indices)});
  return {trunks:packed(trunks),crowns:packed(crowns),count,spacing,oracleIds:['QC-GEOMETRY-CONTINUITY','QC-ROAD-CLEARANCE','QC-FOREST-RELIEF']};
 }
+/** Rider frame derived from the exact road centerline and joint oracle winner.
+ * This keeps heading, lean, cadence and wheel contact in one geometric frame. */
+export function worldRiderPose(field,z,{lane=0,cadence=80,speedKmh=0}={}){
+ const p=field.road(z),t=p.tangent;
+ const heading=Math.atan2(t[0],t[2]);
+ const prev=field.road(z-1.5).tangent,next=field.road(z+1.5).tangent;
+ const curvature=Math.atan2(prev[2]*next[0]-prev[0]*next[2],prev[0]*next[0]+prev[2]*next[2])/3;
+ const speed=clamp(Number(speedKmh)||0,0,150)/3.6;
+ const leanLimit=field.oracle.riderLeanLimit*Math.PI/180;
+ const lean=clamp(Math.atan(speed*speed*curvature/9.81),-leanLimit,leanLimit);
+ const lateral=clamp(lane,-field.width*.35,field.width*.35);
+ const x=p.x+Math.cos(heading)*lateral,worldZ=z-Math.sin(heading)*lateral;
+ return {x,y:field.height(x,worldZ)+.05,z:worldZ,heading,lean,
+  cadence:clamp(Number(cadence)||0,0,200),curvature,worldSeed:field.oracle.worldSeed};
+}
 export function buildWorldMesh(options={}){
  const field=createWorldField(options),step=clamp(options.step||6,1,24);
  const halfWidth=clamp(options.halfWidth||96,12,1000),length=clamp(options.length||240,24,4000);
