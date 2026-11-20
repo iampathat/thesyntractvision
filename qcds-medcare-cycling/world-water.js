@@ -22,7 +22,8 @@ export function buildWorldWater(field,{length=300,halfWidth=110,step=6,enabled=f
   const radial=((x-basinX)/radiusX)**2+((z-basinZ)/radiusZ)**2;
   if(radial>=1)continue;
   // Exclude road, shoulder and any cell whose ground rises above water.
-  const h=spacing*.49;
+  // Adjacent accepted water cells share exact boundaries, preventing visible grid seams.
+  const h=spacing/2;
   // A flooded cell is valid only when its ENTIRE footprint clears the
   // selected road corridor and lies below the shared water datum.
   // Centre-only tests allow dry terrain to pierce the water at corners.

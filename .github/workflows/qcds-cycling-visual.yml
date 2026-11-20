@@ -19,6 +19,8 @@ jobs:
           node qcds-medcare-cycling/world-oracles.test.mjs
           node qcds-medcare-cycling/world-mesh.test.mjs
           node qcds-medcare-cycling/world-water.test.mjs
+          node qcds-medcare-cycling/water-topology.test.mjs
+          node qcds-medcare-cycling/water-seams.test.mjs
           node qcds-medcare-cycling/forest-oracles.test.mjs
           node qcds-medcare-cycling/camera-rig.test.mjs
           node qcds-medcare-cycling/ci-evidence.regression.test.mjs
