@@ -47,3 +47,11 @@ assert.notEqual(seedA.relief,seedB.relief);
 assert.deepEqual(seedA,selectWorldConfiguration({worldSeed:'qcds-baseline',scene:{biome:'forest'}}));
 assert.ok(seedA.checks.every(x=>x.met)&&seedB.checks.every(x=>x.met));
 console.log('QCDS seeded joint world selection PASS');
+
+// The default UI is Auto: it must generate a real forest in demo mode,
+// not silently disable the forest visibility gate.
+const autoDemo=selectWorldConfiguration({scene:{biome:'auto'},route:{demo:true},worldSeed:'qcds-baseline'});
+assert.ok(autoDemo.forestDensity>0,'Auto demo must select visible forest geometry');
+assert.equal(evaluateWorldOracles({scene:{biome:'auto'},route:{demo:true}}).checks.find(x=>x.id==='QC-WORLD-FOREST').met,true);
+assert.equal(selectWorldConfiguration({scene:{biome:'arid'},route:{demo:true}}).forestDensity,0,'Explicit arid biome must stay treeless');
+console.log('QCDS Auto demo forest regression PASS');
