@@ -3,6 +3,7 @@
  * a captured image is not proof of photorealism.
  */
 import {chromium} from 'playwright';
+import {auditLiveForestDraws} from './forest-draw-audit.mjs';
 import fs from 'node:fs/promises';
 const out='qcds-medcare-cycling/visual-evidence';
 await fs.mkdir(out,{recursive:true});
@@ -61,6 +62,13 @@ try{
     (!forestGeometry.trunkTriangles||!forestGeometry.crownTriangles))
   throw Error('QCDS forest oracle selected vegetation but live WebGL forest meshes are empty: '+JSON.stringify(forestGeometry));
  steps.push('live WebGL forest geometry inventory: '+JSON.stringify(forestGeometry));
+ // Fail closed unless the actual live renderer submits both forest meshes.
+ // Mesh existence alone cannot prove GPU drawcalls; compare bound VAO and index count.
+ const forestDrawEvidence=await page.evaluate(async()=>{
+  const {auditLiveForestDraws}=await import('./forest-draw-audit.mjs');
+  return auditLiveForestDraws(window.__qcdsWorldRenderer);
+ });
+ steps.push('live WebGL forest drawcalls: '+JSON.stringify(forestDrawEvidence));
  // Prove that the *rendered forest* changes pixels in the fixed camera,
  // not merely that non-empty triangle buffers exist. Keep the same world,
  // camera, sun, road and riders for both captures.
@@ -146,7 +154,7 @@ try{
  await composite.close();
  steps.push('fixed and seeded random QCDS WebGL cameras captured');
 
- await fs.writeFile(out+'/results.json',JSON.stringify({steps,result,forestGeometry,forestPixelEvidence,cameraMetadata,randomEvidence,errors,consoleErrors},null,2));
+ await fs.writeFile(out+'/results.json',JSON.stringify({steps,result,forestGeometry,forestDrawEvidence,forestPixelEvidence,cameraMetadata,randomEvidence,errors,consoleErrors},null,2));
  if(!result.visible||!result.webgl2||result.width<100||result.height<100)throw Error('QCDS world canvas failed viewport-visible WebGL smoke: '+JSON.stringify(result));
  if(result.webglError!==0)throw Error('WebGL reported GL error '+result.webglError);
  if(errors.length)throw Error('Runtime errors: '+errors.join(' | '));
