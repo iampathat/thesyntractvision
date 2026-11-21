@@ -4,6 +4,7 @@
  */
 import {selectWorldConfiguration} from './world-oracles.js';
 import {buildWorldWater} from './world-water.js';
+import {acceptForestFootprint} from './world-forest-footprint.mjs';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const lerp=(a,b,t)=>a+(b-a)*t;
 const smooth=t=>t*t*(3-2*t);
@@ -99,6 +100,8 @@ export function buildWorldForest(field,{length=300,halfWidth=110,water=null}={})
    const ground=field.height(x,zz),height=7+noise(x*.1,zz*.1,field.seed+55)*9;
    const crownRadius=1.4+height*.16;
    if(flooded.some(([x0,x1,z0,z1])=>x+crownRadius>x0&&x-crownRadius<x1&&zz+crownRadius>z0&&zz-crownRadius<z1))continue;
+   // Whole-canopy disk uses the same QCDS terrain, road and water as the mesh.
+   if(!acceptForestFootprint(field,{x,z:zz,radius:crownRadius,water}))continue;
    ring(trunks,x,ground,zz,.24+height*.012,height*.34);
    crown(x,ground+height*.24,zz,crownRadius,height*.76,field.seed);
    count++;
