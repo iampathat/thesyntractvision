@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {auditLiveForestDraws} from './forest-draw-audit.mjs';
+let active=null,submissions=0;
+const gl={TRIANGLES:4,UNSIGNED_INT:5125,VERTEX_ARRAY_BINDING:34229,drawElements(){submissions++},getParameter(){return active}};
+const meshes=[{mesh:{vao:'terrain',count:90}},{mesh:{vao:'ridge',count:60}},{mesh:{vao:'road',count:30}},{mesh:{vao:'trunk',count:12}},{mesh:{vao:'crown',count:24}}];
+const renderer={gl,meshes,render(){for(const m of meshes){active=m.mesh.vao;gl.drawElements(4,m.mesh.count,5125,0)}}};
+const original=gl.drawElements;
+assert.deepEqual(auditLiveForestDraws(renderer),{forestIndexCounts:[12,24],forestDrawCalls:[1,1],totalDrawCalls:5});
+assert.equal(gl.drawElements,original);
+renderer.render=()=>{active='terrain';gl.drawElements(4,90,5125,0)};
+assert.throws(()=>auditLiveForestDraws(renderer),/not submitted/);
+assert.equal(gl.drawElements,original);
+meshes[4].mesh.count=0;
+assert.throws(()=>auditLiveForestDraws(renderer),/geometry missing/);
+assert.equal(submissions,6);
+console.log('PASS live forest draw audit: actual VAO/count submission, missing draws, cleanup');
