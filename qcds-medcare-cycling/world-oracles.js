@@ -104,7 +104,7 @@ export function selectWorldConfiguration(input={}){
   const targetRelief=reliefs[seedNumber%reliefs.length];
   const score=100-Math.abs(relief-targetRelief)*.75-Math.abs(shoulder-7)*1.5-
    Math.abs(haze-(foggy?.6:.1))*16-
-   Math.abs(forestDensity-(alpine?.65:.85))*12-Math.abs(roadWetness-(wet?1:0))*3;
+   Math.abs(forestDensity-(st.vegetation==='dense'?(alpine?.85:1):st.vegetation==='sparse'?.3:(alpine?.65:.7)))*12-Math.abs(roadWetness-(wet?1:0))*3;
   choices.push({candidate,valid,score,constraints});
  }
  const ranked=choices.filter(x=>x.valid).sort((a,b)=>b.score-a.score||
