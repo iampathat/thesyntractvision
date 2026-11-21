@@ -55,3 +55,11 @@ assert.ok(autoDemo.forestDensity>0,'Auto demo must select visible forest geometr
 assert.equal(evaluateWorldOracles({scene:{biome:'auto'},route:{demo:true}}).checks.find(x=>x.id==='QC-WORLD-FOREST').met,true);
 assert.equal(selectWorldConfiguration({scene:{biome:'arid'},route:{demo:true}}).forestDensity,0,'Explicit arid biome must stay treeless');
 console.log('QCDS Auto demo forest regression PASS');
+
+// Regression: the winning joint oracle must not collapse medium and dense
+// into identical forest geometry for the same world seed.
+const vegetationLevels=['sparse','medium','dense'].map(vegetation=>
+ selectWorldConfiguration({scene:{biome:'forest',state:{vegetation}},worldSeed:'qcds-baseline'}).forestDensity);
+assert.ok(vegetationLevels[0]<vegetationLevels[1]&&vegetationLevels[1]<vegetationLevels[2],
+ `QCDS vegetation oracle collapsed distinct states: ${vegetationLevels}`);
+console.log('QCDS joint vegetation density ordering PASS',vegetationLevels);
