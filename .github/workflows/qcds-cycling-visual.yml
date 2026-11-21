@@ -24,6 +24,7 @@ jobs:
           node qcds-medcare-cycling/world-coherence.test.mjs
           node qcds-medcare-cycling/forest-oracles.test.mjs
           node qcds-medcare-cycling/forest-facing.test.mjs
+          node qcds-medcare-cycling/forest-surface-normals.test.mjs
           node qcds-medcare-cycling/world-forest-footprint.test.mjs
           node qcds-medcare-cycling/camera-rig.test.mjs
           node qcds-medcare-cycling/ci-evidence.regression.test.mjs
