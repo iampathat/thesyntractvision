@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {acceptForestFootprint} from './world-forest-footprint.mjs';
+const base={width:4,oracle:{shoulderWidth:1},center:()=>0,height:()=>0};
+assert.equal(acceptForestFootprint(base,{x:10,z:20,radius:3}),true);
+assert.equal(acceptForestFootprint(base,{x:5,z:20,radius:3}),false);
+assert.equal(acceptForestFootprint({...base,height:x=>x>11?4:0},{x:10,z:20,radius:3}),false);
+const water={positions:new Float32Array([10,0,20,11,0,20,11,0,21,10,0,21])};
+assert.equal(acceptForestFootprint(base,{x:10,z:20,radius:3,water}),false);
+assert.equal(acceptForestFootprint(base,{x:10,z:20,radius:3,maxSamples:4}),false);
+assert.equal(acceptForestFootprint(base,{x:NaN,z:20,radius:3}),false);
+console.log('6 forest footprint regression assertions PASS');
