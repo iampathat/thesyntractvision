@@ -64,7 +64,7 @@ export function buildWorldForest(field,{length=300,halfWidth=110,water=null}={})
   }
   for(let k=0;k<sides;k++){
    const a=base+k,b=base+(k+1)%sides,c=a+sides,d=b+sides;
-   mesh.indices.push(a,b,c,b,d,c);
+   mesh.indices.push(a,c,b,b,c,d);
   }
  };
  const crown=(cx,cy,cz,radius,height,seed)=>{
@@ -83,7 +83,7 @@ export function buildWorldForest(field,{length=300,halfWidth=110,water=null}={})
   }
   for(let layer=0;layer<levels.length-1;layer++)for(let k=0;k<sides;k++){
    const a=base+layer*sides+k,b=base+layer*sides+(k+1)%sides,c=a+sides,d=b+sides;
-   crowns.indices.push(a,b,c,b,d,c);
+   crowns.indices.push(a,c,b,b,c,d);
   }
  };
  let count=0;
