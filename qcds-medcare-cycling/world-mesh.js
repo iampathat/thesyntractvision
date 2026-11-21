@@ -67,6 +67,25 @@ export function buildWorldForest(field,{length=300,halfWidth=110,water=null}={})
    mesh.indices.push(a,b,c,b,d,c);
   }
  };
+ const crown=(cx,cy,cz,radius,height,seed)=>{
+  // Five continuous, non-billboard rings: the same world mesh survives any camera pose.
+  // Shape variation is deterministic and never changes the shared placement oracle.
+  const sides=10,levels=[0,.2,.46,.73,1],profile=[.62,1,.82,.46,.07];
+  const base=crowns.positions.length/3;
+  const phase=hash(cx*.13,cz*.13,seed)*Math.PI*2;
+  for(let layer=0;layer<levels.length;layer++)for(let k=0;k<sides;k++){
+   const angle=k*Math.PI*2/sides,dx=Math.cos(angle),dz=Math.sin(angle);
+   const shape=1+.065*Math.sin(angle*3+phase+layer*.7);
+   const rad=radius*profile[layer]*shape;
+   crowns.positions.push(cx+dx*rad,cy+height*levels[layer],cz+dz*rad);
+   const slope=layer<2?.12:.55,n=Math.hypot(dx,slope,dz);
+   crowns.normals.push(dx/n,slope/n,dz/n);
+  }
+  for(let layer=0;layer<levels.length-1;layer++)for(let k=0;k<sides;k++){
+   const a=base+layer*sides+k,b=base+layer*sides+(k+1)%sides,c=a+sides,d=b+sides;
+   crowns.indices.push(a,b,c,b,d,c);
+  }
+ };
  let count=0;
  for(let z=14;enabled&&z<length-12;z+=spacing){
   for(let side of [-1,1])for(let lane=0;lane<2;lane++){
@@ -81,7 +100,7 @@ export function buildWorldForest(field,{length=300,halfWidth=110,water=null}={})
    const crownRadius=1.4+height*.16;
    if(flooded.some(([x0,x1,z0,z1])=>x+crownRadius>x0&&x-crownRadius<x1&&zz+crownRadius>z0&&zz-crownRadius<z1))continue;
    ring(trunks,x,ground,zz,.24+height*.012,height*.34);
-   ring(crowns,x,ground+height*.24,zz,crownRadius,height*.76);
+   crown(x,ground+height*.24,zz,crownRadius,height*.76,field.seed);
    count++;
   }
  }
