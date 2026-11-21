@@ -79,12 +79,29 @@ export function buildWorldForest(field,{length=300,halfWidth=110,water=null}={})
    const shape=1+.065*Math.sin(angle*3+phase+layer*.7);
    const rad=radius*profile[layer]*shape;
    crowns.positions.push(cx+dx*rad,cy+height*levels[layer],cz+dz*rad);
-   const slope=layer<2?.12:.55,n=Math.hypot(dx,slope,dz);
-   crowns.normals.push(dx/n,slope/n,dz/n);
+   // Normals are reconstructed from the final triangles below, not guessed from a cone.
+   crowns.normals.push(0,0,0);
   }
+  const indexStart=crowns.indices.length;
   for(let layer=0;layer<levels.length-1;layer++)for(let k=0;k<sides;k++){
    const a=base+layer*sides+k,b=base+layer*sides+(k+1)%sides,c=a+sides,d=b+sides;
    crowns.indices.push(a,c,b,b,c,d);
+  }
+  // Area-weighted normals follow the actual QCDS-selected, irregular 3D canopy.
+  // This keeps lighting stable across camera perspectives and world seeds.
+  for(let i=indexStart;i<crowns.indices.length;i+=3){
+   const ids=[crowns.indices[i],crowns.indices[i+1],crowns.indices[i+2]];
+   const a=ids[0]*3,b=ids[1]*3,c=ids[2]*3,p=crowns.positions;
+   const ux=p[b]-p[a],uy=p[b+1]-p[a+1],uz=p[b+2]-p[a+2];
+   const vx=p[c]-p[a],vy=p[c+1]-p[a+1],vz=p[c+2]-p[a+2];
+   const nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;
+   for(const id of ids){const j=id*3;crowns.normals[j]+=nx;crowns.normals[j+1]+=ny;crowns.normals[j+2]+=nz;}
+  }
+  for(let i=base*3;i<crowns.normals.length;i+=3){
+   const nx=crowns.normals[i],ny=crowns.normals[i+1],nz=crowns.normals[i+2];
+   const n=Math.hypot(nx,ny,nz);
+   if(n>1e-9){crowns.normals[i]=nx/n;crowns.normals[i+1]=ny/n;crowns.normals[i+2]=nz/n;}
+   else {crowns.normals[i]=0;crowns.normals[i+1]=1;crowns.normals[i+2]=0;}
   }
  };
  let count=0;
