@@ -1,0 +1,22 @@
+/* © 2026 Patrik Sundblom. All Rights Reserved. */
+import assert from 'node:assert/strict';
+import {classifyRuns,probe} from './visual-ci-gate.mjs';
+const sha='a'.repeat(40),other='b'.repeat(40);
+const mk=(overrides={})=>({id:42,event:'push',head_branch:'main',head_sha:sha,status:'completed',conclusion:'success',created_at:'2026-11-22T00:00:00Z',path:'.github/workflows/qcds-cycling-visual.yml',...overrides});
+assert.equal(classifyRuns({workflow_runs:[mk()]},{sha}).gate,'GREEN');
+assert.equal(classifyRuns({workflow_runs:[mk({path:'.github/workflows/qcds-cycling-visual.yml@main'})]},{sha}).gate,'GREEN');
+assert.equal(classifyRuns({workflow_runs:[mk({path:'.github/workflows/qcds-cycling-visual.yml@refs/heads/main'})]},{sha}).gate,'GREEN');
+assert.equal(classifyRuns({workflow_runs:[mk()]},{}).gate,'UNKNOWN');
+assert.equal(classifyRuns({workflow_runs:[mk({conclusion:'failure'})]},{sha}).gate,'RED');
+assert.equal(classifyRuns({workflow_runs:[mk({status:'in_progress'})]},{sha}).gate,'PENDING');
+assert.equal(classifyRuns({workflow_runs:[mk({head_sha:other})]},{sha}).gate,'UNKNOWN');
+assert.equal(classifyRuns({workflow_runs:[mk({event:'pull_request'})]},{sha}).gate,'UNKNOWN');
+assert.equal(classifyRuns({workflow_runs:[mk({path:'.github/workflows/other.yml'})]},{sha}).gate,'UNKNOWN');
+assert.equal(classifyRuns({workflow_runs:[mk({head_branch:'dev'})]},{sha}).gate,'UNKNOWN');
+assert.equal(classifyRuns({workflow_runs:[mk(),mk({created_at:'2026-11-22T01:00:00Z',conclusion:'failure'})]},{sha}).gate,'RED');
+assert.throws(()=>classifyRuns({},{sha}),/workflow_runs/);
+const fallback=await probe({sha,fetchImpl:async url=>url.includes('/workflows/')?{ok:false,status:403}:{ok:true,json:async()=>({workflow_runs:[mk()]})}});
+assert.equal(fallback.gate,'GREEN');assert.equal(fallback.attempts.length,3);
+const blocked=await probe({sha,fetchImpl:async()=>{throw Error('DNS unavailable')}});
+assert.equal(blocked.gate,'UNKNOWN');assert.equal(blocked.attempts.length,3);
+console.log('14 Actions gate regression assertions PASS');
