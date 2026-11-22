@@ -147,6 +147,11 @@ jobs:
           tar --exclude='node_modules' --exclude='visual-evidence' -czf qcds-medcare-cycling/visual-evidence/qcds-source.tar.gz -C qcds-medcare-cycling .
           sha256sum qcds-medcare-cycling/visual-evidence/qcds-source.tar.gz > qcds-medcare-cycling/visual-evidence/qcds-source.sha256
           printf '%s\n' "$GITHUB_SHA" > qcds-medcare-cycling/visual-evidence/source-commit.txt
+      - name: Verify bundled source archive integrity and exact commit
+        run: |
+          sha256sum -c qcds-medcare-cycling/visual-evidence/qcds-source.sha256
+          test "$(cat qcds-medcare-cycling/visual-evidence/source-commit.txt)" = "$GITHUB_SHA"
+          tar -tzf qcds-medcare-cycling/visual-evidence/qcds-source.tar.gz > /dev/null
       - name: Fail closed unless downloadable WASM and Chromium evidence are complete
         run: node qcds-medcare-cycling/delivery-gate.mjs
       - name: Upload screenshots and runtime errors
