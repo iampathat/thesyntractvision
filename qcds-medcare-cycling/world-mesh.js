@@ -5,6 +5,7 @@
 import {selectWorldConfiguration} from './world-oracles.js';
 import {buildWorldWater} from './world-water.js';
 import {acceptForestFootprint} from './world-forest-footprint.mjs';
+import {forestLayout,forestCandidate} from './forest-layout.mjs';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const lerp=(a,b,t)=>a+(b-a)*t;
 const smooth=t=>t*t*(3-2*t);
@@ -52,7 +53,8 @@ export function buildWorldForest(field,{length=300,halfWidth=110,water=null}={})
  }
  const trunks={positions:[],normals:[],indices:[]},crowns={positions:[],normals:[],indices:[]};
  const density=field.oracle.forestDensity;
- const spacing=14+(1-density)*18;
+ const layout=forestLayout(field.oracle);
+ const spacing=layout.spacing;
  // Forest geometry is forbidden in biomes rejected by the joint world oracle.
  // For valid forest biomes, density controls actual instance count, not only metadata.
  const enabled=density>0;
@@ -106,16 +108,16 @@ export function buildWorldForest(field,{length=300,halfWidth=110,water=null}={})
  };
  let count=0;
  for(let z=14;enabled&&z<length-12;z+=spacing){
-  for(let side of [-1,1])for(let lane=0;lane<2;lane++){
+  for(let side of [-1,1])for(let lane=0;lane<layout.belts.length;lane++){
    const jitter=noise(side*9+lane,z*.14,field.seed+103);
    if(jitter>density)continue;
-   const zz=z+(jitter-.5)*spacing*.7;
-   const road=field.road(zz),x=road.x+side*(field.width*.5+field.oracle.shoulderWidth+6+lane*15+jitter*7);
+   const candidate=forestCandidate(field,z,side,lane,jitter);
+   const zz=candidate.z,x=candidate.x;
    if(Math.abs(x)>halfWidth-5)continue;
    // Trees cannot occupy the road or its QCDS-selected graded shoulder.
-   if(Math.abs(x-field.center(zz))<field.width*.5+field.oracle.shoulderWidth+2)continue;
-   const ground=field.height(x,zz),height=7+noise(x*.1,zz*.1,field.seed+55)*9;
-   const crownRadius=1.4+height*.16;
+   if(Math.abs(x-field.center(zz))<candidate.clearance)continue;
+   const ground=field.height(x,zz),height=10+noise(x*.1,zz*.1,field.seed+55)*11;
+   const crownRadius=2.0+height*.17;
    if(flooded.some(([x0,x1,z0,z1])=>x+crownRadius>x0&&x-crownRadius<x1&&zz+crownRadius>z0&&zz-crownRadius<z1))continue;
    // Whole-canopy disk uses the same QCDS terrain, road and water as the mesh.
    if(!acceptForestFootprint(field,{x,z:zz,radius:crownRadius,water}))continue;
