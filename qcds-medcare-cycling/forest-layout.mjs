@@ -8,7 +8,7 @@ export function forestLayout(oracle){
  const halfRoad=Math.max(0,Number(oracle.roadWidth)||0)/2;
  const spacing=9+(1-density)*11;
  const clearance=halfRoad+shoulder+2;
- const belts=[clearance+3.8,clearance+14,clearance+28];
+ const belts=[clearance+6.2,clearance+14,clearance+28];
  return Object.freeze({density,spacing,clearance,belts});
 }
 export function forestCandidate(field,z,side,lane,jitter){
