@@ -1,8 +1,11 @@
 /* © 2026 Patrik Sundblom. All Rights Reserved.
  * Joint terrain, road and water oracle for 3D forest placement.
  */
+import {canopyClearsRoad} from './forest-layout.mjs';
 export function acceptForestFootprint(field,{x,z,radius,water=null,gradeLimit=1.8,maxSamples=256}={}) {
  if(!Number.isFinite(x)||!Number.isFinite(z)||!Number.isFinite(radius)||radius<=0)return false;
+ // Reject the whole crown footprint when it intersects a curved road.
+ if(!canopyClearsRoad(field,x,z,radius))return false;
  const step=Math.max(.65,radius/3),n=Math.ceil(radius/step);
  if((2*n+1)**2>maxSamples)return false;
  const ground=field.height(x,z);
