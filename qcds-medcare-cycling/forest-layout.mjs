@@ -18,3 +18,20 @@ export function forestCandidate(field,z,side,lane,jitter){
  const x=field.center(zz)+side*(layout.belts[lane]+jitter*2.5);
  return {x,z:zz,clearance:layout.clearance,spacing:layout.spacing};
 }
+/** Camera-independent, sampled whole-canopy clearance against curved road.
+ * A conservative margin protects between samples for smooth centerlines;
+ * arbitrary discontinuities cannot be certified by finite sampling.
+ */
+export function canopyClearsRoad(field,x,z,radius,{sampleStep=.5}={}){
+ if(![x,z,radius].every(Number.isFinite)||radius<0||typeof field?.center!=='function')return false;
+ const layout=forestLayout(field.oracle);
+ const step=Math.max(.1,Math.min(1,Number(sampleStep)||.5));
+ const segments=Math.max(8,Math.ceil(2*Math.max(radius,1)/step));
+ for(let i=0;i<=segments;i++){
+  const dz=-radius+2*radius*i/segments;
+  const reach=Math.sqrt(Math.max(0,radius*radius-dz*dz));
+  const roadX=field.center(z+dz);
+  if(!Number.isFinite(roadX)||Math.abs(x-roadX)-reach<layout.clearance+step)return false;
+ }
+ return true;
+}
