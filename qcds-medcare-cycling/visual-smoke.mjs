@@ -146,7 +146,10 @@ try{
  const fixedPng=await fs.readFile(out+'/04-fixed-camera.png');
  const randomPng=await fs.readFile(out+'/05-random-camera.png');
  const composite=await browser.newPage({viewport:{width:1600,height:570},deviceScaleFactor:1});
- await composite.setContent('<html><body style="margin:0;background:#0b1522;color:white;font:17px sans-serif"><header style="padding:12px">QCDS Cycling | Visual checkpoint #001 | fixed vs seeded random camera</header><main style="display:flex;gap:8px;padding:8px"><section style="width:50%"><div>FIXED CAMERA</div><img id="fixed" style="width:100%" /></section><section style="width:50%"><div>RANDOM CAMERA | seed camera-001</div><img id="random" style="width:100%" /></section></main></body></html>');
+ // Keep each real WebGL checkpoint auditable without changing world geometry.
+ const escapeHTML=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+ const checkpointLabel=`QCDS Cycling | Visual checkpoint #001 | ${new Date().toISOString()} | commit ${process.env.GITHUB_SHA||'LOCAL-UNVERIFIED'} | run ${process.env.GITHUB_RUN_ID||'LOCAL'} | world ${worldSeed} | camera ${cameraSeed}`;
+ await composite.setContent('<html><body style="margin:0;background:#0b1522;color:white;font:17px sans-serif"><header style="padding:12px">'+escapeHTML(checkpointLabel)+'</header><main style="display:flex;gap:8px;padding:8px"><section style="width:50%"><div>FIXED CAMERA</div><img id="fixed" style="width:100%" /></section><section style="width:50%"><div>RANDOM CAMERA | seed camera-001</div><img id="random" style="width:100%" /></section></main></body></html>');
  await composite.evaluate(([a,b])=>{document.querySelector('#fixed').src='data:image/png;base64,'+a;document.querySelector('#random').src='data:image/png;base64,'+b;},[fixedPng.toString('base64'),randomPng.toString('base64')]);
  await composite.locator('#fixed').evaluate(img=>img.decode());
  await composite.locator('#random').evaluate(img=>img.decode());
