@@ -63,7 +63,9 @@ export function selectWorldConfiguration(input={}){
  const biome=requestedBiome==='auto'?(input.route?.demo===true?'forest':'countryside'):requestedBiome;
  const alpine=/alpine|mountain/.test(biome);
  const supportsForest=/alpine|mountain|forest|countryside|woodland/.test(biome);
- const wet=/rain|storm/i.test(String(st.weather||''));
+ const weather=String(st.weather||'').toLowerCase();
+ const wet=/rain|storm/.test(weather)&&!/snow|blizzard|winter|snö/.test(weather);
+ const snow=/snow|blizzard|winter|snö/.test(weather)||/winter|snow/.test(String(st.season||'').toLowerCase());
  const foggy=base.foggy;
  const late=/late|sunset|dawn/i.test(String(st.lighting||''));
  const speed=base.speedKmh,grade=base.grade;
@@ -74,7 +76,7 @@ export function selectWorldConfiguration(input={}){
  const shoulderWidths=[4,7,11];
  const hazeLevels=foggy?[.48,.7]:[.1,.22];
  const densities=st.vegetation==='sparse'?[.2,.35]:st.vegetation==='dense'?[.85,1]:[.5,.7,.85];
- const wetnessLevels=wet?[.65,1]:[0];
+ const wetnessLevels=wet&&!snow?[.65,1]:[0];
  const sun=late?[.78,.3,-.54]:[-.35,.86,-.43];
  const sunLength=Math.hypot(...sun);
  for(const relief of reliefs)for(const shoulder of shoulderWidths)for(const haze of hazeLevels)for(const density of densities)for(const roadWetness of wetnessLevels){
@@ -84,6 +86,8 @@ export function selectWorldConfiguration(input={}){
    forestDensity,vegetationRange:base.vegetationRange,
    sunDirection:sun.map(x=>x/sunLength),fogDensity:haze,
    surfaceRoughness:wet?.48:.83,roadWetness,
+   snowCover:snow?(alpine?.94:.78):0,
+   season:snow?'winter':String(st.season||'temperate'),
    riderLeanLimit:Math.max(3,14-speed*.08),
    shadowStrength:base.shadowStrength,
    cadenceHz:base.riderMotionHz,
@@ -92,7 +96,8 @@ export function selectWorldConfiguration(input={}){
   const constraints=[
    {id:'QC-GEOMETRY-CONTINUITY',met:shoulder>=relief/7},
    {id:'QC-ROAD-CLEARANCE',met:shoulder>=candidate.roadWidth*.5},
-   {id:'QC-WEATHER-MATERIAL',met:(!wet||candidate.surfaceRoughness<=.55)&&(!wet||roadWetness>=.65)},
+   {id:'QC-WEATHER-MATERIAL',met:(!wet||candidate.surfaceRoughness<=.55)&&(!wet||roadWetness>=.65)&&(!snow||roadWetness===0)},
+   {id:'QC-WINTER-COVER',met:!snow||(candidate.snowCover>=.7&&candidate.snowCover<=1)},
    {id:'QC-FOREST-RELIEF',met:!alpine||forestDensity<=Math.max(.35,1-relief/200)},
    {id:'QC-BIOME-FOREST',met:supportsForest||forestDensity===0},
    {id:'QC-VEGETATION-STATE',met:!supportsForest||st.vegetation!=='dense'||forestDensity>=.85},
