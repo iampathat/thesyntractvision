@@ -114,14 +114,14 @@ function understoryMesh(field,forest){
   if(!Number.isFinite(x)||!Number.isFinite(z))continue;
   const ground=field.height(x,z);
   if(Math.abs(p[i+1]-ground)>1.5)continue;
-  for(let clump=0;clump<Math.round(2+4*density);clump++){
+  for(let clump=0;clump<Math.round(5+5*density);clump++){
    const angle=clump*2.399963229728653;
-   const cx=x+Math.cos(angle)*(.45+clump*.12),cz=z+Math.sin(angle)*(.45+clump*.12);
+   const cx=x+Math.cos(angle)*(.5+clump*.17),cz=z+Math.sin(angle)*(.5+clump*.17);
    const cy=field.height(cx,cz)+.035;
-   const height=(.28+.11*((clump*7)%5))*density;
-   for(let blade=0;blade<3;blade++){
-    const a=angle+blade*Math.PI/3,dx=Math.cos(a),dz=Math.sin(a),base=positions.length/3;
-    positions.push(cx-dx*.10,cy,cz-dz*.10,cx+dx*.10,cy,cz+dz*.10,cx+dx*.025,cy+height,cz+dz*.025);
+   const height=(.55+.16*((clump*7)%5))*density;
+   for(let blade=0;blade<4;blade++){
+    const a=angle+blade*Math.PI/4,dx=Math.cos(a),dz=Math.sin(a),base=positions.length/3;
+    positions.push(cx-dx*.19,cy,cz-dz*.19,cx+dx*.19,cy,cz+dz*.19,cx+dx*.035,cy+height,cz+dz*.035);
     normals.push(-dz,.35,dx,-dz,.35,dx,-dz,.35,dx);
     indices.push(base,base+1,base+2);
     indices.push(base+2,base+1,base);
