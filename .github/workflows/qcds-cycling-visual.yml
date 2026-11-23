@@ -5,6 +5,9 @@ on:
     paths:
       - 'qcds-medcare-cycling/**'
       - '.github/workflows/qcds-cycling-visual.yml'
+concurrency:
+  group: qcds-cycling-visual-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   visual:
     runs-on: ubuntu-24.04
