@@ -101,9 +101,39 @@ function ridgeMesh(field,seed){
  }
  return {positions:new Float32Array(positions),normals:new Float32Array(normals),indices:new Uint32Array(indices)};
 }
+
+// True 3D forest-floor tufts. Each accepted trunk anchors a cluster in the
+// same terrain/water/road-constrained world, independent of camera orientation.
+function understoryMesh(field,forest){
+ const positions=[],normals=[],indices=[],p=forest.trunks.positions;
+ const density=Math.max(0,Math.min(1,Number(field.oracle.forestDensity)||0));
+ for(let i=0;i<p.length;i+=36){
+  // The first ring of each accepted tree supplies its footprint centre.
+  // Branches are appended after trunks; use only ground-adjacent ring vertices.
+  const x=p[i],z=p[i+2];
+  if(!Number.isFinite(x)||!Number.isFinite(z))continue;
+  const ground=field.height(x,z);
+  if(Math.abs(p[i+1]-ground)>1.5)continue;
+  for(let clump=0;clump<Math.round(2+4*density);clump++){
+   const angle=clump*2.399963229728653;
+   const cx=x+Math.cos(angle)*(.45+clump*.12),cz=z+Math.sin(angle)*(.45+clump*.12);
+   const cy=field.height(cx,cz)+.035;
+   const height=(.28+.11*((clump*7)%5))*density;
+   for(let blade=0;blade<3;blade++){
+    const a=angle+blade*Math.PI/3,dx=Math.cos(a),dz=Math.sin(a),base=positions.length/3;
+    positions.push(cx-dx*.10,cy,cz-dz*.10,cx+dx*.10,cy,cz+dz*.10,cx+dx*.025,cy+height,cz+dz*.025);
+    normals.push(-dz,.35,dx,-dz,.35,dx,-dz,.35,dx);
+    indices.push(base,base+1,base+2);
+    indices.push(base+2,base+1,base);
+   }
+  }
+ }
+ return {positions:new Float32Array(positions),normals:new Float32Array(normals),indices:new Uint32Array(indices)};
+}
+
 export class QcdsWorldWebGL{
  constructor(canvas){this.canvas=canvas;this.gl=canvas.getContext('webgl2',{antialias:true,alpha:false});if(!this.gl)throw Error('WebGL2 unavailable');this.program=program(this.gl);this.meshes=[];this.active=false;this.frame=0;this.cameraMode='fixed';this.cameraSeed='camera-001';this.worldSeed='qcds-baseline';}
- rebuild(options){const gl=this.gl;for(const m of this.meshes)for(const b of m.mesh.buffers)gl.deleteBuffer(b);for(const m of this.meshes)gl.deleteVertexArray(m.mesh.vao);this.meshes=[];const world=buildWorldMesh({...options,step:5,halfWidth:110,length:300});this.field=world.field;this.worldDecision=world.field.oracle;const add=(data,color,road=0,forest=0,ground=0)=>this.meshes.push({mesh:mesh(gl,data.positions,data.normals||roadNormals(data.positions),data.indices),color,road,forest,ground});const surface=worldSurface(world.field.oracle);this.surface=surface;add(world.terrain,surface.terrain,0,0,1);add(ridgeMesh(world.field,world.field.seed),surface.terrain.map((v,i)=>v*(i===2?1.08:.86)));add(world.road,surface.road,1);add(world.forest.trunks,surface.trunks);add(world.forest.crowns,surface.crowns,0,1);if(world.water.count)add(world.water,surface.water);this.options=options;this.worldSeed=String(options.worldSeed||'qcds-baseline');this.render();}
+ rebuild(options){const gl=this.gl;for(const m of this.meshes)for(const b of m.mesh.buffers)gl.deleteBuffer(b);for(const m of this.meshes)gl.deleteVertexArray(m.mesh.vao);this.meshes=[];const world=buildWorldMesh({...options,step:5,halfWidth:110,length:300});this.field=world.field;this.worldDecision=world.field.oracle;const add=(data,color,road=0,forest=0,ground=0)=>this.meshes.push({mesh:mesh(gl,data.positions,data.normals||roadNormals(data.positions),data.indices),color,road,forest,ground});const surface=worldSurface(world.field.oracle);this.surface=surface;add(world.terrain,surface.terrain,0,0,1);add(ridgeMesh(world.field,world.field.seed),surface.terrain.map((v,i)=>v*(i===2?1.08:.86)));add(world.road,surface.road,1);add(world.forest.trunks,surface.trunks);add(world.forest.crowns,surface.crowns,0,1);const undergrowth=understoryMesh(world.field,world.forest);if(undergrowth.indices.length)add(undergrowth,[.19,.37,.13],0,0,1);if(world.water.count)add(world.water,surface.water);this.options=options;this.worldSeed=String(options.worldSeed||'qcds-baseline');this.render();}
  setCamera(mode='fixed',cameraSeed='camera-001'){if(mode!=='fixed'&&mode!=='random')throw Error('Unknown QCDS camera mode');this.cameraMode=mode;this.cameraSeed=String(cameraSeed);this.render();}
  cameraEvidence(){const pair=cameraPair({worldSeed:this.worldSeed,cameraSeed:this.cameraSeed,field:this.field});const p=this.field.road(0),t=this.field.road(90);return {...pair,fixed:{position:[p.x,p.y+3.4,-14],target:[t.x,t.y+1,t.z],fov:65},mode:this.cameraMode};}
  render(){const gl=this.gl,canvas=this.canvas;const w=Math.max(2,Math.round(canvas.clientWidth*devicePixelRatio)),h=Math.max(2,Math.round(canvas.clientHeight*devicePixelRatio));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}gl.viewport(0,0,w,h);gl.enable(gl.DEPTH_TEST);gl.clearColor(.63,.73,.81,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(this.program);const pair=this.cameraEvidence(),camera=pair[this.cameraMode];const vp=multiply(perspective(camera.fov*Math.PI/180,w/h,.1,900),lookAt(camera.position,camera.target));const loc=n=>gl.getUniformLocation(this.program,n);gl.uniformMatrix4fv(loc('uViewProjection'),false,vp);const decision=this.worldDecision;const late=this.surface.late;gl.uniform3fv(loc('uSun'),new Float32Array(decision.sunDirection));gl.uniform3fv(loc('uFog'),new Float32Array(late?[.79,.65,.54]:[.65,.74,.82]));gl.uniform1f(loc('uHaze'),decision.fogDensity);gl.uniform1f(loc('uWetness'),decision.roadWetness);gl.uniform1f(loc('uRoughness'),this.surface.roughness);gl.uniform1f(loc('uShadowStrength'),decision.shadowStrength);gl.uniform1f(loc('uForestVariation'),Math.max(0,Math.min(1,Number(decision.forestDensity)||0)));gl.uniform3fv(loc('uCamera'),new Float32Array(camera.position));for(const item of this.meshes){gl.uniform3fv(loc('uAlbedo'),new Float32Array(item.color));gl.uniform1f(loc('uRoad'),item.road);gl.uniform1f(loc('uForest'),item.forest);gl.uniform1f(loc('uGround'),item.ground);gl.bindVertexArray(item.mesh.vao);gl.drawElements(gl.TRIANGLES,item.mesh.count,gl.UNSIGNED_INT,0);}
