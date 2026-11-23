@@ -70,6 +70,28 @@ export function buildWorldForest(field,{length=300,halfWidth=110,water=null}={})
    mesh.indices.push(a,c,b,b,c,d);
   }
  };
+ // Camera-independent woody branches connect each accepted crown lobe to its trunk.
+ // Branches are actual triangles in the SAME forest mesh and world coordinate frame.
+ const branch=(ax,ay,az,bx,by,bz,radius)=>{
+  const dx=bx-ax,dy=by-ay,dz=bz-az,len=Math.hypot(dx,dy,dz);
+  if(!(len>1e-5))return;
+  const tx=dx/len,ty=dy/len,tz=dz/len;
+  const rx=tz,rz=-tx,rl=Math.hypot(rx,rz);
+  const ux=rl>1e-5?rx/rl:1,uy=0,uz=rl>1e-5?rz/rl:0;
+  const vx=ty*uz-tz*uy,vy=tz*ux-tx*uz,vz=tx*uy-ty*ux;
+  const sides=8,base=trunks.positions.length/3;
+  for(let end=0;end<2;end++)for(let k=0;k<sides;k++){
+   const angle=2*Math.PI*k/sides,c=Math.cos(angle),s=Math.sin(angle);
+   const nx=ux*c+vx*s,ny=uy*c+vy*s,nz=uz*c+vz*s;
+   const r=radius*(end?.58:1);
+   trunks.positions.push((end?bx:ax)+nx*r,(end?by:ay)+ny*r,(end?bz:az)+nz*r);
+   trunks.normals.push(nx,ny,nz);
+  }
+  for(let k=0;k<sides;k++){
+   const a=base+k,b=base+(k+1)%sides,c=a+sides,d=b+sides;
+   trunks.indices.push(a,c,b,b,c,d);
+  }
+ };
  const crown=(cx,cy,cz,radius,height,seed)=>{
   // Five continuous, non-billboard rings: the same world mesh survives any camera pose.
   // Shape variation is deterministic and never changes the shared placement oracle.
@@ -128,6 +150,10 @@ export function buildWorldForest(field,{length=300,halfWidth=110,water=null}={})
    const phase=hash(x*.17,zz*.17,field.seed+71)*Math.PI*2;
    for(let lobe=0;lobe<2;lobe++){
     const a=phase+lobe*Math.PI;
+    // Two tapered 3D branches support the QCDS-selected lateral canopy lobes.
+    branch(x,ground+height*.31,zz,
+      x+Math.cos(a)*crownRadius*.40,ground+height*(.48+lobe*.09),
+      zz+Math.sin(a)*crownRadius*.40,.12+height*.007);
     crown(x+Math.cos(a)*crownRadius*.32,
       ground+height*(.34+lobe*.09),
       zz+Math.sin(a)*crownRadius*.32,
