@@ -7,8 +7,8 @@ assert.deepEqual(a.terrain.positions,b.terrain.positions,'terrain must be determ
 assert.deepEqual(a.road.positions,b.road.positions,'road must be deterministic');
 assert.ok(a.forest.count>10,'joint forest must produce real 3D tree meshes');
 assert.deepEqual(a.forest.crowns.positions,b.forest.crowns.positions,'forest must be deterministic');
-assert.equal(a.forest.crowns.positions.length/3,a.forest.count*50,'five crown rings must reach the GPU mesh');
-assert.equal(a.forest.crowns.indices.length/3,a.forest.count*80,'tiered crowns must contain actual 3D triangles');
+assert.equal(a.forest.crowns.positions.length/3,a.forest.count*3*14*7,'three seven-ring canopy lobes must reach the GPU mesh');
+assert.equal(a.forest.crowns.indices.length/3,a.forest.count*3*14*6*2,'tiered crowns must contain actual 3D triangles');
 for(const part of [a.forest.trunks,a.forest.crowns]){
  assert.ok(part.positions.every(Number.isFinite));
  assert.ok(part.normals.every(Number.isFinite));

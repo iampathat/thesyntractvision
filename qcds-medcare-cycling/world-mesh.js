@@ -73,12 +73,12 @@ export function buildWorldForest(field,{length=300,halfWidth=110,water=null}={})
  const crown=(cx,cy,cz,radius,height,seed)=>{
   // Five continuous, non-billboard rings: the same world mesh survives any camera pose.
   // Shape variation is deterministic and never changes the shared placement oracle.
-  const sides=10,levels=[0,.2,.46,.73,1],profile=[.62,1,.82,.46,.07];
+  const sides=14,levels=[0,.12,.28,.47,.65,.82,1],profile=[.46,.76,1,.98,.77,.46,.04];
   const base=crowns.positions.length/3;
   const phase=hash(cx*.13,cz*.13,seed)*Math.PI*2;
   for(let layer=0;layer<levels.length;layer++)for(let k=0;k<sides;k++){
    const angle=k*Math.PI*2/sides,dx=Math.cos(angle),dz=Math.sin(angle);
-   const shape=1+.065*Math.sin(angle*3+phase+layer*.7);
+   const shape=1+.12*Math.sin(angle*3+phase+layer*.7)+.065*Math.cos(angle*5-phase*.6+layer*.4);
    const rad=radius*profile[layer]*shape;
    crowns.positions.push(cx+dx*rad,cy+height*levels[layer],cz+dz*rad);
    // Normals are reconstructed from the final triangles below, not guessed from a cone.
@@ -122,7 +122,17 @@ export function buildWorldForest(field,{length=300,halfWidth=110,water=null}={})
    // Whole-canopy disk uses the same QCDS terrain, road and water as the mesh.
    if(!acceptForestFootprint(field,{x,z:zz,radius:crownRadius,water}))continue;
    ring(trunks,x,ground,zz,.24+height*.012,height*.34);
+   // Three overlapping, camera-independent 3D foliage volumes per accepted tree.
+   // Their shared trunk/footprint comes from the SAME accepted world oracle.
    crown(x,ground+height*.24,zz,crownRadius,height*.76,field.seed);
+   const phase=hash(x*.17,zz*.17,field.seed+71)*Math.PI*2;
+   for(let lobe=0;lobe<2;lobe++){
+    const a=phase+lobe*Math.PI;
+    crown(x+Math.cos(a)*crownRadius*.32,
+      ground+height*(.34+lobe*.09),
+      zz+Math.sin(a)*crownRadius*.32,
+      crownRadius*.65,height*.48,field.seed+13+lobe);
+   }
    count++;
   }
  }

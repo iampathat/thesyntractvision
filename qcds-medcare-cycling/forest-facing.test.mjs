@@ -5,9 +5,9 @@ import assert from 'node:assert/strict';
 import {buildWorldMesh} from './world-mesh.js';
 const world=buildWorldMesh({worldSeed:'qcds-baseline',scene:{biome:'forest',state:{vegetation:'dense'}},length:240,halfWidth:96});
 assert.ok(world.forest.count>0,'forest is empty');
-for(const [name,mesh,sides,levels] of [['trunks',world.forest.trunks,6,2],['crowns',world.forest.crowns,10,5]]){
+for(const [name,mesh,sides,levels] of [['trunks',world.forest.trunks,6,2],['crowns',world.forest.crowns,14,7]]){
  const verticesPerTree=sides*levels;
- assert.equal(mesh.positions.length/3,world.forest.count*verticesPerTree);
+ assert.equal(mesh.positions.length/3,world.forest.count*verticesPerTree*(name==='crowns'?3:1));
  let outward=0,inward=0,degenerate=0;
  for(let i=0;i<mesh.indices.length;i+=3){
   const tree=Math.floor(mesh.indices[i]/verticesPerTree);
