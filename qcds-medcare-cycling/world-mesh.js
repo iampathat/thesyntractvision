@@ -52,6 +52,7 @@ export function buildWorldForest(field,{length=300,halfWidth=110,water=null}={})
   const p=water.positions;flooded.push([Math.min(p[i],p[i+3]),Math.max(p[i],p[i+3]),Math.min(p[i+2],p[i+8]),Math.max(p[i+2],p[i+8])]);
  }
  const trunks={positions:[],normals:[],indices:[]},crowns={positions:[],normals:[],indices:[]};
+ const instances=[]; // QCDS-accepted world-space tree footprints; shared by all vegetation layers.
  const density=field.oracle.forestDensity;
  const layout=forestLayout(field.oracle);
  const spacing=layout.spacing;
@@ -159,11 +160,12 @@ export function buildWorldForest(field,{length=300,halfWidth=110,water=null}={})
       zz+Math.sin(a)*crownRadius*.32,
       crownRadius*.65,height*.48,field.seed+13+lobe);
    }
+   instances.push({x,z:zz,ground,height,crownRadius,clearance:candidate.clearance});
    count++;
   }
  }
  const packed=m=>({positions:new Float32Array(m.positions),normals:new Float32Array(m.normals),indices:new Uint32Array(m.indices)});
- return {trunks:packed(trunks),crowns:packed(crowns),count,spacing,oracleIds:['QC-GEOMETRY-CONTINUITY','QC-ROAD-CLEARANCE','QC-FOREST-RELIEF']};
+ return {trunks:packed(trunks),crowns:packed(crowns),instances,count,spacing,oracleIds:['QC-GEOMETRY-CONTINUITY','QC-ROAD-CLEARANCE','QC-FOREST-RELIEF']};
 }
 /** Rider frame derived from the exact road centerline and joint oracle winner.
  * This keeps heading, lean, cadence and wheel contact in one geometric frame. */
