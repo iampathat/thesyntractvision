@@ -107,6 +107,8 @@ function ridgeMesh(field,seed){
 function understoryMesh(field,forest){
  const positions=[],normals=[],indices=[],p=forest.trunks.positions;
  const density=Math.max(0,Math.min(1,Number(field.oracle.forestDensity)||0));
+ // No QCDS forest permission means no vegetation triangles, not zero-height triangles.
+ if(density===0||p.length===0)return {positions:new Float32Array(0),normals:new Float32Array(0),indices:new Uint32Array(0)};
  for(let i=0;i<p.length;i+=36){
   // The first ring of each accepted tree supplies its footprint centre.
   // Branches are appended after trunks; use only ground-adjacent ring vertices.
@@ -117,6 +119,9 @@ function understoryMesh(field,forest){
   for(let clump=0;clump<Math.round(5+5*density);clump++){
    const angle=clump*2.399963229728653;
    const cx=x+Math.cos(angle)*(.5+clump*.17),cz=z+Math.sin(angle)*(.5+clump*.17);
+   // Enforce the SAME road/shoulder exclusion as the joint world field.
+   const roadClearance=field.width*.5+field.oracle.shoulderWidth+.25;
+   if(Math.abs(cx-field.center(cz))<=roadClearance+.25)continue;
    const cy=field.height(cx,cz)+.035;
    const height=(.55+.16*((clump*7)%5))*density;
    for(let blade=0;blade<4;blade++){
