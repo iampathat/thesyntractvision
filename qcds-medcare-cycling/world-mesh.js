@@ -89,7 +89,7 @@ export function buildWorldForest(field,{length=300,halfWidth=110,water=null}={})
   }
   for(let k=0;k<sides;k++){
    const a=base+k,b=base+(k+1)%sides,c=a+sides,d=b+sides;
-   trunks.indices.push(a,c,b,b,c,d);
+   trunks.indices.push(a,b,c,b,d,c);
   }
  };
  const crown=(cx,cy,cz,radius,height,seed)=>{
