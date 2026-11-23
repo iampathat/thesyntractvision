@@ -32,6 +32,11 @@ void main(){
   float fine=sin(vPosition.x*2.7+vPosition.y*1.9)*sin(vPosition.z*2.1-vPosition.y*1.3);
   float leaf=clamp(.82+.13*broad+.10*fine, .58,1.06);
   surface*=mix(1.,leaf,clamp(uForestVariation,0.,1.));
+  // Joint QCDS sun/forest decision: canopy self-shading uses actual 3D normals,
+  // not a camera-facing sprite or independently chosen material layer.
+  float sunFacing=max(dot(n,normalize(uSun)),0.);
+  float canopyOcclusion=mix(.72,1.,sunFacing);
+  surface*=mix(1.,canopyOcclusion,clamp(uForestVariation,0.,1.));
   surface*=.84+.16*clamp(n.y,0.,1.);
  }
  if(uRoad>.5){
