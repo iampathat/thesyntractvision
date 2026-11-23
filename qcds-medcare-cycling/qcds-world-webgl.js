@@ -16,7 +16,7 @@ const FRAG=`#version 300 es
 precision highp float;
 in vec3 vNormal;in vec3 vPosition;in float vDepth;
 uniform vec3 uSun;uniform vec3 uFog;uniform vec3 uAlbedo;
-uniform float uHaze;uniform float uRoughness;uniform float uRoad;uniform float uWetness;uniform float uShadowStrength;uniform float uForest;uniform float uForestVariation;uniform vec3 uCamera;
+uniform float uHaze;uniform float uRoughness;uniform float uRoad;uniform float uWetness;uniform float uShadowStrength;uniform float uForest;uniform float uGround;uniform float uForestVariation;uniform vec3 uCamera;
 out vec4 color;
 void main(){
  vec3 n=normalize(vNormal);
@@ -38,6 +38,18 @@ void main(){
   float canopyOcclusion=mix(.72,1.,sunFacing);
   surface*=mix(1.,canopyOcclusion,clamp(uForestVariation,0.,1.));
   surface*=.84+.16*clamp(n.y,0.,1.);
+ }
+ // Terrain and forest floor are evaluated in the same world-space coordinates.
+ // This creates continuous ground cover across camera poses without billboards.
+ if(uGround>.5){
+  float cover=clamp(uForestVariation,0.,1.);
+  float patch=sin(vPosition.x*.37+sin(vPosition.z*.13))*cos(vPosition.z*.41-vPosition.x*.11);
+  float blades=sin(vPosition.x*5.7+vPosition.z*1.9)*cos(vPosition.z*6.3-vPosition.x*2.1);
+  float slope=clamp(n.y,0.,1.);
+  float moss=clamp(.5+.34*patch+.16*blades,0.,1.)*slope*cover;
+  vec3 woodland=vec3(.19,.32,.13)*(ambient+.48*direct);
+  surface=mix(surface,woodland,moss*.48);
+  surface*=.92+.08*patch;
  }
  if(uRoad>.5){
   float wet=clamp(uWetness,0.,1.);
@@ -91,10 +103,10 @@ function ridgeMesh(field,seed){
 }
 export class QcdsWorldWebGL{
  constructor(canvas){this.canvas=canvas;this.gl=canvas.getContext('webgl2',{antialias:true,alpha:false});if(!this.gl)throw Error('WebGL2 unavailable');this.program=program(this.gl);this.meshes=[];this.active=false;this.frame=0;this.cameraMode='fixed';this.cameraSeed='camera-001';this.worldSeed='qcds-baseline';}
- rebuild(options){const gl=this.gl;for(const m of this.meshes)for(const b of m.mesh.buffers)gl.deleteBuffer(b);for(const m of this.meshes)gl.deleteVertexArray(m.mesh.vao);this.meshes=[];const world=buildWorldMesh({...options,step:5,halfWidth:110,length:300});this.field=world.field;this.worldDecision=world.field.oracle;const add=(data,color,road=0,forest=0)=>this.meshes.push({mesh:mesh(gl,data.positions,data.normals||roadNormals(data.positions),data.indices),color,road,forest});const surface=worldSurface(world.field.oracle);this.surface=surface;add(world.terrain,surface.terrain);add(ridgeMesh(world.field,world.field.seed),surface.terrain.map((v,i)=>v*(i===2?1.08:.86)));add(world.road,surface.road,1);add(world.forest.trunks,surface.trunks);add(world.forest.crowns,surface.crowns,0,1);if(world.water.count)add(world.water,surface.water);this.options=options;this.worldSeed=String(options.worldSeed||'qcds-baseline');this.render();}
+ rebuild(options){const gl=this.gl;for(const m of this.meshes)for(const b of m.mesh.buffers)gl.deleteBuffer(b);for(const m of this.meshes)gl.deleteVertexArray(m.mesh.vao);this.meshes=[];const world=buildWorldMesh({...options,step:5,halfWidth:110,length:300});this.field=world.field;this.worldDecision=world.field.oracle;const add=(data,color,road=0,forest=0,ground=0)=>this.meshes.push({mesh:mesh(gl,data.positions,data.normals||roadNormals(data.positions),data.indices),color,road,forest,ground});const surface=worldSurface(world.field.oracle);this.surface=surface;add(world.terrain,surface.terrain,0,0,1);add(ridgeMesh(world.field,world.field.seed),surface.terrain.map((v,i)=>v*(i===2?1.08:.86)));add(world.road,surface.road,1);add(world.forest.trunks,surface.trunks);add(world.forest.crowns,surface.crowns,0,1);if(world.water.count)add(world.water,surface.water);this.options=options;this.worldSeed=String(options.worldSeed||'qcds-baseline');this.render();}
  setCamera(mode='fixed',cameraSeed='camera-001'){if(mode!=='fixed'&&mode!=='random')throw Error('Unknown QCDS camera mode');this.cameraMode=mode;this.cameraSeed=String(cameraSeed);this.render();}
  cameraEvidence(){const pair=cameraPair({worldSeed:this.worldSeed,cameraSeed:this.cameraSeed,field:this.field});const p=this.field.road(0),t=this.field.road(90);return {...pair,fixed:{position:[p.x,p.y+3.4,-14],target:[t.x,t.y+1,t.z],fov:65},mode:this.cameraMode};}
- render(){const gl=this.gl,canvas=this.canvas;const w=Math.max(2,Math.round(canvas.clientWidth*devicePixelRatio)),h=Math.max(2,Math.round(canvas.clientHeight*devicePixelRatio));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}gl.viewport(0,0,w,h);gl.enable(gl.DEPTH_TEST);gl.clearColor(.63,.73,.81,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(this.program);const pair=this.cameraEvidence(),camera=pair[this.cameraMode];const vp=multiply(perspective(camera.fov*Math.PI/180,w/h,.1,900),lookAt(camera.position,camera.target));const loc=n=>gl.getUniformLocation(this.program,n);gl.uniformMatrix4fv(loc('uViewProjection'),false,vp);const decision=this.worldDecision;const late=this.surface.late;gl.uniform3fv(loc('uSun'),new Float32Array(decision.sunDirection));gl.uniform3fv(loc('uFog'),new Float32Array(late?[.79,.65,.54]:[.65,.74,.82]));gl.uniform1f(loc('uHaze'),decision.fogDensity);gl.uniform1f(loc('uWetness'),decision.roadWetness);gl.uniform1f(loc('uRoughness'),this.surface.roughness);gl.uniform1f(loc('uShadowStrength'),decision.shadowStrength);gl.uniform1f(loc('uForestVariation'),Math.max(0,Math.min(1,Number(decision.forestDensity)||0)));gl.uniform3fv(loc('uCamera'),new Float32Array(camera.position));for(const item of this.meshes){gl.uniform3fv(loc('uAlbedo'),new Float32Array(item.color));gl.uniform1f(loc('uRoad'),item.road);gl.uniform1f(loc('uForest'),item.forest);gl.bindVertexArray(item.mesh.vao);gl.drawElements(gl.TRIANGLES,item.mesh.count,gl.UNSIGNED_INT,0);}
+ render(){const gl=this.gl,canvas=this.canvas;const w=Math.max(2,Math.round(canvas.clientWidth*devicePixelRatio)),h=Math.max(2,Math.round(canvas.clientHeight*devicePixelRatio));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}gl.viewport(0,0,w,h);gl.enable(gl.DEPTH_TEST);gl.clearColor(.63,.73,.81,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(this.program);const pair=this.cameraEvidence(),camera=pair[this.cameraMode];const vp=multiply(perspective(camera.fov*Math.PI/180,w/h,.1,900),lookAt(camera.position,camera.target));const loc=n=>gl.getUniformLocation(this.program,n);gl.uniformMatrix4fv(loc('uViewProjection'),false,vp);const decision=this.worldDecision;const late=this.surface.late;gl.uniform3fv(loc('uSun'),new Float32Array(decision.sunDirection));gl.uniform3fv(loc('uFog'),new Float32Array(late?[.79,.65,.54]:[.65,.74,.82]));gl.uniform1f(loc('uHaze'),decision.fogDensity);gl.uniform1f(loc('uWetness'),decision.roadWetness);gl.uniform1f(loc('uRoughness'),this.surface.roughness);gl.uniform1f(loc('uShadowStrength'),decision.shadowStrength);gl.uniform1f(loc('uForestVariation'),Math.max(0,Math.min(1,Number(decision.forestDensity)||0)));gl.uniform3fv(loc('uCamera'),new Float32Array(camera.position));for(const item of this.meshes){gl.uniform3fv(loc('uAlbedo'),new Float32Array(item.color));gl.uniform1f(loc('uRoad'),item.road);gl.uniform1f(loc('uForest'),item.forest);gl.uniform1f(loc('uGround'),item.ground);gl.bindVertexArray(item.mesh.vao);gl.drawElements(gl.TRIANGLES,item.mesh.count,gl.UNSIGNED_INT,0);}
  // Riders and road share the same terrain field, sun, fog and depth buffer.
  // Update only the small articulated meshes; the terrain stays GPU resident.
  const time=performance.now()/1000,cadence=Number(this.options.cadence)||80;
@@ -106,7 +118,7 @@ export class QcdsWorldWebGL{
   for(let i=0;i<body.normals.length;i+=3){const x=body.normals[i],zz=body.normals[i+2];body.normals[i]=c*x+s*zz;body.normals[i+2]=-s*x+c*zz;}
   const riderMesh=mesh(gl,body.positions,body.normals,body.indices);
   gl.uniform3fv(loc('uAlbedo'),new Float32Array(rider===0?[.12,.34,.66]:rider===1?[.77,.22,.13]:[.16,.22,.27]));
-  gl.uniform1f(loc('uRoad'),0);gl.uniform1f(loc('uForest'),0);
+  gl.uniform1f(loc('uRoad'),0);gl.uniform1f(loc('uForest'),0);gl.uniform1f(loc('uGround'),0);
   gl.bindVertexArray(riderMesh.vao);gl.drawElements(gl.TRIANGLES,riderMesh.count,gl.UNSIGNED_INT,0);
   for(const b of riderMesh.buffers)gl.deleteBuffer(b);
   gl.deleteVertexArray(riderMesh.vao);
