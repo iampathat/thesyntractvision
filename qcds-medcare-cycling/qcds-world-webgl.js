@@ -43,13 +43,13 @@ void main(){
  // This creates continuous ground cover across camera poses without billboards.
  if(uGround>.5){
   float cover=clamp(uForestVariation,0.,1.);
-  float patch=sin(vPosition.x*.37+sin(vPosition.z*.13))*cos(vPosition.z*.41-vPosition.x*.11);
+  float groundPatch=sin(vPosition.x*.37+sin(vPosition.z*.13))*cos(vPosition.z*.41-vPosition.x*.11);
   float blades=sin(vPosition.x*5.7+vPosition.z*1.9)*cos(vPosition.z*6.3-vPosition.x*2.1);
   float slope=clamp(n.y,0.,1.);
-  float moss=clamp(.5+.34*patch+.16*blades,0.,1.)*slope*cover;
+  float moss=clamp(.5+.34*groundPatch+.16*blades,0.,1.)*slope*cover;
   vec3 woodland=vec3(.19,.32,.13)*(ambient+.48*direct);
   surface=mix(surface,woodland,moss*.48);
-  surface*=.92+.08*patch;
+  surface*=.92+.08*groundPatch;
  }
  if(uRoad>.5){
   float wet=clamp(uWetness,0.,1.);
