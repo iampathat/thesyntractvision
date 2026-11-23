@@ -31,6 +31,7 @@ jobs:
           node qcds-medcare-cycling/camera-rig.test.mjs
           node qcds-medcare-cycling/ci-evidence.regression.test.mjs
           node qcds-medcare-cycling/visual-world-contract.test.mjs
+          node qcds-medcare-cycling/glsl-preflight.test.mjs
       - name: Install headless Chromium and Playwright
         run: |
           mkdir -p /tmp/qcds-browser-qa
