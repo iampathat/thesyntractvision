@@ -16,7 +16,7 @@ const FRAG=`#version 300 es
 precision highp float;
 in vec3 vNormal;in vec3 vPosition;in float vDepth;
 uniform vec3 uSun;uniform vec3 uFog;uniform vec3 uAlbedo;
-uniform float uHaze;uniform float uRoughness;uniform float uRoad;uniform float uWetness;uniform float uShadowStrength;uniform float uForest;uniform float uGround;uniform float uForestVariation;uniform vec3 uCamera;
+uniform float uHaze;uniform float uRoughness;uniform float uSnow;uniform float uRoad;uniform float uWetness;uniform float uShadowStrength;uniform float uForest;uniform float uGround;uniform float uForestVariation;uniform vec3 uCamera;
 out vec4 color;
 void main(){
  vec3 n=normalize(vNormal);
@@ -66,6 +66,12 @@ void main(){
   surface*=mix(.96,.67,wet);
   surface+=vec3(.26,.29,.32)*spec*wet*(1.-.65*rough);
  }
+ // Winter cover is a property of the same selected world state, not a camera overlay.
+ // Up-facing ground and canopy surfaces accumulate more snow; road is cleared.
+ float snowFacing=smoothstep(.22,.8,n.y);
+ float snowAmount=clamp(uSnow,0.,1.)*snowFacing*(uRoad>.5?.12:1.);
+ float snowVariation=.88+.12*sin(vPosition.x*.19+vPosition.z*.23);
+ surface=mix(surface,vec3(.86,.91,.96)*(ambient+.42*direct)*snowVariation,snowAmount);
  float fog=1.-exp(-pow(max(vDepth-15.,0.)/mix(360.,125.,uHaze),1.45));
  color=vec4(mix(surface,uFog,clamp(fog,0.,.86)),1.);
 }`;
@@ -104,44 +110,136 @@ function ridgeMesh(field,seed){
 
 // True 3D forest-floor tufts. Each accepted trunk anchors a cluster in the
 // same terrain/water/road-constrained world, independent of camera orientation.
-function understoryMesh(field,forest){
- const positions=[],normals=[],indices=[],p=forest.trunks.positions;
+function understoryMesh(field,forest,water){
+ const positions=[],normals=[],indices=[];
  const density=Math.max(0,Math.min(1,Number(field.oracle.forestDensity)||0));
- // No QCDS forest permission means no vegetation triangles, not zero-height triangles.
- if(density===0||p.length===0)return {positions:new Float32Array(0),normals:new Float32Array(0),indices:new Uint32Array(0)};
- for(let i=0;i<p.length;i+=36){
-  // The first ring of each accepted tree supplies its footprint centre.
-  // Branches are appended after trunks; use only ground-adjacent ring vertices.
-  const x=p[i],z=p[i+2];
-  if(!Number.isFinite(x)||!Number.isFinite(z))continue;
-  const ground=field.height(x,z);
-  if(Math.abs(p[i+1]-ground)>1.5)continue;
-  for(let clump=0;clump<Math.round(5+5*density);clump++){
-   const angle=clump*2.399963229728653;
-   const cx=x+Math.cos(angle)*(.5+clump*.17),cz=z+Math.sin(angle)*(.5+clump*.17);
-   // Enforce the SAME road/shoulder exclusion as the joint world field.
-   const roadClearance=field.width*.5+field.oracle.shoulderWidth+.25;
-   if(Math.abs(cx-field.center(cz))<=roadClearance+.25)continue;
-   const cy=field.height(cx,cz)+.035;
-   const height=(.55+.16*((clump*7)%5))*density;
+ if(density===0||!forest.instances?.length)return {positions:new Float32Array(0),normals:new Float32Array(0),indices:new Uint32Array(0)};
+ const addTriangle=(a,b,c)=>{
+  const base=positions.length/3;
+  positions.push(...a,...b,...c);
+  const ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=c[0]-a[0],vy=c[1]-a[1],vz=c[2]-a[2];
+  const nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx,mag=Math.hypot(nx,ny,nz)||1;
+  for(let k=0;k<3;k++)normals.push(nx/mag,ny/mag,nz/mag);
+  indices.push(base,base+1,base+2);
+ };
+ const safe=(x,z,r)=>{
+  const shoulder=field.width*.5+field.oracle.shoulderWidth+r+.25;
+  if(Math.abs(x-field.center(z))<=shoulder)return false;
+  if(water?.count){
+   const p=water.positions;
+   for(let j=0;j<p.length;j+=12){
+    const x0=Math.min(p[j],p[j+3]),x1=Math.max(p[j],p[j+3]);
+    const z0=Math.min(p[j+2],p[j+8]),z1=Math.max(p[j+2],p[j+8]);
+    if(x+r>x0&&x-r<x1&&z+r>z0&&z-r<z1)return false;
+   }
+  }
+  return true;
+ };
+ // All plants originate from the exact QCDS-accepted forest footprints, never
+ // from incidental trunk triangle order or camera-relative billboard coordinates.
+ for(const tree of forest.instances){
+  for(let n=0;n<9;n++){
+   const angle=n*2.399963229728653+tree.x*.11;
+   const radius=.7+n*.26;
+   const x=tree.x+Math.cos(angle)*radius,z=tree.z+Math.sin(angle)*radius;
+   if(!safe(x,z,.38))continue;
+   const y=field.height(x,z)+.035;
+   const h=(.48+.12*(n%5))*density;
+   // Camera-independent four-blade grass geometry.
    for(let blade=0;blade<4;blade++){
-    const a=angle+blade*Math.PI/4,dx=Math.cos(a),dz=Math.sin(a),base=positions.length/3;
-    positions.push(cx-dx*.19,cy,cz-dz*.19,cx+dx*.19,cy,cz+dz*.19,cx+dx*.035,cy+height,cz+dz*.035);
-    normals.push(-dz,.35,dx,-dz,.35,dx,-dz,.35,dx);
-    indices.push(base,base+1,base+2);
-    indices.push(base+2,base+1,base);
+    const a=angle+blade*Math.PI/4,dx=Math.cos(a),dz=Math.sin(a);
+    addTriangle([x-dx*.24,y,z-dz*.24],[x+dx*.24,y,z+dz*.24],[x+dx*.04,y+h,z+dz*.04]);
+    addTriangle([x+dx*.24,y,z+dz*.24],[x-dx*.24,y,z-dz*.24],[x+dx*.04,y+h,z+dz*.04]);
+   }
+  }
+  // True volumetric understory shrubs with 3D canopy and terrain contact.
+  // Shared water/road exclusion is checked on the shrub's entire footprint.
+  for(let n=0;n<3;n++){
+   const a=n*2.094395102+tree.z*.071;
+   const distance=2.1+n*.85;
+   const x=tree.x+Math.cos(a)*distance,z=tree.z+Math.sin(a)*distance;
+   const radius=(.48+.13*(n%2))*density;
+   if(!safe(x,z,radius))continue;
+   const y=field.height(x,z),h=(1.35+.25*n)*density;
+   const bottom=[x,y+.06,z],top=[x,y+h,z];
+   const ring=[];
+   for(let k=0;k<7;k++){const t=k*2*Math.PI/7;ring.push([x+Math.cos(t)*radius,y+h*.42,z+Math.sin(t)*radius]);}
+   for(let k=0;k<7;k++){
+    const next=(k+1)%7;
+    addTriangle(bottom,ring[k],ring[next]);
+    addTriangle(ring[k],top,ring[next]);
    }
   }
  }
  return {positions:new Float32Array(positions),normals:new Float32Array(normals),indices:new Uint32Array(indices)};
 }
 
+
+// Roadside structures are real camera-independent 3D meshes in the shared
+// QCDS terrain frame. Winter snow, sunlight and fog use the same shader/oracle.
+function roadsideSettlement(field,forest,water){
+ const positions=[],normals=[],indices=[];
+ const addFace=(a,b,c,d,n)=>{
+  const start=positions.length/3;
+  for(const p of [a,b,c,d]){positions.push(...p);normals.push(...n);}
+  indices.push(start,start+1,start+2,start,start+2,start+3);
+ };
+ const cube=(x,y,z,w,h,d)=>{
+  const x0=x-w/2,x1=x+w/2,z0=z-d/2,z1=z+d/2,y1=y+h;
+  addFace([x0,y,z1],[x1,y,z1],[x1,y1,z1],[x0,y1,z1],[0,0,1]);
+  addFace([x1,y,z0],[x0,y,z0],[x0,y1,z0],[x1,y1,z0],[0,0,-1]);
+  addFace([x0,y,z0],[x0,y,z1],[x0,y1,z1],[x0,y1,z0],[-1,0,0]);
+  addFace([x1,y,z1],[x1,y,z0],[x1,y1,z0],[x1,y1,z1],[1,0,0]);
+  addFace([x0,y1,z1],[x1,y1,z1],[x1,y1,z0],[x0,y1,z0],[0,1,0]);
+ };
+ const clear=(x,z,r)=>{
+  if(Math.abs(x-field.center(z))<field.width/2+field.oracle.shoulderWidth+r+1)return false;
+  for(const tree of forest.instances||[])if(Math.hypot(tree.x-x,tree.z-z)<tree.crownRadius+r+1)return false;
+  if(water?.count){const p=water.positions;for(let i=0;i<p.length;i+=12){
+   const x0=Math.min(p[i],p[i+3]),x1=Math.max(p[i],p[i+3]);
+   const z0=Math.min(p[i+2],p[i+8]),z1=Math.max(p[i+2],p[i+8]);
+   if(x+r>x0&&x-r<x1&&z+r>z0&&z-r<z1)return false;
+  }}
+  return true;
+ };
+ let houses=0,posts=0;
+ for(const z of [62,154,238]){
+  const x=field.center(z)+field.width/2+field.oracle.shoulderWidth+16;
+  if(!clear(x,z,7))continue;
+  const y=field.height(x,z);
+  cube(x,y,z,9,5.4,8);
+  // Sloped roof, pitched in world-space (not a billboard).
+  const x0=x-5.3,x1=x+5.3,z0=z-4.8,z1=z+4.8,peak=y+8.1,eave=y+5.4;
+  const face=(a,b,c)=>{const base=positions.length/3;
+   const ux=b[0]-a[0],uy=b[1]-a[1],uz=b[2]-a[2],vx=c[0]-a[0],vy=c[1]-a[1],vz=c[2]-a[2];
+   const nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx,m=Math.hypot(nx,ny,nz)||1;
+   for(const p of [a,b,c]){positions.push(...p);normals.push(nx/m,ny/m,nz/m);}
+   indices.push(base,base+1,base+2);
+  };
+  face([x0,eave,z0],[x1,eave,z0],[x,peak,z0]);
+  face([x1,eave,z1],[x0,eave,z1],[x,peak,z1]);
+  for(const [a,b,c,d] of [
+   [[x0,eave,z0],[x,peak,z0],[x,peak,z1],[x0,eave,z1]],
+   [[x,peak,z0],[x1,eave,z0],[x1,eave,z1],[x,peak,z1]]]){
+   face(a,b,c);face(a,c,d);
+  }
+  houses++;
+ }
+ for(let z=18;z<280;z+=8)for(const side of [-1,1]){
+  const x=field.center(z)+side*(field.width/2+field.oracle.shoulderWidth+2.5);
+  if(!clear(x,z,.3))continue;
+  cube(x,field.height(x,z),z,.22,1.35,.22);posts++;
+ }
+ return {positions:new Float32Array(positions),normals:new Float32Array(normals),
+  indices:new Uint32Array(indices),houses,posts};
+}
+
 export class QcdsWorldWebGL{
  constructor(canvas){this.canvas=canvas;this.gl=canvas.getContext('webgl2',{antialias:true,alpha:false});if(!this.gl)throw Error('WebGL2 unavailable');this.program=program(this.gl);this.meshes=[];this.active=false;this.frame=0;this.cameraMode='fixed';this.cameraSeed='camera-001';this.worldSeed='qcds-baseline';}
- rebuild(options){const gl=this.gl;for(const m of this.meshes)for(const b of m.mesh.buffers)gl.deleteBuffer(b);for(const m of this.meshes)gl.deleteVertexArray(m.mesh.vao);this.meshes=[];const world=buildWorldMesh({...options,step:5,halfWidth:110,length:300});this.field=world.field;this.worldDecision=world.field.oracle;const add=(data,color,road=0,forest=0,ground=0)=>this.meshes.push({mesh:mesh(gl,data.positions,data.normals||roadNormals(data.positions),data.indices),color,road,forest,ground});const surface=worldSurface(world.field.oracle);this.surface=surface;add(world.terrain,surface.terrain,0,0,1);add(ridgeMesh(world.field,world.field.seed),surface.terrain.map((v,i)=>v*(i===2?1.08:.86)));add(world.road,surface.road,1);add(world.forest.trunks,surface.trunks);add(world.forest.crowns,surface.crowns,0,1);const undergrowth=understoryMesh(world.field,world.forest);if(undergrowth.indices.length)add(undergrowth,[.19,.37,.13],0,0,1);if(world.water.count)add(world.water,surface.water);this.options=options;this.worldSeed=String(options.worldSeed||'qcds-baseline');this.render();}
+ rebuild(options){const gl=this.gl;for(const m of this.meshes)for(const b of m.mesh.buffers)gl.deleteBuffer(b);for(const m of this.meshes)gl.deleteVertexArray(m.mesh.vao);this.meshes=[];const world=buildWorldMesh({...options,step:5,halfWidth:110,length:300});this.field=world.field;this.worldDecision=world.field.oracle;const add=(data,color,road=0,forest=0,ground=0)=>this.meshes.push({mesh:mesh(gl,data.positions,data.normals||roadNormals(data.positions),data.indices),color,road,forest,ground});const surface=worldSurface(world.field.oracle);this.surface=surface;add(world.terrain,surface.terrain,0,0,1);add(ridgeMesh(world.field,world.field.seed),surface.terrain.map((v,i)=>v*(i===2?1.08:.86)));add(world.road,surface.road,1);add(world.forest.trunks,surface.trunks);add(world.forest.crowns,surface.crowns,0,1);const undergrowth=understoryMesh(world.field,world.forest,world.water);if(undergrowth.indices.length)add(undergrowth,[.19,.37,.13],0,0,1);if(world.water.count)add(world.water,surface.water);const settlement=roadsideSettlement(world.field,world.forest,world.water);if(settlement.indices.length)add(settlement,[.57,.45,.33]);this.settlementEvidence={houses:settlement.houses,posts:settlement.posts};this.options=options;this.worldSeed=String(options.worldSeed||'qcds-baseline');this.render();}
  setCamera(mode='fixed',cameraSeed='camera-001'){if(mode!=='fixed'&&mode!=='random')throw Error('Unknown QCDS camera mode');this.cameraMode=mode;this.cameraSeed=String(cameraSeed);this.render();}
  cameraEvidence(){const pair=cameraPair({worldSeed:this.worldSeed,cameraSeed:this.cameraSeed,field:this.field});const p=this.field.road(0),t=this.field.road(90);return {...pair,fixed:{position:[p.x,p.y+3.4,-14],target:[t.x,t.y+1,t.z],fov:65},mode:this.cameraMode};}
- render(){const gl=this.gl,canvas=this.canvas;const w=Math.max(2,Math.round(canvas.clientWidth*devicePixelRatio)),h=Math.max(2,Math.round(canvas.clientHeight*devicePixelRatio));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}gl.viewport(0,0,w,h);gl.enable(gl.DEPTH_TEST);gl.clearColor(.63,.73,.81,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(this.program);const pair=this.cameraEvidence(),camera=pair[this.cameraMode];const vp=multiply(perspective(camera.fov*Math.PI/180,w/h,.1,900),lookAt(camera.position,camera.target));const loc=n=>gl.getUniformLocation(this.program,n);gl.uniformMatrix4fv(loc('uViewProjection'),false,vp);const decision=this.worldDecision;const late=this.surface.late;gl.uniform3fv(loc('uSun'),new Float32Array(decision.sunDirection));gl.uniform3fv(loc('uFog'),new Float32Array(late?[.79,.65,.54]:[.65,.74,.82]));gl.uniform1f(loc('uHaze'),decision.fogDensity);gl.uniform1f(loc('uWetness'),decision.roadWetness);gl.uniform1f(loc('uRoughness'),this.surface.roughness);gl.uniform1f(loc('uShadowStrength'),decision.shadowStrength);gl.uniform1f(loc('uForestVariation'),Math.max(0,Math.min(1,Number(decision.forestDensity)||0)));gl.uniform3fv(loc('uCamera'),new Float32Array(camera.position));for(const item of this.meshes){gl.uniform3fv(loc('uAlbedo'),new Float32Array(item.color));gl.uniform1f(loc('uRoad'),item.road);gl.uniform1f(loc('uForest'),item.forest);gl.uniform1f(loc('uGround'),item.ground);gl.bindVertexArray(item.mesh.vao);gl.drawElements(gl.TRIANGLES,item.mesh.count,gl.UNSIGNED_INT,0);}
+ render(){const gl=this.gl,canvas=this.canvas;const w=Math.max(2,Math.round(canvas.clientWidth*devicePixelRatio)),h=Math.max(2,Math.round(canvas.clientHeight*devicePixelRatio));if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;}gl.viewport(0,0,w,h);gl.enable(gl.DEPTH_TEST);gl.clearColor(.63,.73,.81,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.useProgram(this.program);const pair=this.cameraEvidence(),camera=pair[this.cameraMode];const vp=multiply(perspective(camera.fov*Math.PI/180,w/h,.1,900),lookAt(camera.position,camera.target));const loc=n=>gl.getUniformLocation(this.program,n);gl.uniformMatrix4fv(loc('uViewProjection'),false,vp);const decision=this.worldDecision;const late=this.surface.late;gl.uniform3fv(loc('uSun'),new Float32Array(decision.sunDirection));gl.uniform3fv(loc('uFog'),new Float32Array(late?[.79,.65,.54]:[.65,.74,.82]));gl.uniform1f(loc('uHaze'),decision.fogDensity);gl.uniform1f(loc('uWetness'),decision.roadWetness);gl.uniform1f(loc('uSnow'),decision.snowCover||0);gl.uniform1f(loc('uRoughness'),this.surface.roughness);gl.uniform1f(loc('uShadowStrength'),decision.shadowStrength);gl.uniform1f(loc('uForestVariation'),Math.max(0,Math.min(1,Number(decision.forestDensity)||0)));gl.uniform3fv(loc('uCamera'),new Float32Array(camera.position));for(const item of this.meshes){gl.uniform3fv(loc('uAlbedo'),new Float32Array(item.color));gl.uniform1f(loc('uRoad'),item.road);gl.uniform1f(loc('uForest'),item.forest);gl.uniform1f(loc('uGround'),item.ground);gl.bindVertexArray(item.mesh.vao);gl.drawElements(gl.TRIANGLES,item.mesh.count,gl.UNSIGNED_INT,0);}
  // Riders and road share the same terrain field, sun, fog and depth buffer.
  // Update only the small articulated meshes; the terrain stays GPU resident.
  const time=performance.now()/1000,cadence=Number(this.options.cadence)||80;

@@ -171,14 +171,30 @@ const animate=()=>{if(canvas.hidden){animationFrame=0;return;}renderer?.render()
 button?.addEventListener('click',()=>{
  if(!canvas.hidden){canvas.hidden=true;cancelAnimationFrame(animationFrame);animationFrame=0;button.setAttribute('aria-pressed','false');button.textContent='QCDS TERRÄNG 3D';return;}
  try{
-  renderer??=new QcdsWorldWebGL(canvas);window.__qcdsWorldRenderer=renderer;
-  canvas.hidden=false;
+  // Publish the renderer only after its QCDS field and GPU meshes exist.
+  // A failed first rebuild must never leave a partially initialized global.
+  const candidate=renderer||new QcdsWorldWebGL(canvas);
   const biome=document.getElementById('sceneBiome')?.value||'alpine';
   const lighting=document.getElementById('sceneLighting')?.value||'day';
-  renderer.rebuild({scene:{biome,state:{lighting}},route:{demo:true},quality:'high'});
+  candidate.rebuild({scene:{biome,state:{lighting}},route:{demo:true},quality:'high'});
+  if(!candidate.field?.oracle||!Array.isArray(candidate.meshes)||candidate.meshes.length===0)
+   throw Error('QCDS renderer rebuild completed without a live world mesh inventory');
+  renderer=candidate;
+  window.__qcdsWorldRenderer=renderer;
+  window.__qcdsWorldInitError=null;
+  canvas.hidden=false;
   if(!animationFrame)animationFrame=requestAnimationFrame(animate);
   button.setAttribute('aria-pressed','true');button.textContent='STÄNG QCDS TERRÄNG';
- }catch(error){canvas.hidden=true;console.error('QCDS world mesh:',error);button.textContent='WEBGL-FEL – FÖRSÖK IGEN';}
+ }catch(error){
+  canvas.hidden=true;
+  cancelAnimationFrame(animationFrame);animationFrame=0;
+  window.__qcdsWorldInitError=error?.stack||String(error);
+  console.error('QCDS world mesh initialization:',error);
+  try{renderer?.dispose();}catch(disposeError){console.error('QCDS cleanup:',disposeError);}
+  renderer=null;window.__qcdsWorldRenderer=null;
+  button.setAttribute('aria-pressed','false');
+  button.textContent='WEBGL-FEL – FÖRSÖK IGEN';
+ }
 });
 window.addEventListener('resize',()=>{if(renderer&&!canvas.hidden)renderer.render();});
 for(const id of ['sceneBiome','sceneLighting','sceneAtmosphere']){

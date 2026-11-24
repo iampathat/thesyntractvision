@@ -5,6 +5,9 @@ on:
     paths:
       - 'qcds-medcare-cycling/**'
       - '.github/workflows/qcds-cycling-visual.yml'
+concurrency:
+  group: qcds-cycling-visual-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   visual:
     runs-on: ubuntu-24.04
@@ -28,6 +31,7 @@ jobs:
           node qcds-medcare-cycling/forest-draw-audit.test.mjs
           node qcds-medcare-cycling/forest-camera-coverage-v2.test.mjs
           node qcds-medcare-cycling/world-forest-footprint.test.mjs
+          node qcds-medcare-cycling/test-forest-instances.mjs
           node qcds-medcare-cycling/camera-rig.test.mjs
           node qcds-medcare-cycling/ci-evidence.regression.test.mjs
           node qcds-medcare-cycling/visual-world-contract.test.mjs

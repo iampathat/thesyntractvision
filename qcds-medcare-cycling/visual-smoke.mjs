@@ -30,7 +30,24 @@ try{
  const button=page.locator('#qcdsWorldToggle');
  await button.scrollIntoViewIfNeeded();
  await button.click({timeout:8000});
- await page.waitForTimeout(2500);
+ // Wait for the *live* renderer, not an arbitrary delay. A failed shader or
+ // missing module must still fail closed with a diagnostic, never a fake PASS.
+ const rendererReady=await page.waitForFunction(()=>{
+  const r=window.__qcdsWorldRenderer;
+  return !!(r?.gl&&r?.field?.oracle&&Array.isArray(r.meshes)&&r.meshes.length>0);
+ },null,{timeout:20000,polling:250}).then(()=>true).catch(()=>false);
+ if(!rendererReady){
+  const diagnostics=await page.evaluate(()=>({
+   rendererPresent:!!window.__qcdsWorldRenderer,
+   canvasPresent:!!document.querySelector('#qcdsWorldCanvas'),
+   toggleText:document.querySelector('#qcdsWorldToggle')?.textContent,
+   ready:!!window.__cyclingReady,
+   rendererKeys:Object.keys(window.__qcdsWorldRenderer||{}),
+   meshCount:window.__qcdsWorldRenderer?.meshes?.length??null
+  }));
+  throw Error('Live QCDS WebGL renderer did not initialize within 20s: '+JSON.stringify(diagnostics));
+ }
+ steps.push('live renderer initialized with actual WebGL mesh inventory');
  const result=await page.evaluate(()=>{
   const canvas=document.querySelector('#qcdsWorldCanvas');
   const gl=canvas?.getContext('webgl2');
